@@ -1,107 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nadeem Shahzad Fida (NS Fida) | Live Iran-Israel/USA News</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live News by NSF | Live Conflict Dashboard</title>
 
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3391223258091641"
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3391223258091641"
      crossorigin="anonymous"></script>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',sans-serif;background:#0f172a;color:#f1f5f9;}
-        header{background:rgba(15,23,42,0.95);backdrop-filter:blur(8px);padding:20px 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;border-bottom:1px solid rgba(255,255,255,0.1);}        
-        .logo{display:flex;align-items:center;gap:15px;text-decoration:none;}
-        .logo img{height:45px;}
-        .logo h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fafafa;}
-        .live-badge{background:#dc2626;padding:6px 14px;border-radius:50px;font-size:12px;font-weight:600;text-transform:uppercase;animation:pulse 1.5s infinite;}
-        .blink-btn{animation:pulse 1.5s infinite;}
-        @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(220,38,38,0.7);}70%{box-shadow:0 0 0 10px rgba(220,38,38,0);}100%{box-shadow:0 0 0 0 rgba(220,38,38,0);}}
-        .ticker{background:#dc2626;padding:12px 5%;font-weight:600;white-space:nowrap;overflow:hidden;}
-        .ticker span{display:inline-block;padding-left:100%;animation:scroll 15s linear infinite;}
-        @keyframes scroll{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
-        .hero{padding:70px 5%;text-align:center;}
-        .hero h2{font-family:'Playfair Display',serif;font-size:40px;margin-bottom:15px;}
-        .hero p{font-size:18px;color:#cbd5e1;max-width:750px;margin:auto;}
-        .author{margin-top:15px;color:#94a3b8;}
-        .redirect-section{margin:60px 5%;text-align:center;background:#1e293b;padding:50px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);}
-        .redirect-section h3{font-size:24px;margin-bottom:15px;}
-        .btn{display:inline-block;padding:15px 35px;background:#dc2626;color:white;border-radius:50px;font-weight:600;text-decoration:none;font-size:15px;box-shadow:0 10px 25px rgba(220,38,38,0.4);transition:0.3s;margin:10px;}
-        .btn:hover{transform:translateY(-4px);box-shadow:0 15px 35px rgba(220,38,38,0.5);}
-        .phones.footer-news{display:flex;align-items:center;justify-content:center;gap:15px;background:#1e293b;padding:25px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);margin:40px 0;}
-        .phones.footer-news span{color:#f1f5f9;font-weight:600;font-size:16px;}
-        .phones.footer-news a{display:inline-block;}
-        .phones.footer-news img{height:45px;}
-        footer{text-align:center;padding:30px;color:#64748b;font-size:14px;border-top:1px solid rgba(255,255,255,0.08);margin-top:20px;}
-        .footer-links{margin-bottom:15px;}
-        .footer-links a{color:#cbd5e1;margin:0 15px;text-decoration:none;font-weight:500;}
-        .footer-links a i{margin-right:6px;}
-        .footer-links a:hover{color:#dc2626;}
-    </style>
+<style>
+/* ===== Base ===== */
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family:'Inter', sans-serif; background:#0d0f1c; color:#f0f0f0; line-height:1.6; overflow-x:hidden;}
+a {text-decoration:none;}
+
+/* ===== Header ===== */
+header {
+    position: sticky;
+    top:0;
+    z-index:1000;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 5%;
+    backdrop-filter:blur(10px);
+    background: rgba(15,15,40,0.85);
+    border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.logo {display:flex;align-items:center;gap:15px;}
+.logo img {height:50px;}
+.logo h1 {font-family:'Roboto Mono', monospace; font-weight:700; font-size:22px; color:#fff;}
+.live-badge {
+    background: linear-gradient(45deg,#ff4c4c,#ff6b6b);
+    padding:8px 18px;
+    border-radius:50px;
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    animation:pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow:0 0 0 0 rgba(255,76,76,0.6); }
+    70% { box-shadow:0 0 0 15px rgba(255,76,76,0); }
+    100% { box-shadow:0 0 0 0 rgba(255,76,76,0); }
+}
+
+/* ===== Ticker ===== */
+.ticker {
+    background: #121424;
+    color:#f0f0f0;
+    font-weight:500;
+    padding:10px 5%;
+    overflow:hidden;
+    white-space:nowrap;
+    border-top:1px solid rgba(255,255,255,0.05);
+    border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.ticker span {
+    display:inline-block;
+    padding-left:100%;
+    animation:scroll 20s linear infinite;
+}
+@keyframes scroll {
+    0%{transform:translateX(0);} 
+    100%{transform:translateX(-100%);}
+}
+
+/* ===== Hero ===== */
+.hero {
+    text-align:center;
+    padding:80px 5% 50px;
+}
+.hero h2 {
+    font-family:'Roboto Mono', monospace;
+    font-size:42px;
+    font-weight:700;
+    color:#fff;
+    margin-bottom:15px;
+    text-shadow:0 0 20px #ff4c4c,0 0 30px #ff6b6b;
+}
+.hero p {
+    font-size:18px;
+    color:#cfd8fc;
+    max-width:700px;
+    margin:auto;
+}
+.author {margin-top:12px;color:#94a3b8;font-size:14px;}
+
+/* ===== Dashboard Grid ===== */
+.dashboard {
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+    gap:30px;
+    padding:50px 5%;
+}
+.card {
+    background: rgba(25,25,50,0.6);
+    backdrop-filter:blur(10px);
+    border-radius:20px;
+    padding:25px 20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transition:0.3s;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    text-align:center;
+}
+.card:hover {
+    transform:translateY(-6px);
+    box-shadow:0 20px 40px rgba(255,76,76,0.3);
+}
+.card i {
+    font-size:40px;
+    color:#ff4c4c;
+    margin-bottom:12px;
+    transition:0.3s;
+}
+.card.blink i {
+    animation: pulse 1.5s infinite;
+}
+.card:hover i {color:#ff6b6b;}
+.card span {
+    margin-top:5px;
+    font-weight:600;
+    font-size:14px;
+    color:#f0f0f0;
+}
+
+/* ===== App Banner ===== */
+.app-banner {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:25px;
+    padding:30px 5%;
+    background: rgba(15,15,40,0.6);
+    border-radius:20px;
+    margin:50px 5%;
+    border:1px solid rgba(255,255,255,0.05);
+    backdrop-filter:blur(10px);
+}
+.app-banner span {color:#f0f0f0; font-weight:600; margin-right:15px;}
+.app-banner a img {height:50px; transition:0.3s;}
+.app-banner a img:hover {transform:scale(1.1);}
+
+/* ===== Footer ===== */
+footer {
+    text-align:center;
+    padding:35px 5%;
+    font-size:14px;
+    color:#94a3b8;
+    border-top:1px solid rgba(255,255,255,0.05);
+}
+.footer-links {margin-bottom:15px;}
+.footer-links a {
+    color:#cfd8fc;
+    margin:0 15px;
+    text-decoration:none;
+    font-weight:500;
+}
+.footer-links a i {margin-right:6px;}
+.footer-links a:hover {color:#ff4c4c;}
+
+/* ===== Responsive ===== */
+@media(max-width:600px){
+    .dashboard{grid-template-columns: repeat(auto-fit,minmax(100px,1fr)); gap:20px;}
+    .hero h2 {font-size:32px;}
+}
+</style>
+
+<script>
+// Blinking Title Effect (like Live badge)
+let originalTitle = document.title;
+setInterval(() => {
+    if(document.title === originalTitle){
+        document.title = '🔴 LIVE — ' + originalTitle;
+    } else {
+        document.title = originalTitle;
+    }
+}, 800);
+</script>
+
 </head>
 <body>
 
 <header>
     <a href="index.html" class="logo">
         <img src="logo.png" alt="Logo">
-        <h1>Nadeem Shahzad Fida (NS Fida)</h1>
+        <h1>livenews.live</h1>
     </a>
     <div class="live-badge">Live</div>
 </header>
 
 <div class="ticker">
-    <span>Live Global Conflict Updates — Verified strategic developments & real-time reporting.</span>
+    <span>Live Global Conflict Updates — Verified real-time reporting & strategy insights.</span>
 </div>
 
 <section class="hero">
-    <h2>Live Global Conflict Coverage</h2>
-    <p>Scroll down to access live tracking platforms.</p>
-    <div class="author">Live updates by <strong>Nadeem Shahzad Fida</strong></div>
+    <h2>Live Conflict Dashboard</h2>
+    <p>Click any icon below to track live developments instantly.</p>
+    <div class="author">Updates by <strong>NSF</strong></div>
 </section>
 
-<section class="redirect-section">
-    <h3>Track Live Developments</h3>
+<section class="dashboard">
 
     <!-- Conflict Maps -->
-    <a href="https://iran.liveuamap.com/" target="_blank" class="btn blink-btn">Track Now →</a>
-    <a href="https://liveuamap.com/" target="_blank" class="btn">Global Conflict Map →</a>
-    <a href="https://syria.liveuamap.com/" target="_blank" class="btn">Syria Map →</a>
-    <a href="https://israelpalestine.liveuamap.com/" target="_blank" class="btn">Israel-Palestine Map →</a>
+    <a href="https://iran.liveuamap.com/" target="_blank" class="card blink">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>Iran Live Map</span>
+    </a>
+    <a href="https://liveuamap.com/" target="_blank" class="card">
+        <i class="fa-solid fa-globe"></i>
+        <span>Global Map</span>
+    </a>
+    <a href="https://syria.liveuamap.com/" target="_blank" class="card">
+        <i class="fa-solid fa-mountain-city"></i>
+        <span>Syria Map</span>
+    </a>
+    <a href="https://israelpalestine.liveuamap.com/" target="_blank" class="card">
+        <i class="fa-solid fa-flag"></i>
+        <span>Israel-Palestine</span>
+    </a>
 
     <!-- Flight Tracking -->
-    <a href="https://www.flightradar24.com/" target="_blank" class="btn">Flight Radar →</a>
-    <a href="https://globe.adsbexchange.com/" target="_blank" class="btn">ADS-B Exchange →</a>
+    <a href="https://www.flightradar24.com/" target="_blank" class="card">
+        <i class="fa-solid fa-plane"></i>
+        <span>Flight Radar</span>
+    </a>
+    <a href="https://globe.adsbexchange.com/" target="_blank" class="card">
+        <i class="fa-solid fa-satellite-dish"></i>
+        <span>ADS-B Exchange</span>
+    </a>
 
     <!-- Naval Tracking -->
-    <a href="https://www.marinetraffic.com/" target="_blank" class="btn">Marine Traffic →</a>
+    <a href="https://www.marinetraffic.com/" target="_blank" class="card">
+        <i class="fa-solid fa-ship"></i>
+        <span>Marine Traffic</span>
+    </a>
 
     <!-- Global News -->
-    <a href="https://www.aljazeera.com/" target="_blank" class="btn">Al Jazeera →</a>
-    <a href="https://www.reuters.com/world/" target="_blank" class="btn">Reuters →</a>
-    <a href="https://www.bbc.com/news" target="_blank" class="btn">BBC News →</a>
+    <a href="https://www.aljazeera.com/" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>Al Jazeera</span>
+    </a>
+    <a href="https://www.reuters.com/world/" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>Reuters</span>
+    </a>
+    <a href="https://www.bbc.com/news" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>BBC News</span>
+    </a>
 
     <!-- Epstein Files -->
-    <a href="https://jmail.world" target="_blank" class="btn">Jeffery Epstein Files →</a>
+    <a href="https://jmail.world" target="_blank" class="card">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>Epstein Files</span>
+    </a>
 
 </section>
 
-<!-- App Download Banner (Coming Soon) -->
-<div class="phones footer-news">
-    <span>Coming soon</span>
-    <a href="#" title="Get live map news for iPhone iOS (Coming Soon)" target="_blank">
-        <img src="https://iran.liveuamap.com/images/appstore.svg" alt="Get live map news for iPhone iOS (Coming Soon)">
-    </a>
-    <a href="#" title="Get live map news for Google Android (Coming Soon)" target="_blank">
-        <img src="https://iran.liveuamap.com/images/googleplay.svg" alt="Get live map news for Google Android (Coming Soon)">
-    </a>
+<div class="app-banner">
+    <span>App Coming Soon:</span>
+    <a href="#"><img src="https://iran.liveuamap.com/images/appstore.svg" alt="iOS App"></a>
+    <a href="#"><img src="https://iran.liveuamap.com/images/googleplay.svg" alt="Android App"></a>
 </div>
 
 <footer>
@@ -110,7 +280,7 @@
         <a href="contact.html"><i class="fa-solid fa-envelope"></i>Contact</a>
         <a href="privacy.html"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
     </div>
-    © 2026 Nadeem Shahzad Fida (NS Fida) | Independent Live Conflict Reporting
+    © 2026 Live News by NSF | Independent Live Conflict Reporting
 </footer>
 
 </body>
