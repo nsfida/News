@@ -1,110 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About | Nadeem Shahzad Fida (NS Fida)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>livenews.live | About NSF</title>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3391223258091641"
+     crossorigin="anonymous"></script>
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',sans-serif;background:#0f172a;color:#f1f5f9;}
-        header{background:rgba(15,23,42,0.95);backdrop-filter:blur(8px);padding:20px 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;border-bottom:1px solid rgba(255,255,255,0.1);}        
-        .logo{display:flex;align-items:center;gap:15px;text-decoration:none;}
-        .logo img{height:45px;}
-        .logo h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fafafa;}
-        .hero{padding:70px 5%;text-align:center;}
-        .hero h2{font-family:'Playfair Display',serif;font-size:38px;margin-bottom:20px;}
-        .hero p{max-width:850px;margin:auto;font-size:18px;color:#cbd5e1;line-height:1.7;}
-        .section{margin:60px 5%;background:#1e293b;padding:50px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);}
-        .section h3{font-size:24px;margin-bottom:20px;text-align:center;}
-        .btn{display:inline-block;padding:14px 30px;background:#dc2626;color:white;border-radius:50px;font-weight:600;text-decoration:none;font-size:15px;box-shadow:0 10px 25px rgba(220,38,38,0.4);transition:0.3s;margin:10px;}
-        .btn i{margin-right:8px;}
-        .btn:hover{transform:translateY(-4px);box-shadow:0 15px 35px rgba(220,38,38,0.5);}
-        .center{text-align:center;}
-        footer{text-align:center;padding:30px;color:#64748b;font-size:14px;border-top:1px solid rgba(255,255,255,0.08);margin-top:60px;}
-        .footer-links{margin-bottom:15px;}
-        .footer-links a{color:#cbd5e1;margin:0 15px;text-decoration:none;font-weight:500;}
-        .footer-links a i{margin-right:6px;}
-        .footer-links a:hover{color:#dc2626;}
-    </style>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* ===== Base ===== */
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family:'Inter', sans-serif; background:#0d0f1c; color:#f0f0f0; line-height:1.6; overflow-x:hidden;}
+a {text-decoration:none;}
+
+/* ===== Header ===== */
+header {
+    position: sticky;
+    top:0;
+    z-index:1000;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 5%;
+    backdrop-filter:blur(10px);
+    background: rgba(15,15,40,0.85);
+    border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.logo {display:flex;align-items:center;gap:15px;}
+.logo img {height:50px;}
+.logo h1 {font-family:'Roboto Mono', monospace; font-weight:700; font-size:22px; color:#fff;}
+.live-badge {
+    background: linear-gradient(45deg,#ff4c4c,#ff6b6b);
+    padding:8px 18px;
+    border-radius:50px;
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    animation:pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow:0 0 0 0 rgba(255,76,76,0.6); }
+    70% { box-shadow:0 0 0 15px rgba(255,76,76,0); }
+    100% { box-shadow:0 0 0 0 rgba(255,76,76,0); }
+}
+
+/* ===== Hero ===== */
+.hero {
+    text-align:center;
+    padding:80px 5% 50px;
+}
+.hero h2 {
+    font-family:'Roboto Mono', monospace;
+    font-size:42px;
+    font-weight:700;
+    color:#fff;
+    margin-bottom:15px;
+    text-shadow:0 0 20px #ff4c4c,0 0 30px #ff6b6b;
+}
+.hero p {
+    font-size:18px;
+    color:#cfd8fc;
+    max-width:700px;
+    margin:auto;
+}
+
+/* ===== Dashboard-style buttons for About page ===== */
+.dashboard {
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+    gap:30px;
+    padding:40px 5%;
+}
+.card {
+    background: rgba(25,25,50,0.6);
+    backdrop-filter:blur(10px);
+    border-radius:20px;
+    padding:25px 20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transition:0.3s;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    text-align:center;
+    cursor:pointer;
+    color:#fff;
+}
+.card i {
+    font-size:40px;
+    color:#ff4c4c;
+    margin-bottom:12px;
+    transition:0.3s;
+}
+.card.blink i {
+    animation: pulse 1.5s infinite;
+}
+.card:hover {transform:translateY(-6px); box-shadow:0 20px 40px rgba(255,76,76,0.3);}
+.card:hover i {color:#ff6b6b;}
+.card span {
+    margin-top:5px;
+    font-weight:600;
+    font-size:14px;
+    color:#f0f0f0;
+}
+
+/* ===== Sections ===== */
+.section{
+    margin:50px 5%;
+    text-align:center;
+}
+.section p{
+    color:#cfd8fc;
+    margin-bottom:25px;
+    font-size:16px;
+    line-height:1.6;
+}
+
+/* ===== Footer ===== */
+footer {
+    text-align:center;
+    padding:35px 5%;
+    font-size:14px;
+    color:#94a3b8;
+    border-top:1px solid rgba(255,255,255,0.05);
+}
+.footer-links {margin-bottom:15px;}
+.footer-links a {
+    color:#cfd8fc;
+    margin:0 15px;
+    text-decoration:none;
+    font-weight:500;
+}
+.footer-links a i {margin-right:6px;}
+.footer-links a:hover {color:#ff4c4c;}
+
+/* ===== Responsive ===== */
+@media(max-width:600px){
+    .hero h2{font-size:32px;}
+    .dashboard{grid-template-columns: repeat(auto-fit,minmax(100px,1fr)); gap:20px;}
+}
+</style>
+
+<script>
+// Blinking Title Effect (like Live badge)
+let originalTitle = document.title;
+setInterval(() => {
+    if(document.title === originalTitle){
+        document.title = '🔴 LIVE — ' + originalTitle;
+    } else {
+        document.title = originalTitle;
+    }
+}, 800);
+</script>
+
 </head>
 <body>
 
 <header>
     <a href="index.html" class="logo">
         <img src="logo.png" alt="Logo">
-        <h1>Nadeem Shahzad Fida (NS Fida)</h1>
+        <h1>livenews.live</h1>
     </a>
+    <div class="live-badge">Live</div>
 </header>
 
 <section class="hero">
-    <h2>About Nadeem Shahzad Fida</h2>
+    <h2>About NSF</h2>
     <p>
-        Nadeem Shahzad Fida is a multidisciplinary professional known for his intellectual depth and creative versatility. 
-        He is a writer, photographer, computer analyst, Microsoft Certified System Engineer (MCSE), vlogger, and competitive chess player.
-        His work bridges literature, technology, strategic analysis, and visual storytelling, reflecting a dynamic blend of analytical precision and artistic insight.
+        Live News by NSF (Nadeem Shahzad Fida) represents a multidisciplinary professional and independent reporter.
+        NSF is a writer, photographer, computer analyst, Microsoft Certified System Engineer (MCSE), vlogger, and competitive chess player.
+        His work blends literature, technology, strategic insight, and storytelling, reflecting both analytical precision and creative vision.
     </p>
 </section>
 
 <section class="section">
     <h3>📘 Literary Work</h3>
-    <p class="center">
-        His Urdu literary book <strong>“Neerang-E-Hikmat”</strong> is a refined intellectual and philosophical work available online.
-    </p>
-    <div class="center">
-        <a href="https://papercraftpublishers.com/product/neerang-e-hikmat/?srsltid=AfmBOopjC2N-HIhWJ0XKvySQct8eVTuaPOjQTMdDt-22l1nLWkBZN9_b" target="_blank" class="btn">
-            <i class="fa-solid fa-book"></i> Papercraft Publishers
+    <p>NSF's Urdu literary book <strong>“Neerang-E-Hikmat”</strong> is a refined intellectual and philosophical work available online.</p>
+    <div class="dashboard">
+        <a href="https://papercraftpublishers.com/product/neerang-e-hikmat/?srsltid=AfmBOopjC2N-HIhWJ0XKvySQct8eVTuaPOjQTMdDt-22l1nLWkBZN9_b" target="_blank" class="card">
+            <i class="fa-solid fa-book"></i>
+            <span>Papercraft Publishers</span>
         </a>
-        <a href="https://www.daraz.pk/products/neerang-e-hikmat-i780255035.html" target="_blank" class="btn">
-            <i class="fa-solid fa-cart-shopping"></i> Buy on Daraz
+        <a href="https://www.daraz.pk/products/neerang-e-hikmat-i780255035.html" target="_blank" class="card">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Buy on Daraz</span>
         </a>
     </div>
 </section>
 
 <section class="section">
-    <h3>♟ International Chess Profile</h3>
-    <p class="center">
-        Active FIDE-rated chess player with international profile.
-    </p>
-    <div class="center">
-        <a href="https://ratings.fide.com/profile/7807252" target="_blank" class="btn">
-            <i class="fa-solid fa-chess"></i> View FIDE Profile
+    <h3>♟ Chess Profile</h3>
+    <p>Active FIDE-rated chess player with an international profile.</p>
+    <div class="dashboard">
+        <a href="https://ratings.fide.com/profile/7807252" target="_blank" class="card">
+            <i class="fa-solid fa-chess"></i>
+            <span>View FIDE Profile</span>
         </a>
     </div>
 </section>
 
 <section class="section">
     <h3>🌐 Social & Media Presence</h3>
-    <div class="center">
-        <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" class="btn">
-            <i class="fa-brands fa-facebook"></i> Facebook
+    <div class="dashboard">
+        <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" class="card">
+            <i class="fa-brands fa-facebook"></i>
+            <span>Facebook</span>
         </a>
-        <a href="https://www.instagram.com/fidanadeemshahzad/reels/" target="_blank" class="btn">
-            <i class="fa-brands fa-instagram"></i> Instagram
+        <a href="https://www.instagram.com/fidanadeemshahzad/reels/" target="_blank" class="card">
+            <i class="fa-brands fa-instagram"></i>
+            <span>Instagram</span>
         </a>
-        <a href="https://www.tiktok.com/@nadeemshahzadfida" target="_blank" class="btn">
-            <i class="fa-brands fa-tiktok"></i> TikTok
+        <a href="https://www.tiktok.com/@nadeemshahzadfida" target="_blank" class="card">
+            <i class="fa-brands fa-tiktok"></i>
+            <span>TikTok</span>
         </a>
     </div>
 </section>
 
 <section class="section">
     <h3>📩 Contact Information</h3>
-    <div class="center">
-        <a href="mailto:nadeemshahzadfida@outlook.com" class="btn">
-            <i class="fa-solid fa-envelope"></i> Email
+    <div class="dashboard">
+        <a href="mailto:nadeemshahzadfida@outlook.com" class="card">
+            <i class="fa-solid fa-envelope"></i>
+            <span>Email</span>
         </a>
-        <a href="https://wa.me/923339004564" target="_blank" class="btn">
-            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        <a href="https://wa.me/923339004564" target="_blank" class="card">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>WhatsApp</span>
         </a>
     </div>
-    <p class="center" style="margin-top:20px;color:#94a3b8;">
+    <p style="margin-top:20px;color:#94a3b8;">
         Email: nadeemshahzadfida@outlook.com <br>
         WhatsApp: +92 333 900 4564
     </p>
@@ -116,7 +249,7 @@
         <a href="contact.html"><i class="fa-solid fa-envelope"></i>Contact</a>
         <a href="privacy.html"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
     </div>
-    © 2026 Nadeem Shahzad Fida (NS Fida) | Official Website
+    © 2026 Live News by NSF | Official Website
 </footer>
 
 </body>
