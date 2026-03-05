@@ -1,43 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Privacy Policy | Nadeem Shahzad Fida (NS Fida)</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>livenews.live | Privacy Policy</title>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3391223258091641"
+     crossorigin="anonymous"></script>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',sans-serif;background:#0f172a;color:#f1f5f9;line-height:1.8;}
-        header{background:rgba(15,23,42,0.95);backdrop-filter:blur(8px);padding:20px 5%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);}
-        .logo{display:flex;align-items:center;gap:15px;text-decoration:none;}
-        .logo img{height:45px;}
-        .logo h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fafafa;}
-        .container{padding:70px 8%;max-width:1000px;margin:auto;}
-        h2{font-family:'Playfair Display',serif;font-size:38px;margin-bottom:30px;text-align:center;}
-        h3{margin-top:40px;margin-bottom:15px;color:#ffffff;font-size:20px;}
-        p{color:#cbd5e1;font-size:16px;margin-bottom:15px;}
-        ul{margin-left:20px;color:#cbd5e1;}
-        li{margin-bottom:10px;}
-        footer{text-align:center;padding:30px;color:#64748b;font-size:14px;border-top:1px solid rgba(255,255,255,0.08);margin-top:60px;}
-        .footer-links{margin-bottom:15px;}
-        .footer-links a{color:#cbd5e1;margin:0 15px;text-decoration:none;font-weight:500;}
-        .footer-links a i{margin-right:6px;}
-        .footer-links a:hover{color:#dc2626;}
-    </style>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* ===== Base ===== */
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family:'Inter', sans-serif;background:#0d0f1c;color:#f0f0f0;line-height:1.8;overflow-x:hidden;}
+a {text-decoration:none;}
+
+/* ===== Header ===== */
+header {
+    position: sticky;
+    top:0;
+    z-index:1000;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 5%;
+    backdrop-filter:blur(10px);
+    background: rgba(15,15,40,0.85);
+    border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.logo {display:flex;align-items:center;gap:15px;}
+.logo img {height:50px;}
+.logo h1 {font-family:'Roboto Mono', monospace;font-weight:700;font-size:22px;color:#fff;}
+.live-badge {
+    background: linear-gradient(45deg,#ff4c4c,#ff6b6b);
+    padding:8px 18px;
+    border-radius:50px;
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    animation:pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow:0 0 0 0 rgba(255,76,76,0.6); }
+    70% { box-shadow:0 0 0 15px rgba(255,76,76,0); }
+    100% { box-shadow:0 0 0 0 rgba(255,76,76,0); }
+}
+
+/* ===== Title Blink ===== */
+</style>
+
+<script>
+// Blinking Title Effect
+let originalTitle = document.title;
+setInterval(() => {
+    if(document.title === originalTitle){
+        document.title = '🔴 LIVE — ' + originalTitle;
+    } else {
+        document.title = originalTitle;
+    }
+}, 800);
+</script>
+
+<style>
+/* ===== Content Container ===== */
+.container{
+    padding:70px 8%;
+    max-width:1000px;
+    margin:auto;
+}
+h2{text-align:center;font-family:'Roboto Mono', monospace;font-size:42px;margin-bottom:30px;color:#fff;text-shadow:0 0 20px #ff4c4c,0 0 30px #ff6b6b;}
+h3{margin-top:40px;margin-bottom:15px;color:#fff;font-size:20px;}
+p, ul, li{color:#cfd8fc;font-size:16px;margin-bottom:15px;}
+
+/* ===== Dashboard-style contact buttons ===== */
+.dashboard {
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+    gap:30px;
+    padding:50px 5%;
+}
+.card {
+    background: rgba(25,25,50,0.6);
+    backdrop-filter:blur(10px);
+    border-radius:20px;
+    padding:25px 20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transition:0.3s;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    text-align:center;
+    cursor:pointer;
+    color:#fff;
+}
+.card i {
+    font-size:40px;
+    color:#ff4c4c;
+    margin-bottom:12px;
+    transition:0.3s;
+}
+.card.blink i {
+    animation: pulse 1.5s infinite;
+}
+.card:hover {transform:translateY(-6px);box-shadow:0 20px 40px rgba(255,76,76,0.3);}
+.card:hover i {color:#ff6b6b;}
+.card span {margin-top:5px;font-weight:600;font-size:14px;color:#f0f0f0;}
+
+/* ===== Footer ===== */
+footer {
+    text-align:center;
+    padding:35px 5%;
+    font-size:14px;
+    color:#94a3b8;
+    border-top:1px solid rgba(255,255,255,0.05);
+}
+.footer-links {margin-bottom:15px;}
+.footer-links a {color:#cfd8fc;margin:0 15px;text-decoration:none;font-weight:500;}
+.footer-links a i {margin-right:6px;}
+.footer-links a:hover {color:#ff4c4c;}
+
+/* ===== Responsive ===== */
+@media(max-width:600px){
+    h2{font-size:32px;}
+    .dashboard{grid-template-columns: repeat(auto-fit,minmax(100px,1fr)); gap:20px;}
+}
+</style>
+
 </head>
 <body>
 
 <header>
     <a href="index.html" class="logo">
         <img src="logo.png" alt="Logo">
-        <h1>Nadeem Shahzad Fida (NS Fida)</h1>
+        <h1>livenews.live</h1>
     </a>
+    <div class="live-badge">Live</div>
 </header>
 
 <div class="container">
@@ -56,9 +160,6 @@
     </p>
 
     <h3>2. Use of Information</h3>
-    <p>
-        Collected information may be used to:
-    </p>
     <ul>
         <li>Improve website functionality and user experience</li>
         <li>Respond to inquiries or communications</li>
@@ -67,65 +168,70 @@
     </ul>
 
     <h3>3. Cookies</h3>
-    <p>
-        This website may use cookies to enhance user experience. Cookies are small data files stored on your device 
-        that help analyze web traffic and remember preferences. You may choose to disable cookies through your browser settings.
-    </p>
+    <p>This website may use cookies to enhance user experience. You may disable cookies through your browser settings.</p>
 
     <h3>4. Third-Party Services</h3>
     <p>
-        This website may use third-party services including, but not limited to, Google AdSense and analytics providers. 
-        These services may use cookies, web beacons, or similar technologies to display relevant advertisements 
-        and measure campaign effectiveness.
-    </p>
-
-    <p>
-        Third-party vendors, including Google, may use cookies to serve ads based on a user's prior visits to this website 
-        or other websites. Users may opt out of personalized advertising by visiting Google Ads Settings.
+        This website may use third-party services including Google AdSense and analytics providers. They may use cookies,
+        web beacons, or similar technologies to display relevant advertisements and measure campaign effectiveness.
     </p>
 
     <h3>5. External Links</h3>
     <p>
-        This website may contain links to external websites. We are not responsible for the privacy practices 
-        or content of those third-party sites. Users are encouraged to review the privacy policies of external websites separately.
+        This website may contain links to external websites. We are not responsible for the privacy practices of those sites.
     </p>
 
     <h3>6. Data Protection</h3>
     <p>
-        Reasonable administrative, technical, and physical safeguards are implemented to protect information 
-        from unauthorized access, alteration, disclosure, or destruction.
+        Reasonable safeguards are implemented to protect information from unauthorized access or disclosure.
     </p>
 
     <h3>7. Children's Information</h3>
     <p>
-        This website does not knowingly collect any personally identifiable information from children under the age of 13. 
-        If you believe that a child has provided personal information, please contact us for immediate removal.
+        This website does not knowingly collect personal information from children under 13.
     </p>
 
     <h3>8. Consent</h3>
     <p>
-        By using this website, you hereby consent to this Privacy Policy and agree to its terms.
+        By using this website, you consent to this Privacy Policy.
     </p>
 
     <h3>9. Updates to This Policy</h3>
     <p>
-        This Privacy Policy may be updated periodically. Any changes will be reflected on this page 
-        with an updated revision date.
+        This Privacy Policy may be updated periodically. Changes will be reflected on this page.
     </p>
 
     <h3>10. Contact Information</h3>
-    <p>
-        If you have any questions regarding this Privacy Policy, you may contact:
-    </p>
+</div>
 
-    <p>
-        <strong>Email:</strong> nadeemshahzadfida@outlook.com <br>
-        <strong>WhatsApp:</strong> +92 333 900 4564
-    </p>
+<!-- Dashboard-style Contact Buttons -->
+<section class="dashboard">
+    <a href="mailto:nadeemshahzadfida@outlook.com" class="card blink">
+        <i class="fa-solid fa-envelope"></i>
+        <span>Email</span>
+    </a>
+    <a href="https://wa.me/923339004564" target="_blank" class="card">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>WhatsApp</span>
+    </a>
+    <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" class="card">
+        <i class="fa-brands fa-facebook"></i>
+        <span>Facebook</span>
+    </a>
+    <a href="https://www.instagram.com/fidanadeemshahzad/reels/" target="_blank" class="card">
+        <i class="fa-brands fa-instagram"></i>
+        <span>Instagram</span>
+    </a>
+    <a href="https://www.tiktok.com/@nadeemshahzadfida" target="_blank" class="card">
+        <i class="fa-brands fa-tiktok"></i>
+        <span>TikTok</span>
+    </a>
+</section>
 
-    <p style="margin-top:30px;color:#94a3b8;font-size:14px;">
-        Last Updated: March 2026
-    </p>
+<div class="container" style="text-align:center;color:#94a3b8;margin-top:20px;">
+    <strong>Email:</strong> nadeemshahzadfida@outlook.com <br>
+    <strong>WhatsApp:</strong> +92 333 900 4564 <br><br>
+    <span style="font-size:14px;">Last Updated: March 2026</span>
 </div>
 
 <footer>
@@ -134,7 +240,7 @@
         <a href="about.html"><i class="fa-solid fa-user"></i>About</a>
         <a href="contact.html"><i class="fa-solid fa-envelope"></i>Contact</a>
     </div>
-    © 2026 Nadeem Shahzad Fida (NS Fida) | Official Website
+    © 2026 Live News by NSF | Official Website
 </footer>
 
 </body>
