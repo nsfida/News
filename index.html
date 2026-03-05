@@ -147,9 +147,10 @@ header {
     margin:50px 5%;
     border:1px solid rgba(255,255,255,0.05);
     backdrop-filter:blur(10px);
+    flex-wrap:wrap; /* allow wrapping on small screens */
 }
-.app-banner span {color:#f0f0f0; font-weight:600; margin-right:15px;}
-.app-banner a img {height:50px; transition:0.3s;}
+.app-banner span {color:#f0f0f0; font-weight:600; margin-right:15px; flex-basis:100%; text-align:center; margin-bottom:10px;}
+.app-banner a img {height:50px; max-width:100%; transition:0.3s;}
 .app-banner a img:hover {transform:scale(1.1);}
 
 /* ===== Footer ===== */
@@ -174,6 +175,8 @@ footer {
 @media(max-width:600px){
     .dashboard{grid-template-columns: repeat(auto-fit,minmax(100px,1fr)); gap:20px;}
     .hero h2 {font-size:32px;}
+    .app-banner {gap:15px; padding:20px 5%;}
+    .app-banner a img {height:45px;} /* smaller icons on mobile */
 }
 </style>
 
@@ -258,6 +261,28 @@ setInterval(() => {
     <a href="https://www.bbc.com/news" target="_blank" class="card">
         <i class="fa-solid fa-newspaper"></i>
         <span>BBC News</span>
+    </a>
+
+    <!-- Pakistani News -->
+    <a href="https://www.bbc.com/urdu" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>BBC Urdu</span>
+    </a>
+    <a href="https://www.express.pk/" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>Express News (Urdu)</span>
+    </a>
+    <a href="https://www.express.com.pk/" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>Express Newspaper (Urdu)</span>
+    </a>
+    <a href="https://www.geonewsurdu.tv/" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>Geo News (Urdu)</span>
+    </a>
+    <a href="https://urdu.arynews.tv/" target="_blank" class="card">
+        <i class="fa-solid fa-newspaper"></i>
+        <span>ARY News (Urdu)</span>
     </a>
 
     <!-- Epstein Files -->
