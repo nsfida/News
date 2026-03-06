@@ -30,6 +30,15 @@ setInterval(() => {
 }, 800);
 </script>
 
+<style>
+/* Increased size for LIVE CONFLICT DASHBOARD badge */
+.hero-badge {
+    font-size: 2.5rem; /* bigger text */
+    padding: 15px 30px; /* adjust padding to fit text */
+    display: inline-block;
+}
+</style>
+
 </head>
 <body>
 
@@ -38,19 +47,19 @@ setInterval(() => {
         <img src="logo.png" alt="Logo">
         <h1>livenews.live</h1>
     </a>
-    <div class="live-badge">Live</div>
+    <div class="live-badge">LIVE</div>
 
-    <!-- Collapsible Other List -->
-    <div class="other-list">
-        <span>Other ▼</span>
-        <ul>
-            <li><a href="Books/index.html" target="_self">Books</a></li>
-            <li><a href="KFC/index.html" target="_self">Khawrai Falahi Committee UAE</a></li>
-            <li><a href="https://www.pcr.ae" target="_self">Premium Car Rentals Dubai</a></li>
-            <li><a href="https://www.youtube.com/@NSFEntertainment" target="_self">YouTube (NSF Entertainment)</a></li>
-            <li><a href="Other/index.html" target="_self">Other News</a></li>
-        </ul>
-    </div>
+<!-- Collapsible Other List -->
+<div class="other-list">
+    <span>Other ▼</span>
+    <ul>
+        <li><a href="Books/index.html" target="_self"><i class="fa-solid fa-book"></i> Books</a></li>
+        <li><a href="KFC/index.html" target="_self"><i class="fa-solid fa-people-group"></i> Khawrai Falahi Committee UAE</a></li>
+        <li><a href="https://www.pcr.ae" target="_self"><i class="fa-solid fa-car"></i> Premium Car Rentals Dubai</a></li>
+        <li><a href="https://www.youtube.com/@NSFEntertainment" target="_self"><i class="fa-brands fa-youtube"></i> YouTube (NSF Entertainment)</a></li>
+        <li><a href="Other/index.html" target="_self"><i class="fa-solid fa-newspaper"></i> Other News</a></li>
+    </ul>
+</div>
 </header>
 
 <div class="ticker">
@@ -58,7 +67,7 @@ setInterval(() => {
 </div>
 
 <section class="hero">
-    <h2>Live Conflict Dashboard</h2>
+    <div class="live-badge hero-badge">LIVE CONFLICT DASHBOARD</div>
     <p>Click any icon below to track live developments instantly.</p>
     <div class="author">Updates by <strong>NSF</strong></div>
 </section>
