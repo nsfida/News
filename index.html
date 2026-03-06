@@ -15,173 +15,11 @@
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-/* ===== Base ===== */
-* {margin:0;padding:0;box-sizing:border-box;}
-body {font-family:'Inter', sans-serif; background:#0d0f1c; color:#f0f0f0; line-height:1.6; overflow-x:hidden;}
-a {text-decoration:none;}
-
-/* ===== Header ===== */
-header {
-    position: sticky;
-    top:0;
-    z-index:1000;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:20px 5%;
-    backdrop-filter:blur(10px);
-    background: rgba(15,15,40,0.85);
-    border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.logo {display:flex;align-items:center;gap:15px;}
-.logo img {height:50px;}
-.logo h1 {font-family:'Roboto Mono', monospace; font-weight:700; font-size:22px; color:#fff;}
-.live-badge {
-    background: linear-gradient(45deg,#ff4c4c,#ff6b6b);
-    padding:8px 18px;
-    border-radius:50px;
-    font-size:13px;
-    font-weight:700;
-    text-transform:uppercase;
-    animation:pulse 1.5s infinite;
-}
-@keyframes pulse {
-    0% { box-shadow:0 0 0 0 rgba(255,76,76,0.6); }
-    70% { box-shadow:0 0 0 15px rgba(255,76,76,0); }
-    100% { box-shadow:0 0 0 0 rgba(255,76,76,0); }
-}
-
-/* ===== Ticker ===== */
-.ticker {
-    background: #121424;
-    color:#f0f0f0;
-    font-weight:500;
-    padding:10px 5%;
-    overflow:hidden;
-    white-space:nowrap;
-    border-top:1px solid rgba(255,255,255,0.05);
-    border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.ticker span {
-    display:inline-block;
-    padding-left:100%;
-    animation:scroll 20s linear infinite;
-}
-@keyframes scroll {
-    0%{transform:translateX(0);} 
-    100%{transform:translateX(-100%);}
-}
-
-/* ===== Hero ===== */
-.hero {
-    text-align:center;
-    padding:80px 5% 50px;
-}
-.hero h2 {
-    font-family:'Roboto Mono', monospace;
-    font-size:42px;
-    font-weight:700;
-    color:#fff;
-    margin-bottom:15px;
-    text-shadow:0 0 20px #ff4c4c,0 0 30px #ff6b6b;
-}
-.hero p {
-    font-size:18px;
-    color:#cfd8fc;
-    max-width:700px;
-    margin:auto;
-}
-.author {margin-top:12px;color:#94a3b8;font-size:14px;}
-
-/* ===== Dashboard Grid ===== */
-.dashboard {
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
-    gap:30px;
-    padding:50px 5%;
-}
-.card {
-    background: rgba(25,25,50,0.6);
-    backdrop-filter:blur(10px);
-    border-radius:20px;
-    padding:25px 20px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    transition:0.3s;
-    box-shadow:0 10px 30px rgba(0,0,0,0.5);
-    text-align:center;
-}
-.card:hover {
-    transform:translateY(-6px);
-    box-shadow:0 20px 40px rgba(255,76,76,0.3);
-}
-.card i {
-    font-size:40px;
-    color:#ff4c4c;
-    margin-bottom:12px;
-    transition:0.3s;
-}
-.card.blink i {
-    animation: pulse 1.5s infinite;
-}
-.card:hover i {color:#ff6b6b;}
-.card span {
-    margin-top:5px;
-    font-weight:600;
-    font-size:14px;
-    color:#f0f0f0;
-}
-
-/* ===== App Banner ===== */
-.app-banner {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:25px;
-    padding:30px 5%;
-    background: rgba(15,15,40,0.6);
-    border-radius:20px;
-    margin:50px 5%;
-    border:1px solid rgba(255,255,255,0.05);
-    backdrop-filter:blur(10px);
-    flex-wrap:wrap; /* allow wrapping on small screens */
-}
-.app-banner span {color:#f0f0f0; font-weight:600; margin-right:15px; flex-basis:100%; text-align:center; margin-bottom:10px;}
-.app-banner a img {height:50px; max-width:100%; transition:0.3s;}
-.app-banner a img:hover {transform:scale(1.1);}
-
-/* ===== Footer ===== */
-footer {
-    text-align:center;
-    padding:35px 5%;
-    font-size:14px;
-    color:#94a3b8;
-    border-top:1px solid rgba(255,255,255,0.05);
-}
-.footer-links {margin-bottom:15px;}
-.footer-links a {
-    color:#cfd8fc;
-    margin:0 15px;
-    text-decoration:none;
-    font-weight:500;
-}
-.footer-links a i {margin-right:6px;}
-.footer-links a:hover {color:#ff4c4c;}
-
-/* ===== Responsive ===== */
-@media(max-width:600px){
-    .dashboard{grid-template-columns: repeat(auto-fit,minmax(100px,1fr)); gap:20px;}
-    .hero h2 {font-size:32px;}
-    .app-banner {gap:15px; padding:20px 5%;}
-    .app-banner a img {height:45px;} /* smaller icons on mobile */
-}
-</style>
+<!-- Main Stylesheet -->
+<link rel="stylesheet" href="style.css">
 
 <script>
-// Blinking Title Effect (like Live badge)
+// Blinking Title Effect
 let originalTitle = document.title;
 setInterval(() => {
     if(document.title === originalTitle){
@@ -201,6 +39,18 @@ setInterval(() => {
         <h1>livenews.live</h1>
     </a>
     <div class="live-badge">Live</div>
+
+    <!-- Collapsible Other List -->
+    <div class="other-list">
+        <span>Other ▼</span>
+        <ul>
+            <li><a href="Books/index.html" target="_self">Books</a></li>
+            <li><a href="KFC/index.html" target="_self">Khawrai Falahi Committee UAE</a></li>
+            <li><a href="https://www.pcr.ae" target="_self">Premium Car Rentals Dubai</a></li>
+            <li><a href="https://www.youtube.com/@NSFEntertainment" target="_self">YouTube (NSF Entertainment)</a></li>
+            <li><a href="Other/index.html" target="_self">Other News</a></li>
+        </ul>
+    </div>
 </header>
 
 <div class="ticker">
@@ -215,98 +65,123 @@ setInterval(() => {
 
 <section class="dashboard">
 
-    <!-- Conflict Maps -->
-    <a href="https://iran.liveuamap.com/" target="_blank" class="card blink">
-        <i class="fa-solid fa-map-location-dot"></i>
-        <span>Iran Live Map</span>
-    </a>
-    <a href="https://liveuamap.com/" target="_blank" class="card">
-        <i class="fa-solid fa-globe"></i>
-        <span>Global Map</span>
-    </a>
-    <a href="https://syria.liveuamap.com/" target="_blank" class="card">
-        <i class="fa-solid fa-mountain-city"></i>
-        <span>Syria Map</span>
-    </a>
-    <a href="https://israelpalestine.liveuamap.com/" target="_blank" class="card">
-        <i class="fa-solid fa-flag"></i>
-        <span>Israel-Palestine</span>
-    </a>
+<a href="https://iran.liveuamap.com/" target="_self" class="card blink">
+<i class="fa-solid fa-map-location-dot"></i>
+<span>Iran Live Map</span>
+</a>
 
-    <!-- Flight Tracking -->
-    <a href="https://www.flightradar24.com/" target="_blank" class="card">
-        <i class="fa-solid fa-plane"></i>
-        <span>Flight Radar</span>
-    </a>
-    <a href="https://globe.adsbexchange.com/" target="_blank" class="card">
-        <i class="fa-solid fa-satellite-dish"></i>
-        <span>ADS-B Exchange</span>
-    </a>
+<a href="https://liveuamap.com/" target="_self" class="card">
+<i class="fa-solid fa-globe"></i>
+<span>Global Map</span>
+</a>
 
-    <!-- Naval Tracking -->
-    <a href="https://www.marinetraffic.com/" target="_blank" class="card">
-        <i class="fa-solid fa-ship"></i>
-        <span>Marine Traffic</span>
-    </a>
+<a href="https://syria.liveuamap.com/" target="_self" class="card">
+<i class="fa-solid fa-mountain-city"></i>
+<span>Syria Map</span>
+</a>
 
-    <!-- Global News -->
-    <a href="https://www.aljazeera.com/" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>Al Jazeera</span>
-    </a>
-    <a href="https://www.reuters.com/world/" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>Reuters</span>
-    </a>
-    <a href="https://www.bbc.com/news" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>BBC News</span>
-    </a>
+<a href="https://israelpalestine.liveuamap.com/" target="_self" class="card">
+<i class="fa-solid fa-flag"></i>
+<span>Israel-Palestine</span>
+</a>
 
-    <!-- Pakistani News -->
-    <a href="https://www.bbc.com/urdu" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>BBC Urdu</span>
-    </a>
-    <a href="https://www.express.pk/" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>Express News (Urdu)</span>
-    </a>
-    <a href="https://www.express.com.pk/" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>Express Newspaper (Urdu)</span>
-    </a>
-    <a href="https://www.geonewsurdu.tv/" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>Geo News (Urdu)</span>
-    </a>
-    <a href="https://urdu.arynews.tv/" target="_blank" class="card">
-        <i class="fa-solid fa-newspaper"></i>
-        <span>ARY News (Urdu)</span>
-    </a>
+<a href="https://www.flightradar24.com/" target="_self" class="card">
+<i class="fa-solid fa-plane"></i>
+<span>Flight Radar</span>
+</a>
 
-    <!-- Epstein Files -->
-    <a href="https://jmail.world" target="_blank" class="card">
-        <i class="fa-solid fa-file-lines"></i>
-        <span>Epstein Files</span>
-    </a>
+<a href="https://globe.adsbexchange.com/" target="_self" class="card">
+<i class="fa-solid fa-satellite-dish"></i>
+<span>ADS-B Exchange</span>
+</a>
+
+<a href="https://www.marinetraffic.com/" target="_self" class="card">
+<i class="fa-solid fa-ship"></i>
+<span>Marine Traffic</span>
+</a>
+
+<a href="https://www.aljazeera.com/" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>Al Jazeera</span>
+</a>
+
+<a href="https://www.reuters.com/world/" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>Reuters</span>
+</a>
+
+<a href="https://www.bbc.com/news" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>BBC News</span>
+</a>
+
+<a href="https://www.bbc.com/urdu" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>BBC Urdu</span>
+</a>
+
+<a href="https://www.express.pk/" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>Express News (Urdu)</span>
+</a>
+
+<a href="https://www.express.com.pk/" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>Express Newspaper (Urdu)</span>
+</a>
+
+<a href="https://www.geonewsurdu.tv/" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>Geo News (Urdu)</span>
+</a>
+
+<a href="https://urdu.arynews.tv/" target="_self" class="card">
+<i class="fa-solid fa-newspaper"></i>
+<span>ARY News (Urdu)</span>
+</a>
+
+<a href="https://jmail.world" target="_self" class="card">
+<i class="fa-solid fa-file-lines"></i>
+<span>Epstein Files</span>
+</a>
 
 </section>
 
 <div class="app-banner">
-    <span>App Coming Soon:</span>
-    <a href="#"><img src="https://iran.liveuamap.com/images/appstore.svg" alt="iOS App"></a>
-    <a href="#"><img src="https://iran.liveuamap.com/images/googleplay.svg" alt="Android App"></a>
+<span>App Coming Soon:</span>
+<a href="#" target="_self"><img src="https://iran.liveuamap.com/images/appstore.svg" alt="iOS App"></a>
+<a href="#" target="_self"><img src="https://iran.liveuamap.com/images/googleplay.svg" alt="Android App"></a>
 </div>
 
 <footer>
-    <div class="footer-links">
-        <a href="about.html"><i class="fa-solid fa-user"></i>About</a>
-        <a href="contact.html"><i class="fa-solid fa-envelope"></i>Contact</a>
-        <a href="privacy.html"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
-    </div>
-    © 2026 Live News by NSF | Independent Live Conflict Reporting
+<div class="footer-links">
+<a href="about.html" target="_self"><i class="fa-solid fa-user"></i>About</a>
+<a href="contact.html" target="_self"><i class="fa-solid fa-envelope"></i>Contact</a>
+<a href="privacy.html" target="_self"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
+</div>
+© 2026 Live News by NSF | Independent Live Conflict Reporting
 </footer>
+
+<!-- Script for collapsible Other list -->
+<script>
+const otherSpan = document.querySelector('.other-list span');
+const otherMenu = document.querySelector('.other-list ul');
+
+otherSpan.addEventListener('click', () => {
+    if(otherMenu.style.display === 'block'){
+        otherMenu.style.display = 'none';
+    } else {
+        otherMenu.style.display = 'block';
+    }
+});
+
+// Optional: close the menu if clicked outside
+document.addEventListener('click', function(event){
+    if(!event.target.closest('.other-list')){
+        otherMenu.style.display = 'none';
+    }
+});
+</script>
 
 </body>
 </html>
