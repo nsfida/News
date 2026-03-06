@@ -31,12 +31,38 @@ setInterval(() => {
 </script>
 
 <style>
+
 /* Increased size for LIVE CONFLICT DASHBOARD badge */
 .hero-badge {
-    font-size: 2.5rem; /* bigger text */
-    padding: 15px 30px; /* adjust padding to fit text */
+    font-size: 2.5rem;
+    padding: 15px 30px;
     display: inline-block;
 }
+
+/* UAE Guide pinned badge */
+.uae-guide {
+    width:100%;
+    text-align:center;
+    background:#ffcc00;
+    padding:12px;
+    font-weight:600;
+    font-size:1rem;
+    border-bottom:3px solid #e0a800;
+}
+
+.uae-guide a{
+    color:#000;
+    text-decoration:none;
+}
+
+.uae-guide i{
+    margin-right:8px;
+}
+
+.uae-guide:hover{
+    background:#ffd633;
+}
+
 </style>
 
 </head>
@@ -55,12 +81,20 @@ setInterval(() => {
     <ul>
         <li><a href="Books/index.html" target="_self"><i class="fa-solid fa-book"></i> Books</a></li>
         <li><a href="KFC/index.html" target="_self"><i class="fa-solid fa-people-group"></i> Khawrai Falahi Committee UAE</a></li>
-        <li><a href="https://www.pcr.ae" target="_self"><i class="fa-solid fa-car"></i> Premium Car Rentals Dubai</a></li>
+        <li><a href="https://www.pcr.ae" target="_self"><i class="fa-solid fa-car-side"></i> Premium Car Rentals Dubai</a></li>
         <li><a href="https://www.youtube.com/@NSFEntertainment" target="_self"><i class="fa-brands fa-youtube"></i> YouTube (NSF Entertainment)</a></li>
         <li><a href="Other/index.html" target="_self"><i class="fa-solid fa-newspaper"></i> Other News</a></li>
     </ul>
 </div>
 </header>
+
+<!-- UAE Guide Pinned Badge -->
+<div class="uae-guide">
+<a href="UAE_Guide.pdf" target="_self">
+<i class="fa-solid fa-triangle-exclamation"></i>
+UAE Guide during current conflict for UAE Residence
+</a>
+</div>
 
 <div class="ticker">
     <span>Live Global Conflict Updates — Verified real-time reporting & strategy insights.</span>
@@ -184,7 +218,6 @@ otherSpan.addEventListener('click', () => {
     }
 });
 
-// Optional: close the menu if clicked outside
 document.addEventListener('click', function(event){
     if(!event.target.closest('.other-list')){
         otherMenu.style.display = 'none';
