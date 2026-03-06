@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neerang‑E‑Hikmat | Books | NSF Live News</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Main Stylesheet -->
+<link rel="stylesheet" href="../style.css">
+
+<style>
+/* --- Thumbnail Book Layout --- */
+.book-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 40px 5%;
+}
+
+.book-card {
+    display: flex;
+    background: rgba(25,25,50,0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: 0.3s;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(255,76,76,0.3);
+}
+
+.book-card img {
+    width: 180px;
+    height: auto;
+    object-fit: cover;
+    border-radius: 0 0 0 20px;
+}
+
+.book-info {
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.book-info h3 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.book-info p {
+    font-size: 15px;
+    color: #cfd8fc;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+.book-links {
+    display: flex;
+    gap: 15px;
+}
+
+.book-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15,15,40,0.85);
+    color: #f0f0f0;
+    padding: 10px;
+    border-radius: 10px;
+    transition: 0.3s;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.book-links a i {
+    margin-right: 6px;
+}
+
+.book-links a:hover {
+    background: rgba(255,76,76,0.2);
+    color: #ff6b6b;
+}
+
+/* Responsive */
+@media(max-width:700px){
+    .book-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .book-card img {
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .book-links {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+</style>
+
+</head>
+<body>
+
+<header>
+    <a href="../index.html" class="logo">
+        <img src="../logo.png" alt="Logo">
+        <h1>livenews.live</h1>
+    </a>
+
+    <!-- Collapsible Other List -->
+    <div class="other-list">
+        <span>Other ▼</span>
+        <ul>
+            <li><a href="../Books/index.html" target="_self">Books Home</a></li>
+            <li><a href="../KFC/index.html" target="_self">Khawrai Falahi Committee UAE</a></li>
+            <li><a href="https://www.pcr.ae" target="_self">Premium Car Rentals Dubai</a></li>
+            <li><a href="https://www.youtube.com/@NSFEntertainment" target="_self">YouTube</a></li>
+            <li><a href="../Other/index.html" target="_self">Other News</a></li>
+        </ul>
+    </div>
+</header>
+
+<section class="hero" style="padding:40px 5%;">
+    <h2>Books – Neerang‑E‑Hikmat</h2>
+    <p>Explore deep spiritual wisdom, Islamic philosophy, and reflections on existence and divine purpose.</p>
+</section>
+
+<section class="book-list">
+
+    <!-- Single Book Thumbnail Card -->
+    <div class="book-card">
+        <img src="image1.png" alt="Neerang‑E‑Hikmat Cover">
+        <div class="book-info">
+            <div>
+                <h3>Neerang‑E‑Hikmat</h3>
+                <p>
+                    <strong>Author:</strong> Nadeem Shahzad Fida<br>
+                    <strong>Description:</strong> This Urdu work blends Islamic wisdom, spirituality, and philosophical thought. 
+                    It explores the Oneness of Allah, mysteries of existence, and the soul’s relationship with the Creator, awakening both heart and intellect.
+                </p>
+            </div>
+            <div class="book-links">
+                <a href="https://papercraftpublishers.com/product/neerang-e-hikmat/?srsltid=AfmBOopWo_dNVmftqlpMN6l5mUNOAcHhhGtZaEtvH3Kl5AcEFkodE96p" target="_self">
+                    <i class="fa-solid fa-cart-plus"></i>Papercraft
+                </a>
+                <a href="https://www.daraz.pk/products/neerang-e-hikmat-i780255035.html" target="_self">
+                    <i class="fa-solid fa-cart-arrow-down"></i>Daraz.pk
+                </a>
+                <a href="https://heyzine.com/flip-book/e5df7ca16c.html" target="_self">
+                    <i class="fa-solid fa-book-open"></i>Read Free
+                </a>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<footer>
+    <div class="footer-links">
+        <a href="../about.html" target="_self"><i class="fa-solid fa-user"></i>About</a>
+        <a href="../contact.html" target="_self"><i class="fa-solid fa-envelope"></i>Contact</a>
+        <a href="../privacy.html" target="_self"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
+    </div>
+    © 2026 Live News by NSF | Independent Live Conflict Reporting
+</footer>
+
+<script>
+// Toggle for Other List
+const otherSpan = document.querySelector('.other-list span');
+const otherMenu = document.querySelector('.other-list ul');
+
+otherSpan.addEventListener('click', () => {
+    otherMenu.style.display = otherMenu.style.display === 'block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', function(event){
+    if(!event.target.closest('.other-list')){
+        otherMenu.style.display = 'none';
+    }
+});
+</script>
+
+</body>
+</html>
