@@ -1,1 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Khawrai Falahi Committee UAE</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Calibri', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #416ba5;
+            padding: 20px;
+        }
+
+        .form-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-title img {
+            width: 50px;
+            margin-right: 10px;
+        }
+
+        .logo-title h2 {
+            font-size: 22px;
+            color: #1976d2;
+            font-weight: bold;
+        }
+
+        .uae-text {
+            font-family: 'Calibri', sans-serif;
+            font-size: 18px;
+            color: #1976d2;
+            margin-top: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #555;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 20px;
+            border-radius: 50px;
+            border: 1.5px solid #ddd;
+            font-size: 13px;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: #1976d2;
+            color: white;
+            padding: 5px 20px;
+            font-size: 15px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #a9d0f5;
+            cursor: not-allowed;
+        }
+
+        button:hover:enabled {
+            background-color: #125fa6;
+        }
+
+        #resultContainer {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: -20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 4px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        .active {
+            color: green;
+            font-weight: bold;
+        }
+
+        .cancel {
+            color: red;
+            font-weight: bold;
+        }
+
+        .no-data {
+            color: red;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #555;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        footer a {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media print {
+            .form-container {
+                display: none;
+            }
+
+            footer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-title">
+        <img src="logo.png" alt="Logo">
+        <div>
+            <h2>Khawrai Falahi Committee UAE</h2>
+            <p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+        </div>
+    </div>
+    <div class="form-container">
+        <label for="searchField">Search By:</label>
+        <select id="searchField">
+            <option value="name">Member Name</option>
+            <option value="Desg">Designation</option>
+            <option value="BG">Blood Type</option>
+            <option value="mobile">Mobile Number</option>
+            <option value="CNo">e-Card Number</option>
+            <option value="Status">e-Card Status</option>
+            <option value="Room">Room Number</option>
+            <option value="Issue">e-Card Issue Date</option>
+        </select>
+        <label for="searchInput">Enter Search Term:</label>
+        <input type="text" id="searchInput" placeholder="Search Term">
+        <div class="buttons-container">
+            <button id="searchButton" disabled>Search</button>
+            <button id="printButton" disabled>Print Results</button>
+            <button id="generateButton">New e-Card</button>
+            <button id="existingButton">Existing e-Cards</button>
+            <button id="englishConstitution">Constitution (English)</button>
+            <button id="urduConstitution">Constitution (اردو)</button>
+        </div>
+    </div>
+
+    <div id="resultContainer"></div>
+
+    <footer>
+        <p>Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a></p>
+    </footer>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const printButton = document.getElementById('printButton');
+        const generateButton = document.getElementById('generateButton');
+        const existingButton = document.getElementById('existingButton');
+        const englishConstitutionButton = document.getElementById('englishConstitution');
+        const urduConstitutionButton = document.getElementById('urduConstitution');
+        const resultContainer = document.getElementById('resultContainer');
+
+        const data = [
+{ name: "Muhammad Rizwan Sultan Muhammad", Desg: "President", CNo: "746-210-001", BG: "A+", mobile: "+971557353212", Status: "Active", Room: "Room 01 (Arbab Rizwan)", Issue: "08-06-2022" },
+{ name: "Raj Zameer", Desg: "Committee Guardian", CNo: "746-210-002", BG: "B+", mobile: "+971561404948", Status: "Active", Room: "Room - (-)", Issue: "08-06-2022" },
+{ name: "Niaz Ali Khattak", Desg: "Committee Guardian", CNo: "746-210-003", BG: "AB+", mobile: "+971563603698", Status: "Active", Room: "Room 07 (Niaz Ali Khattak)", Issue: "08-06-2022" },
+{ name: "Zahir Rehman", Desg: "Committee Guardian", CNo: "746-210-004", BG: "B+", mobile: "+971524259701", Status: "Active", Room: "Room - (-)", Issue: "08-06-2022" },
+{ name: "Muhammad Hayat Khan Khurshid Khan", Desg: "Committee Guardian (Ex-President)", CNo: "746-210-005", BG: "O+", mobile: "+971545856851", Status: "Active", Room: "Room 02 (Nawar Khan)", Issue: "13-06-2022" },
+{ name: "Ahmad Aman Khattak", Desg: "Acting President", CNo: "746-210-006", BG: "B+", mobile: "+971527002089", Status: "Active", Room: "Room 05 (Shehzad Khan)", Issue: "08-06-2022" },
+{ name: "Salar Khan", Desg: "Vice President", CNo: "746-210-007", BG: "A+", mobile: "+971588840090", Status: "Active", Room: "Room - (-)", Issue: "08-06-2022" },
+{ name: "Naveed Ali Khattak", Desg: "Finance Manager", CNo: "746-210-008", BG: "B-", mobile: "+971529297289", Status: "Active", Room: "Room 03 (Zahir Rahman)", Issue: "08-06-2022" },
+{ name: "Sajid Bakhtiar Khattak", Desg: "Committee Member", CNo: "746-210-009", BG: "A-", mobile: "+971528801877", Status: "Active", Room: "Room - (-)", Issue: "08-06-2022" },
+{ name: "Kawesh Khan", Desg: "Committee Member", CNo: "746-210-010", BG: "A+", mobile: "+971558050837", Status: "Active", Room: "Room - (-)", Issue: "08-06-2022" },
+{ name: "Nadeem Shahzad Fida Fida Ul Haq", Desg: "Media Manager", CNo: "746-210-011", BG: "O+", mobile: "+971559216280", Status: "Active", Room: "Room 04 (Amjad Ali)", Issue: "08-06-2022" },
+{ name: "Yasir Waiz Khattak", Desg: "Committee Member", CNo: "746-210-012", BG: "B+", mobile: "+971555230034", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Hazrat Hussain", Desg: "Joint Media Secretory (Abu Dhabi)", CNo: "746-210-013", BG: "B+", mobile: "+971545392892", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Amjad Iqbal Saida Gul", Desg: "Committee Member", CNo: "746-210-014", BG: "A+", mobile: "+971556287268", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Nadeem Khalid", Desg: "Committee Member", CNo: "746-210-015", BG: "A+", mobile: "+971555946599", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Nabeel Ahmed Sufaid Gul", Desg: "Committee Member", CNo: "746-210-016", BG: "AB-", mobile: "+971509243591", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Khizar Hayat", Desg: "Committee Member", CNo: "746-210-017", BG: "O-", mobile: "+971554662078", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shabir Ahmed Ajab Khan", Desg: "Committee Member", CNo: "746-210-018", BG: "AB-", mobile: "+971556765719", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Fazal Qadeer Fazal Qadeer", Desg: "Committee Member", CNo: "746-210-019", BG: "B+", mobile: "+971589930380", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Munir Khan Sultan Muhammad", Desg: "Committee Member", CNo: "746-210-020", BG: "O+", mobile: "+971554055229", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Sabir Ali Akbar Ali", Desg: "Joint Finance Secretory", CNo: "746-210-021", BG: "A+", mobile: "+971522707400", Status: "Active", Room: "Room 06 (Ameer Zaman)", Issue: "-" },
+{ name: "Shehzad Khan Nowsherwan", Desg: "Committee Member", CNo: "746-210-022", BG: "A+", mobile: "+971526261185", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Abdul Hadi", Desg: "Committee Member", CNo: "746-210-023", BG: "O+", mobile: "+971557167247", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Iftikhar Ahmed Khattak", Desg: "Committee Member", CNo: "746-210-024", BG: "A-", mobile: "+971555131193", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Naveed Zaman Mir Zaman", Desg: "Committee Member", CNo: "746-210-025", BG: "O+", mobile: "+971565626064", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Imran Khan", Desg: "Committee Member", CNo: "746-210-026", BG: "O+", mobile: "+923355852532", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Moin Ali Niaz Ali", Desg: "Committee Member", CNo: "746-210-027", BG: "B+", mobile: "+971521219832", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Muazam Ali Nawaz Khan", Desg: "Committee Member", CNo: "746-210-028", BG: "A+", mobile: "+971551157270", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Danial Sami Sami Ul Haq", Desg: "Committee Member", CNo: "746-210-029", BG: "B-", mobile: "+971526693921", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Abdul Moeez", Desg: "Committee Member", CNo: "746-210-030", BG: "B+", mobile: "+971528998103", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Uzair Ahmad Aman Khan", Desg: "Committee Member", CNo: "746-210-031", BG: "A-", mobile: "+971561082365", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Mehran Rizwan Muhammad Rizwan", Desg: "Committee Member", CNo: "746-210-032", BG: "A+", mobile: "+971503947724", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Tajbar Gul Nazeer Gul", Desg: "Committee Member", CNo: "746-210-033", BG: "AB+", mobile: "+971586529192", Status: "Active", Room: "Room 01 (Arbab Rizwan)", Issue: "09-06-2022" },
+{ name: "Inam Ullah Raz Wali Khan", Desg: "Committee Member", CNo: "746-210-034", BG: "O+", mobile: "+971524628306", Status: "Active", Room: "Room 01 (Arbab Rizwan)", Issue: "09-06-2022" },
+{ name: "Ijaz Hussain Noor Hussain", Desg: "Committee Member", CNo: "746-210-035", BG: "O+", mobile: "+971523730046", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Waseem Khan Talizar", Desg: "Committee Member", CNo: "746-210-036", BG: "A+", mobile: "+971568815371", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Parviz Khan Ghulam Muhammad", Desg: "Committee Member", CNo: "746-210-037", BG: "N/A", mobile: "+971558538977", Status: "Active", Room: "Room 01 (Arbab Rizwan)", Issue: "09-06-2022" },
+{ name: "Ihrar Ahmad Murad Shah", Desg: "Committee Member", CNo: "746-210-038", BG: "O+", mobile: "+971545239803", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Lal Daraz Khan Gul Daraz Khan", Desg: "Committee Member", CNo: "746-210-039", BG: "B+", mobile: "+971506476048", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Amjad Ali Abdul Aziz", Desg: "General Secretory", CNo: "746-210-040", BG: "B+", mobile: "+971522750633", Status: "Active", Room: "Room 04 (Amjad Ali)", Issue: "-" },
+{ name: "Abdur Rehman Abdul Aziz", Desg: "Committee Member", CNo: "746-210-041", BG: "B+", mobile: "+971507852710", Status: "Active", Room: "Room 04 (Amjad Ali)", Issue: "-" },
+{ name: "Noshad Ali Ghulam Ali", Desg: "Committee Member", CNo: "746-210-042", BG: "O+", mobile: "+971552926327", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Faheed Khan Madad Khan", Desg: "Committee Member", CNo: "746-210-043", BG: "A+", mobile: "+971507210292", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shakir Nawaz Fazal Subhan", Desg: "Committee Member", CNo: "746-210-044", BG: "A+", mobile: "+971583081262", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Aziz Ur Rehman", Desg: "Committee Member", CNo: "746-210-045", BG: "B+", mobile: "+971526566840", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ali Zaman Shams Ul Wahab", Desg: "Committee Member", CNo: "746-210-046", BG: "B+", mobile: "+971566317764", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Yar Gul Mamrais Khan", Desg: "Committee Member", CNo: "746-210-047", BG: "A+", mobile: "+971524456319", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Kamil Haj Haj Muhammad Khan", Desg: "Committee Member", CNo: "746-210-048", BG: "O+", mobile: "+971544853442", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Hameed Ullah Rizwan", Desg: "Committee Member", CNo: "746-210-049", BG: "A+", mobile: "+971566532095", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Mehran Ali Mukhtyar", Desg: "Committee Member", CNo: "746-210-050", BG: "N/A", mobile: "+971563018545", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Tehsin Ullah Khan Karamat Shah", Desg: "Committee Member", CNo: "746-210-051", BG: "O-", mobile: "+971567689188", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Asad Ali Pir Ali Shah", Desg: "Committee Member", CNo: "746-210-052", BG: "N/A", mobile: "+971562578478", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Majid Khan Bakhtiar Khan Khattak", Desg: "Committee Member", CNo: "746-210-053", BG: "A-", mobile: "+971557894035", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Sheraz Khan Khan Bahadur", Desg: "Committee Member", CNo: "746-210-054", BG: "A+", mobile: "+971555347163", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shafi ur Rehman Umar Khan", Desg: "Committee Member", CNo: "746-210-055", BG: "AB+", mobile: "+971509932709", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Ilyas Khan Abbas Khan", Desg: "Committee Member", CNo: "746-210-056", BG: "N/A", mobile: "+971555751978", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Afzal Aman Khattak", Desg: "Committee Member", CNo: "746-210-057", BG: "O+", mobile: "+971521617086", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ajmal Khan Fateh Khan", Desg: "Committee Member", CNo: "746-210-058", BG: "A-", mobile: "+971529020154", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Raheel Khan Gul Zada", Desg: "Committee Member", CNo: "746-210-059", BG: "N/A", mobile: "+971505897109", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Hamid Muhammad Ghulam Muhammad Khan", Desg: "Committee Member", CNo: "746-210-060", BG: "N/A", mobile: "+971503057287", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Jawad Amir Khattak", Desg: "Committee Member", CNo: "746-210-061", BG: "A-", mobile: "+971568511921", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Asad Khan Hameed Khan", Desg: "Committee Member", CNo: "746-210-062", BG: "A+", mobile: "+971545720927", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Mushahid Ali Johar Ali", Desg: "Committee Member", CNo: "746-210-063", BG: "N/A", mobile: "+971544461527", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Haseeb Ali", Desg: "Committee Member", CNo: "746-210-064", BG: "N/A", mobile: "+971561081956", Status: "Active", Room: "Room 01 (Arbab Rizwan)", Issue: "10-06-2022" },
+{ name: "Mohsin Ali", Desg: "Committee Member", CNo: "746-210-065", BG: "A+", mobile: "+971561217524", Status: "Active", Room: "Room 01 (Arbab Rizwan)", Issue: "10-06-2022" },
+{ name: "Mushtaq Khan Sharif Khan", Desg: "Committee Member", CNo: "746-210-066", BG: "A-", mobile: "+971569827026", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Asif Ali Nawaz Khan", Desg: "Committee Member", CNo: "746-210-067", BG: "A+", mobile: "+971501298510", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Waseem Akram Ajmir Khan", Desg: "Committee Member", CNo: "746-210-068", BG: "A+", mobile: "+971501213551", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Mushtaq Ali", Desg: "Committee Member", CNo: "746-210-069", BG: "A+", mobile: "+971501801968", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Hamid Jangriz Muhammad Jangriz Khan", Desg: "Committee Member", CNo: "746-210-070", BG: "AB+", mobile: "+971564780758", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Zakir Ullah Muhammad Amin", Desg: "Committee Member", CNo: "746-210-071", BG: "N/A", mobile: "+971522250159", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Nasir Muhammad Khan Muhammad", Desg: "Committee Member", CNo: "746-210-072", BG: "N/A", mobile: "+971557791912", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Gul Rehman", Desg: "Committee Member", CNo: "746-210-073", BG: "N/A", mobile: "+971563718685", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Said Rahman Said Ali Khan", Desg: "Committee Member", CNo: "746-210-074", BG: "O+", mobile: "+971583048153", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ikram Ullah Khan Zahoor Khan", Desg: "Committee Member", CNo: "746-210-075", BG: "A+", mobile: "+971506028615", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Javed Khan Khurshid Khan", Desg: "Committee Member", CNo: "746-210-076", BG: "B+", mobile: "+971582072958", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Nadeem", Desg: "Committee Member", CNo: "746-210-077", BG: "B+", mobile: "+923359535915", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Nafees Ur Rehman Ali Rehman", Desg: "Committee Member", CNo: "746-210-078", BG: "B+", mobile: "+923355504671", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Wasil Khan", Desg: "Committee Member", CNo: "746-210-079", BG: "N/A", mobile: "+971588572983", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shah Hussain Said Amin", Desg: "Committee Member", CNo: "746-210-080", BG: "N/A", mobile: "+923355504671", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Amjad Khan Muhammad Aslam Khan", Desg: "Committee Member", CNo: "746-210-081", BG: "N/A", mobile: "+971569333480", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Kashif Khan Sharif Khan", Desg: "Committee Member", CNo: "746-210-082", BG: "N/A", mobile: "+971558065956", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Irshad Ali", Desg: "Committee Member", CNo: "746-210-083", BG: "AB+", mobile: "+971586755839", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shah Daraz Khan Gul Daraz Khan", Desg: "Committee Member", CNo: "746-210-084", BG: "B+", mobile: "+971527015473", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Abdul Baseer Kaseer Khan", Desg: "Committee Member", CNo: "746-210-085", BG: "N/A", mobile: "+971581062599", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Rahman Ahmad Sar Zamin Khan", Desg: "Committee Member", CNo: "746-210-086", BG: "N/A", mobile: "+971567611825", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Raza Muhammad Sharif", Desg: "Committee Member", CNo: "746-210-087", BG: "O+", mobile: "+971524150165", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Ibrar Jehanzed Khan", Desg: "Committee Member", CNo: "746-210-088", BG: "B+", mobile: "+971566616559", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ubaid Ullah Sartaj", Desg: "Committee Member", CNo: "746-210-089", BG: "N/A", mobile: "+971569660194", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Zia Ul Haq Jehan Sharif", Desg: "Committee Member", CNo: "746-210-090", BG: "O+", mobile: "+971505989471", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Mudassir Nazar Muzammil Shah", Desg: "Committee Member", CNo: "746-210-091", BG: "N/A", mobile: "+971509442460", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Saeed Ali Andaz Gul", Desg: "Committee Member", CNo: "746-210-092", BG: "N/A", mobile: "+971565595390", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Zeeshan Sarzamin Khan", Desg: "Committee Member", CNo: "746-210-093", BG: "B+", mobile: "+971567611825", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Arshad Iqbal", Desg: "Committee Member", CNo: "746-210-094", BG: "A+", mobile: "+971505781307", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shah Zaib", Desg: "Committee Member", CNo: "746-210-095", BG: "B+", mobile: "+971525757441", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shabeer Khan Meher Dil Khan", Desg: "Committee Member", CNo: "746-210-096", BG: "N/A", mobile: "+971556960607", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Akif Ullah Misri Khan", Desg: "Committee Member", CNo: "746-210-097", BG: "N/A", mobile: "+971565691764", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Ismail Tilawat Khan (Card Reactivated)", Desg: "Committee Member", CNo: "746-210-098", BG: "O+", mobile: "+971523038473", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Abdul Yawar Abdul Waiz Khan", Desg: "Committee Member", CNo: "746-210-099", BG: "A+", mobile: "+971586639843", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Haider Zaman Zahir Shah Gul", Desg: "Committee Member", CNo: "746-210-100", BG: "AB+", mobile: "+971552380267", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Mujahid Khan Shah Nawaz Gul", Desg: "Committee Member", CNo: "746-210-101", BG: "N/A", mobile: "+971545584237", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Nawar Khan Azam Khan", Desg: "Committee Member", CNo: "746-210-102", BG: "O+", mobile: "+971508804467", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Sajid Ullah Khan Azam Khan", Desg: "Committee Member", CNo: "746-210-103", BG: "O+", mobile: "+971557272825", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Siraj Khan Azam Khan", Desg: "Committee Member", CNo: "746-210-104", BG: "O+", mobile: "+971551795139", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Touseef Ahmad Amin Ullah Khan", Desg: "Committee Member", CNo: "746-210-105", BG: "O+", mobile: "+971523884620", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Aziz Ahmed Naseer Ahmed", Desg: "Committee Member", CNo: "746-210-106", BG: "A+", mobile: "+971564327163", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Ilyas Sufaid Gul", Desg: "Committee Member", CNo: "746-210-107", BG: "A+", mobile: "+971588609550", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Tahir Usman Usman Ghani", Desg: "Committee Member", CNo: "746-210-108", BG: "O+", mobile: "+971555950091", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Shehzad Khan Khattak Alam Zeb", Desg: "Committee Member", CNo: "746-210-109", BG: "A+", mobile: "+971543133258", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Amjad Ullah Azam Khan", Desg: "Committee Member", CNo: "746-210-110", BG: "N/A", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Arshad Khan Amir Rahim", Desg: "Committee Member", CNo: "746-210-111", BG: "A+", mobile: "+971502377474", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Naveed Ullah Mustamir Khan", Desg: "Committee Member", CNo: "746-210-112", BG: "B+", mobile: "+971502372884", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Yousaf Sartaj Khan", Desg: "Committee Member", CNo: "746-210-113", BG: "A+", mobile: "+971556394356", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Sajid Ali Feroz Khan", Desg: "Committee Member", CNo: "746-210-114", BG: "AB-", mobile: "+971543636974", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Noor Ul Amin Khattak", Desg: "Committee Member", CNo: "746-210-115", BG: "O-", mobile: "+46767409274", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Anas Masood Khan", Desg: "Committee Member", CNo: "746-210-116", BG: "N/A", mobile: "+971555796083", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Mustafa Shams Ur Rehman", Desg: "Committee Member", CNo: "746-210-117", BG: "N/A", mobile: "+971588050348", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Bilal Khattak Ziarat Gul Khattak", Desg: "Committee Member", CNo: "746-210-118", BG: "A+", mobile: "+971507375639", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Mohsin Khan Arbab Khan", Desg: "Committee Member", CNo: "746-210-119", BG: "A+", mobile: "+9715002140619", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Danish Khan Zia Ur Rehman", Desg: "Committee Member", CNo: "746-210-120", BG: "AB+", mobile: "+971503655420", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ahmad Khan Saifor Khan", Desg: "Committee Member", CNo: "746-210-121", BG: "A-", mobile: "+971507470878", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Manzoor Ahmad Khan Yaghi Khan Khattak", Desg: "Committee Member", CNo: "746-210-122", BG: "N/A", mobile: "+971504258512", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Rukhsar Muhammad Afzal", Desg: "Committee Member", CNo: "746-210-123", BG: "A+", mobile: "+971581169765", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Abdullah Naseer Gul", Desg: "Committee Member", CNo: "746-210-124", BG: "A+", mobile: "+971542509932", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Akhtar Hussain Said Nawab Khan", Desg: "Committee Member", CNo: "746-210-125", BG: "B+", mobile: "+971557378698", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Sharafat Hussain Said Nawab Khan", Desg: "Committee Member", CNo: "746-210-126", BG: "B+", mobile: "+971562780975", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shakir Nawaz Ameer Nawaz", Desg: "Committee Member", CNo: "746-210-127", BG: "O+", mobile: "+971528838591", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Sair Usman Usman Ghani", Desg: "Committee Member", CNo: "746-210-128", BG: "A+", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ameer Zaman Ameer Dad Khan", Desg: "Committee Member", CNo: "746-210-129", BG: "O+", mobile: "+971523957902", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shaukat Nawaz Habib Ullah", Desg: "Committee Member", CNo: "746-210-130", BG: "O+", mobile: "+971509257328", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Asif Nawaz Habib Ullah", Desg: "Committee Member", CNo: "746-210-131", BG: "O+", mobile: "+971505019352", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Usama Khan Farhad", Desg: "Committee Member", CNo: "746-210-132", BG: "O-", mobile: "+971509257328", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Kamran Ali Akbar Ali", Desg: "Committee Member", CNo: "746-210-133", BG: "O+", mobile: "+971542758470", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Sohail Mushtaq Khan", Desg: "Committee Member", CNo: "746-210-134", BG: "N/A", mobile: "+971564273437", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Atif Hayat Abdul Baqi", Desg: "Committee Member", CNo: "746-210-135", BG: "A+", mobile: "+971558408195", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Hanif Ullah Nawar Khan", Desg: "Committee Member", CNo: "746-210-136", BG: "O+", mobile: "+971528668091", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ishtiaq Hussain Shawas Khan", Desg: "Committee Member", CNo: "746-210-137", BG: "O-", mobile: "+971503782646", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Fayaz Afriday", Desg: "Committee Member", CNo: "746-210-138", BG: "N/A", mobile: "+971544650843", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Ahmad Hussain Janis Khan", Desg: "Committee Member", CNo: "746-210-139", BG: "O+", mobile: "+971544650843", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shahzad Khan Gul Muhammad Khan", Desg: "Committee Member", CNo: "746-210-140", BG: "AB+", mobile: "+971568495020", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ahmad Nadeem Akhtar Alam", Desg: "Committee Member", CNo: "746-210-141", BG: "B+", mobile: "+971558130422", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Inzimam Ul Haq Muhammad Faisal", Desg: "Committee Member", CNo: "746-210-142", BG: "A-", mobile: "+971524647195", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Waseem Shahzad Fida Fida Ul Haq", Desg: "Committee Member", CNo: "746-210-143", BG: "O+", mobile: "+971525340738", Status: "Cancel", Room: "Room - (-)", Issue: "-" },
+{ name: "Fayaz Ali Andaz Gul", Desg: "Committee Member", CNo: "746-210-144", BG: "B+", mobile: "+971553204454", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Haseeb Umar Gul", Desg: "Committee Member", CNo: "746-210-145", BG: "N/A", mobile: "+971523431946", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Atif Khanzada", Desg: "Committee Member", CNo: "746-210-146", BG: "N/A", mobile: "+971551709126", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Adnan Khan Mir Ahmad Shah", Desg: "Committee Member", CNo: "746-210-147", BG: "N/A", mobile: "+971555319475", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Adil Khan Nangrez Khan", Desg: "Committee Member", CNo: "746-210-148", BG: "N/A", mobile: "+971555123679", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Touqeer Ali Liaqat Ali Khattak", Desg: "Committee Member", CNo: "746-210-149", BG: "B+", mobile: "+971565790376", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Alyan Ihsan Ul Haq", Desg: "Committee Member", CNo: "746-210-150", BG: "AB+", mobile: "+971561067911", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Khalil Ur Rahmam Zia Ur Rahman", Desg: "Committee Member", CNo: "746-210-151", BG: "AB+", mobile: "+971566011425", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Arif Jangraiz Khan", Desg: "Committee Member", CNo: "746-210-152", BG: "O+", mobile: "+971567884095", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Umar Zaman Gul Daraz Khan", Desg: "Committee Member", CNo: "746-210-153", BG: "B+", mobile: "+971547606887", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Junaid Jamshaid Ali", Desg: "Committee Member", CNo: "746-210-154", BG: "B+", mobile: "+971544910297", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Faiz Muhammad Faiq Iqbal", Desg: "Committee Member", CNo: "746-210-155", BG: "O+", mobile: "+971545027736", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Zohaib Khan Muhammad Farooq Khan", Desg: "Committee Member", CNo: "746-210-156", BG: "AB+", mobile: "+971524212254", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Zahid Hussain Munsif Khan", Desg: "Committee Member", CNo: "746-210-157", BG: "B+", mobile: "+971562681263", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Saad Nawaz Khan Shaukat Nawaz Khan", Desg: "Committee Member", CNo: "746-210-158", BG: "N/A", mobile: "+971557360655", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shah Zaman Shah Wazir", Desg: "Committee Member", CNo: "746-210-159", BG: "N/A", mobile: "+971526768492", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Iftikhar Noor Muhammad", Desg: "Committee Member", CNo: "746-210-160", BG: "A+", mobile: "+971566537121", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Nasir Fayaz Gul", Desg: "Committee Member", CNo: "746-210-161", BG: "O+", mobile: "+971561395197", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Hamza Ali Asghar Ali", Desg: "Committee Member", CNo: "746-210-162", BG: "B+", mobile: "+971561326628", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Anees Khan Tilawat Khan", Desg: "Committee Member", CNo: "746-210-163", BG: "B+", mobile: "+971542256836", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Fawad Ali Ali Akbar", Desg: "Committee Member", CNo: "746-210-164", BG: "N/A", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Asmat Ullah Fasih Ullah", Desg: "Committee Member", CNo: "746-210-165", BG: "N/A", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Rifat Kamal Said Kamal", Desg: "Committee Member", CNo: "746-210-166", BG: "N/A", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Naveed Ali Ali Akbar", Desg: "Committee Member", CNo: "746-210-167", BG: "N/A", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Kifayat Ali Khan Ali Khan", Desg: "Committee Member", CNo: "746-210-168", BG: "N/A", mobile: "+971503616213", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Fayaz Feroz Khan", Desg: "Committee Member", CNo: "746-210-169", BG: "N/A", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Safdar Ali Ali Khan", Desg: "Committee Member", CNo: "746-210-170", BG: "N/A", mobile: "+971526947467", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Tajamul Khan Abdul Waiz", Desg: "Committee Member", CNo: "746-210-171", BG: "N/A", mobile: "N/A", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Arshad Nawab Akhtar Gul", Desg: "Committee Member", CNo: "746-210-172", BG: "N/A", mobile: "+971581714046", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Umar Zeb Jehanzeb", Desg: "Committee Member", CNo: "746-210-173", BG: "N/A", mobile: "+971568466143", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Shahid Kausar Muhammad Nisar", Desg: "Committee Member", CNo: "746-210-174", BG: "A+", mobile: "+971564233028", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Aitzaz Hassan Irshad Ali", Desg: "Committee Member", CNo: "746-210-175", BG: "A+", mobile: "+971509692513", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Shoaib Rokhan", Desg: "Committee Member", CNo: "746-210-176", BG: "B+", mobile: "+971565424500", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ghazanfar Ali Muhammad Zareef Khan (C/O Hameed Ullah 746-210-049)", Desg: "Committee Member", CNo: "746-210-177", BG: "N/A", mobile: "+971527070895", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Md Salauddin Babor Ali Hawlader (C/O Hameed Ullah 746-210-049)", Desg: "Committee Member", CNo: "746-210-178", BG: "N/A", mobile: "+971527070895", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Rehan Zeb Muhammad Iqbal", Desg: "Committee Member", CNo: "746-210-179", BG: "AB+", mobile: "+971555054986", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Muhammad Atif Zari Dad Khan (C/O Shabir Ahmed Ajab Khan 746-210-018)", Desg: "Committee Member", CNo: "746-210-180", BG: "N/A", mobile: "+971505919624", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Ali Nawaz Sher Nawab (C/O Shabir Ahmed Ajab Khan 746-210-018)", Desg: "Committee Member", CNo: "746-210-181", BG: "N/A", mobile: "+971547472906", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Kamran Khan Akhtar Munir (C/O Ikram Ullah Khan Zahoor Khan 746-210-182)", Desg: "Committee Member", CNo: "746-210-182", BG: "B+", mobile: "+971554509552", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Uzair Khan Janat Gul", Desg: "Committee Member", CNo: "746-210-183", BG: "A+", mobile: "+971564328143", Status: "Active", Room: "Room - (-)", Issue: "-" },
+{ name: "Tahir Muhammad Faiz Muhammad", Desg: "Committee Member", CNo: "746-210-184", BG: "N/A", mobile: "+971505958681", Status: "Active", Room: "Room 07 (Niaz Ali Khattak)", Issue: "15-03-2025" },
+{ name: "Muhammad Sajid Muhammad Sadiq", Desg: "Committee Member", CNo: "746-210-185", BG: "N/A", mobile: "+971527659300", Status: "Active", Room: "Room 07 (Niaz Ali Khattak)", Issue: "15-03-2025" },
+{ name: "Muhammad Zuhaib Muhammad Shoaib", Desg: "Committee Member", CNo: "746-210-186", BG: "N/A", mobile: "+971555593218", Status: "Active", Room: "Room - (-)", Issue: "16-03-2025" },
+{ name: "Waqad Ur Rehman Manzoor Ur Rehman", Desg: "Committee Member", CNo: "746-210-187", BG: "N/A", mobile: "+971563490122", Status: "Active", Room: "Room - (-)", Issue: "28-05-2025" },
+{ name: "Ahmad Iqbal Khan Muhammad Iqbal Mirza", Desg: "Committee Member", CNo: "746-210-188", BG: "A+", mobile: "+971527099855", Status: "Active", Room: "Room - (-)", Issue: "02-06-2025" },
+{ name: "Haseeb Ullah Shahid Iqbal", Desg: "Committee Member", CNo: "746-210-189", BG: "O+", mobile: "+971547314013", Status: "Active", Room: "Room - (-)", Issue: "11-08-2025" },
+{ name: "Jawad Munir Muhammad Munir", Desg: "Committee Member", CNo: "746-210-190", BG: "O+", mobile: "+971527355131", Status: "Active", Room: "Room - (-)", Issue: "11-08-2025" },
+{ name: "Khan Said Aman Ullah", Desg: "Committee Member", CNo: "746-210-191", BG: "O+", mobile: "+971529800593", Status: "Active", Room: "Room - (-)", Issue: "25-08-2025" },
+{ name: "Inam Ullah Aman Ullah", Desg: "Committee Member", CNo: "746-210-192", BG: "O+", mobile: "+971506702219", Status: "Active", Room: "Room - (-)", Issue: "25-08-2025" },
+{ name: "Shuja Uddin Bakhtiar Uddin", Desg: "Committee Member", CNo: "746-210-193", BG: "N/A", mobile: "+971543591890", Status: "Active", Room: "Room - (-)", Issue: "25-08-2025" },
+{ name: "Jamal Khan Nazar Ali Khan", Desg: "Committee Member", CNo: "746-210-194", BG: "A+", mobile: "+971529007216", Status: "Active", Room: "Room - (-)", Issue: "15-10-2025" },
+{ name: "Rashid Khan Amir Ali", Desg: "Committee Member", CNo: "746-210-195", BG: "A+", mobile: "+971523361861", Status: "Active", Room: "Room - (-)", Issue: "15-10-2025" },
+{ name: "Mudassir Khan Rasheed Khan", Desg: "Committee Member", CNo: "746-210-196", BG: "AB+", mobile: "+971555767863", Status: "Active", Room: "Room - (-)", Issue: "15-10-2025" },
+{ name: "Nasir Khan Nasrullah Khan", Desg: "Committee Member", CNo: "746-210-197", BG: "AB+", mobile: "+971524287445", Status: "Active", Room: "Room - (-)", Issue: "15-10-2025" },
+{ name: "Adnan Khan Mir Wali Khan", Desg: "Committee Member", CNo: "746-210-198", BG: "B+", mobile: "+971529953687", Status: "Active", Room: "Room - (-)", Issue: "16-10-2025" },
+{ name: "Asar Khan Mardan Shah", Desg: "Committee Member", CNo: "746-210-199", BG: "O+", mobile: "+971543896036", Status: "Active", Room: "Room - (-)", Issue: "19-10-2025" },
+{ name: "Yasir Khan Nasrullah Khan", Desg: "Committee Member", CNo: "746-210-200", BG: "A+", mobile: "+971553104654", Status: "Active", Room: "Room - (-)", Issue: "19-10-2025" },
+{ name: "Qaisar Khan Nasrullah Khan", Desg: "Committee Member", CNo: "746-210-201", BG: "A+", mobile: "+971561175244", Status: "Active", Room: "Room - (-)", Issue: "20-10-2025" },
+{ name: "Syed Ikram Shah Syed Roman Shah", Desg: "Committee Member", CNo: "746-210-202", BG: "A+", mobile: "+971542424536", Status: "Active", Room: "Room - (-)", Issue: "20-10-2025" },
+{ name: "Sami Ullah Muhammad Ayaz Khan", Desg: "Committee Member", CNo: "746-210-203", BG: "A-", mobile: "+971503826581", Status: "Active", Room: "Room - (-)", Issue: "07-11-2025" },
+{ name: "Mudassir Shah Muhammad Shah", Desg: "Committee Member", CNo: "746-210-204", BG: "B+", mobile: "+971525962447", Status: "Active", Room: "Room - (-)", Issue: "18-09-2025" },
+{ name: "Abdul Waheed Muhammad Yaqoob", Desg: "Committee Member", CNo: "746-210-205", BG: "O+", mobile: "+971567135913", Status: "Active", Room: "Room - (-)", Issue: "13-10-2025" },
+{ name: "Tajid Hussain Said Nawab Khan", Desg: "Committee Member", CNo: "746-210-206", BG: "B+", mobile: "+923314526919", Status: "Active", Room: "Room - (-)", Issue: "24-01-2025" },
+        ];
+
+        let sortedData = [...data];
+        let sortDirection = {};
+
+        function toggleButtons() {
+            const hasInput = searchInput.value.trim().length > 0;
+            searchButton.disabled = !hasInput;
+            printButton.disabled = !hasInput;
+        }
+
+        function searchData() {
+            const searchField = document.getElementById('searchField').value;
+            const searchValue = searchInput.value.toLowerCase();
+            sortedData = data.filter(item => item[searchField]?.toLowerCase().includes(searchValue));
+            displayResults(sortedData);
+        }
+
+        function displayResults(results) {
+            resultContainer.innerHTML = '';
+            if (results.length > 0) {
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('name')">Member Name</th>
+                            <th onclick="sortTable('CNo')">e-Card Number</th>
+                            <th onclick="sortTable('Desg')">Designation</th>
+                            <th onclick="sortTable('BG')">Blood Type</th>
+                            <th onclick="sortTable('Issue')">e-Card Issue Date</th>
+                            <th onclick="sortTable('mobile')">Mobile</th>
+                            <th onclick="sortTable('Room')">Room</th>
+                            <th onclick="sortTable('Status')">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map(item => `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>${item.CNo}</td>
+                                <td>${item.Desg}</td>
+                                <td>${item.BG}</td>
+                                <td>${item.Issue}</td>
+                                <td>${item.mobile}</td>
+                                <td>${item.Room}</td>
+                                <td class="${item.Status.toLowerCase()}">${item.Status}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                resultContainer.appendChild(table);
+            } else {
+                resultContainer.innerHTML = '<p class="no-data">No matching data found.</p>';
+            }
+        }
+
+        function sortTable(field) {
+            const direction = sortDirection[field] === 'asc' ? 'desc' : 'asc';
+            sortDirection = { [field]: direction };
+            sortedData.sort((a, b) => {
+                if (a[field] > b[field]) return direction === 'asc' ? 1 : -1;
+                if (a[field] < b[field]) return direction === 'asc' ? -1 : 1;
+                return 0;
+            });
+            displayResults(sortedData);
+        }
+
+        searchInput.addEventListener('input', toggleButtons);
+        searchButton.addEventListener('click', searchData);
+        printButton.addEventListener('click', () => {
+            displayResults(sortedData);
+            setTimeout(() => window.print(), 100);
+        });
+        generateButton.addEventListener('click', () => {
+            window.location.href = 'http://127.0.0.1:5000/';
+        });
+
+        existingButton.addEventListener('click', () => {
+            window.location.href = 'existing.html';
+        });
+
+        englishConstitutionButton.addEventListener('click', () => {
+            window.open('English.pdf', '_blank');
+        });
+        urduConstitutionButton.addEventListener('click', () => {
+            window.open('Urdu.pdf', '_blank');
+        });
+    </script>
+</body>
+</html>
