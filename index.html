@@ -37,6 +37,14 @@ setInterval(() => {
     padding: 15px 30px; /* adjust padding to fit text */
     display: inline-block;
 }
+
+/* Visitor Counter Styling */
+.visitor-counter {
+    font-size: 1rem;
+    margin-top: 5px;
+    color: #ff0000;
+    font-weight: bold;
+}
 </style>
 
 </head>
@@ -46,6 +54,7 @@ setInterval(() => {
     <a href="index.html" class="logo">
         <img src="logo.png" alt="Logo">
         <h1>livenews.live</h1>
+        <div class="visitor-counter" id="visitorCounter">Website visits: 0</div>
     </a>
     <div class="live-badge">LIVE</div>
 
@@ -184,12 +193,27 @@ otherSpan.addEventListener('click', () => {
     }
 });
 
-// Optional: close the menu if clicked outside
 document.addEventListener('click', function(event){
     if(!event.target.closest('.other-list')){
         otherMenu.style.display = 'none';
     }
 });
+
+// Visitor Counter Function
+function updateVisitorCounter() {
+    const counterElement = document.getElementById('visitorCounter');
+
+    // Using localStorage for demo persistence
+    let visitors = localStorage.getItem('visitorCount');
+    if (!visitors) visitors = 0;
+    visitors = parseInt(visitors) + 1;
+    localStorage.setItem('visitorCount', visitors);
+
+    counterElement.innerText = 'Visitors: ' + visitors;
+}
+
+// Update counter on page load
+updateVisitorCounter();
 </script>
 
 </body>
