@@ -55,25 +55,48 @@ header{
 }
 
 .ticker{
-    background:#121424;
-    color:#f0f0f0;
-    font-weight:500;
+    background:#DC143C;
+    color:#ffffff;
+    font-weight:700;
+    font-size:18px;
+    font-family:Calibri, sans-serif;
     padding:10px 5%;
     overflow:hidden;
     white-space:nowrap;
     border-top:1px solid rgba(255,255,255,0.05);
     border-bottom:1px solid rgba(255,255,255,0.05);
 }
+.ticker-en{
+    background:#aaa;
+    color:#ffffff;
+    font-weight:700;
+    font-size:16px;
+    font-family:Calibri, sans-serif;
+    padding:10px 5%;
+    overflow:hidden;
+    white-space:nowrap;
+}
+
+.ticker-en span{
+    display:inline-block;
+    padding-left:100%;
+    animation:scroll-en 30s linear infinite;
+}
+
+@keyframes scroll-en{
+    0%{transform:translateX(100%);}
+    100%{transform:translateX(-100%);}
+}
 
 .ticker span{
     display:inline-block;
     padding-left:100%;
-    animation:scroll 20s linear infinite;
+    animation:scroll 25s linear infinite;
 }
 
 @keyframes scroll{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-100%);}
+    0%{transform:translateX(-100%);}
+    100%{transform:translateX(100%);}
 }
 
 .hero{
