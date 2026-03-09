@@ -183,7 +183,20 @@ font-size:17px;
 color:#ccc;
 }
 
+.contact-details{
+margin-top:30px;
+line-height:1.9;
+font-size:16px;
+}
 
+.contact-details a{
+color:#f5c518;
+text-decoration:none;
+}
+
+.contact-details a:hover{
+text-decoration:underline;
+}
 
 /* CONTACT */
 
