@@ -1,128 +1,74 @@
-/* SMOOTH NAVIGATION SCROLL */
-
+/* ---------------- SMOOTH NAVIGATION SCROLL ---------------- */
 document.querySelectorAll('nav a').forEach(anchor => {
-
-anchor.addEventListener('click', function(e){
-
-e.preventDefault();
-
-const target = document.querySelector(this.getAttribute('href'));
-
-target.scrollIntoView({
-behavior: "smooth"
-});
-
-});
-
+    anchor.addEventListener('click', function(e){
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        target.scrollIntoView({behavior:"smooth"});
+    });
 });
 
 
+/* ---------------- GALLERY LIGHTBOX ---------------- */
+const galleryItems = document.querySelectorAll(".gallery-item");
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.querySelector(".lightbox-image");
+const lightboxDetails = document.querySelector(".lightbox-details");
+const closeLightbox = document.querySelector(".close-lightbox");
 
-/* LIGHTBOX IMAGE VIEWER */
+galleryItems.forEach(item => {
+    const img = item.querySelector("img");
+    const details = item.querySelector(".photo-details").innerHTML;
 
-const images = document.querySelectorAll(".photo-section img");
-
-const lightbox = document.createElement("div");
-lightbox.id = "lightbox-viewer";
-
-const lightboxImg = document.createElement("img");
-
-lightbox.appendChild(lightboxImg);
-
-document.body.appendChild(lightbox);
-
-
-
-images.forEach(image => {
-
-image.addEventListener("click", () => {
-
-lightbox.style.display = "flex";
-lightboxImg.src = image.src;
-
+    img.addEventListener("click", () => {
+        lightbox.style.display = "flex";
+        lightboxImg.src = img.src;
+        lightboxDetails.innerHTML = details;
+        document.body.style.overflow = "hidden"; // Prevent scroll
+    });
 });
 
+// Close lightbox
+closeLightbox.addEventListener("click", () => {
+    lightbox.style.display = "none";
+    document.body.style.overflow = "auto";
 });
 
-
-
-/* CLOSE LIGHTBOX */
-
-lightbox.addEventListener("click", () => {
-
-lightbox.style.display = "none";
-
+// Close on ESC key
+document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){
+        lightbox.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
 });
 
-
-
-/* ESC KEY CLOSE */
-
-document.addEventListener("keydown", function(e){
-
-if(e.key === "Escape"){
-
-lightbox.style.display = "none";
-
-}
-
+/* ---------------- LAZY LOAD IMAGES ---------------- */
+const lazyImages = document.querySelectorAll(".gallery-item img");
+const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting){
+            const img = entry.target;
+            img.src = img.src; // triggers loading
+            obs.unobserve(img);
+        }
+    });
 });
 
+lazyImages.forEach(img => observer.observe(img));
 
+/* ---------------- SCROLL ANIMATION FOR GALLERY ---------------- */
+const gallerySections = document.querySelectorAll(".gallery-item");
+const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting){
+            entry.target.style.opacity = 1;
+            entry.target.style.transform = "translateY(0px)";
+        }
+    });
+}, {threshold:0.2});
 
-/* LAZY LOAD IMAGES */
-
-const lazyImages = document.querySelectorAll("img");
-
-const observer = new IntersectionObserver((entries, observer)=>{
-
-entries.forEach(entry=>{
-
-if(entry.isIntersecting){
-
-const img = entry.target;
-
-img.src = img.src;
-
-observer.unobserve(img);
-
-}
-
-});
-
-});
-
-lazyImages.forEach(img=>{
-observer.observe(img);
-});
-
-
-
-/* SCROLL ANIMATION FOR PHOTO SECTIONS */
-
-const sections = document.querySelectorAll(".photo-section");
-
-const sectionObserver = new IntersectionObserver((entries)=>{
-
-entries.forEach(entry=>{
-
-if(entry.isIntersecting){
-
-entry.target.style.opacity = 1;
-entry.target.style.transform = "translateY(0px)";
-
-}
-
-});
-
-},{threshold:0.2});
-
-sections.forEach(section=>{
-
-section.style.opacity = 0;
-section.style.transform = "translateY(60px)";
-section.style.transition = "all 1s ease";
-
-sectionObserver.observe(section);
-
+gallerySections.forEach(section => {
+    section.style.opacity = 0;
+    section.style.transform = "translateY(60px)";
+    section.style.transition = "all 1s ease";
+    sectionObserver.observe(section);
 });
