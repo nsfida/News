@@ -1,4 +1,8 @@
-/* GLOBAL RESET */
+.logo img{
+height:50px;
+width:auto;
+display:block;
+}/* GLOBAL RESET */
 
 *{
 margin:0;
