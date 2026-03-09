@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neerang‑E‑Hikmat | Books | NSF Live News</title>
+<title>Neerang-E-Hikmat | Books | NSF Live News</title>
 
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,6 +15,13 @@
 <link rel="stylesheet" href="../style.css">
 
 <style>
+
+/* Urdu Font */
+.urdu{
+    font-family: Calibri, "Noto Nastaliq Urdu", serif;
+    direction: rtl;
+}
+
 /* --- Thumbnail Book Layout --- */
 .book-list {
     display: flex;
@@ -63,7 +70,7 @@
     font-size: 15px;
     color: #cfd8fc;
     margin-bottom: 18px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .book-links {
@@ -93,6 +100,18 @@
     color: #ff6b6b;
 }
 
+/* Coming Soon */
+.coming-soon{
+    background: yellow;
+    color: black;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-block;
+    margin-top: 6px;
+}
+
 /* Responsive */
 @media(max-width:700px){
     .book-card {
@@ -112,88 +131,144 @@
         flex-wrap: wrap;
     }
 }
+
 </style>
 
 </head>
 <body>
 
 <header>
-    <a href="../index.html" class="logo">
-        <img src="../logo.png" alt="Logo">
-        <h1>livenews.live</h1>
-    </a>
+<a href="../index.html" class="logo">
+<img src="../logo.png" alt="Logo">
+</a>
 
-    <!-- Collapsible Other List -->
-    <div class="other-list">
-        <span>Other ▼</span>
-        <ul>
-            <li><a href="../Books/index.html" target="_self">Books Home</a></li>
-            <li><a href="../KFC/index.html" target="_self">Khawrai Falahi Committee UAE</a></li>
-            <li><a href="https://www.pcr.ae" target="_self">Premium Car Rentals Dubai</a></li>
-            <li><a href="https://www.youtube.com/@NSFEntertainment" target="_self">YouTube</a></li>
-            <li><a href="../Other/index.html" target="_self">Other News</a></li>
-        </ul>
-    </div>
+<div class="other-list">
+<span>Other ▼</span>
+<ul>
+<li><a href="../Books/index.html">Books Home</a></li>
+<li><a href="../KFC/index.html">Khawrai Falahi Committee UAE</a></li>
+<li><a href="https://www.pcr.ae">Premium Car Rentals Dubai</a></li>
+<li><a href="https://www.youtube.com/@NSFEntertainment">YouTube</a></li>
+<li><a href="../Other/index.html">Other News</a></li>
+</ul>
+</div>
 </header>
 
 <section class="hero" style="padding:40px 5%;">
-    <h2>Books – Neerang‑E‑Hikmat</h2>
-    <p>Explore deep spiritual wisdom, Islamic philosophy, and reflections on existence and divine purpose.</p>
+<h2>Books – Neerang-E-Hikmat</h2>
+<p>Explore deep spiritual wisdom, Islamic philosophy, and reflections on existence and divine purpose.</p>
 </section>
 
 <section class="book-list">
 
-    <!-- Single Book Thumbnail Card -->
-    <div class="book-card">
-        <img src="image1.png" alt="Neerang‑E‑Hikmat Cover">
-        <div class="book-info">
-            <div>
-                <h3>Neerang‑E‑Hikmat</h3>
-                <p>
-                    <strong>Author:</strong> Nadeem Shahzad Fida<br>
-                    <strong>Description:</strong> This Urdu work blends Islamic wisdom, spirituality, and philosophical thought. 
-                    It explores the Oneness of Allah, mysteries of existence, and the soul’s relationship with the Creator, awakening both heart and intellect.
-                </p>
-            </div>
-            <div class="book-links">
-                <a href="https://papercraftpublishers.com/product/neerang-e-hikmat/?srsltid=AfmBOopWo_dNVmftqlpMN6l5mUNOAcHhhGtZaEtvH3Kl5AcEFkodE96p" target="_self">
-                    <i class="fa-solid fa-cart-plus"></i>Papercraft
-                </a>
-                <a href="https://www.daraz.pk/products/neerang-e-hikmat-i780255035.html" target="_self">
-                    <i class="fa-solid fa-cart-arrow-down"></i>Daraz.pk
-                </a>
-                <a href="https://heyzine.com/flip-book/e5df7ca16c.html" target="_self">
-                    <i class="fa-solid fa-book-open"></i>Read Free
-                </a>
-            </div>
-        </div>
-    </div>
+<!-- Neerang-E-Hikmat -->
+<div class="book-card">
+<img src="image1.png" alt="Neerang-E-Hikmat Cover">
+
+<div class="book-info">
+<div>
+
+<h3>
+Neerang-E-Hikmat  
+<br>
+<span class="urdu">نیّرنگِ حکمت</span>
+</h3>
+
+<p>
+<strong>Author:</strong> Nadeem Shahzad Fida<br>
+<strong>Description:</strong> This Urdu work blends Islamic wisdom, spirituality, and philosophical thought. 
+It explores the Oneness of Allah, mysteries of existence, and the soul’s relationship with the Creator, awakening both heart and intellect.
+</p>
+
+</div>
+
+<div class="book-links">
+<a href="https://papercraftpublishers.com/product/neerang-e-hikmat/?srsltid=AfmBOopWo_dNVmftqlpMN6l5mUNOAcHhhGtZaEtvH3Kl5AcEFkodE96p">
+<i class="fa-solid fa-cart-plus"></i>Papercraft
+</a>
+
+<a href="https://www.daraz.pk/products/neerang-e-hikmat-i780255035.html">
+<i class="fa-solid fa-cart-arrow-down"></i>Daraz.pk
+</a>
+
+<a href="https://heyzine.com/flip-book/e5df7ca16c.html">
+<i class="fa-solid fa-book-open"></i>Read Free
+</a>
+</div>
+
+</div>
+</div>
+
+
+<!-- Nizaam-e-Zuljalal -->
+<div class="book-card">
+
+<img src="image2.png" alt="Nizaam-e-Zuljalal Cover">
+
+<div class="book-info">
+<div>
+
+<h3>
+Nizaam-e-Zuljalal  
+<br>
+<span class="urdu">نظامِ ذُوالجلال (اُفقِ اِسلام کا ہمہ گیر منظر نامہ)</span>
+</h3>
+
+<p>
+<strong>Author:</strong> Nadeem Shahzad Fida<br><br>
+
+<strong>Description:</strong>
+
+The lamp of guidance, when placed in the hands of Prophet Adam (peace be upon him), illuminated a single path for humanity. 
+From that moment until the Seal of the Prophets, Prophet Muhammad ﷺ, mankind has been shown only one way — the Straight Path known as Islam.
+
+This path does not change nor disappear; it simply reflects new images in the mirror of time, repeating the same eternal truth in different forms.
+
+This book is a quiet journey in search of that truth — the journey of a student who does not claim greatness nor final authority, 
+but merely records what he has learned and understood.
+
+If there is any error, weakness, or shortcoming, it should be attributed to my humble state as a student. 
+The final and perfect word belongs only to the Book revealed from the Preserved Tablet — the Book that is free from all flaw 
+and whose every letter is light.
+
+What I have written is simply an expression of my modest insight. 
+My effort should be seen only as a small attempt, not as a standard or measure, 
+because the true brilliance of guidance always comes from the torch that God Himself has lit.
+</p>
+
+<span class="coming-soon">Coming Soon</span>
+
+</div>
+</div>
+</div>
 
 </section>
 
 <footer>
-    <div class="footer-links">
-        <a href="../about.html" target="_self"><i class="fa-solid fa-user"></i>About</a>
-        <a href="../contact.html" target="_self"><i class="fa-solid fa-envelope"></i>Contact</a>
-        <a href="../privacy.html" target="_self"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
-    </div>
-    © 2026 Live News by NSF | Independent Live Conflict Reporting
+<div class="footer-links">
+<a href="../about.html"><i class="fa-solid fa-user"></i>About</a>
+<a href="../contact.html"><i class="fa-solid fa-envelope"></i>Contact</a>
+<a href="../privacy.html"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
+</div>
+
+© 2026 Live News by NSF | Independent Live Conflict Reporting
 </footer>
 
 <script>
-// Toggle for Other List
+
 const otherSpan = document.querySelector('.other-list span');
 const otherMenu = document.querySelector('.other-list ul');
 
 otherSpan.addEventListener('click', () => {
-    otherMenu.style.display = otherMenu.style.display === 'block' ? 'none' : 'block';
+otherMenu.style.display = otherMenu.style.display === 'block' ? 'none' : 'block';
 });
 
 document.addEventListener('click', function(event){
-    if(!event.target.closest('.other-list')){
-        otherMenu.style.display = 'none';
-    }
+if(!event.target.closest('.other-list')){
+otherMenu.style.display = 'none';
+}
 });
+
 </script>
 
 </body>
