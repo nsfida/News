@@ -273,9 +273,22 @@
   "shutter": "1.0s (Night Mode)",
   "iso": "50",
   "story": "A brilliant long-exposure night shot of the Burj Khalifa. Using an 11-frame stack, the image captures the shimmering detail of the world's tallest building and the vibrant energy of the surrounding Downtown district under a pitch-black sky."
+},
+
+  {
+  "image": "burj_al_arab_s10.jpg",
+  "title": "Monochrome Icons",
+  "location": "Dubai Metro (Green/Red Line), Dubai",
+  "camera": "Samsung Galaxy S10 Plus",
+  "lens": "52mm (Telephoto)",
+  "aperture": "f/2.4",
+  "shutter": "1/1500s",
+  "iso": "50",
+  "story": "A dramatic black and white capture of the Burj Al Arab and Jumeirah Beach Hotel, shot from a moving Dubai Metro train. The high-contrast monochrome mode emphasizes the architectural silhouettes against a dark sky, stripping the scene down to its iconic shapes."
 }
 
 ]
+
 
 
 
