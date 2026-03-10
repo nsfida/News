@@ -1,4 +1,3 @@
-/* ================== SMOOTH SCROLL ================== */
 document.querySelectorAll('nav a').forEach(anchor => {
     anchor.addEventListener('click', function(e){
         e.preventDefault();
@@ -12,12 +11,10 @@ document.querySelectorAll('nav a').forEach(anchor => {
             behavior: "smooth"
         });
 
-        // Close mobile menu if open
         document.querySelector('.nav-links').classList.remove('active');
     });
 });
 
-/* ================== MOBILE MENU TOGGLE ================== */
 const menuToggle = document.getElementById('menuToggle');
 const navLinks = document.querySelector('.nav-links');
 
@@ -25,7 +22,6 @@ menuToggle.addEventListener('click', () => {
     navLinks.classList.toggle('active');
 });
 
-/* ================== THEME SWITCH ================== */
 const body = document.body;
 const lightIcon = document.getElementById('lightMode');
 const darkIcon = document.getElementById('darkMode');
@@ -35,28 +31,25 @@ function setTheme(theme){
     if(theme === 'light'){
         body.classList.add('light');
         body.classList.remove('dark');
-        logo.style.filter = 'invert(1)'; // invert logo for light mode
+        logo.style.filter = 'invert(1)';
     } else {
         body.classList.add('dark');
         body.classList.remove('light');
-        logo.style.filter = 'invert(0)'; // normal logo
+        logo.style.filter = 'invert(0)';
     }
-    // Save preference
     localStorage.setItem('nsf-theme', theme);
 }
 
-// Load saved theme
 const savedTheme = localStorage.getItem('nsf-theme');
 if(savedTheme){
     setTheme(savedTheme);
 } else {
-    setTheme('dark'); // default
+    setTheme('dark');
 }
 
 lightIcon.addEventListener('click', () => setTheme('light'));
 darkIcon.addEventListener('click', () => setTheme('dark'));
 
-/* ================== DYNAMIC GALLERY LOADING ================== */
 fetch("./gallery.json")
   .then(res => res.json())
   .then(photos => {
@@ -88,7 +81,6 @@ fetch("./gallery.json")
   })
   .catch(err => console.error("Failed to load gallery.json:", err));
 
-/* ================== GALLERY LIGHTBOX ================== */
 function initGallery(){
     const galleryItems = document.querySelectorAll(".gallery-item");
     const lightbox = document.getElementById("lightbox");
@@ -120,13 +112,12 @@ function initGallery(){
         }
     });
 
-    /* ================== LAZY LOAD ================== */
     const lazyImages = document.querySelectorAll(".gallery-item img");
     const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
             if(entry.isIntersecting){
                 const img = entry.target;
-                img.src = img.src; // triggers loading
+                img.src = img.src;
                 obs.unobserve(img);
             }
         });
@@ -134,7 +125,6 @@ function initGallery(){
 
     lazyImages.forEach(img => observer.observe(img));
 
-    /* ================== SCROLL ANIMATION ================== */
     const gallerySections = document.querySelectorAll(".gallery-item");
     const sectionObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
