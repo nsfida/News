@@ -249,9 +249,22 @@
   "shutter": "1/40s",
   "iso": "400",
   "story": "A stunning ProRAW capture of Atlantis The Palm at dusk. The sunset glow perfectly aligns with the iconic archway, casting a warm light over the quiet beach and the ripples of the Arabian Gulf."
+},
+
+  {
+  "image": "dubai_marina_skyline.jpg",
+  "title": "Marsa Dubai Heights",
+  "location": "JLT/Dubai Marina, Dubai, UAE",
+  "camera": "Apple iPhone 14 Pro Max",
+  "lens": "77mm (3x Optical Telephoto)",
+  "aperture": "f/2.8",
+  "shutter": "1/995s",
+  "iso": "32",
+  "story": "A crisp telephoto view of the Dubai Marina skyline taken from the JLT side. The afternoon light highlights the diverse architectural styles of this artificial canal city, showcasing the density and vertical ambition of one of Dubai's most iconic districts."
 }
 
 ]
+
 
 
 
