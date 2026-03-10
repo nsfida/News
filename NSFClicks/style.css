@@ -1,18 +1,4 @@
-/* ================= VARIABLES ================= */
-:root {
-  --bg-light: #fdfdfd;
-  --bg-dark: #0a0a0a;
-  --bg-grey: #2b2b2b;
-
-  --text-light: #111;
-  --text-dark: #fff;
-  --text-grey: #ccc;
-
-  --accent: #ffc400;
-  --secondary: #ddd;
-}
-
-/* ================= GLOBAL RESET ================= */
+/* ================== GLOBAL RESET ================== */
 * {
   margin: 0;
   padding: 0;
@@ -25,117 +11,23 @@ html {
 
 body {
   font-family: 'Poppins', sans-serif;
-  background: var(--bg-dark);
-  color: var(--text-dark);
   line-height: 1.7;
   overflow-x: hidden;
+  transition: background 0.5s, color 0.5s;
 }
 
-/* ================= THEMES ================= */
+/* ================== THEME COLORS ================== */
+body.dark {
+  background: #0a0a0a;
+  color: white;
+}
+
 body.light {
-  background: var(--bg-light);
-  color: var(--text-light);
+  background: #f5f5f5;
+  color: #111;
 }
 
-body.light .header {
-  background: rgba(255,255,255,0.3);
-  border-color: rgba(0,0,0,0.05);
-}
-
-body.light nav ul li a {
-  color: var(--text-light);
-}
-
-body.light .gallery-overlay p,
-body.light .lightbox-details,
-body.light .section-title {
-  color: #333;
-}
-
-body.grey {
-  background: var(--bg-grey);
-  color: var(--text-grey);
-}
-
-body.grey nav ul li a {
-  color: var(--text-grey);
-}
-
-/* ================= ANIMATED BACKGROUND ================= */
-.animated-bg {
-  position: fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background: linear-gradient(120deg,#0a0a0a,#111,#000,#0d0d0d);
-  background-size: 400% 400%;
-  animation: bgmove 20s ease infinite;
-  z-index: -5;
-}
-
-@keyframes bgmove {
-  0% {background-position:0% 50%;}
-  50% {background-position:100% 50%;}
-  100% {background-position:0% 50%;}
-}
-
-/* ================= COLOR ORBS ================= */
-.color-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.35;
-  z-index: -4;
-  animation: float 18s infinite alternate;
-}
-
-.orb1 {
-  width: 400px; height: 400px;
-  background: #1f6fff;
-  top: -120px; left: -120px;
-}
-
-.orb2 {
-  width: 450px; height: 450px;
-  background: #ff3d7f;
-  bottom: -200px; right: -150px;
-}
-
-.orb3 {
-  width: 350px; height: 350px;
-  background: #ffc400;
-  top: 40%; left: 60%;
-}
-
-@keyframes float {
-  from {transform: translateY(0);}
-  to {transform: translateY(80px);}
-}
-
-/* ================= HERO STARS ================= */
-.hero-stars {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.hero-stars span {
-  position: absolute;
-  background: #fff;
-  border-radius: 50%;
-  opacity: 0.5;
-  animation: starTwinkle linear infinite;
-}
-
-@keyframes starTwinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-
-/* ================= HEADER ================= */
+/* ================== HEADER ================== */
 .header {
   position: fixed;
   top: 0;
@@ -144,91 +36,66 @@ body.grey nav ul li a {
   justify-content: space-between;
   align-items: center;
   padding: 14px 8%;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   z-index: 1000;
+  transition: background 0.5s, color 0.5s;
 }
 
 body.light .header {
-  background: rgba(255,255,255,0.3);
-  border-color: rgba(0,0,0,0.05);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .logo img {
   height: 38px;
+  transition: filter 0.5s;
 }
 
-nav ul {
+.nav-links ul {
   display: flex;
   list-style: none;
 }
 
-nav ul li {
+.nav-links ul li {
   margin-left: 28px;
 }
 
-nav ul li a {
+.nav-links ul li a {
   text-decoration: none;
-  color: #ddd;
+  color: inherit;
   font-size: 15px;
   transition: 0.3s;
 }
 
-nav ul li a:hover {
-  color: var(--accent);
+.nav-links ul li a:hover {
+  color: #ffc400;
 }
 
-/* ================= MOBILE MENU ================= */
+/* Mobile Menu Toggle */
 .menu-toggle {
   display: none;
-  cursor: pointer;
   flex-direction: column;
-  gap: 5px;
+  cursor: pointer;
+  gap: 6px;
 }
 
 .menu-toggle span {
   width: 25px;
   height: 3px;
-  background: var(--text-dark);
-  display: block;
-  transition: 0.3s;
+  background: currentColor;
+  border-radius: 2px;
 }
 
-.nav-links {
-  display: flex;
-}
-
-.nav-links.active {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 70px;
-  right: 8%;
-  background: rgba(0,0,0,0.8);
-  padding: 20px;
-  border-radius: 10px;
-}
-
-/* ================= THEME ICONS ================= */
-.theme-icons {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
+/* ================== THEME ICONS ================== */
 .theme-icons i {
-  font-size: 20px;
+  margin-left: 15px;
+  font-size: 18px;
   cursor: pointer;
-  transition: 0.3s;
-  color: var(--accent);
+  transition: color 0.3s;
 }
 
-.theme-icons i:hover {
-  transform: scale(1.2);
-}
-
-/* ================= HERO ================= */
+/* ================== HERO ================== */
 .hero {
   height: 100vh;
   background: url("images/disneydubai.jpg") center/cover no-repeat;
@@ -237,8 +104,7 @@ nav ul li a:hover {
   justify-content: center;
   text-align: center;
   position: relative;
-  overflow: hidden;
-  padding: 0 10px;
+  transition: background 0.5s;
 }
 
 .hero-overlay {
@@ -246,34 +112,35 @@ nav ul li a:hover {
   width: 100%;
   height: 100%;
   background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.85));
-  z-index: 1;
+  transition: background 0.5s;
+}
+
+body.light .hero-overlay {
+  background: linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.85));
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
   max-width: 700px;
-  margin: 0 auto;
-  transition: transform 0.4s ease;
+  animation: fadeUp 2s ease;
 }
 
 .hero-content h1 {
-  font-size: 72px;
+  font-size: 70px;
   letter-spacing: 4px;
   margin-bottom: 20px;
-  color: #fff;
 }
 
 .hero-content p {
   font-size: 20px;
-  color: var(--secondary);
-  margin-bottom: 30px;
+  margin-bottom: 35px;
 }
 
 .hero-btn {
-  padding: 14px 38px;
-  background: var(--accent);
-  color: #000;
+  padding: 14px 36px;
+  background: #ffc400;
+  color: black;
   border-radius: 40px;
   text-decoration: none;
   font-weight: 600;
@@ -281,14 +148,15 @@ nav ul li a:hover {
 }
 
 .hero-btn:hover {
+  background: white;
   transform: translateY(-3px);
-  background: #fff;
 }
 
-/* ================= FEATURE BANNER ================= */
+/* ================== FEATURE BANNER ================== */
 .feature-banner {
   padding: 120px 15%;
   text-align: center;
+  transition: background 0.5s, color 0.5s;
 }
 
 .feature-banner h2 {
@@ -297,13 +165,12 @@ nav ul li a:hover {
 }
 
 .feature-banner p {
-  color: #ccc;
   max-width: 700px;
   margin: auto;
   font-size: 18px;
 }
 
-/* ================= GALLERY ================= */
+/* ================== GALLERY ================== */
 .gallery {
   padding: 120px 8%;
 }
@@ -350,6 +217,11 @@ nav ul li a:hover {
   transition: 0.4s;
 }
 
+body.light .gallery-overlay {
+  background: linear-gradient(transparent, rgba(255,255,255,0.95));
+  color: #111;
+}
+
 .gallery-item:hover .gallery-overlay {
   opacity: 1;
 }
@@ -360,15 +232,22 @@ nav ul li a:hover {
 
 .gallery-overlay p {
   font-size: 14px;
-  color: #ddd;
 }
 
-/* ================= EXHIBITION ================= */
+/* ================== EXHIBITION ================== */
 .exhibition-banner {
   padding: 140px 15%;
   text-align: center;
-  background: rgba(255,255,255,0.03);
   backdrop-filter: blur(8px);
+  transition: background 0.5s;
+}
+
+body.dark .exhibition-banner {
+  background: rgba(255,255,255,0.03);
+}
+
+body.light .exhibition-banner {
+  background: rgba(0,0,0,0.03);
 }
 
 .exhibition-banner h2 {
@@ -377,12 +256,11 @@ nav ul li a:hover {
 }
 
 .exhibition-banner p {
-  color: #ccc;
   max-width: 700px;
   margin: auto;
 }
 
-/* ================= ABOUT ================= */
+/* ================== ABOUT ================== */
 .about {
   padding: 120px 20%;
   text-align: center;
@@ -394,12 +272,11 @@ nav ul li a:hover {
 }
 
 .about p {
-  color: #ccc;
   font-size: 18px;
   line-height: 1.9;
 }
 
-/* ================= CONTACT ================= */
+/* ================== CONTACT ================== */
 .contact {
   padding: 120px 10%;
   text-align: center;
@@ -411,7 +288,6 @@ nav ul li a:hover {
 }
 
 .contact p {
-  color: #ccc;
   margin-bottom: 30px;
 }
 
@@ -423,7 +299,7 @@ nav ul li a:hover {
 }
 
 .contact-box a {
-  color: var(--accent);
+  color: #ffc400;
   text-decoration: none;
 }
 
@@ -431,78 +307,74 @@ nav ul li a:hover {
   text-decoration: underline;
 }
 
-/* ================= FOOTER ================= */
+/* ================== FOOTER ================== */
 footer {
   text-align: center;
   padding: 25px;
-  background: black;
-  color: #aaa;
   font-size: 14px;
 }
 
-/* ================= LIGHTBOX ================= */
+/* ================== LIGHTBOX ================== */
 #lightbox {
   position: fixed;
-  top:0; left:0;
-  width:100%;
-  height:100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0,0,0,0.95);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  z-index:5000;
-  padding:30px;
-  overflow-y:auto;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 5000;
+  padding: 30px;
+  overflow-y: auto;
 }
 
 .lightbox-image {
-  max-width:90%;
-  max-height:70%;
-  border-radius:10px;
-  margin-bottom:20px;
+  max-width: 90%;
+  max-height: 70%;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
 
 .close-lightbox {
-  position:absolute;
-  top:30px;
-  right:40px;
-  font-size:40px;
-  color:white;
-  cursor:pointer;
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
 }
 
 .lightbox-details {
-  color:#ccc;
-  max-width:800px;
-  text-align:left;
-  line-height:1.8;
+  max-width: 800px;
+  text-align: left;
+  line-height: 1.8;
+  color: inherit;
 }
 
-/* ================= ANIMATIONS ================= */
+/* ================== ANIMATIONS ================== */
 @keyframes fadeUp {
-  from {
-    opacity:0;
-    transform:translateY(40px);
-  }
-  to {
-    opacity:1;
-    transform:translateY(0);
-  }
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* ================= RESPONSIVE ================= */
+/* ================== RESPONSIVE ================== */
 @media(max-width:1000px){
-  .gallery-grid { column-count:2; }
-  .about, .feature-banner, .exhibition-banner { padding:100px 10%; }
-  .menu-toggle { display: flex; }
-  .nav-links { display: none; flex-direction: column; }
+  .gallery-grid{ column-count:2; }
+  .about, .feature-banner, .exhibition-banner { padding: 100px 10%; }
 }
 
 @media(max-width:600px){
-  .gallery-grid { column-count:1; }
-  .hero-content h1 { font-size: 32px; letter-spacing: 2px; }
-  .hero-content p { font-size: 16px; }
-  nav ul li { margin-left: 15px; }
-  .hero-btn { padding: 12px 28px; font-size: 14px; }
+  .gallery-grid{ column-count:1; }
+  .hero-content h1{ font-size:40px; }
+  .hero-content p{ font-size:18px; }
+  nav ul li{ margin-left:15px; }
+
+  .menu-toggle{ display: flex; }
+  .nav-links{ display: none; position: absolute; top:70px; left:0; width:100%; background: inherit; flex-direction: column; align-items: center; }
+  .nav-links.active{ display: flex; }
+  .nav-links ul{ flex-direction: column; }
+  .nav-links ul li{ margin: 15px 0; }
 }
