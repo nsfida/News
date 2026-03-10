@@ -261,9 +261,22 @@
   "shutter": "1/995s",
   "iso": "32",
   "story": "A crisp telephoto view of the Dubai Marina skyline taken from the JLT side. The afternoon light highlights the diverse architectural styles of this artificial canal city, showcasing the density and vertical ambition of one of Dubai's most iconic districts."
+},
+
+  {
+  "image": "burj_khalifa_night.jpg",
+  "title": "The Khalifa Radiance",
+  "location": "Downtown Dubai, UAE",
+  "camera": "iPhone 14 Pro Max",
+  "lens": "24mm (Main Camera)",
+  "aperture": "f/1.78",
+  "shutter": "1.0s (Night Mode)",
+  "iso": "50",
+  "story": "A brilliant long-exposure night shot of the Burj Khalifa. Using an 11-frame stack, the image captures the shimmering detail of the world's tallest building and the vibrant energy of the surrounding Downtown district under a pitch-black sky."
 }
 
 ]
+
 
 
 
