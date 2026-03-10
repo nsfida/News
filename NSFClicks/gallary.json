@@ -1,0 +1,121 @@
+[
+  {
+    "image": "atlantistheroyal.jpg",
+    "title": "Atlantis The Royal",
+    "location": "Palm Jumeirah, Dubai",
+    "camera": "iPhone 14 Pro Max",
+    "lens": "24mm Equivalent Wide",
+    "aperture": "f/1.8",
+    "shutter": "1/1200s",
+    "iso": "20",
+    "story": "Captured from the elevated track of the Dubai Monorail, this photograph frames the architectural marvel of Atlantis The Royal. The stacked geometric design appears sculptural against the sky, reflecting Dubai’s ambition to redefine luxury hospitality."
+  },
+
+  {
+    "image": "disneydubai.jpg",
+    "title": "Golden Dubai Skyline",
+    "location": "Dubai, UAE",
+    "camera": "DJI Mini 5 Pro",
+    "lens": "24mm Equivalent",
+    "aperture": "f/4",
+    "shutter": "1/800s",
+    "iso": "100",
+    "story": "An aerial perspective transforms Dubai into a futuristic canvas of glass towers and desert light. From above, the skyline forms patterns and symmetry rising dramatically from the desert landscape."
+  },
+
+  {
+    "image": "jashnerekhtadubai.jpg",
+    "title": "Jashn-e-Rekhta Dubai",
+    "location": "Dubai Cultural Festival",
+    "camera": "iPhone 14 Pro Max",
+    "lens": "24mm Wide",
+    "aperture": "f/1.8",
+    "shutter": "1/200s",
+    "iso": "64",
+    "story": "A memorable cultural moment captured during the Urdu literary festival Jashn-e-Rekhta in Dubai. The event brought together renowned intellectuals and artists celebrating poetry, literature and heritage."
+  },
+
+  {
+    "image": "khawriday.jpg",
+    "title": "Khawrai — Daylight Over the Valley",
+    "location": "Khawrai Village, KPK, Pakistan",
+    "camera": "Samsung S10 Plus",
+    "lens": "26mm Equivalent",
+    "aperture": "f/1.5",
+    "shutter": "1/1000s",
+    "iso": "50",
+    "story": "A peaceful daytime view of Khawrai village surrounded by the rolling hills of Khyber Pakhtunkhwa. The photograph reflects the calm rhythm of rural life where nature and community exist in quiet harmony."
+  },
+
+  {
+    "image": "khawraisunset.jpg",
+    "title": "Khawrai Sunset",
+    "location": "KPK, Pakistan",
+    "camera": "Samsung S10 Plus",
+    "lens": "26mm",
+    "aperture": "f/1.5",
+    "shutter": "1/320s",
+    "iso": "100",
+    "story": "As the sun descends behind the mountains, warm orange light spreads across the landscape of Khawrai. The fading daylight softens the terrain and creates a tranquil cinematic atmosphere."
+  },
+
+  {
+    "image": "khaybarsunset.jpg",
+    "title": "Khaybar Fort Sunset",
+    "location": "Khaybar, Saudi Arabia",
+    "camera": "Canon EOS 2000D",
+    "lens": "55mm",
+    "aperture": "f/8",
+    "shutter": "1/500s",
+    "iso": "100",
+    "story": "Taken near the historic Khaybar Fort, the desert landscape glows under golden sunset light. The ancient region carries deep historical significance while offering breathtaking natural scenery."
+  },
+
+  {
+    "image": "masjidumarbinkhattab.jpg",
+    "title": "Masjid Umar Bin Al-Khattab",
+    "location": "Madinah Munawwarah, Saudi Arabia",
+    "camera": "iPhone 17 Pro Max",
+    "lens": "24mm",
+    "aperture": "f/1.6",
+    "shutter": "1/640s",
+    "iso": "32",
+    "story": "A quiet street view of Masjid Umar Bin Al-Khattab in the blessed city of Madinah. The modest structure carries deep spiritual and historical significance."
+  },
+
+  {
+    "image": "palmjumeirah.jpg",
+    "title": "Palm Jumeirah Aerial",
+    "location": "Dubai, UAE",
+    "camera": "DJI Mini 5 Pro",
+    "lens": "24mm",
+    "aperture": "f/4",
+    "shutter": "1/1000s",
+    "iso": "100",
+    "story": "From above, the iconic palm-shaped island reveals its remarkable engineering and symmetry extending into the Arabian Gulf."
+  },
+
+  {
+    "image": "rozaerasool.jpg",
+    "title": "Roza-e-Rasool ﷺ",
+    "location": "Masjid an-Nabawi, Madinah",
+    "camera": "iPhone 17 Pro Max",
+    "lens": "24mm",
+    "aperture": "f/1.6",
+    "shutter": "1/60s",
+    "iso": "200",
+    "story": "A sacred moment captured within Masjid an-Nabawi where the blessed resting place of Prophet Muhammad ﷺ lies. The atmosphere is filled with reverence, peace and spiritual reflection."
+  },
+
+  {
+    "image": "turquoiseboundarylandscape.jpg",
+    "title": "Turquoise Boundary",
+    "location": "Palm Jumeirah, Dubai",
+    "camera": "DJI Mini 5 Pro",
+    "lens": "24mm",
+    "aperture": "f/4",
+    "shutter": "1/800s",
+    "iso": "100",
+    "story": "From the sky, turquoise waters meet a shoreline of textured stone and sand. The natural meeting of color and pattern creates a calm and balanced composition."
+  }
+]
