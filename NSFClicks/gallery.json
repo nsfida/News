@@ -129,8 +129,33 @@
   "shutter": "1/125s",
   "iso": "100",
   "story": "A dynamic panning shot capturing a Noon Minutes delivery rider in motion, highlighting the speed and urgency of instant delivery services on the sunlit roads."
+},
+
+  {
+  "image": "golden_sunset_palm.jpg",
+  "title": "Golden Sunset",
+  "location": "Palm Jumeirah, Dubai",
+  "camera": "DJI Mini 5 Pro",
+  "lens": "24mm",
+  "aperture": "f/1.7",
+  "shutter": "1/200s",
+  "iso": "100",
+  "story": "A breathtaking aerial view of the Palm Jumeirah bathed in the warm, golden glow of the setting sun, highlighting the iconic fronds against the shimmering Arabian Gulf."
+},
+
+  {
+  "image": "perched_pigeon.jpg",
+  "title": "Urban Observer",
+  "location": "Dubai, UAE",
+  "camera": "Canon EOS 2000D",
+  "lens": "EF75-300mm",
+  "aperture": "f/5.6",
+  "shutter": "1/500s",
+  "iso": "200",
+  "story": "A crisp close-up of a dark pigeon resting on a metal railing, utilizing a telephoto focal length to create a beautifully blurred background that isolates the subject."
 }
 
 ]
+
 
 
