@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -17,48 +18,91 @@
 
 <body>
 
-<!-- BACKGROUND EFFECTS -->
-<div class="animated-bg"></div>
-<div class="color-orb orb1"></div>
-<div class="color-orb orb2"></div>
-<div class="color-orb orb3"></div>
+
+<!-- ================= BACKGROUND EFFECTS ================= -->
+
+<div class="space-background">
+    <canvas id="stars"></canvas>
+</div>
+
+<div class="gradient-overlay"></div>
 
 
-<!-- HEADER -->
+
+<!-- ================= HEADER ================= -->
+
 <header class="header">
 
 <div class="logo">
 <img src="logo.png" alt="NSF Clix">
 </div>
 
-<nav>
-<ul>
+<nav class="nav">
+
+<ul class="nav-links">
+
 <li><a href="#home">Home</a></li>
 <li><a href="#gallery">Gallery</a></li>
 <li><a href="#exhibitions">Exhibitions</a></li>
 <li><a href="#about">About</a></li>
 <li><a href="#contact">Contact</a></li>
+
 </ul>
+
 </nav>
+
+
+<!-- THEME SWITCH -->
+
+<div class="theme-toggle">
+
+<button id="lightMode">☀</button>
+<button id="darkMode">🌙</button>
+<button id="greyMode">◐</button>
+
+</div>
+
+
+<!-- MOBILE MENU -->
+
+<div class="menu-toggle">
+
+<span></span>
+<span></span>
+<span></span>
+
+</div>
 
 </header>
 
 
-<!-- HERO -->
+
+<!-- ================= HERO ================= -->
+
 <section id="home" class="hero">
+
+<div class="hero-banner">
 
 <div class="hero-overlay"></div>
 
 <div class="hero-content">
+
 <h1>NSF Clix</h1>
+
 <p>Architecture • Landscapes • Aerial Perspectives</p>
+
 <a href="#gallery" class="hero-btn">View Gallery</a>
+
+</div>
+
 </div>
 
 </section>
 
 
-<!-- FEATURE BANNER -->
+
+<!-- ================= FEATURE BANNER ================= -->
+
 <section class="feature-banner">
 
 <div class="feature-content">
@@ -75,30 +119,36 @@ the Middle East and South Asia.
 </section>
 
 
-<!-- GALLERY -->
+
+<!-- ================= GALLERY ================= -->
+
 <section id="gallery" class="gallery">
 
 <h2 class="section-title">Photography Collection</h2>
 
 <div class="gallery-grid" id="gallery-grid">
 
-<!-- Images will load automatically from JSON -->
+<!-- Gallery images will load dynamically -->
 
 </div>
 
 </section>
 
 
-<!-- EXHIBITION -->
+
+<!-- ================= EXHIBITION ================= -->
+
 <section id="exhibitions" class="exhibition-banner">
+
+<div class="exhibition-overlay"></div>
 
 <div class="exhibition-content">
 
 <h2>Visual Stories</h2>
 
 <p>
-Each photograph represents a moment of atmosphere, architecture
-and cultural identity captured through careful composition and timing.
+Each photograph represents a moment of atmosphere, architecture and cultural
+identity captured through composition, timing and perspective.
 </p>
 
 </div>
@@ -106,64 +156,87 @@ and cultural identity captured through careful composition and timing.
 </section>
 
 
-<!-- ABOUT -->
+
+<!-- ================= ABOUT ================= -->
+
 <section id="about" class="about">
+
+<div class="about-container">
 
 <h2>About NSF Clix</h2>
 
 <p>
-NSF Clix is the photography portfolio of Nadeem Shahzad Fida.
-The project focuses on documenting architecture, landscapes,
-culture and aerial perspectives across the Middle East and South Asia.
-
-Through careful composition and storytelling,
-each photograph captures a moment of place,
-atmosphere and emotion.
+NSF Clix is the photography portfolio of Nadeem Shahzad Fida. The project
+focuses on documenting architecture, landscapes, culture and aerial
+perspectives across the Middle East and South Asia.
 </p>
+
+<p>
+Through careful composition and storytelling, each photograph captures
+a moment of place, atmosphere and emotion.
+</p>
+
+</div>
 
 </section>
 
 
-<!-- CONTACT -->
+
+<!-- ================= CONTACT ================= -->
+
 <section id="contact" class="contact">
 
 <h2>Contact</h2>
 
 <p>For collaborations, licensing inquiries or photography assignments.</p>
 
-<div class="contact-box">
+<div class="contact-grid">
 
-<p>
-<strong>Email</strong><br>
+<div class="contact-item">
+
+<h3>Email</h3>
+
 <a href="mailto:nadeemshahzadfida@outlook.com">
 nadeemshahzadfida@outlook.com
-</a><br>
+</a>
+
 <a href="mailto:nadeemshahzadfida@gmail.com">
 nadeemshahzadfida@gmail.com
 </a>
-</p>
 
-<p>
-<strong>Mobile (UAE)</strong><br>
+</div>
+
+
+<div class="contact-item">
+
+<h3>Mobile (UAE)</h3>
+
 <a href="tel:+971559216280">
 +971 55 921 6280
 </a>
-</p>
 
-<p>
-<strong>WhatsApp</strong><br>
+</div>
+
+
+<div class="contact-item">
+
+<h3>WhatsApp</h3>
+
 <a href="https://wa.me/923339004564" target="_blank">
 +92 333 900 4564
 </a>
-</p>
+
+</div>
 
 </div>
 
 </section>
 
 
-<!-- FOOTER -->
-<footer>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
 
 <p>
 © 2026 NSF Clix • Photography by Nadeem Shahzad Fida
@@ -172,7 +245,9 @@ nadeemshahzadfida@gmail.com
 </footer>
 
 
-<!-- LIGHTBOX -->
+
+<!-- ================= LIGHTBOX ================= -->
+
 <div id="lightbox">
 
 <span class="close-lightbox">×</span>
@@ -184,7 +259,11 @@ nadeemshahzadfida@gmail.com
 </div>
 
 
+
+<!-- ================= SCRIPTS ================= -->
+
 <script src="script.js"></script>
 
 </body>
+
 </html>
