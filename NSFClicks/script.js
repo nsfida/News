@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const target = document.querySelector(this.getAttribute('href'));
       target.scrollIntoView({behavior:"smooth"});
+
       // Close mobile menu on click
       const navLinks = document.querySelector('.nav-links');
       if(navLinks.classList.contains('active')) navLinks.classList.remove('active');
@@ -14,13 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ================= MOBILE MENU TOGGLE ================= */
-  const menuToggle = document.querySelector('.menu-toggle');
+  const menuToggle = document.getElementById('menuToggle');
   const navLinks = document.querySelector('.nav-links');
   menuToggle.addEventListener('click', () => {
     navLinks.classList.toggle('active');
   });
 
-  /* ================= THEME TOGGLE ================= */
+  /* ================= THEME TOGGLE ICONS ================= */
   const body = document.body;
   document.getElementById('lightMode').addEventListener('click', () => {
     body.classList.remove('dark','grey');
