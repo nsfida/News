@@ -189,9 +189,22 @@
   "shutter": "1/250s",
   "iso": "64",
   "story": "The iconic spires of Dubai's skyscrapers pierce through a thick winter fog, creating a surreal, ethereal atmosphere where the city's scale meets the softness of nature."
+},
+
+  {
+  "image": "jazeera_airways_madinah.jpg",
+  "title": "Clearance for Landing",
+  "location": "Prince Mohammad Bin Abdulaziz International Airport, Madinah",
+  "camera": "Canon EOS 2000D",
+  "lens": "EF 75–300mm",
+  "aperture": "f/9",
+  "shutter": "1/640s",
+  "iso": "100",
+  "story": "A crisp telephoto capture of a Jazeera Airways Airbus A320neo on final approach. The deep blue sky provides a perfect contrast, emphasizing the clean lines and engineering of the aircraft as it nears the runway in Madinah."
 }
 
 ]
+
 
 
 
