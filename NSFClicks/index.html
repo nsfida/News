@@ -11,6 +11,9 @@
 
 <link rel="stylesheet" href="style.css">
 
+<!-- Google Material Icons for theme -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 </head>
@@ -52,15 +55,15 @@
     </ul>
   </nav>
 
-  <!-- Theme switch -->
+  <!-- Theme toggle with icons -->
   <div class="theme-toggle">
-    <button id="lightMode">Light</button>
-    <button id="darkMode">Dark</button>
-    <button id="greyMode">Grey</button>
+    <span class="material-icons" id="lightMode" title="Light Mode">wb_sunny</span>
+    <span class="material-icons" id="darkMode" title="Dark Mode">dark_mode</span>
+    <span class="material-icons" id="greyMode" title="Grey Mode">brightness_1</span>
   </div>
 
   <!-- Mobile menu toggle -->
-  <div class="menu-toggle">
+  <div class="menu-toggle" id="menuToggle">
     <span></span>
     <span></span>
     <span></span>
