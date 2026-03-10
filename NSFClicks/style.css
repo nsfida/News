@@ -1,4 +1,3 @@
-/* ================== GLOBAL RESET ================== */
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +15,6 @@ body {
   transition: background 0.5s, color 0.5s;
 }
 
-/* ================== THEME COLORS ================== */
 body.dark {
   background: #0a0a0a;
   color: white;
@@ -27,7 +25,6 @@ body.light {
   color: #111;
 }
 
-/* ================== HEADER ================== */
 .header {
   position: fixed;
   top: 0;
@@ -72,7 +69,6 @@ body.light .header {
   color: #ffc400;
 }
 
-/* Mobile Menu Toggle */
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -87,7 +83,6 @@ body.light .header {
   border-radius: 2px;
 }
 
-/* ================== THEME ICONS ================== */
 .theme-icons i {
   margin-left: 15px;
   font-size: 18px;
@@ -95,7 +90,6 @@ body.light .header {
   transition: color 0.3s;
 }
 
-/* ================== HERO ================== */
 .hero {
   height: 100vh;
   background: url("images/disneydubai.jpg") center/cover no-repeat;
@@ -152,7 +146,6 @@ body.light .hero-overlay {
   transform: translateY(-3px);
 }
 
-/* ================== FEATURE BANNER ================== */
 .feature-banner {
   padding: 120px 15%;
   text-align: center;
@@ -170,7 +163,6 @@ body.light .hero-overlay {
   font-size: 18px;
 }
 
-/* ================== GALLERY ================== */
 .gallery {
   padding: 120px 8%;
 }
@@ -234,7 +226,6 @@ body.light .gallery-overlay {
   font-size: 14px;
 }
 
-/* ================== EXHIBITION ================== */
 .exhibition-banner {
   padding: 140px 15%;
   text-align: center;
@@ -260,7 +251,6 @@ body.light .exhibition-banner {
   margin: auto;
 }
 
-/* ================== ABOUT ================== */
 .about {
   padding: 120px 20%;
   text-align: center;
@@ -276,7 +266,6 @@ body.light .exhibition-banner {
   line-height: 1.9;
 }
 
-/* ================== CONTACT ================== */
 .contact {
   padding: 120px 10%;
   text-align: center;
@@ -307,14 +296,12 @@ body.light .exhibition-banner {
   text-decoration: underline;
 }
 
-/* ================== FOOTER ================== */
 footer {
   text-align: center;
   padding: 25px;
   font-size: 14px;
 }
 
-/* ================== LIGHTBOX ================== */
 #lightbox {
   position: fixed;
   top: 0;
@@ -354,13 +341,11 @@ footer {
   color: inherit;
 }
 
-/* ================== ANIMATIONS ================== */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ================== RESPONSIVE ================== */
 @media(max-width:1000px){
   .gallery-grid{ column-count:2; }
   .about, .feature-banner, .exhibition-banner { padding: 100px 10%; }
@@ -371,7 +356,6 @@ footer {
   .hero-content h1{ font-size:40px; }
   .hero-content p{ font-size:18px; }
   nav ul li{ margin-left:15px; }
-
   .menu-toggle{ display: flex; }
   .nav-links{ display: none; position: absolute; top:70px; left:0; width:100%; background: inherit; flex-direction: column; align-items: center; }
   .nav-links.active{ display: flex; }
