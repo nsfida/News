@@ -153,9 +153,22 @@
   "shutter": "1/500s",
   "iso": "200",
   "story": "A crisp close-up of a dark pigeon resting on a metal railing, utilizing a telephoto focal length to create a beautifully blurred background that isolates the subject."
+},
+
+  {
+  "image": "al_qudra_love_lake_sunset.jpg",
+  "title": "Desert Heart Sunset",
+  "location": "Al Qudra Love Lake, Dubai",
+  "camera": "DJI Mini 5 Pro",
+  "lens": "24mm",
+  "aperture": "f/1.7",
+  "shutter": "1/160s",
+  "iso": "100",
+  "story": "A wide-angle aerial vista showcasing the man-made oasis of Love Lake as the sun touches the horizon, painting a vibrant gradient across the desert sky."
 }
 
 ]
+
 
 
 
