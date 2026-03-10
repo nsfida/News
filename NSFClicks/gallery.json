@@ -119,17 +119,18 @@
     "story": "From the sky, turquoise waters meet a shoreline of textured stone and sand. The natural meeting of color and pattern creates a calm and balanced composition."
   },
 
-  {
-    "image": "turquoiseboundarylandscape.jpg",
-    "title": "Turquoise Boundary",
-    "location": "Palm Jumeirah, Dubai",
-    "camera": "DJI Mini 5 Pro",
-    "lens": "24mm",
-    "aperture": "f/4",
-    "shutter": "1/800s",
-    "iso": "100",
-    "story": "From the sky, turquoise waters meet a shoreline of textured stone and sand. The natural meeting of color and pattern creates a calm and balanced composition."
-  }
+{
+  "image": "noon_minutes_delivery.jpg",
+  "title": "Delivery in Minutes",
+  "location": "Dubai, UAE",
+  "camera": "Canon EOS 2000D",
+  "lens": "EF75-300mm",
+  "aperture": "f/11",
+  "shutter": "1/125s",
+  "iso": "100",
+  "story": "A dynamic panning shot capturing a Noon Minutes delivery rider in motion, highlighting the speed and urgency of instant delivery services on the sunlit roads."
+}
 
 ]
+
 
