@@ -1,39 +1,62 @@
-/* ================== GLOBAL ================== */
-const logo = document.getElementById("logo");
-const lightBtn = document.getElementById("lightMode");
-const darkBtn = document.getElementById("darkMode");
-const menuToggle = document.getElementById("menuToggle");
-const navLinks = document.querySelector(".nav-links");
-
-/* ---------------- THEME TOGGLE ---------------- */
-lightBtn.addEventListener("click", () => {
-    document.body.classList.add("light");
-    document.body.classList.remove("dark");
-    logo.style.filter = "invert(1)";
-});
-
-darkBtn.addEventListener("click", () => {
-    document.body.classList.add("dark");
-    document.body.classList.remove("light");
-    logo.style.filter = "invert(0)";
-});
-
-/* ---------------- MOBILE MENU TOGGLE ---------------- */
-menuToggle.addEventListener("click", () => {
-    navLinks.classList.toggle("active");
-});
-
-/* ---------------- SMOOTH SCROLL ---------------- */
-document.querySelectorAll('nav a, .nav-links a, .hero-btn').forEach(anchor => {
+/* ================== SMOOTH SCROLL ================== */
+document.querySelectorAll('nav a').forEach(anchor => {
     anchor.addEventListener('click', function(e){
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
-        target.scrollIntoView({behavior:"smooth"});
-        if(navLinks.classList.contains("active")) navLinks.classList.remove("active");
+        const headerOffset = document.querySelector('.header').offsetHeight;
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+
+        // Close mobile menu if open
+        document.querySelector('.nav-links').classList.remove('active');
     });
 });
 
-/* ---------------- DYNAMIC GALLERY LOADING FROM JSON ---------------- */
+/* ================== MOBILE MENU TOGGLE ================== */
+const menuToggle = document.getElementById('menuToggle');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+});
+
+/* ================== THEME SWITCH ================== */
+const body = document.body;
+const lightIcon = document.getElementById('lightMode');
+const darkIcon = document.getElementById('darkMode');
+const logo = document.getElementById('logo');
+
+function setTheme(theme){
+    if(theme === 'light'){
+        body.classList.add('light');
+        body.classList.remove('dark');
+        logo.style.filter = 'invert(1)'; // invert logo for light mode
+    } else {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        logo.style.filter = 'invert(0)'; // normal logo
+    }
+    // Save preference
+    localStorage.setItem('nsf-theme', theme);
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('nsf-theme');
+if(savedTheme){
+    setTheme(savedTheme);
+} else {
+    setTheme('dark'); // default
+}
+
+lightIcon.addEventListener('click', () => setTheme('light'));
+darkIcon.addEventListener('click', () => setTheme('dark'));
+
+/* ================== DYNAMIC GALLERY LOADING ================== */
 fetch("./gallery.json")
   .then(res => res.json())
   .then(photos => {
@@ -57,14 +80,16 @@ fetch("./gallery.json")
           ${photo.story ? `<p class="story">${photo.story}</p>` : ""}
         </div>
       `;
+
       galleryGrid.appendChild(item);
     });
+
     initGallery();
   })
   .catch(err => console.error("Failed to load gallery.json:", err));
 
-/* ---------------- GALLERY LIGHTBOX & LAZY LOAD & ANIMATIONS ---------------- */
-function initGallery() {
+/* ================== GALLERY LIGHTBOX ================== */
+function initGallery(){
     const galleryItems = document.querySelectorAll(".gallery-item");
     const lightbox = document.getElementById("lightbox");
     const lightboxImg = document.querySelector(".lightbox-image");
@@ -95,7 +120,7 @@ function initGallery() {
         }
     });
 
-    /* ---------------- LAZY LOAD ---------------- */
+    /* ================== LAZY LOAD ================== */
     const lazyImages = document.querySelectorAll(".gallery-item img");
     const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
@@ -106,9 +131,10 @@ function initGallery() {
             }
         });
     });
+
     lazyImages.forEach(img => observer.observe(img));
 
-    /* ---------------- SCROLL ANIMATION ---------------- */
+    /* ================== SCROLL ANIMATION ================== */
     const gallerySections = document.querySelectorAll(".gallery-item");
     const sectionObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -125,17 +151,4 @@ function initGallery() {
         section.style.transition = "all 1s ease";
         sectionObserver.observe(section);
     });
-}
-
-/* ---------------- HERO STARS BACKGROUND ---------------- */
-const starsContainer = document.querySelector(".hero-stars");
-for(let i=0; i<150; i++){
-    const star = document.createElement("div");
-    star.classList.add("star");
-    star.style.top = Math.random()*100 + "%";
-    star.style.left = Math.random()*100 + "%";
-    star.style.width = Math.random()*2 + 1 + "px";
-    star.style.height = star.style.width;
-    star.style.animationDuration = (Math.random()*3 + 2) + "s";
-    starsContainer.appendChild(star);
 }
