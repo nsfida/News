@@ -1,6 +1,8 @@
-document.querySelectorAll('nav a').forEach(anchor => {
+// Smooth scroll navigation
+document.querySelectorAll('.nav-links a').forEach(anchor => {
     anchor.addEventListener('click', function(e){
         e.preventDefault();
+
         const target = document.querySelector(this.getAttribute('href'));
         const headerOffset = document.querySelector('.header').offsetHeight;
         const elementPosition = target.getBoundingClientRect().top;
@@ -11,17 +13,30 @@ document.querySelectorAll('nav a').forEach(anchor => {
             behavior: "smooth"
         });
 
-        document.querySelector('.nav-links').classList.remove('active');
+        navLinks.classList.remove('active');
     });
 });
 
+
+// Mobile menu toggle
 const menuToggle = document.getElementById('menuToggle');
 const navLinks = document.querySelector('.nav-links');
 
-menuToggle.addEventListener('click', () => {
+menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
     navLinks.classList.toggle('active');
 });
 
+
+// Close menu if clicking outside
+document.addEventListener("click", function(e) {
+    if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+        navLinks.classList.remove("active");
+    }
+});
+
+
+// Theme switcher
 const body = document.body;
 const lightIcon = document.getElementById('lightMode');
 const darkIcon = document.getElementById('darkMode');
@@ -41,6 +56,7 @@ function setTheme(theme){
 }
 
 const savedTheme = localStorage.getItem('nsf-theme');
+
 if(savedTheme){
     setTheme(savedTheme);
 } else {
@@ -50,11 +66,16 @@ if(savedTheme){
 lightIcon.addEventListener('click', () => setTheme('light'));
 darkIcon.addEventListener('click', () => setTheme('dark'));
 
+
+// Load gallery
 fetch("./gallery.json")
   .then(res => res.json())
   .then(photos => {
+
     const galleryGrid = document.querySelector(".gallery-grid");
+
     photos.forEach(photo => {
+
       const item = document.createElement("div");
       item.classList.add("gallery-item");
 
@@ -64,6 +85,7 @@ fetch("./gallery.json")
           <h3>${photo.title}</h3>
           <p>${photo.location}</p>
         </div>
+
         <div class="photo-details" style="display:none;">
           ${photo.camera ? `<p><strong>Camera:</strong> ${photo.camera}</p>` : ""}
           ${photo.lens ? `<p><strong>Lens:</strong> ${photo.lens}</p>` : ""}
@@ -75,13 +97,18 @@ fetch("./gallery.json")
       `;
 
       galleryGrid.appendChild(item);
+
     });
 
     initGallery();
+
   })
   .catch(err => console.error("Failed to load gallery.json:", err));
 
+
+// Gallery + lightbox
 function initGallery(){
+
     const galleryItems = document.querySelectorAll(".gallery-item");
     const lightbox = document.getElementById("lightbox");
     const lightboxImg = document.querySelector(".lightbox-image");
@@ -89,56 +116,93 @@ function initGallery(){
     const closeLightbox = document.querySelector(".close-lightbox");
 
     galleryItems.forEach(item => {
+
         const img = item.querySelector("img");
         const details = item.querySelector(".photo-details").innerHTML;
 
         img.addEventListener("click", () => {
+
             lightbox.style.display = "flex";
             lightboxImg.src = img.src;
             lightboxDetails.innerHTML = details;
+
             document.body.style.overflow = "hidden";
+
         });
+
     });
+
 
     closeLightbox.addEventListener("click", () => {
+
         lightbox.style.display = "none";
         document.body.style.overflow = "auto";
+
     });
+
 
     document.addEventListener("keydown", (e) => {
+
         if(e.key === "Escape"){
+
             lightbox.style.display = "none";
             document.body.style.overflow = "auto";
+
         }
+
     });
 
+
+    // Lazy loading observer
     const lazyImages = document.querySelectorAll(".gallery-item img");
+
     const observer = new IntersectionObserver((entries, obs) => {
+
         entries.forEach(entry => {
+
             if(entry.isIntersecting){
+
                 const img = entry.target;
                 img.src = img.src;
+
                 obs.unobserve(img);
+
             }
+
         });
+
     });
 
     lazyImages.forEach(img => observer.observe(img));
 
+
+    // Gallery animation observer
     const gallerySections = document.querySelectorAll(".gallery-item");
+
     const sectionObserver = new IntersectionObserver((entries) => {
+
         entries.forEach(entry => {
+
             if(entry.isIntersecting){
+
                 entry.target.style.opacity = 1;
                 entry.target.style.transform = "translateY(0px)";
+
             }
+
         });
+
     }, {threshold:0.2});
 
+
     gallerySections.forEach(section => {
+
         section.style.opacity = 0;
         section.style.transform = "translateY(60px)";
         section.style.transition = "all 1s ease";
+
         sectionObserver.observe(section);
+
     });
+
 }
