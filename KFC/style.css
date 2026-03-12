@@ -11,11 +11,15 @@ flex-direction:column;
 align-items:center;
 color:#416ba5;
 padding:20px;
+max-width:100%;
+overflow-x:hidden;
 }
 
 .form-container{
 text-align:center;
 margin-bottom:20px;
+width:100%;
+max-width:600px;
 }
 
 .logo-title{
@@ -23,6 +27,8 @@ display:flex;
 align-items:center;
 justify-content:center;
 margin-bottom:20px;
+flex-wrap:wrap;
+text-align:center;
 }
 
 .logo-title img{
@@ -51,7 +57,7 @@ color:#555;
 
 input[type="text"],select{
 width:100%;
-padding:5px;
+padding:8px;
 margin-bottom:20px;
 border-radius:50px;
 border:1.5px solid #ddd;
@@ -63,13 +69,14 @@ display:flex;
 justify-content:center;
 gap:10px;
 margin-top:10px;
+flex-wrap:wrap;
 }
 
 button{
 background:#1976d2;
 color:white;
-padding:5px 20px;
-font-size:15px;
+padding:6px 18px;
+font-size:14px;
 border:none;
 border-radius:50px;
 cursor:pointer;
@@ -84,9 +91,15 @@ button:hover:enabled{
 background:#125fa6;
 }
 
+#resultContainer{
+width:100%;
+overflow-x:auto;
+}
+
 table{
 width:100%;
 border-collapse:collapse;
+min-width:600px;
 }
 
 table,th,td{
@@ -94,7 +107,7 @@ border:1px solid #ddd;
 }
 
 th,td{
-padding:4px;
+padding:6px;
 text-align:left;
 }
 
@@ -118,4 +131,23 @@ color:red;
 font-size:16px;
 text-align:center;
 margin-top:20px;
+}
+
+/* MOBILE FIX */
+
+@media (max-width:600px){
+
+.logo-title h2{
+font-size:18px;
+}
+
+.uae-text{
+font-size:16px;
+}
+
+button{
+font-size:13px;
+padding:6px 12px;
+}
+
 }
