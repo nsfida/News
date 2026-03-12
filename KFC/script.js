@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-let data = []; // real data from cards.json
+let data = []; // Data from cards.json
 
 const searchInput = document.getElementById("searchInput");
 const searchField = document.getElementById("searchField");
@@ -26,6 +26,11 @@ fetch('cards.json')
       console.error("Error loading JSON:", err);
       resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
   });
+
+/* Enable Search button */
+searchInput.addEventListener("input", function () {
+    searchButton.disabled = searchInput.value.trim() === "";
+});
 
 /* Live Search with VIEW CARD */
 searchInput.addEventListener("input", function () {
