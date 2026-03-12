@@ -1,4 +1,6 @@
-import { data } from './cards.json';
+let data = [];
+let sortedData = [];
+let sortDirection = {};
 
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
@@ -8,59 +10,122 @@ const englishConstitutionButton = document.getElementById('englishConstitution')
 const urduConstitutionButton = document.getElementById('urduConstitution');
 const resultContainer = document.getElementById('resultContainer');
 
-searchInput.addEventListener('input', () => {
-    searchButton.disabled = searchInput.value.trim() === '';
+fetch('cards.json')
+.then(res => res.json())
+.then(json => {
+data = json;
+sortedData = [...data];
 });
 
-searchButton.addEventListener('click', () => {
-    const field = document.getElementById('searchField').value;
-    const term = searchInput.value.trim().toLowerCase();
-    const filtered = data.filter(item => {
-        return item[field] && item[field].toString().toLowerCase().includes(term);
-    });
-    displayResults(filtered);
-    printButton.disabled = filtered.length === 0;
-});
-
-printButton.addEventListener('click', () => {
-    window.print();
-});
-
-generateButton.addEventListener('click', () => {
-    alert('Redirecting to New e-Card generation page.');
-});
-
-englishConstitutionButton.addEventListener('click', () => {
-    alert('Opening English Constitution.');
-});
-
-urduConstitutionButton.addEventListener('click', () => {
-    alert('Opening Urdu Constitution.');
-});
-
-function displayResults(list) {
-    if (list.length === 0) {
-        resultContainer.innerHTML = '<p class="no-data">No results found.</p>';
-        return;
-    }
-
-    let table = '<table><thead><tr>';
-    table += '<th>Name</th><th>Designation</th><th>Blood Type</th><th>Mobile</th><th>e-Card Number</th><th>Status</th><th>Room</th><th>Issue Date</th>';
-    table += '</tr></thead><tbody>';
-
-    list.forEach(item => {
-        table += `<tr>
-            <td>${item.name}</td>
-            <td>${item.Desg}</td>
-            <td>${item.BG}</td>
-            <td>${item.mobile}</td>
-            <td>${item.CNo}</td>
-            <td class="${item.Status.toLowerCase()}">${item.Status}</td>
-            <td>${item.Room}</td>
-            <td>${item.Issue}</td>
-        </tr>`;
-    });
-
-    table += '</tbody></table>';
-    resultContainer.innerHTML = table;
+function toggleButtons(){
+const hasInput = searchInput.value.trim().length>0;
+searchButton.disabled=!hasInput;
+printButton.disabled=!hasInput;
 }
+
+function searchData(){
+
+const field=document.getElementById('searchField').value;
+const value=searchInput.value.toLowerCase();
+
+sortedData=data.filter(item =>
+item[field]?.toLowerCase().includes(value)
+);
+
+displayResults(sortedData);
+}
+
+function displayResults(results){
+
+resultContainer.innerHTML='';
+
+if(results.length>0){
+
+const table=document.createElement('table');
+
+table.innerHTML=`
+<thead>
+<tr>
+<th onclick="sortTable('name')">Member Name</th>
+<th onclick="sortTable('CNo')">e-Card Number</th>
+<th onclick="sortTable('Desg')">Designation</th>
+<th onclick="sortTable('BG')">Blood Type</th>
+<th onclick="sortTable('Issue')">e-Card Issue Date</th>
+<th onclick="sortTable('mobile')">Mobile</th>
+<th onclick="sortTable('Room')">Room</th>
+<th onclick="sortTable('Status')">Status</th>
+<th>e-Card</th>
+</tr>
+</thead>
+
+<tbody>
+
+${results.map(item=>`
+<tr>
+<td>${item.name}</td>
+<td>${item.CNo}</td>
+<td>${item.Desg}</td>
+<td>${item.BG}</td>
+<td>${item.Issue}</td>
+<td>${item.mobile}</td>
+<td>${item.Room}</td>
+<td class="${item.Status.toLowerCase()}">${item.Status}</td>
+<td><button onclick="viewECard('${item.name}')">VIEW CARD</button></td>
+</tr>
+`).join('')}
+
+</tbody>
+`;
+
+resultContainer.appendChild(table);
+
+}
+else{
+resultContainer.innerHTML='<p class="no-data">No matching data found.</p>';
+}
+
+}
+
+function viewECard(name){
+
+const file=name+' e-Card.pdf';
+const path='e-Cards/'+file;
+
+window.open(path,'_blank');
+
+}
+
+function sortTable(field){
+
+const direction=sortDirection[field]==='asc'?'desc':'asc';
+sortDirection={[field]:direction};
+
+sortedData.sort((a,b)=>{
+if(a[field]>b[field]) return direction==='asc'?1:-1;
+if(a[field]<b[field]) return direction==='asc'?-1:1;
+return 0;
+});
+
+displayResults(sortedData);
+
+}
+
+searchInput.addEventListener('input',toggleButtons);
+searchButton.addEventListener('click',searchData);
+
+printButton.addEventListener('click',()=>{
+displayResults(sortedData);
+setTimeout(()=>window.print(),100);
+});
+
+generateButton.addEventListener('click',()=>{
+window.location.href='http://127.0.0.1:5000/';
+});
+
+englishConstitutionButton.addEventListener('click',()=>{
+window.open('English.pdf','_blank');
+});
+
+urduConstitutionButton.addEventListener('click',()=>{
+window.open('Urdu.pdf','_blank');
+});
