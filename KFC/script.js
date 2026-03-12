@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
 let data = [
-    // Example data structure; replace with your real database array
     {name: "Nadeem Shahzad Fida", Desg:"Committee Member", BG:"O+", mobile:"0501234567", CNo:"746", Status:"Active", Room:"101", Issue:"2026-01-01"},
     {name: "Ali Khan", Desg:"Member", BG:"A+", mobile:"0507654321", CNo:"747", Status:"Active", Room:"102", Issue:"2026-02-01"}
 ];
@@ -15,15 +14,14 @@ const generateButton = document.getElementById("generateButton");
 const englishConstitution = document.getElementById("englishConstitution");
 const urduConstitution = document.getElementById("urduConstitution");
 
-/* Print, New Card, Constitution Buttons */
+/* Buttons */
 printButton.disabled = true;
-
 printButton.addEventListener("click", () => window.print());
 generateButton.addEventListener("click", () => alert("e-Card generator page will open here."));
 englishConstitution.addEventListener("click", () => window.open("constitution-english.pdf","_blank"));
 urduConstitution.addEventListener("click", () => window.open("constitution-urdu.pdf","_blank"));
 
-/* Live Search */
+/* Live Search with VIEW CARD */
 searchInput.addEventListener("input", function () {
     const term = searchInput.value.trim().toLowerCase();
     const field = searchField.value;
@@ -42,18 +40,20 @@ searchInput.addEventListener("input", function () {
         return;
     }
 
-    // Build table
+    // Build table with VIEW CARD
     let table = "<table><thead><tr>";
     for(const key in results[0]){
         table += `<th>${key}</th>`;
     }
-    table += "</tr></thead><tbody>";
+    table += "<th>VIEW CARD</th></tr></thead><tbody>";
 
     results.forEach(item => {
         table += "<tr>";
         for(const key in item){
             table += `<td>${item[key]}</td>`;
         }
+        const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
+        table += `<td><button onclick="window.open('${cardFileName}','_blank')">VIEW CARD</button></td>`;
         table += "</tr>";
     });
 
