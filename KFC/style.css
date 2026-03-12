@@ -147,4 +147,49 @@ font-size:13px;
 padding:5px 12px;
 }
 
+/* Convert table to cards */
+table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+}
+
+thead tr {
+    display: none; /* hide header on mobile */
+}
+
+tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+
+td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    width: 45%;
+    font-weight: bold;
+    text-align: left;
+}
+
+td:last-child {
+    border-bottom: 0;
+}
+
+td button {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 5px;
+}
+
 }
