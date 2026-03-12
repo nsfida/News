@@ -1,69 +1,65 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-let data = [];
-let sortedData = [];
+let data = [
+    // Example data structure; replace with your real database array
+    {name: "Nadeem Shahzad Fida", Desg:"Committee Member", BG:"O+", mobile:"0501234567", CNo:"746", Status:"Active", Room:"101", Issue:"2026-01-01"},
+    {name: "Ali Khan", Desg:"Member", BG:"A+", mobile:"0507654321", CNo:"747", Status:"Active", Room:"102", Issue:"2026-02-01"}
+];
 
 const searchInput = document.getElementById("searchInput");
-const searchButton = document.getElementById("searchButton");
-const printButton = document.getElementById("printButton");
+const searchField = document.getElementById("searchField");
 const resultContainer = document.getElementById("resultContainer");
+const printButton = document.getElementById("printButton");
 
 const generateButton = document.getElementById("generateButton");
 const englishConstitution = document.getElementById("englishConstitution");
 const urduConstitution = document.getElementById("urduConstitution");
 
-searchButton.disabled = true;
+/* Print, New Card, Constitution Buttons */
 printButton.disabled = true;
 
-/* Enable Search Button */
+printButton.addEventListener("click", () => window.print());
+generateButton.addEventListener("click", () => alert("e-Card generator page will open here."));
+englishConstitution.addEventListener("click", () => window.open("constitution-english.pdf","_blank"));
+urduConstitution.addEventListener("click", () => window.open("constitution-urdu.pdf","_blank"));
 
+/* Live Search */
 searchInput.addEventListener("input", function () {
-
-    if (searchInput.value.trim() === "") {
-        searchButton.disabled = true;
-    } else {
-        searchButton.disabled = false;
-    }
-
-});
-
-/* Search Button */
-
-searchButton.addEventListener("click", function () {
-
-    const term = searchInput.value.trim();
+    const term = searchInput.value.trim().toLowerCase();
+    const field = searchField.value;
 
     if(term === ""){
+        resultContainer.innerHTML = "";
+        printButton.disabled = true;
         return;
     }
 
-    resultContainer.innerHTML = "<p class='no-data'>Search feature working. Connect your data source.</p>";
+    const results = data.filter(item => item[field].toString().toLowerCase().includes(term));
+
+    if(results.length === 0){
+        resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
+        printButton.disabled = true;
+        return;
+    }
+
+    // Build table
+    let table = "<table><thead><tr>";
+    for(const key in results[0]){
+        table += `<th>${key}</th>`;
+    }
+    table += "</tr></thead><tbody>";
+
+    results.forEach(item => {
+        table += "<tr>";
+        for(const key in item){
+            table += `<td>${item[key]}</td>`;
+        }
+        table += "</tr>";
+    });
+
+    table += "</tbody></table>";
+
+    resultContainer.innerHTML = table;
     printButton.disabled = false;
-
 });
-
-/* Print Button */
-
-printButton.addEventListener("click", function () {
-    window.print();
-});
-
-/* New e-Card */
-
-generateButton.addEventListener("click", function () {
-    alert("e-Card generator page will open here.");
-});
-
-/* Constitution English */
-
-englishConstitution.addEventListener("click", function () {
-    window.open("constitution-english.pdf", "_blank");
-});
-
-/* Constitution Urdu */
-
-urduConstitution.addEventListener("click", function () {
-    window.open("constitution-urdu.pdf", "_blank");
-});
-
 });
