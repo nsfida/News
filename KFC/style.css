@@ -111,6 +111,7 @@ text-align:left;
 th{
 background:#f2f2f2;
 cursor:pointer;
+text-transform: uppercase; /* Make desktop table headers uppercase */
 }
 
 .active{
@@ -131,7 +132,6 @@ margin-top:20px;
 }
 
 /* MOBILE */
-
 @media (max-width:600px){
 
 .logo-title h2{
@@ -180,6 +180,7 @@ td::before {
     width: 45%;
     font-weight: bold;
     text-align: left;
+    text-transform: uppercase; /* Make mobile card labels uppercase */
 }
 
 td:last-child {
