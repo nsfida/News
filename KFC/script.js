@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-let data = []; // Data from cards.json
+let data = []; // Load from cards.json
 
 const searchInput = document.getElementById("searchInput");
 const searchField = document.getElementById("searchField");
@@ -18,7 +18,7 @@ generateButton.addEventListener("click", () => alert("e-Card generator page will
 englishConstitution.addEventListener("click", () => window.open("constitution-english.pdf","_blank"));
 urduConstitution.addEventListener("click", () => window.open("constitution-urdu.pdf","_blank"));
 
-/* Load data from cards.json */
+/* Load JSON data */
 fetch('cards.json')
   .then(response => response.json())
   .then(json => data = json)
@@ -32,7 +32,7 @@ searchInput.addEventListener("input", function () {
     searchButton.disabled = searchInput.value.trim() === "";
 });
 
-/* Live Search with VIEW CARD */
+/* Live Search */
 searchInput.addEventListener("input", function () {
     const term = searchInput.value.trim().toLowerCase();
     const field = searchField.value;
@@ -51,7 +51,7 @@ searchInput.addEventListener("input", function () {
         return;
     }
 
-    // Build table with VIEW CARD
+    // Build table with VIEW CARD and data-label for mobile
     let table = "<table><thead><tr>";
     for(const key in results[0]){
         table += `<th>${key}</th>`;
@@ -61,10 +61,10 @@ searchInput.addEventListener("input", function () {
     results.forEach(item => {
         table += "<tr>";
         for(const key in item){
-            table += `<td>${item[key]}</td>`;
+            table += `<td data-label="${key}">${item[key]}</td>`;
         }
         const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
-        table += `<td><button onclick="window.open('${cardFileName}','_blank')">VIEW CARD</button></td>`;
+        table += `<td data-label="VIEW CARD"><button onclick="window.open('${cardFileName}','_blank')">VIEW CARD</button></td>`;
         table += "</tr>";
     });
 
