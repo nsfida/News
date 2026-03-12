@@ -1,9 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-let data = [
-    {name: "Nadeem Shahzad Fida", Desg:"Committee Member", BG:"O+", mobile:"0501234567", CNo:"746", Status:"Active", Room:"101", Issue:"2026-01-01"},
-    {name: "Ali Khan", Desg:"Member", BG:"A+", mobile:"0507654321", CNo:"747", Status:"Active", Room:"102", Issue:"2026-02-01"}
-];
+let data = []; // real data from cards.json
 
 const searchInput = document.getElementById("searchInput");
 const searchField = document.getElementById("searchField");
@@ -21,6 +18,15 @@ generateButton.addEventListener("click", () => alert("e-Card generator page will
 englishConstitution.addEventListener("click", () => window.open("constitution-english.pdf","_blank"));
 urduConstitution.addEventListener("click", () => window.open("constitution-urdu.pdf","_blank"));
 
+/* Load data from cards.json */
+fetch('cards.json')
+  .then(response => response.json())
+  .then(json => data = json)
+  .catch(err => {
+      console.error("Error loading JSON:", err);
+      resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
+  });
+
 /* Live Search with VIEW CARD */
 searchInput.addEventListener("input", function () {
     const term = searchInput.value.trim().toLowerCase();
@@ -32,7 +38,7 @@ searchInput.addEventListener("input", function () {
         return;
     }
 
-    const results = data.filter(item => item[field].toString().toLowerCase().includes(term));
+    const results = data.filter(item => item[field] && item[field].toString().toLowerCase().includes(term));
 
     if(results.length === 0){
         resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
