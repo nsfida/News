@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khawrai Falahi Committee UAE</title>
+
+<link rel="stylesheet" href="login.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- LOGIN PANEL -->
+
+<div id="loginPanel" class="panel">
+
+<h2>Member Login</h2>
+
+<input id="username" placeholder="Username">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<p id="loginError"></p>
+
+</div>
+
+
+<!-- FORM PANEL -->
+
+<div id="formPanel" class="panel hidden">
+
+<h2>Create e-Card</h2>
+
+<input id="name" placeholder="Name">
+
+<input id="urdu" placeholder="Urdu Name">
+
+<input id="desg" placeholder="Designation">
+
+<input id="cno" placeholder="Card Number">
+
+<input id="bg" placeholder="Blood Group">
+
+<input id="mobile" placeholder="Mobile">
+
+<input id="photo" type="file">
+
+<button onclick="generateCard()">Generate e-Card</button>
+
+</div>
+
+
+<!-- CARD OUTPUT -->
+
+<div id="cardPanel" class="hidden">
+
+<div class="ecard" id="ecard">
+
+<img id="cardPhoto">
+
+<div class="cardText">
+
+<h3 id="cardName"></h3>
+
+<p id="cardUrdu"></p>
+
+<p id="cardDesg"></p>
+
+<p id="cardNo"></p>
+
+<p id="cardBG"></p>
+
+<p id="cardMobile"></p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="login.js"></script>
+
+</body>
+</html>
