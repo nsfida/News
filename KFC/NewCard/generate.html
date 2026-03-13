@@ -254,7 +254,7 @@ await waitForResources(ecard);
 
 const opt={
 margin:0,
-filename:`${formData.name}_eCard.pdf`,
+filename:`${formData.name} e-Card.pdf`,
 image:{type:'jpeg',quality:1},
 html2canvas:{scale:5,useCORS:true},
 jsPDF:{unit:'mm',format:[180,135],orientation:'landscape'}
@@ -267,3 +267,4 @@ html2pdf().set(opt).from(ecard).save();
 
 </body>
 </html>
+
