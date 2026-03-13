@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khawrai Falahi Committee UAE e-Card</title>
+<style>
+/* Load Urdu font */
+@font-face {
+    font-family: 'UrduFont';
+    src: url('static/fonts/Urdu.ttf') format('truetype');
+}
+
+body {
+    margin: 0;
+    font-family: Calibri, sans-serif;
+    background-color: #e4fffc;
+}
+
+/* E-card container */
+.ecard-container {
+    position: relative;
+    width: 610px;
+    height: 400px;
+    margin: 50px auto;
+    background-image: url('static/images/background.png');
+    background-size: cover;
+    background-position: center;
+    border-radius: 40px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* Watermark overlay */
+.ecard-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('static/images/watermark.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1; /* adjust transparency */
+    z-index: 0;
+}
+
+/* Logos */
+.logo { position: absolute; top: 10px; right: 20px; width: 100px; opacity: 0.8; z-index: 5; }
+.logo1 { position: absolute; top: 30px; left: 28px; width: 55px; z-index: 5; }
+.logo2 { position: absolute; top: 30px; left: 70px; width: 55px; z-index: 5; }
+.center-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 200px; opacity: 0.08; z-index: 1; }
+
+/* User photo and overlays */
+.photo { position: absolute; bottom: 25px; right: 40px; width: 130px; z-index: 6; }
+.photo-small { position: absolute; bottom: 195px; left: 150px; width: 40px; opacity: 0.2; border-radius: 10%; z-index: 4; }
+.photosticker { position: absolute; bottom: 25px; right: 40px; width: 130px; height: 160px; opacity: 0.1; z-index: 3; }
+.photo-logo { position: absolute; bottom: 40px; right: 30px; width: 100px; opacity: 0.1; pointer-events: none; z-index: 2; }
+.photo-logo2 { position: absolute; bottom: 195px; left: 150px; width: 40px; height: 50px; border-radius: 10%; opacity: 0.1; z-index: 2; }
+.photo-logo3 { position: absolute; bottom: -91px; left: -100px; width: 810px; opacity: 0.6; pointer-events: none; z-index: 1; }
+
+/* Stamp and QR */
+.stamp { position: absolute; bottom: 8px; right: 140px; width: 135px; z-index: 10; }
+.qr-code { position: absolute; bottom: 230px; left: 37px; width: 80px; z-index: 6; }
+
+/* Signature */
+.signature { position: absolute; bottom: 8px; left: 250px; width: 170px; transform: rotate(-15deg); z-index: 10; }
+
+/* Text containers */
+.text-container { position: absolute; bottom: 60px; top: 180px; left: 40px; font-family: "Courier New", monospace; color: #00427a; font-weight: bold; -webkit-text-stroke: .px black; line-height: 0.7; z-index: 12; }
+.text-urdu { font-family: 'UrduFont', "Courier New", monospace; font-size: 15px; color: #00427a; font-weight: bold; left: -45px; line-height: 1; }
+
+.designation { color: purple; font-weight: bold; }
+
+/* Headers */
+.header-text { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; color: #301934; font-size: 20px; font-weight: 500; font-family: 'UrduFont'; z-index: 12; }
+.header-text-urdu { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); text-align: center; font-family: 'UrduFont'; color: #301934; font-size: 18px; font-weight: 500; line-height: 1; z-index: 12; }
+
+/* Strip holes */
+.strip-hole { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 71px; height: 10px; background-color: grey; border-radius: 5px; z-index: 11; }
+.strip-hole2 { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 70px; height: 9.3px; background-color: white; border-radius: 5px; z-index: 11; }
+
+/* Date & validity */
+.date { position: absolute; top: 150px; right: 35px; font-family: "Courier New", monospace; font-size: 10px; color: green; font-weight: bold; z-index: 12; }
+.valid-till { position: absolute; top: 170px; right: 36px; font-family: "Courier New", monospace; font-size: 9px; color: red; font-weight: bold; z-index: 12; }
+
+.issuance { margin-top: 10px; font-family: "Courier New", monospace; font-size: 15px; color: #00427a; font-weight: bold; -webkit-text-stroke: 0.2px black; line-height: 1; z-index: 12; }
+
+/* Save button */
+.save-btn-container { display: flex; justify-content: center; margin-top: 20px; }
+button { background-color: #4a90e2; color: white; padding: 10px 15px; font-size: 12px; border: none; border-radius: 30px; cursor: pointer; transition: 0.3s; }
+button:hover { background-color: #357ab7; }
+</style>
+</head>
+<body>
+
+<div class="ecard-container" id="ecard">
+    <div class="strip-hole"></div>
+    <div class="strip-hole2"></div>
+
+    <!-- Logos and overlays -->
+    <img id="logo1" src="static/images/logo1.png" class="logo1">
+    <img id="logo2" src="static/images/logo2.png" class="logo2">
+    <img id="mainLogo" src="static/images/logo.png" class="logo">
+    <img id="centerLogo" src="static/images/logo.png" class="center-logo">
+    <img id="stamp" src="static/images/stamp.png" class="stamp">
+    <img id="photoSticker" src="static/images/sticker.png" class="photosticker">
+    <img id="photoLogo" src="static/images/logo.png" class="photo-logo">
+    <img id="photoLogo2" src="static/images/sticker.png" class="photo-logo2">
+    <img id="photoLogo3" src="static/images/shadow.png" class="photo-logo3">
+
+    <!-- User photos & QR -->
+    <img id="userPhoto" class="photo">
+    <img id="photoSmall" class="photo-small">
+    <img id="qrCode" class="qr-code">
+    <img id="signature" src="static/images/signature.png" class="signature">
+
+    <!-- Text -->
+    <div class="text-container">
+        <p id="nameText"></p>
+        <p id="urduText" class="text-urdu"></p>
+        <p id="designationText" class="designation"></p>
+        <p id="cardNumberText"></p>
+        <p id="bloodText"></p>
+        <p id="contactText"></p>
+        <p class="issuance">Issuance Authority: ___________________</p>
+    </div>
+
+    <!-- Titles -->
+    <div class="header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
+    <div class="header-text-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
+
+    <div class="date" id="currentDate"></div>
+    <div class="valid-till" id="validTillDate"></div>
+</div>
+
+<div class="save-btn-container">
+    <button id="saveBtn">Click here to save Khawrai Falahi Committee e-Card</button>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+const formData = JSON.parse(localStorage.getItem("ecardData") || '{}');
+
+if(!formData.name){
+    alert("No e-Card data found. Redirecting to form.");
+    window.location.href = "index.html";
+}
+
+// Set text
+document.getElementById("nameText").textContent = "Name: " + formData.name;
+document.getElementById("urduText").textContent = "Urdu Name: " + formData.urduName;
+document.getElementById("designationText").textContent = "Designation: " + formData.designation;
+document.getElementById("cardNumberText").textContent = "Card No: " + formData.cardNumber;
+document.getElementById("bloodText").textContent = "B-Group: " + formData.bloodGroup;
+document.getElementById("contactText").textContent = "Contact: " + formData.contact;
+
+// Load user photo
+document.getElementById("userPhoto").src = formData.photoData;
+document.getElementById("photoSmall").src = formData.photoData;
+
+// Generate QR code
+QRCode.toDataURL("https://wa.me/971557353212").then(url => {
+    document.getElementById("qrCode").src = url;
+});
+
+// Set dates
+const today = new Date();
+document.getElementById("currentDate").textContent = "ISSUE DATE: " + today.toLocaleDateString('en-GB', {year:'numeric', month:'short', day:'2-digit'});
+document.getElementById("validTillDate").textContent = "VALIDITY: UAE VISA EXPIRY";
+
+// Wait for all images and fonts
+function waitForResources(container){
+    const imgs = Array.from(container.getElementsByTagName('img'));
+    const promises = imgs.map(img=>new Promise(res=>{
+        if(img.complete) res(); else img.onload=img.onerror=res;
+    }));
+    return Promise.all(promises);
+}
+
+// Save PDF
+document.getElementById("saveBtn").addEventListener("click", async function(){
+    const ecard = document.getElementById("ecard");
+    await waitForResources(ecard);
+
+    html2pdf(ecard, {
+        margin: 0,
+        filename: `${formData.name} e-Card.pdf`,
+        image:{type:'jpeg', quality:1},
+        html2canvas:{scale:5, useCORS:true},
+        jsPDF:{unit:'mm', format:[180,135], orientation:'Landscape'}
+    });
+});
+</script>
+</body>
+</html>
