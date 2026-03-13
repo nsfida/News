@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khawrai Falahi Committee e-Card Login</title>
+<style>
+body{margin:0;font-family:Calibri,sans-serif;background:#f4f4f9;display:flex;justify-content:center;align-items:center;height:100vh;}
+.login-box{background:#fff;border-radius:50px;padding:40px;width:500px;box-shadow:0 5px 20px rgba(0,0,0,0.1);text-align:center;}
+.login-box img{width:150px;margin-bottom:20px;}
+.login-box h1{font-size:24px;margin-bottom:10px;color:#1976d2;}
+.login-box form{display:flex;flex-direction:column;}
+.login-box input{margin:10px 0;padding:12px 15px;font-size:16px;border-radius:50px;border:1px solid #ddd;}
+.login-box button{padding:12px;font-size:16px;border:none;border-radius:50px;background:#1976d2;color:white;cursor:pointer;margin-top:10px;}
+.login-box button:hover{background:#125fa6;}
+.error-msg{color:red;font-size:14px;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div class="login-box">
+<img src="static/images/logo.png" alt="Logo">
+<h1>Khawrai Falahi Committee UAE</h1>
+<p>خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+<div class="error-msg" id="errorMsg"></div>
+<form id="loginForm">
+<input type="text" id="username" placeholder="Username" required>
+<input type="password" id="password" placeholder="Password" required>
+<button type="submit">Login</button>
+</form>
+</div>
+
+<script>
+// Users
+const USERS = {
+  "nsfida":"746210",
+  "ahmadaman":"456456",
+  "sabirali":"356425",
+  "arbabrizwan":"023663",
+  "naveedali":"101081"
+};
+
+document.getElementById("loginForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value.trim();
+  if(USERS[u] && USERS[u]===p){
+    localStorage.setItem("loggedInUser",u);
+    window.location.href="index.html";
+  }else{
+    document.getElementById("errorMsg").textContent="Invalid username or password";
+  }
+});
+
+// Redirect if already logged in
+if(localStorage.getItem("loggedInUser")) window.location.href="index.html";
+</script>
+</body>
+</html>
