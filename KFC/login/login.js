@@ -1,40 +1,53 @@
+/* --------------------------
+LOAD MEMBERS FROM JSON
+--------------------------- */
+
 let members = [];
 
 fetch("cards.json")
 .then(response => response.json())
 .then(data => {
 members = data;
-console.log("Members Loaded:", members);
+console.log("Members loaded:", members);
+})
+.catch(error => {
+console.error("JSON loading error:", error);
 });
 
-/* CREATE USERNAME
-firstname + lastname */
+/* --------------------------
+CREATE USERNAME
+first name + last name
+--------------------------- */
 
-function createUsername(name){
+function createUsername(fullName){
 
 ```
-name = name.trim().toLowerCase();
+if(!fullName) return "";
 
-let parts = name.split(/\s+/);
+fullName = fullName.trim().toLowerCase();
 
-let first = parts[0];
+let words = fullName.split(/\s+/);
 
-let last = parts[parts.length - 1];
+let firstName = words[0];
 
-return first + last;
+let lastName = words[words.length - 1];
+
+return firstName + lastName;
 ```
 
 }
 
-/* CREATE PASSWORD
-dd-mm-yyyy → ddmmyy */
+/* --------------------------
+CREATE PASSWORD
+08-06-2022 → 080622
+--------------------------- */
 
-function createPassword(issue){
+function createPassword(issueDate){
 
 ```
-issue = issue.trim();
+if(!issueDate) return "";
 
-let parts = issue.split("-");
+let parts = issueDate.split("-");
 
 let day = parts[0].padStart(2,"0");
 
@@ -47,22 +60,25 @@ return day + month + year;
 
 }
 
+/* --------------------------
+LOGIN FUNCTION
+--------------------------- */
+
 function login(){
 
 ```
-let inputUser = document
+let username = document
     .getElementById("username")
     .value
     .trim()
     .toLowerCase();
 
-let inputPass = document
+let password = document
     .getElementById("password")
     .value
     .trim();
 
-let match = false;
-
+let foundUser = false;
 
 members.forEach(member => {
 
@@ -70,22 +86,18 @@ members.forEach(member => {
 
     let jsonPass = createPassword(member.Issue);
 
-    console.log(
-        "Checking:",
-        jsonUser,
-        jsonPass
-    );
+    console.log("Checking:", jsonUser, jsonPass);
 
-    if(inputUser === jsonUser && inputPass === jsonPass){
+    if(username === jsonUser && password === jsonPass){
 
-        match = true;
+        foundUser = true;
 
     }
 
 });
 
 
-if(match){
+if(foundUser){
 
     document.getElementById("loginBox").style.display = "none";
 
@@ -103,7 +115,9 @@ else{
 
 }
 
-/* CARD GENERATION */
+/* --------------------------
+GENERATE CARD
+--------------------------- */
 
 function generate(){
 
@@ -136,19 +150,26 @@ document.getElementById("eBG").innerText = "Blood: " + bg;
 document.getElementById("eMobile").innerText = "Mobile: " + mobile;
 
 
-let reader = new FileReader();
 
-reader.onload = function(e){
+if(photo){
 
-    document.getElementById("photoPreview").src = e.target.result;
+    let reader = new FileReader();
 
-};
+    reader.onload = function(e){
 
-reader.readAsDataURL(photo);
+        document.getElementById("photoPreview").src = e.target.result;
+
+    };
+
+    reader.readAsDataURL(photo);
+
+}
 
 
-document.getElementById("ecardSection")
-.classList.remove("hidden");
+
+document
+    .getElementById("ecardSection")
+    .classList.remove("hidden");
 ```
 
 }
