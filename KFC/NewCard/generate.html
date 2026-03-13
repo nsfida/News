@@ -23,7 +23,6 @@ box-shadow:0px 0px 10px rgba(0,0,0,0.5);
 overflow:hidden;
 }
 
-/* WATERMARK FIXED (no pseudo element) */
 .watermark-overlay{
 position:absolute;
 top:0;
@@ -205,44 +204,7 @@ alert("No e-Card data found. Redirecting to form.");
 window.location.href="index.html";
 }
 
-async function checkCardNumber(){
-
-try{
-
-const response = await fetch("cards.json");
-const jsonData = await response.json();
-
-for(let i=0;i<jsonData.length;i++){
-
-if(jsonData[i].CNo === formData.cardNumber){
-
-alert("This Card Number already exists. Please enter a new number.");
-
-window.location.href="index.html";
-
-return false;
-
-}
-
-}
-
-return true;
-
-}catch(err){
-
-console.log("cards.json not accessible");
-
-return true;
-
-}
-
-}
-
 async function init(){
-
-const ok = await checkCardNumber();
-
-if(!ok) return;
 
 document.getElementById("nameText").textContent="Name: "+formData.name;
 document.getElementById("urduText").textContent=formData.urduName;
@@ -266,51 +228,17 @@ document.getElementById("currentDate").textContent=
 document.getElementById("validTillDate").textContent=
 "VALIDITY: UAE VISA EXPIRY";
 
-function waitForResources(container){
-const imgs=Array.from(container.getElementsByTagName('img'));
-const promises=imgs.map(img=>new Promise(res=>{
-if(img.complete) res();
-else img.onload=img.onerror=res;
-}));
-return Promise.all(promises);
-}
+document.getElementById("saveBtn").addEventListener("click",function(){
 
-document.getElementById("saveBtn").addEventListener("click",async function(){
+const opt={
+margin:0,
+filename:`${formData.name} e-Card.pdf`,
+image:{type:'jpeg',quality:1},
+html2canvas:{scale:5,useCORS:true},
+jsPDF:{unit:'mm',format:[180,135],orientation:'landscape'}
+};
 
-const ecard=document.getElementById("ecard");
-
-if(document.fonts && document.fonts.ready){
-await document.fonts.ready;
-}
-
-await waitForResources(ecard);
-
-/* ---- PDF FIX START ---- */
-
-const canvas = await html2canvas(ecard,{
-scale:5,
-useCORS:true,
-allowTaint:true,
-foreignObjectRendering:true,
-scrollX:0,
-scrollY:0,
-windowWidth:ecard.scrollWidth,
-windowHeight:ecard.scrollHeight
-});
-
-const imgData = canvas.toDataURL("image/jpeg",1);
-
-const pdf = new jspdf.jsPDF({
-orientation:'landscape',
-unit:'mm',
-format:[180,135]
-});
-
-pdf.addImage(imgData,'JPEG',0,0,180,135);
-
-pdf.save(`${formData.name} e-Card.pdf`);
-
-/* ---- PDF FIX END ---- */
+html2pdf().set(opt).from(document.getElementById("ecard")).save();
 
 });
 
