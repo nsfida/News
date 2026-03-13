@@ -1,24 +1,32 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Khawrai Falahi Committee UAE</title>
 
 <link rel="stylesheet" href="login.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<!-- LOGIN PANEL -->
+<div class="card">
 
-<div id="loginPanel" class="panel">
+<h2 class="title">Member Login</h2>
 
-<h2>Member Login</h2>
+<div id="loginBox">
 
 <input id="username" placeholder="Username">
 
@@ -26,14 +34,11 @@
 
 <button onclick="login()">Login</button>
 
-<p id="loginError"></p>
+<p id="error"></p>
 
 </div>
 
-
-<!-- FORM PANEL -->
-
-<div id="formPanel" class="panel hidden">
+<div id="formBox" class="hidden">
 
 <h2>Create e-Card</h2>
 
@@ -51,36 +56,39 @@
 
 <input id="photo" type="file">
 
-<button onclick="generateCard()">Generate e-Card</button>
+<button onclick="generate()">Generate Card</button>
 
 </div>
 
+</div>
 
-<!-- CARD OUTPUT -->
-
-<div id="cardPanel" class="hidden">
+<div id="ecardSection" class="hidden">
 
 <div class="ecard" id="ecard">
 
-<img id="cardPhoto">
+<img id="photoPreview">
 
-<div class="cardText">
+<div class="ecardText">
 
-<h3 id="cardName"></h3>
+<h3 id="eName"></h3>
 
-<p id="cardUrdu"></p>
+<p class="urdu" id="eUrdu"></p>
 
-<p id="cardDesg"></p>
+<p id="eDesg"></p>
 
-<p id="cardNo"></p>
+<p id="eNo"></p>
 
-<p id="cardBG"></p>
+<p id="eBG"></p>
 
-<p id="cardMobile"></p>
+<p id="eMobile"></p>
+
+<div id="qr"></div>
 
 </div>
 
 </div>
+
+<button class="download" onclick="download()">Download PDF</button>
 
 </div>
 
