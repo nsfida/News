@@ -23,13 +23,16 @@ box-shadow:0px 0px 10px rgba(0,0,0,0.5);
 overflow:hidden;
 }
 
-.watermark-overlay{
+.ecard-container::before{
+content:"";
 position:absolute;
 top:0;
 left:0;
 width:100%;
 height:100%;
-object-fit:cover;
+background-image:url('static/images/watermark.png');
+background-size:cover;
+background-position:center;
 opacity:0.1;
 z-index:0;
 }
@@ -147,8 +150,6 @@ button:hover{ background-color:#357ab7; }
 
 <div class="ecard-container" id="ecard">
 
-<img src="static/images/watermark.png" class="watermark-overlay">
-
 <div class="strip-hole"></div>
 <div class="strip-hole2"></div>
 
@@ -204,7 +205,44 @@ alert("No e-Card data found. Redirecting to form.");
 window.location.href="index.html";
 }
 
+async function checkCardNumber(){
+
+try{
+
+const response = await fetch("cards.json");
+const jsonData = await response.json();
+
+for(let i=0;i<jsonData.length;i++){
+
+if(jsonData[i].CNo === formData.cardNumber){
+
+alert("This Card Number already exists. Please enter a new number.");
+
+window.location.href="index.html";
+
+return false;
+
+}
+
+}
+
+return true;
+
+}catch(err){
+
+console.log("cards.json not accessible");
+
+return true;
+
+}
+
+}
+
 async function init(){
+
+const ok = await checkCardNumber();
+
+if(!ok) return;
 
 document.getElementById("nameText").textContent="Name: "+formData.name;
 document.getElementById("urduText").textContent=formData.urduName;
@@ -228,7 +266,24 @@ document.getElementById("currentDate").textContent=
 document.getElementById("validTillDate").textContent=
 "VALIDITY: UAE VISA EXPIRY";
 
-document.getElementById("saveBtn").addEventListener("click",function(){
+function waitForResources(container){
+const imgs=Array.from(container.getElementsByTagName('img'));
+const promises=imgs.map(img=>new Promise(res=>{
+if(img.complete) res();
+else img.onload=img.onerror=res;
+}));
+return Promise.all(promises);
+}
+
+document.getElementById("saveBtn").addEventListener("click",async function(){
+
+const ecard=document.getElementById("ecard");
+
+if(document.fonts && document.fonts.ready){
+await document.fonts.ready;
+}
+
+await waitForResources(ecard);
 
 const opt={
 margin:0,
@@ -238,7 +293,7 @@ html2canvas:{scale:5,useCORS:true},
 jsPDF:{unit:'mm',format:[180,135],orientation:'landscape'}
 };
 
-html2pdf().set(opt).from(document.getElementById("ecard")).save();
+html2pdf().set(opt).from(ecard).save();
 
 });
 
