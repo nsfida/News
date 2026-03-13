@@ -1,78 +1,161 @@
 body{
+
 font-family:Poppins,Calibri,sans-serif;
+
 background:linear-gradient(135deg,#e3f2fd,#e0f7fa);
+
 height:100vh;
+
 display:flex;
+
 justify-content:center;
+
 align-items:center;
+
 margin:0;
+
 }
 
 .container{
+
 width:420px;
+
 }
 
-.panel{
+.card{
+
 background:white;
+
 padding:30px;
+
 border-radius:18px;
-box-shadow:0 15px 40px rgba(0,0,0,.15);
+
+box-shadow:0 20px 40px rgba(0,0,0,.15);
+
 text-align:center;
-transition:.5s;
+
 }
 
-.panel input{
+.title{
+
+margin-bottom:20px;
+
+color:#1976d2;
+
+}
+
+input{
+
 width:100%;
+
 padding:12px;
-margin:10px 0;
+
+margin:8px 0;
+
 border-radius:10px;
+
 border:1px solid #ddd;
+
 }
 
 button{
-background:#1976d2;
+
+background:linear-gradient(135deg,#1976d2,#42a5f5);
+
 color:white;
+
 border:none;
+
 padding:12px 20px;
-border-radius:25px;
+
+border-radius:30px;
+
 cursor:pointer;
+
+margin-top:10px;
+
 }
 
 button:hover{
-background:#125fa6;
+
+transform:translateY(-2px);
+
 }
 
 .hidden{
+
 display:none;
+
 }
 
+#error{
+
+color:red;
+
+font-size:13px;
+
+}
 
 /* eCard */
 
-.ecard{
+#ecardSection{
+
 margin-top:20px;
+
+text-align:center;
+
+}
+
+.ecard{
+
 background:white;
+
 border-radius:20px;
+
 padding:20px;
-box-shadow:0 10px 25px rgba(0,0,0,.2);
+
+box-shadow:0 10px 30px rgba(0,0,0,.25);
+
 display:flex;
+
 gap:20px;
+
 align-items:center;
+
+margin-top:20px;
+
 }
 
 .ecard img{
-width:110px;
-height:130px;
+
+width:120px;
+
+height:140px;
+
 object-fit:cover;
+
 border-radius:10px;
+
 }
 
-.cardText h3{
+.ecardText h3{
+
 margin:0;
+
 color:#1976d2;
+
 }
 
-#loginError{
-color:red;
-font-size:13px;
+.urdu{
+
+font-family:'Noto Nastaliq Urdu',serif;
+
+direction:rtl;
+
+}
+
+.download{
+
+margin-top:20px;
+
 }
