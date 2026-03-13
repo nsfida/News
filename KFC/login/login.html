@@ -1,48 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KFC e-Card Login</title>
-<link rel="stylesheet" href="login.css">
-</head>
-<body>
+body {
+  font-family: 'Calibri', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #e3f2fd;
+  margin: 0;
+}
 
-<div class="container">
+.container {
+  width: 400px;
+}
 
-  <div id="loginBox">
-    <h2>Member Login</h2>
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">LOGIN</button>
-    <p id="error" class="error"></p>
-  </div>
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+}
 
-  <div id="formBox" class="hidden">
-    <h2>Create e-Card</h2>
-    <input id="name" placeholder="Name">
-    <input id="urdu" placeholder="Urdu Name">
-    <input id="desg" placeholder="Designation">
-    <input id="cno" placeholder="Card Number">
-    <input id="bg" placeholder="Blood Group">
-    <input id="mobile" placeholder="Mobile">
-    <input id="photo" type="file">
-    <button onclick="generate()">Generate Card</button>
-  </div>
+button {
+  border: none;
+  background-color: #1976d2;
+  color: white;
+  cursor: pointer;
+}
 
-  <div id="ecardSection" class="hidden">
-    <h2>Generated e-Card</h2>
-    <img id="photoPreview" width="120">
-    <p id="eName"></p>
-    <p id="eUrdu"></p>
-    <p id="eDesg"></p>
-    <p id="eNo"></p>
-    <p id="eBG"></p>
-    <p id="eMobile"></p>
-  </div>
+button:hover {
+  background-color: #125fa6;
+}
 
-</div>
+.error {
+  color: red;
+  font-size: 14px;
+}
 
-<script src="login.js"></script>
-</body>
-</html>
+.hidden {
+  display: none;
+}
+
+.logo-top {
+  display: block;
+  margin: 0 auto 10px auto;
+  width: 80px;
+}
+
+.ecard-wrapper {
+  position: relative;
+  width: 400px;
+  height: 240px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.ecard-bg, .ecard-pattern {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+
+.ecard-pattern {
+  opacity: 0.2;
+}
+
+.flag {
+  position: absolute;
+  width: 40px;
+  height: 25px;
+}
+
+.flag.uae { top: 10px; left: 10px; }
+.flag.pak { top: 10px; left: 60px; }
+
+.ecard-logo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 60px;
+  height: auto;
+}
+
+.qr {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  width: 70px;
+  height: 70px;
+}
+
+.ecard-photo {
+  position: absolute;
+  bottom: 20px;
+  right: 10px;
+  width: 100px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 2px solid #444;
+}
+
+.ecard-text {
+  position: absolute;
+  top: 50px;
+  left: 100px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ecard-text p {
+  margin: 2px 0;
+}
+
+.stamp {
+  position: absolute;
+  bottom: 10px;
+  left: 100px;
+  width: 100px;
+  opacity: 0.8;
+}
+
+.sign {
+  position: absolute;
+  bottom: 10px;
+  left: 180px;
+  width: 100px;
+  opacity: 0.9;
+}
