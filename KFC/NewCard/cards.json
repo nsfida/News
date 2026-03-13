@@ -1,7 +1,7 @@
 [
 {
 "name":"Muhammad Rizwan Sultan Muhammad",
-"Desg":"Committee Guardian (President)",
+"Desg":"President",
 "CNo":"746-210-001",
 "BG":"A+",
 "mobile":"+971557353212",
@@ -10,63 +10,13 @@
 "Issue":"08-06-2022"
 },
 {
-"name":"Muhammad Hayat Khan Khurshid Khan",
-"Desg":"Committee Guardian (Ex-President)",
-"CNo":"746-210-005",
-"BG":"O+",
-"mobile":"+971545856851",
-"Status":"Active",
-"Room":"Room 02 (Nawar Khan)",
-"Issue":"13-06-2022"
-},
-{
-"name":"Ahmad Aman Khattak",
-"Desg":"Acting President (Ex-President)",
-"CNo":"746-210-006",
+"name":"Raj Zameer",
+"Desg":"Committee Guardian",
+"CNo":"746-210-002",
 "BG":"B+",
-"mobile":"+971527002089",
+"mobile":"+971561404948",
 "Status":"Active",
-"Room":"Room 05 (Shehzad Khan)",
-"Issue":"08-06-2022"
-},
-{
-"name":"Nadeem Shahzad Fida Fida Ul Haq",
-"Desg":"Media Manager",
-"CNo":"746-210-011",
-"BG":"O+",
-"mobile":"+971559216280",
-"Status":"Active",
-"Room":"Room 04 (Amjad Ali)",
-"Issue":"08-06-2022"
-},
-{
-"name":"Amjad Ali Abdul Aziz",
-"Desg":"General Secretory",
-"CNo":"746-210-040",
-"BG":"B+",
-"mobile":"+971522750633",
-"Status":"Active",
-"Room":"Room 04 (Amjad Ali)",
-"Issue":"-"
-},
-{
-"name":"Naveed Ali Khattak",
-"Desg":"Finance Manager",
-"CNo":"746-210-008",
-"BG":"B-",
-"mobile":"+971529297289",
-"Status":"Active",
-"Room":"Room 03 (Zahir Rahman)",
-"Issue":"-"
-},
-{
-"name":"Sabir Ali Akbar Ali",
-"Desg":"Joint Finance Secretory",
-"CNo":"746-210-021",
-"BG":"A+",
-"mobile":"+971522707400",
-"Status":"Active",
-"Room":"Room 06 (Ameer Zaman)",
+"Room":"Room - (-)",
 "Issue":"-"
 },
 {
@@ -80,14 +30,34 @@
 "Issue":"-"
 },
 {
-"name":"Raj Zameer",
+"name":"Zahir Rehman",
 "Desg":"Committee Guardian",
-"CNo":"746-210-002",
+"CNo":"746-210-004",
 "BG":"B+",
-"mobile":"+971561404948",
+"mobile":"+971524259701",
 "Status":"Active",
 "Room":"Room - (-)",
 "Issue":"-"
+},
+{
+"name":"Muhammad Hayat Khan Khurshid Khan",
+"Desg":"Committee Guardian (Ex-President)",
+"CNo":"746-210-005",
+"BG":"O+",
+"mobile":"+971545856851",
+"Status":"Active",
+"Room":"Room 02 (Nawar Khan)",
+"Issue":"13-06-2022"
+},
+{
+"name":"Ahmad Aman Khattak",
+"Desg":"Acting President",
+"CNo":"746-210-006",
+"BG":"B+",
+"mobile":"+971527002089",
+"Status":"Active",
+"Room":"Room 05 (Shehzad Khan)",
+"Issue":"08-06-2022"
 },
 {
 "name":"Salar Khan",
@@ -100,13 +70,13 @@
 "Issue":"-"
 },
 {
-"name":"Zahir Rehman",
-"Desg":"Committee Guardian",
-"CNo":"746-210-004",
-"BG":"B+",
-"mobile":"+971524259701",
+"name":"Naveed Ali Khattak",
+"Desg":"Finance Manager",
+"CNo":"746-210-008",
+"BG":"B-",
+"mobile":"+971529297289",
 "Status":"Active",
-"Room":"Room - (-)",
+"Room":"Room 03 (Zahir Rahman)",
 "Issue":"-"
 },
 {
@@ -130,12 +100,32 @@
 "Issue":"-"
 },
 {
+"name":"Nadeem Shahzad Fida Fida Ul Haq",
+"Desg":"Media Manager",
+"CNo":"746-210-011",
+"BG":"O+",
+"mobile":"+971559216280",
+"Status":"Active",
+"Room":"Room 04 (Amjad Ali)",
+"Issue":"08-06-2022"
+},
+{
 "name":"Yasir Waiz Khattak",
 "Desg":"Committee Member",
 "CNo":"746-210-012",
 "BG":"B+",
 "mobile":"+971555230034",
 "Status":"Active",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Hazrat Hussain",
+"Desg":"Joint Media Secretory (Abu Dhabi)",
+"CNo":"746-210-013",
+"BG":"B+",
+"mobile":"+971545392892",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -200,13 +190,13 @@
 "Issue":"-"
 },
 {
-"name":"Muhammad Munir Khan Sultan Muhammad",
-"Desg":"Committee Member",
-"CNo":"746-210-020",
-"BG":"O+",
-"mobile":"+971554055229",
+"name":"Sabir Ali Akbar Ali",
+"Desg":"Joint Finance Secretory",
+"CNo":"746-210-021",
+"BG":"A+",
+"mobile":"+971522707400",
 "Status":"Active",
-"Room":"Room - (-)",
+"Room":"Room 06 (Ameer Zaman)",
 "Issue":"-"
 },
 {
@@ -246,6 +236,16 @@
 "BG":"O+",
 "mobile":"+971565626064",
 "Status":"Active",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Imran Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-026",
+"BG":"O+",
+"mobile":"+923355852532",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -375,8 +375,18 @@
 "CNo":"746-210-039",
 "BG":"B+",
 "mobile":"+971506476048",
-"Status":"Active",
+"Status":"Cancel",
 "Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Amjad Ali Abdul Aziz",
+"Desg":"General Secretory",
+"CNo":"746-210-040",
+"BG":"B+",
+"mobile":"+971522750633",
+"Status":"Active",
+"Room":"Room 04 (Amjad Ali)",
 "Issue":"-"
 },
 {
@@ -425,7 +435,7 @@
 "CNo":"746-210-045",
 "BG":"B+",
 "mobile":"+971526566840",
-"Status":"Active",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -435,6 +445,26 @@
 "CNo":"746-210-046",
 "BG":"B+",
 "mobile":"+971566317764",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Yar Gul Mamrais Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-047",
+"BG":"A+",
+"mobile":"+971524456319",
+"Status":"Cancel",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Kamil Haj Haj Muhammad Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-048",
+"BG":"O+",
+"mobile":"+971544853442",
 "Status":"Active",
 "Room":"Room - (-)",
 "Issue":"-"
@@ -830,7 +860,7 @@
 "Issue":"-"
 },
 {
-"name":"Muhammad Ibrar Jehanzed Khan",
+"name":"Muhammad Ibrar Jehanzeb Khan",
 "Desg":"Committee Member",
 "CNo":"746-210-088",
 "BG":"B+",
@@ -940,6 +970,16 @@
 "Issue":"-"
 },
 {
+"name":"Abdul Yawar Abdul Waiz Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-099",
+"BG":"A+",
+"mobile":"+971586639843",
+"Status":"Cancel",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
 "name":"Haider Zaman Zahir Shah Gul",
 "Desg":"Committee Member",
 "CNo":"746-210-100",
@@ -956,6 +996,16 @@
 "BG":"N/A",
 "mobile":"+971545584237",
 "Status":"Active",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Nawar Khan Azam Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-102",
+"BG":"O+",
+"mobile":"+971508804467",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -996,6 +1046,16 @@
 "BG":"A+",
 "mobile":"+971564327163",
 "Status":"Active",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Muhammad Ilyas Sufaid Gul",
+"Desg":"Committee Member",
+"CNo":"746-210-107",
+"BG":"A+",
+"mobile":"+971588609550",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -1300,6 +1360,16 @@
 "Issue":"-"
 },
 {
+"name":"Muhammad Fayaz Afriday",
+"Desg":"Committee Member",
+"CNo":"746-210-138",
+"BG":"N/A",
+"mobile":"+971544650843",
+"Status":"Cancel",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
 "name":"Ahmad Hussain Janis Khan",
 "Desg":"Committee Member",
 "CNo":"746-210-139",
@@ -1326,6 +1396,26 @@
 "BG":"B+",
 "mobile":"+971558130422",
 "Status":"Active",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Inzimam Ul Haq Muhammad Faisal",
+"Desg":"Committee Member",
+"CNo":"746-210-142",
+"BG":"A-",
+"mobile":"+971524647195",
+"Status":"Cancel",
+"Room":"Room - (-)",
+"Issue":"-"
+},
+{
+"name":"Waseem Shahzad Fida Fida Ul Haq",
+"Desg":"Committee Member",
+"CNo":"746-210-143",
+"BG":"O+",
+"mobile":"+971525340738",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -1405,7 +1495,7 @@
 "CNo":"746-210-151",
 "BG":"AB+",
 "mobile":"+971566011425",
-"Status":"Active",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -1445,7 +1535,7 @@
 "CNo":"746-210-155",
 "BG":"O+",
 "mobile":"+971545027736",
-"Status":"Active",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -1565,7 +1655,7 @@
 "CNo":"746-210-167",
 "BG":"N/A",
 "mobile":"N/A",
-"Status":"Active",
+"Status":"Cancel",
 "Room":"Room - (-)",
 "Issue":"-"
 },
@@ -1660,7 +1750,7 @@
 "Issue":"-"
 },
 {
-"name":"Ghazanfar Ali Muhammad Zareef Khan (Hameed Ullah 746-210-049)",
+"name":"Ghazanfar Ali Muhammad Zareef Khan (C/O Hameed Ullah 746-210-049)",
 "Desg":"Committee Member",
 "CNo":"746-210-177",
 "BG":"N/A",
@@ -1670,7 +1760,7 @@
 "Issue":"-"
 },
 {
-"name":"Md Salauddin Babor Ali Hawlader (Hameed Ullah 746-210-049)",
+"name":"Md Salauddin Babor Ali Hawlader (C/O Hameed Ullah 746-210-049)",
 "Desg":"Committee Member",
 "CNo":"746-210-178",
 "BG":"N/A",
@@ -1690,7 +1780,7 @@
 "Issue":"-"
 },
 {
-"name":"Muhammad Atif Zari Dad Khan (Shabir Ahmed Ajab Khan 746-210-018)",
+"name":"Muhammad Atif Zari Dad Khan (C/O Shabir Ahmed Ajab Khan 746-210-018)",
 "Desg":"Committee Member",
 "CNo":"746-210-180",
 "BG":"N/A",
@@ -1700,7 +1790,7 @@
 "Issue":"-"
 },
 {
-"name":"Ali Nawaz Sher Nawab (Shabir Ahmed Ajab Khan 746-210-018)",
+"name":"Ali Nawaz Sher Nawab (C/O Shabir Ahmed Ajab Khan 746-210-018)",
 "Desg":"Committee Member",
 "CNo":"746-210-181",
 "BG":"N/A",
@@ -1710,7 +1800,7 @@
 "Issue":"-"
 },
 {
-"name":"Kamran Khan Akhtar Munir (Ikram Ullah Khan Zahoor Khan 746-210-182)",
+"name":"Kamran Khan Akhtar Munir (C/O Ikram Ullah Khan Zahoor Khan 746-210-182)",
 "Desg":"Committee Member",
 "CNo":"746-210-182",
 "BG":"B+",
@@ -1730,103 +1820,223 @@
 "Issue":"-"
 },
 {
-"name":"Hazrat Hussain",
-"Desg":"Joint Media Secretory (Abu Dhabi)",
-"CNo":"746-210-013",
-"BG":"B+",
-"mobile":"+971545392892",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
-},
-{
-"name":"Imran Khan",
+"name":"Tahir Muhammad Faiz Muhammad",
 "Desg":"Committee Member",
-"CNo":"746-210-026",
-"BG":"O+",
-"mobile":"+923355852532",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
-},
-{
-"name":"Yar Gul Mamrais Khan",
-"Desg":"Committee Member",
-"CNo":"746-210-047",
-"BG":"A+",
-"mobile":"+971524456319",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
-},
-{
-"name":"Abdul Yawar Abdul Waiz Khan",
-"Desg":"Committee Member",
-"CNo":"746-210-099",
-"BG":"A+",
-"mobile":"+971586639843",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
-},
-{
-"name":"Inzimam Ul Haq Muhammad Faisal",
-"Desg":"Committee Member",
-"CNo":"746-210-142",
-"BG":"A-",
-"mobile":"+971524647195",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
-},
-{
-"name":"Waseem Shahzad Fida Fida Ul Haq",
-"Desg":"Committee Member",
-"CNo":"746-210-143",
-"BG":"O+",
-"mobile":"+971525340738",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
-},
-{
-"name":"Muhammad Fayaz Afriday",
-"Desg":"Committee Member",
-"CNo":"746-210-138",
+"CNo":"746-210-184",
 "BG":"N/A",
-"mobile":"+971544650843",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
+"mobile":"+971505958681",
+"Status":"Active",
+"Room":"Room 07 (Niaz Ali Khattak)",
+"Issue":"15-03-2025"
 },
 {
-"name":"Nawar Khan Azam Khan",
+"name":"Muhammad Sajid Muhammad Sadiq",
 "Desg":"Committee Member",
-"CNo":"746-210-102",
-"BG":"O+",
-"mobile":"+971508804467",
-"Status":"Cancel",
-"Room":"Room - (-)",
-"Issue":"-"
+"CNo":"746-210-185",
+"BG":"N/A",
+"mobile":"+971527659300",
+"Status":"Active",
+"Room":"Room 07 (Niaz Ali Khattak)",
+"Issue":"15-03-2025"
 },
 {
-"name":"Muhammad Ilyas Sufaid Gul",
+"name":"Muhammad Zuhaib Muhammad Shoaib",
 "Desg":"Committee Member",
-"CNo":"746-210-107",
+"CNo":"746-210-186",
+"BG":"N/A",
+"mobile":"+971555593218",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"16-03-2025"
+},
+{
+"name":"Waqad Ur Rehman Manzoor Ur Rehman",
+"Desg":"Committee Member",
+"CNo":"746-210-187",
+"BG":"N/A",
+"mobile":"+971563490122",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"28-05-2025"
+},
+{
+"name":"Ahmad Iqbal Khan Muhammad Iqbal Mirza",
+"Desg":"Committee Member",
+"CNo":"746-210-188",
 "BG":"A+",
-"mobile":"+971588609550",
-"Status":"Cancel",
+"mobile":"+971527099855",
+"Status":"Active",
 "Room":"Room - (-)",
-"Issue":"-"
+"Issue":"02-06-2025"
 },
 {
-"name":"Kamil Haj Haj Muhammad Khan",
+"name":"Haseeb Ullah Shahid Iqbal",
 "Desg":"Committee Member",
-"CNo":"746-210-048",
+"CNo":"746-210-189",
 "BG":"O+",
-"mobile":"+971544853442",
-"Status":"Cancel",
+"mobile":"+971547314013",
+"Status":"Active",
 "Room":"Room - (-)",
-"Issue":"-"
+"Issue":"11-08-2025"
+},
+{
+"name":"Jawad Munir Muhammad Munir",
+"Desg":"Committee Member",
+"CNo":"746-210-190",
+"BG":"O+",
+"mobile":"+971527355131",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"11-08-2025"
+},
+{
+"name":"Khan Said Aman Ullah",
+"Desg":"Committee Member",
+"CNo":"746-210-191",
+"BG":"O+",
+"mobile":"+971529800593",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"25-08-2025"
+},
+{
+"name":"Inam Ullah Aman Ullah",
+"Desg":"Committee Member",
+"CNo":"746-210-192",
+"BG":"O+",
+"mobile":"+971506702219",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"25-08-2025"
+},
+{
+"name":"Shuja Uddin Bakhtiar Uddin",
+"Desg":"Committee Member",
+"CNo":"746-210-193",
+"BG":"N/A",
+"mobile":"+971543591890",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"25-08-2025"
+},
+{
+"name":"Jamal Khan Nazar Ali Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-194",
+"BG":"A+",
+"mobile":"+971529007216",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"15-10-2025"
+},
+{
+"name":"Rashid Khan Amir Ali",
+"Desg":"Committee Member",
+"CNo":"746-210-195",
+"BG":"A+",
+"mobile":"+971523361861",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"15-10-2025"
+},
+{
+"name":"Mudassir Khan Rasheed Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-196",
+"BG":"AB+",
+"mobile":"+971555767863",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"15-10-2025"
+},
+{
+"name":"Nasir Khan Nasrullah Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-197",
+"BG":"AB+",
+"mobile":"+971524287445",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"15-10-2025"
+},
+{
+"name":"Adnan Khan Mir Wali Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-198",
+"BG":"B+",
+"mobile":"+971529953687",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"16-10-2025"
+},
+{
+"name":"Asar Khan Mardan Shah",
+"Desg":"Committee Member",
+"CNo":"746-210-199",
+"BG":"O+",
+"mobile":"+971543896036",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"19-10-2025"
+},
+{
+"name":"Yasir Khan Nasrullah Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-200",
+"BG":"A+",
+"mobile":"+971553104654",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"19-10-2025"
+},
+{
+"name":"Qaisar Khan Nasrullah Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-201",
+"BG":"A+",
+"mobile":"+971561175244",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"20-10-2025"
+},
+{
+"name":"Syed Ikram Shah Syed Roman Shah",
+"Desg":"Committee Member",
+"CNo":"746-210-202",
+"BG":"A+",
+"mobile":"+971542424536",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"20-10-2025"
+},
+{
+"name":"Sami Ullah Muhammad Ayaz Khan",
+"Desg":"Committee Member",
+"CNo":"746-210-203",
+"BG":"A-",
+"mobile":"+971503826581",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"07-11-2025"
+},
+{
+"name":"Mudassir Shah Muhammad Shah",
+"Desg":"Committee Member",
+"CNo":"746-210-204",
+"BG":"B+",
+"mobile":"+971525962447",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"18-09-2025"
+},
+{
+"name":"Abdul Waheed Muhammad Yaqoob",
+"Desg":"Committee Member",
+"CNo":"746-210-205",
+"BG":"O+",
+"mobile":"+971567135913",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"13-10-2025"
 }
 ]
