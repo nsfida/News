@@ -1,107 +1,108 @@
-/* --------------------------
-LOAD MEMBERS FROM JSON
---------------------------- */
-
 let members = [];
 
+/* LOAD JSON */
+
 fetch("cards.json")
-.then(response => response.json())
+.then(res => res.json())
 .then(data => {
-members = data;
-console.log("Members loaded:", members);
-})
-.catch(error => {
-console.error("JSON loading error:", error);
-});
-
-/* --------------------------
-CREATE USERNAME
-first name + last name
---------------------------- */
-
-function createUsername(fullName){
 
 ```
-if(!fullName) return "";
+members = data;
 
-fullName = fullName.trim().toLowerCase();
+console.log("JSON loaded:", members);
+```
 
-let words = fullName.split(/\s+/);
+})
+.catch(err => {
 
-let firstName = words[0];
+```
+console.log("JSON error:", err);
+```
 
-let lastName = words[words.length - 1];
+});
 
-return firstName + lastName;
+/* CREATE USERNAME */
+
+function createUsername(name){
+
+```
+name = name.trim().toLowerCase();
+
+let words = name.split(/\s+/);
+
+let first = words[0];
+
+let last = words[words.length - 1];
+
+return first + last;
 ```
 
 }
 
-/* --------------------------
-CREATE PASSWORD
-08-06-2022 → 080622
---------------------------- */
+/* CREATE PASSWORD */
 
-function createPassword(issueDate){
+function createPassword(issue){
 
 ```
-if(!issueDate) return "";
+let p = issue.split("-");
 
-let parts = issueDate.split("-");
+let day = p[0];
 
-let day = parts[0].padStart(2,"0");
+let month = p[1];
 
-let month = parts[1].padStart(2,"0");
-
-let year = parts[2].slice(-2);
+let year = p[2].slice(-2);
 
 return day + month + year;
 ```
 
 }
 
-/* --------------------------
-LOGIN FUNCTION
---------------------------- */
+/* LOGIN */
 
 function login(){
 
 ```
-let username = document
-    .getElementById("username")
-    .value
-    .trim()
-    .toLowerCase();
+if(members.length === 0){
 
-let password = document
-    .getElementById("password")
-    .value
-    .trim();
+    document.getElementById("error").innerText =
+    "System loading. Please try again.";
 
-let foundUser = false;
+    return;
 
-members.forEach(member => {
+}
 
-    let jsonUser = createUsername(member.name);
 
-    let jsonPass = createPassword(member.Issue);
+let user = document.getElementById("username")
+.value.trim().toLowerCase();
 
-    console.log("Checking:", jsonUser, jsonPass);
+let pass = document.getElementById("password")
+.value.trim();
 
-    if(username === jsonUser && password === jsonPass){
 
-        foundUser = true;
+let found = false;
+
+
+members.forEach(m => {
+
+    let u = createUsername(m.name);
+
+    let p = createPassword(m.Issue);
+
+    if(user === u && pass === p){
+
+        found = true;
 
     }
 
 });
 
 
-if(foundUser){
+if(found){
 
     document.getElementById("loginBox").style.display = "none";
 
-    document.getElementById("formBox").classList.remove("hidden");
+    document.getElementById("formBox")
+    .classList.remove("hidden");
 
 }
 
@@ -115,9 +116,7 @@ else{
 
 }
 
-/* --------------------------
-GENERATE CARD
---------------------------- */
+/* GENERATE CARD */
 
 function generate(){
 
@@ -150,14 +149,14 @@ document.getElementById("eBG").innerText = "Blood: " + bg;
 document.getElementById("eMobile").innerText = "Mobile: " + mobile;
 
 
-
 if(photo){
 
     let reader = new FileReader();
 
     reader.onload = function(e){
 
-        document.getElementById("photoPreview").src = e.target.result;
+        document.getElementById("photoPreview").src =
+        e.target.result;
 
     };
 
@@ -166,10 +165,8 @@ if(photo){
 }
 
 
-
-document
-    .getElementById("ecardSection")
-    .classList.remove("hidden");
+document.getElementById("ecardSection")
+.classList.remove("hidden");
 ```
 
 }
