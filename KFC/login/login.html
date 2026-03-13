@@ -1,100 +1,48 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Khawrai Falahi Committee UAE</title>
-
+<title>KFC e-Card Login</title>
 <link rel="stylesheet" href="login.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 </head>
-
 <body>
 
 <div class="container">
 
-<div class="card">
+  <div id="loginBox">
+    <h2>Member Login</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">LOGIN</button>
+    <p id="error" class="error"></p>
+  </div>
 
-<h2 class="title">Member Login</h2>
+  <div id="formBox" class="hidden">
+    <h2>Create e-Card</h2>
+    <input id="name" placeholder="Name">
+    <input id="urdu" placeholder="Urdu Name">
+    <input id="desg" placeholder="Designation">
+    <input id="cno" placeholder="Card Number">
+    <input id="bg" placeholder="Blood Group">
+    <input id="mobile" placeholder="Mobile">
+    <input id="photo" type="file">
+    <button onclick="generate()">Generate Card</button>
+  </div>
 
-<div id="loginBox">
-
-<input id="username" placeholder="Username">
-
-<input id="password" type="password" placeholder="Password">
-
-<button onclick="login()">Login</button>
-
-<p id="error"></p>
-
-</div>
-
-<div id="formBox" class="hidden">
-
-<h2>Create e-Card</h2>
-
-<input id="name" placeholder="Name">
-
-<input id="urdu" placeholder="Urdu Name">
-
-<input id="desg" placeholder="Designation">
-
-<input id="cno" placeholder="Card Number">
-
-<input id="bg" placeholder="Blood Group">
-
-<input id="mobile" placeholder="Mobile">
-
-<input id="photo" type="file">
-
-<button onclick="generate()">Generate Card</button>
-
-</div>
-
-</div>
-
-<div id="ecardSection" class="hidden">
-
-<div class="ecard" id="ecard">
-
-<img id="photoPreview">
-
-<div class="ecardText">
-
-<h3 id="eName"></h3>
-
-<p class="urdu" id="eUrdu"></p>
-
-<p id="eDesg"></p>
-
-<p id="eNo"></p>
-
-<p id="eBG"></p>
-
-<p id="eMobile"></p>
-
-<div id="qr"></div>
-
-</div>
-
-</div>
-
-<button class="download" onclick="download()">Download PDF</button>
-
-</div>
+  <div id="ecardSection" class="hidden">
+    <h2>Generated e-Card</h2>
+    <img id="photoPreview" width="120">
+    <p id="eName"></p>
+    <p id="eUrdu"></p>
+    <p id="eDesg"></p>
+    <p id="eNo"></p>
+    <p id="eBG"></p>
+    <p id="eMobile"></p>
+  </div>
 
 </div>
 
 <script src="login.js"></script>
-
 </body>
 </html>
