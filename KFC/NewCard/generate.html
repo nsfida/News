@@ -205,65 +205,74 @@ button:hover{ background-color:#357ab7; }
 <button id="saveBtn">Click here to save Khawrai Falahi Committee e-Card</button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
+const { jsPDF } = window.jspdf;
+
 const formData = JSON.parse(localStorage.getItem("ecardData") || '{}');
 
 if(!formData.name){
 alert("No e-Card data found. Redirecting to form.");
-window.location.href="index.html";
+window.location.href = "index.html";
 }
 
-document.getElementById("nameText").textContent="Name: "+formData.name;
-document.getElementById("urduText").textContent=formData.urduName;
-document.getElementById("designationText").textContent="Desg: "+formData.designation;
-document.getElementById("cardNumberText").textContent="Card No.: "+formData.cardNumber;
-document.getElementById("bloodText").textContent="B-Group: "+formData.bloodGroup;
-document.getElementById("contactText").textContent="Contact: "+formData.contact;
+document.getElementById("nameText").textContent = "Name: " + formData.name;
+document.getElementById("urduText").textContent = formData.urduName;
+document.getElementById("designationText").textContent = "Desg: " + formData.designation;
+document.getElementById("cardNumberText").textContent = "Card No.: " + formData.cardNumber;
+document.getElementById("bloodText").textContent = "B-Group: " + formData.bloodGroup;
+document.getElementById("contactText").textContent = "Contact: " + formData.contact;
 
-document.getElementById("userPhoto").src=formData.photoData;
-document.getElementById("photoSmall").src=formData.photoData;
+document.getElementById("userPhoto").src = formData.photoData;
+document.getElementById("photoSmall").src = formData.photoData;
 
-const today=new Date();
+const today = new Date();
+document.getElementById("currentDate").textContent =
+"ISSUE DATE: " + today.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'});
 
-document.getElementById("currentDate").textContent=
-"ISSUE DATE: "+today.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'});
-
-document.getElementById("validTillDate").textContent=
+document.getElementById("validTillDate").textContent =
 "VALIDITY: UAE VISA EXPIRY";
 
+
 function waitForResources(container){
-const imgs=Array.from(container.getElementsByTagName('img'));
-const promises=imgs.map(img=>new Promise(res=>{
+const imgs = Array.from(container.getElementsByTagName('img'));
+const promises = imgs.map(img => new Promise(res=>{
 if(img.complete) res();
-else img.onload=img.onerror=res;
+else img.onload = img.onerror = res;
 }));
 return Promise.all(promises);
 }
 
-document.getElementById("saveBtn").addEventListener("click",async function(){
 
-const ecard=document.getElementById("ecard");
+document.getElementById("saveBtn").addEventListener("click", async function(){
 
-if(document.fonts && document.fonts.ready){
+const card = document.getElementById("ecard");
+
+if (document.fonts && document.fonts.ready){
 await document.fonts.ready;
 }
 
-await waitForResources(ecard);
+await waitForResources(card);
 
-const opt={
-margin:0,
-filename:`${formData.name}_eCard.pdf`,
-image:{type:'jpeg',quality:1},
-html2canvas:{scale:5,useCORS:true},
-jsPDF:{unit:'mm',format:[180,135],orientation:'landscape'}
-};
+/* render card exactly as seen */
+const canvas = await html2canvas(card,{
+scale:4,
+useCORS:true
+});
 
-html2pdf().set(opt).from(ecard).save();
+const imgData = canvas.toDataURL("image/jpeg",1);
+
+/* create pdf with exact card ratio */
+const pdf = new jsPDF({
+orientation:'landscape',
+unit:'px',
+format:[canvas.width, canvas.height]
+});
+
+pdf.addImage(imgData,'JPEG',0,0,canvas.width,canvas.height);
+pdf.save(formData.name + "_eCard.pdf");
 
 });
 </script>
-
-</body>
-</html>
