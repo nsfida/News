@@ -37,13 +37,11 @@ opacity:0.1;
 z-index:0;
 }
 
-/* Logos */
 .logo{ position:absolute; top:10px; right:20px; width:100px; opacity:0.8; z-index:10; }
 .logo1{ position:absolute; top:30px; left:28px; width:55px; z-index:10; }
 .logo2{ position:absolute; top:30px; left:70px; width:55px; z-index:10; }
 .center-logo{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; opacity:0.08; z-index:1; }
 
-/* eCard label */
 .ecard-label{
 position:absolute;
 top:110px;
@@ -56,24 +54,19 @@ z-index:15;
 text-align:center;
 }
 
-/* photos */
 .photo{ position:absolute; bottom:25px; right:40px; width:130px; z-index:2; }
 .photo-small{ position:absolute; bottom:195px; left:150px; width:40px; opacity:0.2; border-radius:10%; z-index:2; }
 
-/* overlays */
 .photosticker{ position:absolute; bottom:25px; right:40px; width:130px; height:160px; opacity:0.1; z-index:9; }
 .photo-logo{ position:absolute; bottom:40px; right:30px; width:100px; opacity:0.1; pointer-events:none; z-index:8; }
 .photo-logo2{ position:absolute; bottom:195px; left:150px; width:40px; height:50px; border-radius:10%; opacity:0.1; z-index:8; }
 .photo-logo3{ position:absolute; bottom:-91px; left:-100px; width:810px; opacity:0.6; pointer-events:none; z-index:7; }
 
-/* stamp & QR */
 .stamp{ position:absolute; bottom:8px; right:140px; width:135px; z-index:11; }
 .qr-code{ position:absolute; bottom:230px; left:37px; width:80px; z-index:11; }
 
-/* signature */
 .signature{ position:absolute; bottom:8px; left:250px; width:170px; transform:rotate(-15deg); z-index:11; }
 
-/* text block */
 .text-container{
 position:absolute;
 bottom:60px;
@@ -100,7 +93,6 @@ color:purple;
 font-weight:bold;
 }
 
-/* headers */
 .header-text{
 position:absolute;
 top:40px;
@@ -129,17 +121,14 @@ line-height:1;
 z-index:12;
 }
 
-/* strip holes */
 .strip-hole{ position:absolute; top:9px; left:50%; transform:translateX(-50%); width:71px; height:10px; background-color:grey; border-radius:5px; z-index:11; }
 .strip-hole2{ position:absolute; top:10px; left:50%; transform:translateX(-50%); width:70px; height:9.3px; background-color:white; border-radius:5px; z-index:11; }
 
-/* dates */
 .date{ position:absolute; top:150px; right:35px; font-family:"Courier New", monospace; font-size:10px; color:green; font-weight:bold; z-index:12; }
 .valid-till{ position:absolute; top:170px; right:36px; font-family:"Courier New", monospace; font-size:9px; color:red; font-weight:bold; z-index:12; }
 
 .issuance{ margin-top:10px; font-family:"Courier New", monospace; font-size:15px; color:#00427a; font-weight:bold; line-height:1; }
 
-/* button */
 .save-btn-container{ display:flex; justify-content:center; margin-top:20px; }
 
 button{
@@ -208,11 +197,43 @@ button:hover{ background-color:#357ab7; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 
 <script>
+
+async function checkCardNumber(cardNumber){
+
+try{
+const response = await fetch("cards.json");
+const data = await response.json();
+
+for(let i=0;i<data.length;i++){
+if(data[i].cardNumber === cardNumber){
+return true;
+}
+}
+
+return false;
+
+}catch(err){
+console.error("cards.json not found or invalid.");
+return false;
+}
+
+}
+
 const formData = JSON.parse(localStorage.getItem("ecardData") || '{}');
 
 if(!formData.name){
 alert("No e-Card data found. Redirecting to form.");
 window.location.href="index.html";
+}
+
+(async function(){
+
+const exists = await checkCardNumber(formData.cardNumber);
+
+if(exists){
+alert("This Card Number already exists. Please enter a new card number.");
+window.location.href="index.html";
+return;
 }
 
 document.getElementById("nameText").textContent="Name: "+formData.name;
@@ -224,6 +245,8 @@ document.getElementById("contactText").textContent="Contact: "+formData.contact;
 
 document.getElementById("userPhoto").src=formData.photoData;
 document.getElementById("photoSmall").src=formData.photoData;
+
+})();
 
 const today=new Date();
 
@@ -263,8 +286,8 @@ jsPDF:{unit:'mm',format:[180,135],orientation:'landscape'}
 html2pdf().set(opt).from(ecard).save();
 
 });
+
 </script>
 
 </body>
 </html>
-
