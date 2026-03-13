@@ -1,161 +1,53 @@
-body{
-
-font-family:Poppins,Calibri,sans-serif;
-
-background:linear-gradient(135deg,#e3f2fd,#e0f7fa);
-
-height:100vh;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-margin:0;
-
+body {
+  font-family: 'Calibri', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #e3f2fd;
+  margin: 0;
 }
 
-.container{
-
-width:420px;
-
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 25px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  width: 350px;
 }
 
-.card{
-
-background:white;
-
-padding:30px;
-
-border-radius:18px;
-
-box-shadow:0 20px 40px rgba(0,0,0,.15);
-
-text-align:center;
-
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 20px;
+  border: 1px solid #ccc;
 }
 
-.title{
-
-margin-bottom:20px;
-
-color:#1976d2;
-
+button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 25px;
+  border: none;
+  background-color: #1976d2;
+  color: white;
+  cursor: pointer;
 }
 
-input{
-
-width:100%;
-
-padding:12px;
-
-margin:8px 0;
-
-border-radius:10px;
-
-border:1px solid #ddd;
-
+button:hover {
+  background-color: #125fa6;
 }
 
-button{
-
-background:linear-gradient(135deg,#1976d2,#42a5f5);
-
-color:white;
-
-border:none;
-
-padding:12px 20px;
-
-border-radius:30px;
-
-cursor:pointer;
-
-margin-top:10px;
-
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
 }
 
-button:hover{
-
-transform:translateY(-2px);
-
+.hidden {
+  display: none;
 }
 
-.hidden{
-
-display:none;
-
-}
-
-#error{
-
-color:red;
-
-font-size:13px;
-
-}
-
-/* eCard */
-
-#ecardSection{
-
-margin-top:20px;
-
-text-align:center;
-
-}
-
-.ecard{
-
-background:white;
-
-border-radius:20px;
-
-padding:20px;
-
-box-shadow:0 10px 30px rgba(0,0,0,.25);
-
-display:flex;
-
-gap:20px;
-
-align-items:center;
-
-margin-top:20px;
-
-}
-
-.ecard img{
-
-width:120px;
-
-height:140px;
-
-object-fit:cover;
-
-border-radius:10px;
-
-}
-
-.ecardText h3{
-
-margin:0;
-
-color:#1976d2;
-
-}
-
-.urdu{
-
-font-family:'Noto Nastaliq Urdu',serif;
-
-direction:rtl;
-
-}
-
-.download{
-
-margin-top:20px;
-
+#ecardSection img {
+  margin-bottom: 10px;
 }
