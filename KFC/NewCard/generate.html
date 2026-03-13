@@ -4,71 +4,163 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Khawrai Falahi Committee UAE e-Card</title>
+
 <style>
-@font-face { font-family: 'UrduFont'; src: url('static/fonts/Urdu.ttf') format('truetype'); }
+@font-face { font-family:'UrduFont'; src:url('static/fonts/Urdu.ttf') format('truetype'); }
 
-body { margin:0; font-family: Calibri, sans-serif; background-color: #e4fffc; }
+body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
 
-.ecard-container { position: relative; width: 610px; height: 400px; margin: 50px auto; background-image: url('static/images/background.png'); background-size: cover; background-position: center; border-radius: 40px; box-shadow: 0px 0px 10px rgba(0,0,0,0.5); overflow: hidden; }
+.ecard-container{
+position:relative;
+width:610px;
+height:400px;
+margin:50px auto;
+background-image:url('static/images/background.png');
+background-size:cover;
+background-position:center;
+border-radius:40px;
+box-shadow:0px 0px 10px rgba(0,0,0,0.5);
+overflow:hidden;
+}
 
-.ecard-container::before { content:""; position:absolute; top:0; left:0; width:100%; height:100%; background-image: url('static/images/watermark.png'); background-size: cover; background-position:center; opacity:0.1; z-index:0; }
+.ecard-container::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background-image:url('static/images/watermark.png');
+background-size:cover;
+background-position:center;
+opacity:0.1;
+z-index:0;
+}
 
 /* Logos */
-.logo { position:absolute; top:10px; right:20px; width:100px; opacity:0.8; z-index:10; }
-.logo1 { position:absolute; top:30px; left:28px; width:55px; z-index:10; }
-.logo2 { position:absolute; top:30px; left:70px; width:55px; z-index:10; }
-.center-logo { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; opacity:0.08; z-index:1; }
+.logo{ position:absolute; top:10px; right:20px; width:100px; opacity:0.8; z-index:10; }
+.logo1{ position:absolute; top:30px; left:28px; width:55px; z-index:10; }
+.logo2{ position:absolute; top:30px; left:70px; width:55px; z-index:10; }
+.center-logo{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; opacity:0.08; z-index:1; }
 
-/* e-Card Label */
-.ecard-label { position:absolute; top:110px; left:50%; transform:translateX(-50%); font-size:24px; font-weight:bold; color:#f36d21; z-index:15; text-align:center; }
+/* eCard label */
+.ecard-label{
+position:absolute;
+top:110px;
+left:50%;
+transform:translateX(-50%);
+font-size:24px;
+font-weight:bold;
+color:#f36d21;
+z-index:15;
+text-align:center;
+}
 
-/* User photos */
-.photo { position:absolute; bottom:25px; right:40px; width:130px; z-index:2; }
-.photo-small { position:absolute; bottom:195px; left:150px; width:40px; opacity:0.2; border-radius:10%; z-index:2; }
+/* photos */
+.photo{ position:absolute; bottom:25px; right:40px; width:130px; z-index:2; }
+.photo-small{ position:absolute; bottom:195px; left:150px; width:40px; opacity:0.2; border-radius:10%; z-index:2; }
 
-/* Overlays */
-.photosticker { position:absolute; bottom:25px; right:40px; width:130px; height:160px; opacity:0.1; z-index:9; }
-.photo-logo { position:absolute; bottom:40px; right:30px; width:100px; opacity:0.1; pointer-events:none; z-index:8; }
-.photo-logo2 { position:absolute; bottom:195px; left:150px; width:40px; height:50px; border-radius:10%; opacity:0.1; z-index:8; }
-.photo-logo3 { position:absolute; bottom:-91px; left:-100px; width:810px; opacity:0.6; pointer-events:none; z-index:7; }
+/* overlays */
+.photosticker{ position:absolute; bottom:25px; right:40px; width:130px; height:160px; opacity:0.1; z-index:9; }
+.photo-logo{ position:absolute; bottom:40px; right:30px; width:100px; opacity:0.1; pointer-events:none; z-index:8; }
+.photo-logo2{ position:absolute; bottom:195px; left:150px; width:40px; height:50px; border-radius:10%; opacity:0.1; z-index:8; }
+.photo-logo3{ position:absolute; bottom:-91px; left:-100px; width:810px; opacity:0.6; pointer-events:none; z-index:7; }
 
-/* Stamp and QR */
-.stamp { position:absolute; bottom:8px; right:140px; width:135px; z-index:11; }
-.qr-code { position:absolute; bottom:230px; left:37px; width:80px; z-index:11; }
+/* stamp & QR */
+.stamp{ position:absolute; bottom:8px; right:140px; width:135px; z-index:11; }
+.qr-code{ position:absolute; bottom:230px; left:37px; width:80px; z-index:11; }
 
-/* Signature */
-.signature { position:absolute; bottom:8px; left:250px; width:170px; transform:rotate(-15deg); z-index:11; }
+/* signature */
+.signature{ position:absolute; bottom:8px; left:250px; width:170px; transform:rotate(-15deg); z-index:11; }
 
-/* Text containers */
-.text-container { position:absolute; bottom:60px; top:180px; left:40px; font-family:"Courier New", monospace; color:#00427a; font-weight:bold; line-height:1.7; z-index:12; }
-.text-container p { margin:2px 0; }
-.text-urdu { font-family:'UrduFont'; font-size:15px; color:#00427a; font-weight:bold; }
-.designation { color:purple; font-weight:bold; }
+/* text block */
+.text-container{
+position:absolute;
+bottom:60px;
+top:180px;
+left:40px;
+font-family:"Courier New", monospace;
+color:#00427a;
+font-weight:bold;
+line-height:1.7;
+z-index:12;
+}
 
-/* Headers */
-.header-text { position:absolute; top:40px; left:50%; transform:translateX(-50%); text-align:center; color:#301934; font-size:18px; font-weight:500; font-family:'UrduFont'; z-index:15; white-space:nowrap; width:1000px; }
-.header-text-urdu { position:absolute; top:75px; left:50%; transform:translateX(-50%); text-align:center; font-family:'UrduFont'; color:#301934; font-size:18px; font-weight:500; line-height:1; z-index:12; }
-.header-text-urdu2 { position:absolute; top:40px; left:50%; transform:translateX(-50%); text-align:center; color:#301934; font-size:18px; font-weight:500; font-family:'UrduFont'; z-index:15; white-space:nowrap; width:1000px; }
+.text-container p{ margin:2px 0; }
 
-/* Strip holes */
-.strip-hole { position:absolute; top:9px; left:50%; transform:translateX(-50%); width:71px; height:10px; background-color:grey; border-radius:5px; z-index:11; }
-.strip-hole2 { position:absolute; top:10px; left:50%; transform:translateX(-50%); width:70px; height:9.3px; background-color:white; border-radius:5px; z-index:11; }
+.text-urdu{
+font-family:'UrduFont';
+font-size:15px;
+color:#00427a;
+font-weight:bold;
+}
 
-/* Date & validity */
-.date { position:absolute; top:150px; right:35px; font-family:"Courier New", monospace; font-size:10px; color:green; font-weight:bold; z-index:12; }
-.valid-till { position:absolute; top:170px; right:36px; font-family:"Courier New", monospace; font-size:9px; color:red; font-weight:bold; z-index:12; }
+.designation{
+color:purple;
+font-weight:bold;
+}
 
-.issuance { margin-top:10px; font-family:"Courier New", monospace; font-size:15px; color:#00427a; font-weight:bold; line-height:1; z-index:12; }
+/* headers */
+.header-text{
+position:absolute;
+top:40px;
+left:50%;
+transform:translateX(-50%);
+text-align:center;
+color:#301934;
+font-size:18px;
+font-weight:500;
+font-family:'UrduFont';
+z-index:15;
+white-space:nowrap;
+}
 
-/* Save button */
-.save-btn-container { display:flex; justify-content:center; margin-top:20px; }
-button { background-color:#4a90e2; color:white; padding:10px 15px; font-size:12px; border:none; border-radius:30px; cursor:pointer; transition:0.3s; }
-button:hover { background-color:#357ab7; }
+.header-text-urdu{
+position:absolute;
+top:75px;
+left:50%;
+transform:translateX(-50%);
+text-align:center;
+font-family:'UrduFont';
+color:#301934;
+font-size:18px;
+font-weight:500;
+line-height:1;
+z-index:12;
+}
+
+/* strip holes */
+.strip-hole{ position:absolute; top:9px; left:50%; transform:translateX(-50%); width:71px; height:10px; background-color:grey; border-radius:5px; z-index:11; }
+.strip-hole2{ position:absolute; top:10px; left:50%; transform:translateX(-50%); width:70px; height:9.3px; background-color:white; border-radius:5px; z-index:11; }
+
+/* dates */
+.date{ position:absolute; top:150px; right:35px; font-family:"Courier New", monospace; font-size:10px; color:green; font-weight:bold; z-index:12; }
+.valid-till{ position:absolute; top:170px; right:36px; font-family:"Courier New", monospace; font-size:9px; color:red; font-weight:bold; z-index:12; }
+
+.issuance{ margin-top:10px; font-family:"Courier New", monospace; font-size:15px; color:#00427a; font-weight:bold; line-height:1; }
+
+/* button */
+.save-btn-container{ display:flex; justify-content:center; margin-top:20px; }
+
+button{
+background-color:#4a90e2;
+color:white;
+padding:10px 15px;
+font-size:12px;
+border:none;
+border-radius:30px;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{ background-color:#357ab7; }
 </style>
 </head>
+
 <body>
 
 <div class="ecard-container" id="ecard">
+
 <div class="strip-hole"></div>
 <div class="strip-hole2"></div>
 
@@ -103,10 +195,10 @@ button:hover { background-color:#357ab7; }
 
 <div class="header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
 <div class="header-text-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
-<div class="header-text-urdu2">KHAWRAI FALAHI COMMITTEE UAE</div>
 
 <div class="date" id="currentDate"></div>
 <div class="valid-till" id="validTillDate"></div>
+
 </div>
 
 <div class="save-btn-container">
@@ -120,49 +212,55 @@ const formData = JSON.parse(localStorage.getItem("ecardData") || '{}');
 
 if(!formData.name){
 alert("No e-Card data found. Redirecting to form.");
-window.location.href = "index.html";
+window.location.href="index.html";
 }
 
-document.getElementById("nameText").textContent = "Name: " + formData.name;
-document.getElementById("urduText").textContent = formData.urduName;
-document.getElementById("designationText").textContent = "Desg: " + formData.designation;
-document.getElementById("cardNumberText").textContent = "Card No.: " + formData.cardNumber;
-document.getElementById("bloodText").textContent = "B-Group: " + formData.bloodGroup;
-document.getElementById("contactText").textContent = "Contact: " + formData.contact;
+document.getElementById("nameText").textContent="Name: "+formData.name;
+document.getElementById("urduText").textContent=formData.urduName;
+document.getElementById("designationText").textContent="Desg: "+formData.designation;
+document.getElementById("cardNumberText").textContent="Card No.: "+formData.cardNumber;
+document.getElementById("bloodText").textContent="B-Group: "+formData.bloodGroup;
+document.getElementById("contactText").textContent="Contact: "+formData.contact;
 
-document.getElementById("userPhoto").src = formData.photoData;
-document.getElementById("photoSmall").src = formData.photoData;
+document.getElementById("userPhoto").src=formData.photoData;
+document.getElementById("photoSmall").src=formData.photoData;
 
-const today = new Date();
-document.getElementById("currentDate").textContent = "ISSUE DATE: " + today.toLocaleDateString('en-GB', {year:'numeric', month:'short', day:'2-digit'});
-document.getElementById("validTillDate").textContent = "VALIDITY: UAE VISA EXPIRY";
+const today=new Date();
+
+document.getElementById("currentDate").textContent=
+"ISSUE DATE: "+today.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'});
+
+document.getElementById("validTillDate").textContent=
+"VALIDITY: UAE VISA EXPIRY";
 
 function waitForResources(container){
-const imgs = Array.from(container.getElementsByTagName('img'));
-const promises = imgs.map(img=>new Promise(res=>{
-if(img.complete) res(); else img.onload=img.onerror=res;
+const imgs=Array.from(container.getElementsByTagName('img'));
+const promises=imgs.map(img=>new Promise(res=>{
+if(img.complete) res();
+else img.onload=img.onerror=res;
 }));
 return Promise.all(promises);
 }
 
-document.getElementById("saveBtn").addEventListener("click", async function(){
+document.getElementById("saveBtn").addEventListener("click",async function(){
 
-const ecard = document.getElementById("ecard");
+const ecard=document.getElementById("ecard");
 
-/* ensure fonts are loaded before rendering */
-if (document.fonts && document.fonts.ready) {
+if(document.fonts && document.fonts.ready){
 await document.fonts.ready;
 }
 
 await waitForResources(ecard);
 
-html2pdf(ecard, {
+const opt={
 margin:0,
 filename:`${formData.name}_eCard.pdf`,
-image:{type:'jpeg', quality:1},
-html2canvas:{scale:5, useCORS:true},
-jsPDF:{unit:'mm', format:[180,135], orientation:'landscape'}
-});
+image:{type:'jpeg',quality:1},
+html2canvas:{scale:5,useCORS:true},
+jsPDF:{unit:'mm',format:[180,135],orientation:'landscape'}
+};
+
+html2pdf().set(opt).from(ecard).save();
 
 });
 </script>
