@@ -1,95 +1,109 @@
 let members=[];
 
 fetch("cards.json")
+
 .then(res=>res.json())
-.then(data=>{
-members=data;
-});
 
-function buildUsername(name){
+.then(data=>members=data);
 
-let parts=name.toLowerCase().split(" ");
+function usernameBuilder(name){
 
-let first=parts[0];
-let last=parts[parts.length-1];
+let p=name.toLowerCase().split(" ");
 
-return first+last;
+return p[0]+p[p.length-1];
+
 }
 
-function buildPassword(issue){
+function passwordBuilder(issue){
 
-let parts=issue.split("-");
+let d=issue.split("-");
 
-let day=parts[0];
-let month=parts[1];
-let year=parts[2].slice(-2);
+return d[0]+d[1]+d[2].slice(-2);
 
-return day+month+year;
 }
-
 
 function login(){
 
-let user=document.getElementById("username").value.toLowerCase();
-let pass=document.getElementById("password").value;
+let u=document.getElementById("username").value.toLowerCase();
 
-let found=false;
+let p=document.getElementById("password").value;
+
+let ok=false;
 
 members.forEach(m=>{
 
-let u=buildUsername(m.name);
-let p=buildPassword(m.Issue);
+if(u===usernameBuilder(m.name) && p===passwordBuilder(m.Issue)){
 
-if(user===u && pass===p){
-found=true;
+ok=true;
+
 }
 
 });
 
-if(found){
+if(ok){
 
-document.getElementById("loginPanel").classList.add("hidden");
+document.getElementById("loginBox").style.display="none";
 
-document.getElementById("formPanel").classList.remove("hidden");
+document.getElementById("formBox").classList.remove("hidden");
 
 }else{
 
-document.getElementById("loginError").innerText="Invalid Login";
+document.getElementById("error").innerText="Invalid username or password";
 
 }
 
 }
 
-
-
-function generateCard(){
+function generate(){
 
 let name=document.getElementById("name").value;
+
 let urdu=document.getElementById("urdu").value;
+
 let desg=document.getElementById("desg").value;
+
 let cno=document.getElementById("cno").value;
+
 let bg=document.getElementById("bg").value;
+
 let mobile=document.getElementById("mobile").value;
 
 let photo=document.getElementById("photo").files[0];
+
+document.getElementById("eName").innerText=name;
+
+document.getElementById("eUrdu").innerText=urdu;
+
+document.getElementById("eDesg").innerText=desg;
+
+document.getElementById("eNo").innerText="Card: "+cno;
+
+document.getElementById("eBG").innerText="Blood: "+bg;
+
+document.getElementById("eMobile").innerText="Mobile: "+mobile;
 
 let reader=new FileReader();
 
 reader.onload=function(e){
 
-document.getElementById("cardPhoto").src=e.target.result;
+document.getElementById("photoPreview").src=e.target.result;
 
 };
 
 reader.readAsDataURL(photo);
 
-document.getElementById("cardName").innerText=name;
-document.getElementById("cardUrdu").innerText=urdu;
-document.getElementById("cardDesg").innerText=desg;
-document.getElementById("cardNo").innerText="Card: "+cno;
-document.getElementById("cardBG").innerText="Blood: "+bg;
-document.getElementById("cardMobile").innerText="Mobile: "+mobile;
+document.getElementById("qr").innerHTML="";
 
-document.getElementById("cardPanel").classList.remove("hidden");
+new QRCode(document.getElementById("qr"),mobile);
+
+document.getElementById("ecardSection").classList.remove("hidden");
+
+}
+
+function download(){
+
+let element=document.getElementById("ecard");
+
+html2pdf().from(element).save("ecard.pdf");
 
 }
