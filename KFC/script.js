@@ -75,10 +75,22 @@ function renderTable() {
     table += "<th>VIEW CARD</th></tr></thead><tbody>";
 
     results.forEach(item => {
-        table += "<tr>";
+
+        /* Highlight Cancel Status */
+        let rowStyle = "";
+        if(item.status && item.status.toLowerCase() === "cancel"){
+            rowStyle = "style='background-color:yellow;color:red;font-weight:bold;'";
+        }
+        if(item.Status && item.Status.toLowerCase() === "cancel"){
+            rowStyle = "style='background-color:yellow;color:red;font-weight:bold;'";
+        }
+
+        table += `<tr ${rowStyle}>`;
+
         for(const key in item){
             table += `<td data-label="${key}">${item[key]}</td>`;
         }
+
         const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
         table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')">VIEW CARD</button></td>`;
         table += "</tr>";
@@ -99,4 +111,5 @@ window.sortTable = function(column){
     }
     renderTable();
 };
+
 });
