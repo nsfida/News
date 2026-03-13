@@ -1,109 +1,154 @@
-let members=[];
+let members = [];
 
 fetch("cards.json")
+.then(response => response.json())
+.then(data => {
+members = data;
+console.log("Members Loaded:", members);
+});
 
-.then(res=>res.json())
+/* CREATE USERNAME
+firstname + lastname */
 
-.then(data=>members=data);
+function createUsername(name){
 
-function usernameBuilder(name){
+```
+name = name.trim().toLowerCase();
 
-let p=name.toLowerCase().split(" ");
+let parts = name.split(/\s+/);
 
-return p[0]+p[p.length-1];
+let first = parts[0];
+
+let last = parts[parts.length - 1];
+
+return first + last;
+```
 
 }
 
-function passwordBuilder(issue){
+/* CREATE PASSWORD
+dd-mm-yyyy → ddmmyy */
 
-let d=issue.split("-");
+function createPassword(issue){
 
-return d[0]+d[1]+d[2].slice(-2);
+```
+issue = issue.trim();
+
+let parts = issue.split("-");
+
+let day = parts[0].padStart(2,"0");
+
+let month = parts[1].padStart(2,"0");
+
+let year = parts[2].slice(-2);
+
+return day + month + year;
+```
 
 }
 
 function login(){
 
-let u=document.getElementById("username").value.toLowerCase();
+```
+let inputUser = document
+    .getElementById("username")
+    .value
+    .trim()
+    .toLowerCase();
 
-let p=document.getElementById("password").value;
+let inputPass = document
+    .getElementById("password")
+    .value
+    .trim();
 
-let ok=false;
+let match = false;
 
-members.forEach(m=>{
 
-if(u===usernameBuilder(m.name) && p===passwordBuilder(m.Issue)){
+members.forEach(member => {
 
-ok=true;
+    let jsonUser = createUsername(member.name);
 
-}
+    let jsonPass = createPassword(member.Issue);
+
+    console.log(
+        "Checking:",
+        jsonUser,
+        jsonPass
+    );
+
+    if(inputUser === jsonUser && inputPass === jsonPass){
+
+        match = true;
+
+    }
 
 });
 
-if(ok){
 
-document.getElementById("loginBox").style.display="none";
+if(match){
 
-document.getElementById("formBox").classList.remove("hidden");
+    document.getElementById("loginBox").style.display = "none";
 
-}else{
-
-document.getElementById("error").innerText="Invalid username or password";
+    document.getElementById("formBox").classList.remove("hidden");
 
 }
 
+else{
+
+    document.getElementById("error").innerText =
+    "Invalid username or password";
+
 }
+```
+
+}
+
+/* CARD GENERATION */
 
 function generate(){
 
-let name=document.getElementById("name").value;
+```
+let name = document.getElementById("name").value;
 
-let urdu=document.getElementById("urdu").value;
+let urdu = document.getElementById("urdu").value;
 
-let desg=document.getElementById("desg").value;
+let desg = document.getElementById("desg").value;
 
-let cno=document.getElementById("cno").value;
+let cno = document.getElementById("cno").value;
 
-let bg=document.getElementById("bg").value;
+let bg = document.getElementById("bg").value;
 
-let mobile=document.getElementById("mobile").value;
+let mobile = document.getElementById("mobile").value;
 
-let photo=document.getElementById("photo").files[0];
+let photo = document.getElementById("photo").files[0];
 
-document.getElementById("eName").innerText=name;
 
-document.getElementById("eUrdu").innerText=urdu;
+document.getElementById("eName").innerText = name;
 
-document.getElementById("eDesg").innerText=desg;
+document.getElementById("eUrdu").innerText = urdu;
 
-document.getElementById("eNo").innerText="Card: "+cno;
+document.getElementById("eDesg").innerText = desg;
 
-document.getElementById("eBG").innerText="Blood: "+bg;
+document.getElementById("eNo").innerText = "Card: " + cno;
 
-document.getElementById("eMobile").innerText="Mobile: "+mobile;
+document.getElementById("eBG").innerText = "Blood: " + bg;
 
-let reader=new FileReader();
+document.getElementById("eMobile").innerText = "Mobile: " + mobile;
 
-reader.onload=function(e){
 
-document.getElementById("photoPreview").src=e.target.result;
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+    document.getElementById("photoPreview").src = e.target.result;
 
 };
 
 reader.readAsDataURL(photo);
 
-document.getElementById("qr").innerHTML="";
 
-new QRCode(document.getElementById("qr"),mobile);
-
-document.getElementById("ecardSection").classList.remove("hidden");
-
-}
-
-function download(){
-
-let element=document.getElementById("ecard");
-
-html2pdf().from(element).save("ecard.pdf");
+document.getElementById("ecardSection")
+.classList.remove("hidden");
+```
 
 }
