@@ -15,7 +15,7 @@ const urduConstitution = document.getElementById("urduConstitution");
 /* Buttons */
 printButton.disabled = true;
 printButton.addEventListener("click", () => window.print());
-generateButton.addEventListener("click", () => alert("e-Card generator page will open here."));
+generateButton.addEventListener("click", () => window.location.href = "NewCard/login.html");
 englishConstitution.addEventListener("click", () => window.open("English.pdf","_blank"));
 urduConstitution.addEventListener("click", () => window.open("Urdu.pdf","_blank"));
 
