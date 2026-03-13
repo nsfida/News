@@ -148,7 +148,6 @@ button:hover{ background-color:#357ab7; }
 
 <div class="ecard-container" id="ecard">
 
-<!-- WATERMARK IMAGE (Fix for PDF clipping) -->
 <img src="static/images/watermark.png" class="watermark-overlay">
 
 <div class="strip-hole"></div>
@@ -286,15 +285,32 @@ await document.fonts.ready;
 
 await waitForResources(ecard);
 
-const opt={
-margin:0,
-filename:`${formData.name} e-Card.pdf`,
-image:{type:'jpeg',quality:1},
-html2canvas:{scale:5,useCORS:true},
-jsPDF:{unit:'mm',format:[180,135],orientation:'landscape'}
-};
+/* ---- PDF FIX START ---- */
 
-html2pdf().set(opt).from(ecard).save();
+const canvas = await html2canvas(ecard,{
+scale:5,
+useCORS:true,
+allowTaint:true,
+foreignObjectRendering:true,
+scrollX:0,
+scrollY:0,
+windowWidth:ecard.scrollWidth,
+windowHeight:ecard.scrollHeight
+});
+
+const imgData = canvas.toDataURL("image/jpeg",1);
+
+const pdf = new jspdf.jsPDF({
+orientation:'landscape',
+unit:'mm',
+format:[180,135]
+});
+
+pdf.addImage(imgData,'JPEG',0,0,180,135);
+
+pdf.save(`${formData.name} e-Card.pdf`);
+
+/* ---- PDF FIX END ---- */
 
 });
 
