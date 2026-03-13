@@ -1820,14 +1820,14 @@
 "Issue":"-"
 },
 {
-"name":"Tahir Muhammad Faiz Muhammad",
+"name":"Tajid Hussain Said Nawab Khan",
 "Desg":"Committee Member",
 "CNo":"746-210-184",
-"BG":"N/A",
-"mobile":"+971505958681",
+"BG":"B+",
+"mobile":"+923314526919",
 "Status":"Active",
-"Room":"Room 07 (Niaz Ali Khattak)",
-"Issue":"15-03-2025"
+"Room":"Room - (-)",
+"Issue":"24-01-2025"
 },
 {
 "name":"Muhammad Sajid Muhammad Sadiq",
@@ -1846,7 +1846,7 @@
 "BG":"N/A",
 "mobile":"+971555593218",
 "Status":"Active",
-"Room":"Room - (-)",
+"Room":"Parco, Jabel Ali",
 "Issue":"16-03-2025"
 },
 {
@@ -2038,5 +2038,15 @@
 "Status":"Active",
 "Room":"Room - (-)",
 "Issue":"13-10-2025"
+},
+{
+"name":"Tahir Muhammad Faiz Muhammad",
+"Desg":"Committee Member",
+"CNo":"746-210-206",
+"BG":"N/A",
+"mobile":"+971505958681",
+"Status":"Active",
+"Room":"Room 07 (Niaz Ali Khattak)",
+"Issue":"15-03-2025"
 }
 ]
