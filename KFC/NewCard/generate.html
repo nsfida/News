@@ -198,27 +198,6 @@ button:hover{ background-color:#357ab7; }
 
 <script>
 
-async function checkCardNumber(cardNumber){
-
-try{
-const response = await fetch("cards.json");
-const data = await response.json();
-
-for(let i=0;i<data.length;i++){
-if(data[i].cardNumber === cardNumber){
-return true;
-}
-}
-
-return false;
-
-}catch(err){
-console.error("cards.json not found or invalid.");
-return false;
-}
-
-}
-
 const formData = JSON.parse(localStorage.getItem("ecardData") || '{}');
 
 if(!formData.name){
@@ -226,15 +205,44 @@ alert("No e-Card data found. Redirecting to form.");
 window.location.href="index.html";
 }
 
-(async function(){
+async function checkCardNumber(){
 
-const exists = await checkCardNumber(formData.cardNumber);
+try{
 
-if(exists){
-alert("This Card Number already exists. Please enter a new card number.");
+const response = await fetch("cards.json");
+const jsonData = await response.json();
+
+for(let i=0;i<jsonData.length;i++){
+
+if(jsonData[i].CNo === formData.cardNumber){
+
+alert("This Card Number already exists. Please enter a new number.");
+
 window.location.href="index.html";
-return;
+
+return false;
+
 }
+
+}
+
+return true;
+
+}catch(err){
+
+console.log("cards.json not accessible");
+
+return true;
+
+}
+
+}
+
+async function init(){
+
+const ok = await checkCardNumber();
+
+if(!ok) return;
 
 document.getElementById("nameText").textContent="Name: "+formData.name;
 document.getElementById("urduText").textContent=formData.urduName;
@@ -246,7 +254,9 @@ document.getElementById("contactText").textContent="Contact: "+formData.contact;
 document.getElementById("userPhoto").src=formData.photoData;
 document.getElementById("photoSmall").src=formData.photoData;
 
-})();
+}
+
+init();
 
 const today=new Date();
 
