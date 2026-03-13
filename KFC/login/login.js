@@ -62,14 +62,18 @@ function generate(){
     let mobile = document.getElementById("mobile").value;
     let photo = document.getElementById("photo").files[0];
 
+    document.getElementById("formBox").classList.add("hidden");
     document.getElementById("ecardSection").classList.remove("hidden");
-    document.getElementById("eName").innerText = name;
-    document.getElementById("eUrdu").innerText = urdu;
-    document.getElementById("eDesg").innerText = desg;
-    document.getElementById("eNo").innerText = "Card: " + cno;
+
+    // Set Text
+    document.getElementById("eName").innerText = "Name: " + name;
+    document.getElementById("eUrdu").innerText = "Urdu Name: " + urdu;
+    document.getElementById("eDesg").innerText = "Designation: " + desg;
+    document.getElementById("eNo").innerText = "Card No: " + cno;
     document.getElementById("eBG").innerText = "Blood: " + bg;
     document.getElementById("eMobile").innerText = "Mobile: " + mobile;
 
+    // Photo
     if(photo){
         let reader = new FileReader();
         reader.onload = function(e){
