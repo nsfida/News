@@ -75,20 +75,24 @@ function renderTable() {
     table += "<th>VIEW CARD</th></tr></thead><tbody>";
 
     results.forEach(item => {
-
-        /* Highlight Cancel Status */
-        let rowStyle = "";
-        if(item.status && item.status.toLowerCase() === "cancel"){
-            rowStyle = "style='background-color:yellow;color:red;font-weight:bold;'";
-        }
-        if(item.Status && item.Status.toLowerCase() === "cancel"){
-            rowStyle = "style='background-color:yellow;color:red;font-weight:bold;'";
-        }
-
-        table += `<tr ${rowStyle}>`;
+        table += "<tr>";
 
         for(const key in item){
-            table += `<td data-label="${key}">${item[key]}</td>`;
+
+            let value = item[key];
+            let cellStyle = "";
+
+            /* Highlight Status text only */
+            if(key.toLowerCase() === "status"){
+                if(value && value.toLowerCase() === "cancel"){
+                    cellStyle = "style='background-color:yellow;color:red;font-weight:bold;text-align:center;'";
+                }
+                if(value && value.toLowerCase() === "active"){
+                    cellStyle = "style='background-color:green;color:white;font-weight:bold;text-align:center;'";
+                }
+            }
+
+            table += `<td data-label="${key}" ${cellStyle}>${value}</td>`;
         }
 
         const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
