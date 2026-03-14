@@ -74,7 +74,6 @@ let valB=b[currentSort.column]?b[currentSort.column].toString().toLowerCase():""
 if(valA<valB) return currentSort.asc?-1:1;
 if(valA>valB) return currentSort.asc?1:-1;
 return 0;
-
 });
 }
 
