@@ -1,50 +1,27 @@
+Index
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Khawrai Falahi Committee UAE</title>
-
+<title>Database Khawrai Falahi Committee UAE</title>
 <link rel="stylesheet" href="style.css">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 </head>
 
 <body>
 
-<!-- Loader -->
-
-<div id="loader">
-<div class="loader"></div>
-</div>
-
-<!-- Background -->
-
-<div class="bg"></div>
-
-<div class="container">
-
-<header class="header">
-
-<img src="logo.png" class="logo">
-
+<div class="logo-title">
+<img src="logo.png" alt="Logo">
 <div>
-<h1>Khawrai Falahi Committee UAE</h1>
-<p class="urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+<h2>Khawrai Falahi Committee UAE</h2>
+<p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+</div>
 </div>
 
-</header>
+<div class="form-container">
 
-<!-- Search Panel -->
-
-<div class="glass-card">
-
-<label><i class="fa-solid fa-filter"></i> Search By</label>
-
+<label for="searchField">Search By:</label>
 <select id="searchField">
 <option value="name">Member Name</option>
 <option value="Desg">Designation</option>
@@ -56,87 +33,24 @@
 <option value="Issue">e-Card Issue Date</option>
 </select>
 
-<label><i class="fa-solid fa-magnifying-glass"></i> Search</label>
+<label for="searchInput">Enter Search Term:</label>
+<input type="text" id="searchInput" placeholder="Search Term">
 
-<input type="text" id="searchInput" placeholder="Enter search term">
-
-<div class="buttons">
-
-<button id="searchButton" disabled>
-<i class="fa-solid fa-search"></i> Search
-</button>
-
-<button id="printButton" disabled>
-<i class="fa-solid fa-print"></i> Print
-</button>
-
-<button id="generateButton">
-<i class="fa-solid fa-id-card"></i> New e-Card
-</button>
-
-<button id="englishConstitution">
-<i class="fa-solid fa-book"></i> English Constitution
-</button>
-
-<button id="urduConstitution">
-<i class="fa-solid fa-book-quran"></i> اردو دستور
-</button>
-
+<div class="buttons-container">
+<button id="searchButton" disabled>Search</button>
+<button id="printButton" disabled>Print Results</button>
+<button id="generateButton">New e-Card</button>
+<button id="englishConstitution">Constitution (English)</button>
+<button id="urduConstitution">Constitution (اردو)</button>
 </div>
 
 </div>
 
 <div id="resultContainer"></div>
 
-<!-- Footer -->
-
-<footer class="footer">
-
-<div class="footer-inner">
-
-<div class="footer-contacts">
-
-<span>
-<i class="fa-solid fa-user-tie"></i>
-President: Arbab Muhammad Rizwan
-<a href="tel:+971557353212">+971 55 735 3212</a>
-</span>
-
-<span>
-<i class="fa-solid fa-user"></i>
-Vice President: Salar Khan
-<a href="tel:+971588840090">+971 58 884 0090</a>
-</span>
-
-<span>
-<i class="fa-solid fa-user-gear"></i>
-Acting President: Ahmad Aman Khattak
-<a href="tel:+971568039690">+971 56 803 9690</a>
-</span>
-
-<span>
-<i class="fa-solid fa-coins"></i>
-Finance Manager: Naveed Ali Liaqat
-<a href="tel:+971529297289">+971 52 929 7289</a>
-</span>
-
-</div>
-
-<div class="footer-credit">
-
-<i class="fa-solid fa-code"></i>
-Powered by
-<a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">
-Nadeem Shahzad Fida
-</a>
-
-</div>
-
-</div>
-
+<footer>
+<p>Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a></p>
 </footer>
-
-</div>
 
 <script src="script.js"></script>
 
