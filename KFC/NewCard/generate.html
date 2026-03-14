@@ -334,6 +334,10 @@ document.getElementById("verifyPhoto").src=formData.photoData;
 
 async function init(){
 
+const ok = await checkCardNumber();
+
+if(!ok) return;
+
 document.getElementById("nameText").textContent="Name: "+formData.name;
 document.getElementById("urduText").textContent=formData.urduName;
 document.getElementById("designationText").textContent="Desg: "+formData.designation;
@@ -360,7 +364,37 @@ document.getElementById("ecardLabel").textContent="Vice President's e-Card";
 generateQR();
 
 }
+async function checkCardNumber(){
 
+try{
+
+const response = await fetch("https://livenews.live/KFC/cards.json");
+const jsonData = await response.json();
+
+for(let i=0;i<jsonData.length;i++){
+
+if(jsonData[i].CNo === formData.cardNumber){
+
+alert("This Card Number already exists. Please enter a new number.");
+
+window.location.href="index.html";
+
+return false;
+
+}
+
+}
+
+return true;
+
+}catch(err){
+
+console.log("cards.json not accessible");
+return true;
+
+}
+
+}
 init();
 
 document.getElementById("saveBtn").addEventListener("click",function(){
