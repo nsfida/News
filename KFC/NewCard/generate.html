@@ -167,7 +167,7 @@ button:hover{ background-color:#357ab7; }
 <img src="static/images/sticker.png" class="photo-logo2">
 <img src="static/images/shadow.png" class="photo-logo3">
 
-<div class="ecard-label">e-Card</div>
+<div class="ecard-label" id="ecardLabel">e-Card</div>
 
 <img src="static/images/qrcode.png" class="qr-code">
 <img src="static/images/signature.png" class="signature">
@@ -253,6 +253,23 @@ document.getElementById("contactText").textContent="Contact: "+formData.contact;
 
 document.getElementById("userPhoto").src=formData.photoData;
 document.getElementById("photoSmall").src=formData.photoData;
+
+/* -------- Added Logic -------- */
+
+const desg = (formData.designation || "").toLowerCase();
+const ecard = document.getElementById("ecard");
+const label = document.getElementById("ecardLabel");
+
+if(desg.includes("president") && !desg.includes("vice")){
+ecard.style.backgroundImage="url('static/images/background2.png')";
+label.textContent="President's e-Card";
+}
+else if(desg.includes("vice president")){
+ecard.style.backgroundImage="url('static/images/background2.png')";
+label.textContent="Vice President's e-Card";
+}
+
+/* -------- End Logic -------- */
 
 }
 
