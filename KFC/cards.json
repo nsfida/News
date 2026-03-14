@@ -2048,5 +2048,25 @@
 "Status":"Active",
 "Room":"Room 07 (Niaz Ali Khattak)",
 "Issue":"15-03-2025"
+},
+{
+"name":"Zia Ur Rehman Said Rehman",
+"Desg":"Committee Member",
+"CNo":"746-210-207",
+"BG":"N/A",
+"mobile":"+971505958681",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"08-12-2025"
+},
+{
+"name":"Moosa Feroz Ifrahim (Danish Khan 746-210-120)",
+"Desg":"Committee Member",
+"CNo":"746-210-208",
+"BG":"N/A",
+"mobile":"+971588526829",
+"Status":"Active",
+"Room":"Room - (-)",
+"Issue":"29-01-2026"
 }
 ]
