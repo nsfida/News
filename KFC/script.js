@@ -1,35 +1,34 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    let data = []; 
+    let data = []; // Load from cards.json
     let currentSort = { column: null, asc: true };
 
     const searchInput = document.getElementById("searchInput");
     const searchField = document.getElementById("searchField");
     const searchButton = document.getElementById("searchButton");
-    const downloadButton = document.getElementById("downloadButton");
     const resultContainer = document.getElementById("resultContainer");
+    const printButton = document.getElementById("printButton");
 
     const generateButton = document.getElementById("generateButton");
     const englishConstitution = document.getElementById("englishConstitution");
     const urduConstitution = document.getElementById("urduConstitution");
 
+    printButton.disabled = true;
     searchButton.disabled = true;
-    downloadButton.disabled = true;
 
+    printButton.addEventListener("click", () => window.print());
     generateButton.addEventListener("click", () => window.location.href = "NewCard/login.html");
     englishConstitution.addEventListener("click", () => window.open("English.pdf","_blank"));
     urduConstitution.addEventListener("click", () => window.open("Urdu.pdf","_blank"));
 
-    // Load remote JSON
-    fetch('https://livenews.live/KFC/cards.json')
-        .then(response => response.json())
-        .then(json => data = json)
-        .catch(err => {
-            console.error("Error loading JSON:", err);
-            resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
-        });
+fetch('https://livenews.live/KFC/cards.json')
+    .then(response => response.json())
+    .then(json => data = json)
+    .catch(err => {
+        console.error("Error loading JSON:", err);
+        resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
+    });
 
-    // Enable Search button
     searchInput.addEventListener("input", function () {
         searchButton.disabled = searchInput.value.trim() === "";
         renderTable();
@@ -38,14 +37,13 @@ document.addEventListener("DOMContentLoaded", function () {
     searchField.addEventListener("change", renderTable);
     searchButton.addEventListener("click", renderTable);
 
-    // Render Table
     function renderTable() {
         const term = searchInput.value.trim().toLowerCase();
         const field = searchField.value;
 
         if(!data.length || term === "") {
             resultContainer.innerHTML = "";
-            downloadButton.disabled = true;
+            printButton.disabled = true;
             return;
         }
 
@@ -53,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if(results.length === 0){
             resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
-            downloadButton.disabled = true;
+            printButton.disabled = true;
             return;
         }
 
@@ -95,10 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         table += "</tbody></table>";
         resultContainer.innerHTML = table;
-        downloadButton.disabled = false;
+        printButton.disabled = false;
     }
 
-    // Sorting
     window.sortTable = function(column){
         if(currentSort.column === column){
             currentSort.asc = !currentSort.asc;
@@ -108,21 +105,4 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         renderTable();
     };
-
-    // Download PDF
-    downloadButton.addEventListener("click", function(){
-        const container = document.createElement("div");
-        container.appendChild(document.querySelector(".logo-title").cloneNode(true));
-        container.appendChild(document.querySelector("#resultContainer table").cloneNode(true));
-
-        const opt = {
-            margin: 10,
-            filename: 'Khawrai_Falahi_List.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(container).save();
-    });
-
 });
