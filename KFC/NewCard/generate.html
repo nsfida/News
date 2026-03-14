@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -15,11 +14,13 @@ body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
 display:flex;
 flex-direction:column;
 align-items:center;
+min-width: 610px; /* Prevents mobile compression */
 }
 
 .ecard-container{
 position:relative;
 width:610px;
+min-width: 610px; /* Prevents mobile compression */
 height:400px;
 margin:50px auto 10px auto;
 background-image:url('static/images/background.png');
@@ -175,14 +176,22 @@ border-radius:6px;
 
 .center-text{
 position:absolute;
-top:140px;
-left:60px;
-right:60px;
+top:135px;
+left:50px;
+right:50px;
 text-align:center;
-font-size:12px;
+font-size:10.5px; /* Made smaller */
 font-family:Calibri;
 color:#222;
 line-height:1.4;
+}
+
+.urdu-text {
+font-family: 'UrduFont', sans-serif; /* Assigned Urdu font */
+font-size: 11px; /* Made smaller */
+direction: rtl; /* Proper text direction for Urdu */
+line-height: 1.5;
+margin-top: 8px;
 }
 
 .contacts{
@@ -195,7 +204,7 @@ color:black;
 line-height:1.6;
 }
 
-.save-btn-container{ display:flex; justify-content:center; margin-top:20px; }
+.save-btn-container{ display:flex; justify-content:center; margin-top:20px; margin-bottom: 20px; }
 
 button{
 background-color:#4a90e2;
@@ -217,8 +226,6 @@ button:hover{ background-color:#357ab7; }
 <body>
 
 <div id="pdfArea" class="card-wrapper">
-
-<!-- FRONT CARD (UNCHANGED) -->
 
 <div class="ecard-container" id="ecard">
 
@@ -261,8 +268,6 @@ button:hover{ background-color:#357ab7; }
 <div class="valid-till" id="validTillDate"></div>
 
 </div>
-
-<!-- BACKSIDE -->
 
 <div class="ecard-container" id="ecardBack">
 
