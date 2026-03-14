@@ -404,11 +404,11 @@ today.getDate().toString().padStart(2,'0') + "-" +
 today.getFullYear();
 
 document.getElementById("currentDate").textContent =
-"Card Issue Date: " + formattedDate;
+"ISSUE DATE: "+today.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'});
 
 // Validity text
 document.getElementById("validTillDate").textContent =
-"Validity: Till UAE Visa Expiry";;
+"VALIDITY: UAE VISA EXPIRY";
 
 document.getElementById("saveBtn").addEventListener("click",function(){
 
