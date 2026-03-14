@@ -1,196 +1,253 @@
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+/* Reset */
+*{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-font-family:'Calibri',sans-serif;
-display:flex;
-flex-direction:column;
-align-items:center;
-color:#416ba5;
-padding:20px;
-overflow-x:hidden;
+  font-family:'Calibri',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background: linear-gradient(135deg, #e0eaff, #ffffff);
+  color:#1a1a1a;
+  padding:20px;
+  overflow-x:hidden;
 }
 
-.form-container{
-text-align:center;
-margin-bottom:20px;
-width:100%;
-max-width:500px;
+.glass-panel {
+  background: rgba(255, 255, 255, 0.2); /* more transparent */
+  backdrop-filter: blur(18px) saturate(180%); /* stronger blur for glass effect */
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border-radius: 25px;
+  padding: 20px;
+  margin-bottom: 20px;
+
+  /* subtle shadow for floating effect */
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+
+  /* glass border with gradient for reflective edges */
+  border: 1px solid rgba(255,255,255,0.3);
+  border-left: 2px solid rgba(255,255,255,0.4);
+  border-top: 2px solid rgba(255,255,255,0.4);
+
+  /* soft reflection gradient on edges */
+  position: relative;
+  overflow: hidden;
 }
 
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none; /* doesn’t block clicks */
+  border-radius: 25px;
+}
+
+/* Logo + Title */
 .logo-title{
-display:flex;
-align-items:center;
-justify-content:center;
-margin-bottom:20px;
-flex-wrap:wrap;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:20px;
+  flex-direction: column; /* stack English and Urdu text vertically */
+  animation: fadeInDown 1s ease forwards;
 }
 
-.logo-title img{
-width:50px;
-margin-right:10px;
+.logo-title .title-text{
+  text-align: center; /* center both titles */
 }
 
 .logo-title h2{
-font-size:22px;
-color:#1976d2;
-font-weight:bold;
+  font-size:24px;
+  color:#0d3c91;
+  font-weight:bold;
 }
 
 .uae-text{
-font-size:18px;
-color:#1976d2;
-margin-top:5px;
+  font-size:18px;
+  color:#0d3c91;
+  margin-top:5px;
 }
 
+/* Logo + Title */
+.logo-title img.logo{
+  width:60px;
+  margin-right:15px;
+  animation: logoFade 2.5s ease-in-out infinite;
+}
+
+@keyframes logoFade{
+  0%   {opacity:0.8; transform: scale(1);}
+  50%  {opacity:1; transform: scale(1.05);}
+  100% {opacity:0.8; transform: scale(1);}
+}
+
+@keyframes fadeInDown{
+  0%{opacity:0;transform:translateY(-20px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+
+.logo-title h2{
+  font-size:24px;
+  color:#0d3c91;
+  font-weight:bold;
+}
+
+.uae-text{
+  font-size:18px;
+  color:#0d3c91;
+  margin-top:5px;
+}
+
+/* Form Inputs */
 label{
-display:block;
-margin-bottom:8px;
-font-size:15px;
-color:#555;
+  display:block;
+  margin-bottom:8px;
+  font-size:15px;
+  color:#333;
 }
 
 input[type="text"],select{
-width:100%;
-padding:5px;
-margin-bottom:20px;
-border-radius:50px;
-border:1.5px solid #ddd;
-font-size:13px;
+  width:100%;
+  padding:8px 12px;
+  margin-bottom:20px;
+  border-radius:50px;
+  border:1.5px solid rgba(0,0,0,0.1);
+  font-size:14px;
+  outline:none;
+  transition:0.3s;
 }
 
+input[type="text"]:focus, select:focus{
+  border-color:#1976d2;
+  box-shadow:0 0 10px rgba(25,118,210,0.3);
+}
+
+/* Buttons */
 .buttons-container{
-display:flex;
-justify-content:center;
-gap:10px;
-margin-top:10px;
-flex-wrap:wrap;
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
 }
 
 button{
-background:#1976d2;
-color:white;
-padding:5px 20px;
-font-size:15px;
-border:none;
-border-radius:50px;
-cursor:pointer;
-}
-
-button:disabled{
-background:#a9d0f5;
-cursor:not-allowed;
+  background:#1976d2;
+  color:white;
+  padding:6px 18px;
+  font-size:14px;
+  border:none;
+  border-radius:50px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  transition:0.3s;
 }
 
 button:hover:enabled{
-background:#125fa6;
+  background:#125fa6;
+  transform:translateY(-2px);
 }
 
+button:disabled{
+  background:#a9d0f5;
+  cursor:not-allowed;
+}
+
+/* Table */
 #resultContainer{
-width:100%;
-overflow-x:auto;
+  width:100%;
+  overflow-x:auto;
 }
 
 table{
-width:100%;
-border-collapse:collapse;
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:20px;
+  border-radius:15px;
+  overflow:hidden;
 }
 
 table,th,td{
-border:1px solid #ddd;
+  border:1px solid #ddd;
 }
 
 th,td{
-padding:4px;
-text-align:left;
+  padding:6px;
+  text-align:left;
 }
 
 th{
-background:#f2f2f2;
-cursor:pointer;
-text-transform: uppercase; /* Make desktop table headers uppercase */
+  background:#f2f2f2;
+  cursor:pointer;
+  text-transform: uppercase;
 }
 
+/* Status Highlight */
 .active{
-color:green;
-font-weight:bold;
+  background-color:green;
+  color:white;
+  font-weight:bold;
+  text-align:center;
 }
 
 .cancel{
-color:red;
-font-weight:bold;
+  background-color:yellow;
+  color:red;
+  font-weight:bold;
+  text-align:center;
 }
 
 .no-data{
-color:red;
-font-size:16px;
-text-align:center;
-margin-top:20px;
+  color:red;
+  font-size:16px;
+  text-align:center;
+  margin-top:20px;
+}
+
+/* Contact Banner */
+.contact-banner{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  padding:10px 20px;
+  margin-top:10px;
+  font-size:14px;
+  flex-wrap:wrap;
+}
+
+.contact-banner a{
+  text-decoration:none;
+  color:#0d3c91;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition:0.3s;
+}
+
+.contact-banner a:hover{
+  color:#125fa6;
+  transform:translateY(-2px);
+}
+
+/* Footer */
+footer{
+  margin-top:15px;
+  font-size:14px;
 }
 
 /* MOBILE */
 @media (max-width:600px){
-
-.logo-title h2{
-font-size:18px;
-}
-
-.uae-text{
-font-size:16px;
-}
-
-button{
-font-size:13px;
-padding:5px 12px;
-}
-
-/* Convert table to cards */
-table, thead, tbody, th, td, tr {
-    display: block;
-    width: 100%;
-}
-
-thead tr {
-    display: none; /* hide header on mobile */
-}
-
-tr {
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-td {
-    text-align: right;
-    padding-left: 50%;
-    position: relative;
-    border: none;
-    border-bottom: 1px solid #eee;
-}
-
-td::before {
-    content: attr(data-label);
-    position: absolute;
-    left: 10px;
-    width: 45%;
-    font-weight: bold;
-    text-align: left;
-    text-transform: uppercase; /* Make mobile card labels uppercase */
-}
-
-td:last-child {
-    border-bottom: 0;
-}
-
-td button {
-    width: 100%;
-    box-sizing: border-box;
-    margin-top: 5px;
-}
-
+  .logo-title h2{font-size:20px;}
+  .uae-text{font-size:16px;}
+  button{font-size:13px;padding:5px 12px;}
+  table, thead, tbody, th, td, tr{display:block;width:100%;}
+  thead tr{display:none;}
+  tr{margin-bottom:15px;border:1px solid #ddd;padding:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);}
+  td{text-align:right;padding-left:50%;position:relative;border:none;border-bottom:1px solid #eee;}
+  td::before{content: attr(data-label);position:absolute;left:10px;width:45%;font-weight:bold;text-align:left;text-transform:uppercase;}
+  td:last-child{border-bottom:0;}
+  td button{width:100%;margin-top:5px;}
 }
