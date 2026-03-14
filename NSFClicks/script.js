@@ -1,3 +1,5 @@
+/* SMOOTH SCROLL NAVIGATION */
+
 document.querySelectorAll('.nav-links a').forEach(anchor => {
     anchor.addEventListener('click', function(e){
 
@@ -110,12 +112,12 @@ item.innerHTML = `
 </div>
 
 <div class="photo-details" style="display:none;">
-${photo.camera ? `<p><strong>Camera:</strong> ${photo.camera}</p>` : ""}
-${photo.lens ? `<p><strong>Lens:</strong> ${photo.lens}</p>` : ""}
-${photo.aperture ? `<p><strong>Aperture:</strong> ${photo.aperture}</p>` : ""}
-${photo.shutter ? `<p><strong>Shutter Speed:</strong> ${photo.shutter}</p>` : ""}
-${photo.iso ? `<p><strong>ISO:</strong> ${photo.iso}</p>` : ""}
-${photo.story ? `<p class="story">${photo.story}</p>` : ""}
+${photo.camera ? <p><strong>Camera:</strong> ${photo.camera}</p> : ""}
+${photo.lens ? <p><strong>Lens:</strong> ${photo.lens}</p> : ""}
+${photo.aperture ? <p><strong>Aperture:</strong> ${photo.aperture}</p> : ""}
+${photo.shutter ? <p><strong>Shutter Speed:</strong> ${photo.shutter}</p> : ""}
+${photo.iso ? <p><strong>ISO:</strong> ${photo.iso}</p> : ""}
+${photo.story ? <p class="story">${photo.story}</p> : ""}
 </div>
 `;
 
@@ -261,7 +263,7 @@ let AmPm = h >= 12 ? "PM" : "AM";
 h = h % 12 || 12;
 
 if(time){
-time.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+time.textContent = ${pad(h)}:${pad(m)}:${pad(s)};
 }
 
 if(ampm){
