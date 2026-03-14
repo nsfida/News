@@ -395,7 +395,20 @@ return true;
 }
 
 }
-init();
+init()
+// Current date for card issue
+const today = new Date();
+const formattedDate =
+today.getDate().toString().padStart(2,'0') + "-" +
+(today.getMonth()+1).toString().padStart(2,'0') + "-" +
+today.getFullYear();
+
+document.getElementById("currentDate").textContent =
+"Card Issue Date: " + formattedDate;
+
+// Validity text
+document.getElementById("validTillDate").textContent =
+"Validity: Till UAE Visa Expiry";;
 
 document.getElementById("saveBtn").addEventListener("click",function(){
 
