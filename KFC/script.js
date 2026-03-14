@@ -1,29 +1,27 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    let data = []; // Load from cards.json
+    let data = []; 
     let currentSort = { column: null, asc: true };
 
     const searchInput = document.getElementById("searchInput");
     const searchField = document.getElementById("searchField");
     const searchButton = document.getElementById("searchButton");
+    const downloadButton = document.getElementById("downloadButton");
     const resultContainer = document.getElementById("resultContainer");
-    const printButton = document.getElementById("printButton");
 
     const generateButton = document.getElementById("generateButton");
     const englishConstitution = document.getElementById("englishConstitution");
     const urduConstitution = document.getElementById("urduConstitution");
 
-    /* Buttons */
-    printButton.disabled = true;
     searchButton.disabled = true;
+    downloadButton.disabled = true;
 
-    printButton.addEventListener("click", () => window.print());
     generateButton.addEventListener("click", () => window.location.href = "NewCard/login.html");
     englishConstitution.addEventListener("click", () => window.open("English.pdf","_blank"));
     urduConstitution.addEventListener("click", () => window.open("Urdu.pdf","_blank"));
 
-    /* Load JSON data */
-    fetch('cards.json')
+    // Load remote JSON
+    fetch('https://livenews.live/KFC/cards.json')
         .then(response => response.json())
         .then(json => data = json)
         .catch(err => {
@@ -31,26 +29,23 @@ document.addEventListener("DOMContentLoaded", function () {
             resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
         });
 
-    /* Enable Search button */
+    // Enable Search button
     searchInput.addEventListener("input", function () {
         searchButton.disabled = searchInput.value.trim() === "";
         renderTable();
     });
 
-    /* Search field change triggers re-render */
     searchField.addEventListener("change", renderTable);
-
-    /* Search button click */
     searchButton.addEventListener("click", renderTable);
 
-    /* Main table render function */
+    // Render Table
     function renderTable() {
         const term = searchInput.value.trim().toLowerCase();
         const field = searchField.value;
 
         if(!data.length || term === "") {
             resultContainer.innerHTML = "";
-            printButton.disabled = true;
+            downloadButton.disabled = true;
             return;
         }
 
@@ -58,11 +53,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if(results.length === 0){
             resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
-            printButton.disabled = true;
+            downloadButton.disabled = true;
             return;
         }
 
-        /* Sorting */
         if(currentSort.column){
             results.sort((a,b)=>{
                 let valA = a[currentSort.column] ? a[currentSort.column].toString().toLowerCase() : "";
@@ -73,7 +67,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        // Build table
         let table = "<table><thead><tr>";
         for(const key in results[0]){
             table += `<th onclick="sortTable('${key}')">${key}</th>`;
@@ -82,24 +75,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
         results.forEach(item => {
             table += "<tr>";
-
             for(const key in item){
                 let value = item[key];
                 let cellStyle = "";
-
-                /* Highlight Status text only */
                 if(key.toLowerCase() === "status"){
                     if(value && value.toLowerCase() === "cancel"){
-                        cellStyle = "style='background-color:yellow;color:red;font-weight:bold;text-align:center;'";
+                        cellStyle = "class='cancel'";
                     }
                     if(value && value.toLowerCase() === "active"){
-                        cellStyle = "style='background-color:green;color:white;font-weight:bold;text-align:center;'";
+                        cellStyle = "class='active'";
                     }
                 }
-
                 table += `<td data-label="${key}" ${cellStyle}>${value}</td>`;
             }
-
             const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
             table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')">VIEW CARD</button></td>`;
             table += "</tr>";
@@ -107,18 +95,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
         table += "</tbody></table>";
         resultContainer.innerHTML = table;
-        printButton.disabled = false;
+        downloadButton.disabled = false;
     }
 
-    /* Sorting function (called on th click) */
+    // Sorting
     window.sortTable = function(column){
         if(currentSort.column === column){
-            currentSort.asc = !currentSort.asc; // toggle asc/desc
+            currentSort.asc = !currentSort.asc;
         } else {
             currentSort.column = column;
             currentSort.asc = true;
         }
         renderTable();
     };
+
+    // Download PDF
+    downloadButton.addEventListener("click", function(){
+        const container = document.createElement("div");
+        container.appendChild(document.querySelector(".logo-title").cloneNode(true));
+        container.appendChild(document.querySelector("#resultContainer table").cloneNode(true));
+
+        const opt = {
+            margin: 10,
+            filename: 'Khawrai_Falahi_List.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(container).save();
+    });
 
 });
