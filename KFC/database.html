@@ -5,52 +5,68 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Database Khawrai Falahi Committee UAE</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
 
 <div class="logo-title">
-<img src="logo.png" alt="Logo">
-<div>
-<h2>Khawrai Falahi Committee UAE</h2>
-<p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
-</div>
-</div>
-
-<div class="form-container">
-
-<label for="searchField">Search By:</label>
-<select id="searchField">
-<option value="name">Member Name</option>
-<option value="Desg">Designation</option>
-<option value="BG">Blood Type</option>
-<option value="mobile">Mobile Number</option>
-<option value="CNo">e-Card Number</option>
-<option value="Status">e-Card Status</option>
-<option value="Room">Room Number</option>
-<option value="Issue">e-Card Issue Date</option>
-</select>
-
-<label for="searchInput">Enter Search Term:</label>
-<input type="text" id="searchInput" placeholder="Search Term">
-
-<div class="buttons-container">
-<button id="searchButton" disabled>Search</button>
-<button id="printButton" disabled>Print Results</button>
-<button id="generateButton">New e-Card</button>
-<button id="englishConstitution">Constitution (English)</button>
-<button id="urduConstitution">Constitution (اردو)</button>
+  <img src="logo.png" alt="Logo" class="logo">
+  <div class="title-text">
+    <h2>Khawrai Falahi Committee UAE</h2>
+    <p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+  </div>
 </div>
 
+<div class="form-container glass-panel">
+  <label for="searchField"><i class="fas fa-search"></i> Search By:</label>
+  <select id="searchField">
+    <option value="name">Member Name</option>
+    <option value="Desg">Designation</option>
+    <option value="BG">Blood Type</option>
+    <option value="mobile">Mobile Number</option>
+    <option value="CNo">e-Card Number</option>
+    <option value="Status">e-Card Status</option>
+    <option value="Room">Room Number</option>
+    <option value="Issue">e-Card Issue Date</option>
+  </select>
+
+  <label for="searchInput"><i class="fas fa-keyboard"></i> Enter Search Term:</label>
+  <input type="text" id="searchInput" placeholder="Search Term">
+
+  <div class="buttons-container">
+    <button id="searchButton" disabled><i class="fas fa-magnifying-glass"></i> Search</button>
+    <button id="downloadButton" disabled><i class="fas fa-download"></i> Download List</button>
+    <button id="generateButton"><i class="fas fa-plus-circle"></i> New e-Card</button>
+    <button id="englishConstitution"><i class="fas fa-file-pdf"></i> Constitution (English)</button>
+    <button id="urduConstitution"><i class="fas fa-file-pdf"></i> Constitution (اردو)</button>
+  </div>
 </div>
 
 <div id="resultContainer"></div>
 
+<!-- Liquid Glass Contact Banner -->
+<div class="contact-banner glass-panel">
+  <a href="https://wa.me/971557353212" target="_blank" title="President: Arbab Muhammad Rizwan">
+    <i class="fab fa-whatsapp"></i> Arbab M. Rizwan
+  </a>
+  <a href="https://wa.me/971588840090" target="_blank" title="Vice President: Salar Khan">
+    <i class="fab fa-whatsapp"></i> Salar Khan
+  </a>
+  <a href="https://wa.me/971568039690" target="_blank" title="Acting President: Ahmad Aman Khattak">
+    <i class="fab fa-whatsapp"></i> Ahmad A. Khattak
+  </a>
+  <a href="https://wa.me/971529297289" target="_blank" title="Finance Manager: Naveed Ali Liaqat">
+    <i class="fab fa-whatsapp"></i> Naveed A. Liaqat
+  </a>
+</div>
+
 <footer>
-<p>Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a></p>
+  <p>Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a></p>
 </footer>
 
+<!-- html2pdf.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>
