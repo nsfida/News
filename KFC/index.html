@@ -1,171 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khawrai Falahi Committee UAE</title>
-    <style>
-        :root {
-            --glass: rgba(255, 255, 255, 0.1);
-            --border: rgba(255, 255, 255, 0.2);
-            --accent: #007AFF;
-            --text: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khawrai Falahi Committee UAE</title>
+<style>
+/* ----- Reset & Base Styles ----- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-        }
+body {
+    background: linear-gradient(135deg, #89f7fe, #66a6ff);
+    color: #111;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-        body {
-            background: #000;
-            color: var(--text);
-            overflow-x: hidden;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+/* ----- Hero Section ----- */
+.hero {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: url('bg-blur.jpg') center/cover no-repeat;
+}
 
-        /* Liquid Animated Background */
-        .liquid-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: linear-gradient(45deg, #001220, #004e92);
-            overflow: hidden;
-        }
+/* Frosted Glass Overlay */
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(25px) saturate(150%);
+    background-color: rgba(255, 255, 255, 0.15);
+    z-index: 1;
+    pointer-events: none;
+    border-radius: 0 0 50% 50% / 0 0 15% 15%;
+}
 
-        .blob {
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: linear-gradient(135deg, #007AFF 0%, #00ff88 100%);
-            filter: blur(80px);
-            border-radius: 50%;
-            opacity: 0.4;
-            animation: move 20s infinite alternate;
-        }
+/* Hero Content */
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    padding: 3rem 2rem;
+    border-radius: 30px;
+    backdrop-filter: blur(40px) saturate(200%);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    animation: fadeInUp 1s ease forwards;
+}
 
-        .blob-2 {
-            right: -10%;
-            bottom: -10%;
-            background: linear-gradient(135deg, #7000ff 0%, #ff007a 100%);
-            animation-duration: 15s;
-        }
+/* Logo */
+.hero-logo {
+    width: 150px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    animation: float 6s ease-in-out infinite;
+}
 
-        @keyframes move {
-            from { transform: translate(-10%, -10%) rotate(0deg); }
-            to { transform: translate(20%, 20%) rotate(360deg); }
-        }
+/* Titles */
+.hero h1, .hero h2 {
+    margin-bottom: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-shadow: 1px 1px 10px rgba(0,0,0,0.1);
+}
 
-        /* Glass Container */
-        .hero {
-            width: 90%;
-            max-width: 900px;
-            padding: 3rem;
-            background: var(--glass);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid var(--border);
-            border-radius: 40px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-            text-align: center;
-            animation: fadeIn 1.2s ease-out;
-        }
+.hero h1 span {
+    color: #fff;
+    background: linear-gradient(90deg, #ff6ec4, #7873f5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-        .hero-logo {
-            width: 120px;
-            margin-bottom: 1.5rem;
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.3));
-        }
+.hero-title-ur {
+    font-size: 1.8rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+}
 
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to bottom, #fff, #aaa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+/* Paragraphs */
+.intro-en, .intro-ur {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #f0f0f0;
+    margin-bottom: 2rem;
+}
 
-        h1 span { color: var(--accent); -webkit-text-fill-color: var(--accent); }
+/* Main Button */
+.main-button {
+    display: inline-block;
+    padding: 0.85rem 2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #ff6ec4, #7873f5);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+}
 
-        .hero-title-ur {
-            font-size: 2rem;
-            margin-bottom: 2rem;
-            font-weight: 500;
-            direction: rtl;
-        }
+.main-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+}
 
-        .intro-en, .intro-ur {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 1.5rem;
-        }
+/* Floating Shapes */
+.floating-shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: floatShapes 8s ease-in-out infinite;
+    z-index: 0;
+}
 
-        .intro-ur { direction: rtl; }
+.shape1 {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    top: 10%;
+    left: 5%;
+}
 
-        .main-button {
-            display: inline-block;
-            margin-top: 2rem;
-            padding: 1.2rem 3rem;
-            background: #fff;
-            color: #000;
-            text-decoration: none;
-            font-weight: 700;
-            border-radius: 100px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
+.shape2 {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+    bottom: 15%;
+    right: 10%;
+}
 
-        .main-button:hover {
-            transform: scale(1.05) translateY(-5px);
-            box-shadow: 0 15px 30px rgba(255,255,255,0.2);
-        }
+.shape3 {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #fccb90, #d57eeb);
+    top: 50%;
+    left: 70%;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+/* ----- Animations ----- */
+@keyframes fadeInUp {
+    0% {opacity: 0; transform: translateY(50px);}
+    100% {opacity: 1; transform: translateY(0);}
+}
 
-        @media (max-width: 768px) {
-            .hero { padding: 1.5rem; width: 95%; }
-            h1 { font-size: 1.8rem; }
-            .hero-title-ur { font-size: 1.5rem; }
-        }
-    </style>
+@keyframes float {
+    0%, 100% {transform: translateY(0);}
+    50% {transform: translateY(-15px);}
+}
+
+@keyframes floatShapes {
+    0%, 100% {transform: translateY(0) rotate(0deg);}
+    25% {transform: translateY(-20px) rotate(45deg);}
+    50% {transform: translateY(20px) rotate(90deg);}
+    75% {transform: translateY(-10px) rotate(135deg);}
+}
+
+/* Fade animation helper */
+.animate-fade {
+    opacity: 0;
+    animation: fadeInUp 1s forwards;
+}
+
+.animate-fade:nth-child(1) { animation-delay: 0.2s; }
+.animate-fade:nth-child(2) { animation-delay: 0.4s; }
+.animate-fade:nth-child(3) { animation-delay: 0.6s; }
+.animate-fade:nth-child(4) { animation-delay: 0.8s; }
+.animate-fade:nth-child(5) { animation-delay: 1s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-content {
+        padding: 2rem 1rem;
+    }
+    .hero-title-ur {
+        font-size: 1.5rem;
+    }
+    .intro-en, .intro-ur {
+        font-size: 0.95rem;
+    }
+    .main-button {
+        padding: 0.7rem 1.8rem;
+    }
+}
+</style>
 </head>
 <body>
 
-    <div class="liquid-bg">
-        <div class="blob"></div>
-        <div class="blob blob-2"></div>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <img src="logo.png" alt="Logo" class="hero-logo animate-fade">
+
+        <!-- English Title -->
+        <h1 class="animate-fade">Welcome to <span>Khawrai Falahi Committee UAE</span></h1>
+
+        <!-- Urdu Title -->
+        <h2 class="hero-title-ur animate-fade">خاورئی فلاحی کمیٹی متحدہ عرب امارات میں خوش آمدید</h2>
+
+        <!-- English paragraph -->
+        <p class="intro-en animate-fade">
+The Khawrai Falahi Committee UAE was established in December 2016. The purpose of the committee is to address the issues faced by residents of Khawrai in the United Arab Emirates and its surroundings, and to resolve them in a timely and professional manner. The leadership of the committee is committed to serving the residents of Khawrai in the United Arab Emirates and is determined to address and resolve their various issues promptly.
+        </p>
+
+        <!-- Urdu paragraph -->
+        <p class="intro-ur animate-fade">
+متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے پُرعزم ہے۔
+        </p>
+
+        <a href="database.html" class="main-button animate-fade">Explore Database</a>
     </div>
 
-    <section class="hero">
-        <img src="logo.png" alt="Logo" class="hero-logo">
-
-        <h1>Welcome to <span>Khawrai Falahi Committee UAE</span></h1>
-        <h2 class="hero-title-ur">خاورئی فلاحی کمیٹی متحدہ عرب امارات میں خوش آمدید</h2>
-
-        <p class="intro-en">
-            The Khawrai Falahi Committee UAE was established in December 2016. The purpose of the committee is to address the issues faced by residents of Khawrai in the United Arab Emirates and its surroundings, and to resolve them in a timely and professional manner.
-        </p>
-
-        <p class="intro-ur">
-            متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔
-        </p>
-
-        <a href="database.html" class="main-button">Explore Database</a>
-    </section>
+    <!-- Floating shapes -->
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    <div class="floating-shape shape3"></div>
+</section>
 
 </body>
 </html>
