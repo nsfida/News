@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -9,57 +8,52 @@
 <style>
 @font-face { font-family:'UrduFont'; src:url('static/fonts/Urdu.ttf') format('truetype'); }
 
-body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
-
-.card-wrapper{
-display:flex;
-flex-direction:column;
-align-items:center;
+body{
+    margin:0;
+    font-family:Calibri,sans-serif;
+    background-color:#e4fffc;
 }
 
+.card-wrapper{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+/* CARD CONTAINER */
 .ecard-container{
-position:relative;
-width:610px;
-height:400px;
-margin:50px auto 10px auto;
-background-image:url('static/images/background.png');
-background-size:cover;
-background-position:center;
-border-radius:40px;
-box-shadow:0px 0px 10px rgba(0,0,0,0.5);
-overflow:hidden;
+    position:relative;
+    width:610px;
+    max-width:95%;
+    height:400px;
+    margin:50px auto 10px auto;
+    background-image:url('static/images/background.png');
+    background-size:cover;
+    background-position:center;
+    border-radius:40px;
+    box-shadow:0px 0px 10px rgba(0,0,0,0.5);
+    overflow:hidden;
 }
 
 .ecard-container::before{
-content:"";
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background-image:url('static/images/watermark.png');
-background-size:cover;
-background-position:center;
-opacity:0.1;
-z-index:0;
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background-image:url('static/images/watermark.png');
+    background-size:cover;
+    background-position:center;
+    opacity:0.1;
+    z-index:0;
 }
 
+/* LOGOS & IMAGES */
 .logo{ position:absolute; top:10px; right:20px; width:100px; opacity:0.8; z-index:10; }
 .logo1{ position:absolute; top:30px; left:28px; width:55px; z-index:10; }
 .logo2{ position:absolute; top:30px; left:70px; width:55px; z-index:10; }
 .center-logo{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; opacity:0.08; z-index:1; }
-
-.ecard-label{
-position:absolute;
-top:110px;
-left:50%;
-transform:translateX(-50%);
-font-size:24px;
-font-weight:bold;
-color:#f36d21;
-z-index:15;
-text-align:center;
-}
 
 .photo{ position:absolute; bottom:25px; right:40px; width:130px; z-index:2; }
 .photo-small{ position:absolute; bottom:195px; left:150px; width:40px; opacity:0.2; border-radius:10%; z-index:2; }
@@ -74,58 +68,63 @@ text-align:center;
 
 .signature{ position:absolute; bottom:8px; left:250px; width:170px; transform:rotate(-15deg); z-index:11; }
 
+/* TEXT */
 .text-container{
-position:absolute;
-bottom:60px;
-top:180px;
-left:40px;
-font-family:"Courier New", monospace;
-color:#00427a;
-font-weight:bold;
-line-height:1.7;
-z-index:12;
+    position:absolute;
+    bottom:60px;
+    top:180px;
+    left:5%;
+    right:5%;
+    font-family:"Courier New", monospace;
+    color:#00427a;
+    font-weight:bold;
+    line-height:1.5;
+    z-index:12;
+    word-wrap: break-word;
 }
 
 .text-container p{ margin:2px 0; }
 
 .text-urdu{
-font-family:'UrduFont';
-font-size:15px;
-color:#00427a;
-font-weight:bold;
+    font-family:'UrduFont';
+    font-size:13px;
+    color:#00427a;
+    font-weight:bold;
+    direction:rtl;
+    line-height:1.3;
 }
 
 .designation{
-color:purple;
-font-weight:bold;
+    color:purple;
+    font-weight:bold;
 }
 
 .header-text{
-position:absolute;
-top:40px;
-left:50%;
-transform:translateX(-50%);
-text-align:center;
-color:#301934;
-font-size:18px;
-font-weight:500;
-font-family:'UrduFont';
-z-index:15;
-white-space:nowrap;
+    position:absolute;
+    top:40px;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+    color:#301934;
+    font-size:18px;
+    font-weight:500;
+    font-family:'UrduFont';
+    z-index:15;
+    white-space:nowrap;
 }
 
 .header-text-urdu{
-position:absolute;
-top:75px;
-left:50%;
-transform:translateX(-50%);
-text-align:center;
-font-family:'UrduFont';
-color:#301934;
-font-size:18px;
-font-weight:500;
-line-height:1;
-z-index:12;
+    position:absolute;
+    top:75px;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+    font-family:'UrduFont';
+    color:#301934;
+    font-size:16px;
+    font-weight:500;
+    line-height:1;
+    z-index:12;
 }
 
 .strip-hole{ position:absolute; top:9px; left:50%; transform:translateX(-50%); width:71px; height:10px; background-color:grey; border-radius:5px; z-index:11; }
@@ -134,92 +133,115 @@ z-index:12;
 .date{ position:absolute; top:150px; right:35px; font-family:"Courier New", monospace; font-size:10px; color:green; font-weight:bold; z-index:12; }
 .valid-till{ position:absolute; top:170px; right:36px; font-family:"Courier New", monospace; font-size:9px; color:red; font-weight:bold; z-index:12; }
 
-.issuance{ margin-top:10px; font-family:"Courier New", monospace; font-size:15px; color:#00427a; font-weight:bold; line-height:1; }
+.issuance{ margin-top:10px; font-family:"Courier New", monospace; font-size:14px; color:#00427a; font-weight:bold; line-height:1; }
 
 /* BACK SIDE */
-
 .back-overlay-logo{
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-width:220px;
-opacity:0.08;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:220px;
+    opacity:0.08;
 }
 
 .verify-box{
-position:absolute;
-top:30px;
-left:30px;
-text-align:center;
-font-size:12px;
-font-family:Calibri;
+    position:absolute;
+    top:30px;
+    left:30px;
+    text-align:center;
+    font-size:12px;
+    font-family:Calibri;
 }
 
 .verify-box img{
-width:70px;
-margin-top:5px;
+    width:70px;
+    margin-top:5px;
 }
 
 .verify-name{
-margin-top:5px;
-font-weight:bold;
+    margin-top:5px;
+    font-weight:bold;
 }
 
 .verify-photo{
-width:60px;
-opacity:0.15;
-margin-top:5px;
-border-radius:6px;
+    width:60px;
+    opacity:0.15;
+    margin-top:5px;
+    border-radius:6px;
 }
 
 .center-text{
-position:absolute;
-top:140px;
-left:60px;
-right:60px;
-text-align:center;
-font-size:12px;
-font-family:Calibri;
-color:#222;
-line-height:1.4;
+    position:absolute;
+    top:140px;
+    left:5%;
+    right:5%;
+    text-align:center;
+    font-size:12px;
+    font-family:Calibri;
+    color:#222;
+    line-height:1.4;
+    word-wrap: break-word;
+}
+
+.center-text .urdu-text{
+    font-family:'UrduFont';
+    font-size:11px;
+    line-height:1.3;
+    direction:rtl;
 }
 
 .contacts{
-position:absolute;
-bottom:30px;
-left:40px;
-font-size:12px;
-font-family:Calibri;
-color:black;
-line-height:1.6;
+    position:absolute;
+    bottom:30px;
+    left:40px;
+    font-size:12px;
+    font-family:Calibri;
+    color:black;
+    line-height:1.6;
 }
 
+/* SAVE BUTTON */
 .save-btn-container{ display:flex; justify-content:center; margin-top:20px; }
 
 button{
-background-color:#4a90e2;
-color:white;
-padding:10px 15px;
-font-size:12px;
-border:none;
-border-radius:30px;
-cursor:pointer;
-transition:0.3s;
+    background-color:#4a90e2;
+    color:white;
+    padding:10px 15px;
+    font-size:12px;
+    border:none;
+    border-radius:30px;
+    cursor:pointer;
+    transition:0.3s;
 }
 
 button:hover{ background-color:#357ab7; }
 
+/* MOBILE RESPONSIVE */
+@media only screen and (max-width: 480px) {
+    .ecard-container{
+        width:90%;
+        height:auto;
+    }
+    .center-text{
+        font-size:10px;
+        top:120px;
+    }
+    .center-text .urdu-text{
+        font-size:9px;
+    }
+    .text-container, .header-text, .header-text-urdu{
+        font-size:10px;
+    }
+}
 </style>
-
 </head>
 
 <body>
 
 <div id="pdfArea" class="card-wrapper">
 
-<!-- FRONT CARD (UNCHANGED) -->
-
+<!-- FRONT CARD -->
 <div class="ecard-container" id="ecard">
 
 <div class="strip-hole"></div>
@@ -259,11 +281,9 @@ button:hover{ background-color:#357ab7; }
 
 <div class="date" id="currentDate"></div>
 <div class="valid-till" id="validTillDate"></div>
-
 </div>
 
 <!-- BACKSIDE -->
-
 <div class="ecard-container" id="ecardBack">
 
 <img src="static/images/logo.png" class="back-overlay-logo">
@@ -276,7 +296,6 @@ button:hover{ background-color:#357ab7; }
 </div>
 
 <div class="center-text">
-
 <p>
 The Khawrai Falahi Committee UAE was established in December 2016. 
 The purpose of the committee is to address the issues faced by residents 
@@ -290,7 +309,6 @@ their various issues promptly.
 <p class="urdu-text">
 متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے پُرعزم ہے۔
 </p>
-
 </div>
 
 <div class="contacts">
@@ -308,124 +326,86 @@ Ahmad Aman (Acting President): +971 56 803 9690
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-
 <script>
-
 const formData = JSON.parse(localStorage.getItem("ecardData") || '{}');
 
 if(!formData.name){
-alert("No e-Card data found.");
-window.location.href="index.html";
+    alert("No e-Card data found.");
+    window.location.href="index.html";
 }
 
 function generateQR(){
-
-const encodedName = encodeURIComponent(formData.name + " e-Card.pdf");
-
-const url = "https://livenews.live/KFC/e-Cards/" + encodedName;
-
-document.getElementById("verifyQR").src =
-"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+url;
-
-document.getElementById("verifyName").textContent=formData.name;
-document.getElementById("verifyPhoto").src=formData.photoData;
-
+    const encodedName = encodeURIComponent(formData.name + " e-Card.pdf");
+    const url = "https://livenews.live/KFC/e-Cards/" + encodedName;
+    document.getElementById("verifyQR").src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+url;
+    document.getElementById("verifyName").textContent = formData.name;
+    document.getElementById("verifyPhoto").src = formData.photoData;
 }
 
 async function init(){
+    const ok = await checkCardNumber();
+    if(!ok) return;
 
-const ok = await checkCardNumber();
+    document.getElementById("nameText").textContent="Name: "+formData.name;
+    document.getElementById("urduText").textContent=formData.urduName;
+    document.getElementById("designationText").textContent="Desg: "+formData.designation;
+    document.getElementById("cardNumberText").textContent="Card No.: "+formData.cardNumber;
+    document.getElementById("bloodText").textContent="B-Group: "+formData.bloodGroup;
+    document.getElementById("contactText").textContent="Contact: "+formData.contact;
 
-if(!ok) return;
+    document.getElementById("userPhoto").src=formData.photoData;
+    document.getElementById("photoSmall").src=formData.photoData;
 
-document.getElementById("nameText").textContent="Name: "+formData.name;
-document.getElementById("urduText").textContent=formData.urduName;
-document.getElementById("designationText").textContent="Desg: "+formData.designation;
-document.getElementById("cardNumberText").textContent="Card No.: "+formData.cardNumber;
-document.getElementById("bloodText").textContent="B-Group: "+formData.bloodGroup;
-document.getElementById("contactText").textContent="Contact: "+formData.contact;
+    const desg=(formData.designation||"").toLowerCase();
+    if(desg.includes("president") && !desg.includes("vice")){
+        document.getElementById("ecard").style.backgroundImage="url('static/images/background2.png')";
+        document.getElementById("ecardBack").style.backgroundImage="url('static/images/background2.png')";
+        document.getElementById("ecardLabel").textContent="President's e-Card";
+    } else if(desg.includes("vice president")){
+        document.getElementById("ecard").style.backgroundImage="url('static/images/background2.png')";
+        document.getElementById("ecardBack").style.backgroundImage="url('static/images/background2.png')";
+        document.getElementById("ecardLabel").textContent="Vice President's e-Card";
+    }
 
-document.getElementById("userPhoto").src=formData.photoData;
-document.getElementById("photoSmall").src=formData.photoData;
-
-const desg=(formData.designation||"").toLowerCase();
-
-if(desg.includes("president") && !desg.includes("vice")){
-document.getElementById("ecard").style.backgroundImage="url('static/images/background2.png')";
-document.getElementById("ecardBack").style.backgroundImage="url('static/images/background2.png')";
-document.getElementById("ecardLabel").textContent="President's e-Card";
+    generateQR();
 }
-else if(desg.includes("vice president")){
-document.getElementById("ecard").style.backgroundImage="url('static/images/background2.png')";
-document.getElementById("ecardBack").style.backgroundImage="url('static/images/background2.png')";
-document.getElementById("ecardLabel").textContent="Vice President's e-Card";
-}
 
-generateQR();
-
-}
 async function checkCardNumber(){
-
-try{
-
-const response = await fetch("https://livenews.live/KFC/cards.json");
-const jsonData = await response.json();
-
-for(let i=0;i<jsonData.length;i++){
-
-if(jsonData[i].CNo === formData.cardNumber){
-
-alert("This Card Number already exists. Please enter a new number.");
-
-window.location.href="index.html";
-
-return false;
-
+    try{
+        const response = await fetch("https://livenews.live/KFC/cards.json");
+        const jsonData = await response.json();
+        for(let i=0;i<jsonData.length;i++){
+            if(jsonData[i].CNo === formData.cardNumber){
+                alert("This Card Number already exists. Please enter a new number.");
+                window.location.href="index.html";
+                return false;
+            }
+        }
+        return true;
+    } catch(err){
+        console.log("cards.json not accessible");
+        return true;
+    }
 }
 
-}
+init();
 
-return true;
-
-}catch(err){
-
-console.log("cards.json not accessible");
-return true;
-
-}
-
-}
-init()
 // Current date for card issue
 const today = new Date();
-const formattedDate =
-today.getDate().toString().padStart(2,'0') + "-" +
-(today.getMonth()+1).toString().padStart(2,'0') + "-" +
-today.getFullYear();
-
-document.getElementById("currentDate").textContent =
-"ISSUE DATE: "+today.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'});
-
-// Validity text
-document.getElementById("validTillDate").textContent =
-"VALIDITY: UAE VISA EXPIRY";
+document.getElementById("currentDate").textContent = "ISSUE DATE: "+today.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'});
+document.getElementById("validTillDate").textContent = "VALIDITY: UAE VISA EXPIRY";
 
 document.getElementById("saveBtn").addEventListener("click",function(){
-
-const element=document.getElementById("pdfArea");
-
-const opt={
-margin:0,
-filename:`${formData.name} e-Card.pdf`,
-image:{type:'jpeg',quality:1},
-html2canvas:{scale:5,useCORS:true},
-jsPDF:{unit:'mm',format:[180,270],orientation:'portrait'}
-};
-
-html2pdf().set(opt).from(element).save();
-
+    const element = document.getElementById("pdfArea");
+    const opt = {
+        margin:0,
+        filename:`${formData.name} e-Card.pdf`,
+        image:{type:'jpeg',quality:1},
+        html2canvas:{scale:5,useCORS:true},
+        jsPDF:{unit:'mm',format:[180,270],orientation:'portrait'}
+    };
+    html2pdf().set(opt).from(element).save();
 });
-
 </script>
 
 </body>
