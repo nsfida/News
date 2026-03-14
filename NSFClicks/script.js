@@ -1,5 +1,3 @@
-/* SMOOTH SCROLL NAVIGATION */
-
 document.querySelectorAll('.nav-links a').forEach(anchor => {
     anchor.addEventListener('click', function(e){
 
