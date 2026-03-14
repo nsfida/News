@@ -1,5 +1,3 @@
-script
-
 document.addEventListener("DOMContentLoaded", function () {
 
 let data = []; // Load from cards.json
@@ -72,7 +70,7 @@ function renderTable() {
     // Build table
     let table = "<table><thead><tr>";
     for(const key in results[0]){
-        table += `<th onclick="sortTable('${key}')">${key}</th>`;
+        table += <th onclick="sortTable('${key}')">${key}</th>;
     }
     table += "<th>VIEW CARD</th></tr></thead><tbody>";
 
@@ -94,11 +92,11 @@ function renderTable() {
                 }
             }
 
-            table += `<td data-label="${key}" ${cellStyle}>${value}</td>`;
+            table += <td data-label="${key}" ${cellStyle}>${value}</td>;
         }
 
-        const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
-        table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')">VIEW CARD</button></td>`;
+        const cardFileName = e-Cards/${item.name} e-Card.pdf;
+        table += <td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')">VIEW CARD</button></td>;
         table += "</tr>";
     });
 
