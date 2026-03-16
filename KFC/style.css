@@ -403,3 +403,23 @@ color:red;
 font-size:13px;
 margin-top:10px;
 }
+/* LOGIN OVERLAY ANIMATION */
+#loginOverlay.fadeOut {
+    animation: fadeOutOverlay 0.8s forwards;
+}
+
+@keyframes fadeOutOverlay {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8);
+        pointer-events: none;
+    }
+}
+
+.login-box {
+    transition: transform 1s, opacity 0.4s;
+}
