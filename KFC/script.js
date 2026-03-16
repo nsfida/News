@@ -19,6 +19,8 @@ const allowedFullAccess = [
 "746-210-021"
 ];
 
+const DECRYPTION_KEY = "g/eGWoWh/OqqEj8yaVg2vknvHghIFhuGGoG324DKBds=";
+
 const loginOverlay = document.getElementById("loginOverlay");
 const loginButton = document.getElementById("loginButton");
 const loginUser = document.getElementById("loginUser");
@@ -43,23 +45,88 @@ generateButton.addEventListener("click", () => window.location.href = "NewCard/l
 englishConstitution.addEventListener("click", () => window.open("English.pdf","_blank"));
 urduConstitution.addEventListener("click", () => window.open("Urdu.pdf","_blank"));
 
+
+/* KEY CONVERSION */
+
+function base64ToArrayBuffer(base64){
+
+const binary = atob(base64);
+const bytes = new Uint8Array(binary.length);
+
+for(let i=0;i<binary.length;i++){
+bytes[i] = binary.charCodeAt(i);
+}
+
+return bytes;
+
+}
+
+
+/* DECRYPT FUNCTION */
+
+async function decryptData(buffer){
+
+try{
+
+const keyBytes = base64ToArrayBuffer(DECRYPTION_KEY);
+
+const cryptoKey = await crypto.subtle.importKey(
+"raw",
+keyBytes,
+{ name: "AES-GCM" },
+false,
+["decrypt"]
+);
+
+const nonce = buffer.slice(0,12);
+const ciphertext = buffer.slice(12);
+
+const decrypted = await crypto.subtle.decrypt(
+{ name:"AES-GCM", iv:nonce },
+cryptoKey,
+ciphertext
+);
+
+const decoded = new TextDecoder().decode(decrypted);
+
+return JSON.parse(decoded);
+
+}catch(e){
+
+console.error("Decryption failed:", e);
+resultContainer.innerHTML = "<p class='no-data'>Failed to decrypt database.</p>";
+
+}
+
+}
+
+
 /* LOAD DATA */
 
-function loadData(){
+async function loadData(){
+
+try{
 
 const token = Math.random().toString(36).substring(2);
 
-fetch(`https://livenews.live/KFC/cards.json?t=${token}`)
-.then(response => response.json())
-.then(json => data = json)
-.catch(err => {
-console.error("Error loading JSON:", err);
+const response = await fetch(`https://livenews.live/KFC/file.json.encrypted?t=${token}`);
+
+const buffer = await response.arrayBuffer();
+
+data = await decryptData(buffer);
+
+}catch(err){
+
+console.error("Error loading encrypted JSON:", err);
+
 resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
-});
+
+}
 
 }
 
 loadData();
+
 
 /* CHECK SAVED LOGIN */
 
@@ -76,18 +143,27 @@ isLoggedIn = true;
 
 loginOverlay.style.display = "none";
 
-/* GET STATUS FROM DATABASE */
+const waitForData = setInterval(()=>{
+
+if(data.length){
 
 const userRecord = data.find(card => card.CNo === loggedInCardNo);
 
 if(userRecord){
-    loggedInStatus = userRecord.Status;
+loggedInStatus = userRecord.Status;
 }
 
 showWelcomeBox(loggedInFullName);
 showLoggedInUser(loggedInFullName);
 
+clearInterval(waitForData);
+
 }
+
+},100);
+
+}
+
 
 /* LOGIN SYSTEM */
 
@@ -122,7 +198,7 @@ valid = true;
 cardNoOfUser = card.CNo;
 fullNameOfUser = card.name;
 statusOfUser = card.Status;
-} else {
+}else{
 cancelled = true;
 }
 
@@ -147,14 +223,14 @@ status: loggedInStatus
 
 loginOverlay.classList.add("fadeOut");
 
-setTimeout(() => {
+setTimeout(()=>{
 
 loginOverlay.style.display = "none";
 
 showWelcomeBox(loggedInFullName);
 showLoggedInUser(loggedInFullName);
 
-}, 800);
+},800);
 
 }
 else if(cancelled){
@@ -170,6 +246,7 @@ loginError.innerText = "Invalid login details";
 
 });
 
+
 /* SMALL WELCOME MESSAGE */
 
 function showWelcomeBox(fullName){
@@ -180,11 +257,10 @@ box.innerText = `Welcome, ${fullName}`;
 
 document.body.appendChild(box);
 
-setTimeout(()=>{
-box.remove();
-},3500);
+setTimeout(()=>{ box.remove(); },3500);
 
 }
+
 
 /* USER PROFILE POPUP */
 
@@ -201,13 +277,10 @@ userDiv.innerHTML = `<i class="fas fa-user"></i> ${fullName}`;
 
 uaetitle.insertAdjacentElement("afterend", userDiv);
 
-/* PROFILE BOX */
-
 const profileBox = document.createElement("div");
 profileBox.className = "user-dropdown";
 
 profileBox.innerHTML = `
-
 <div style="font-weight:bold">Welcome, ${loggedInFullName}</div>
 <div>Card No: ${loggedInCardNo}</div>
 <div>Status: ${loggedInStatus || "Active"}</div>
@@ -216,8 +289,6 @@ profileBox.innerHTML = `
 `;
 
 userDiv.appendChild(profileBox);
-
-/* TOGGLE PROFILE */
 
 userDiv.addEventListener("click",function(e){
 
@@ -228,16 +299,12 @@ profileBox.style.display === "block" ? "none" : "block";
 
 });
 
-/* SIGN OUT */
-
 profileBox.querySelector("#signOutBtn").addEventListener("click",function(){
 
 localStorage.removeItem("kfcLogin");
 location.reload();
 
 });
-
-/* CLOSE WHEN CLICK OUTSIDE */
 
 document.addEventListener("click",function(){
 
@@ -246,6 +313,7 @@ profileBox.style.display="none";
 });
 
 }
+
 
 /* SEARCH SYSTEM */
 
@@ -262,7 +330,7 @@ searchButton.disabled = term === "";
 
 if(term !== ""){
 renderTable();
-} else {
+}else{
 resultContainer.innerHTML = "";
 printButton.disabled = true;
 }
@@ -292,6 +360,7 @@ return;
 renderTable();
 
 });
+
 
 /* TABLE RENDER */
 
@@ -344,9 +413,7 @@ return 0;
 let table = "<table><thead><tr>";
 
 for(const key in results[0]){
-
 table += `<th onclick="sortTable('${key}')">${key}</th>`;
-
 }
 
 table += "<th>VIEW CARD</th></tr></thead><tbody>";
@@ -412,8 +479,7 @@ window.sortTable = function(column){
 
 if(currentSort.column===column){
 currentSort.asc = !currentSort.asc;
-}
-else{
+}else{
 currentSort.column = column;
 currentSort.asc = true;
 }
