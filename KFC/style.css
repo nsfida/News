@@ -423,3 +423,34 @@ margin-top:10px;
 .login-box {
     transition: transform 1s, opacity 0.4s;
 }
+/* Logged-in user display */
+.logged-in-user {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5px;
+    font-size: 14px;
+    color: #0d3c91;
+    opacity: 0.85;
+    font-weight: 500;
+    gap: 6px;
+    transition: 0.4s;
+}
+
+.logged-in-user i {
+    font-size: 16px;
+}
+
+/* Slight hover effect */
+.logged-in-user:hover {
+    color: #125fa6;
+}
+@media(max-width:600px){
+    .logged-in-user {
+        font-size: 12px;
+        gap: 4px;
+    }
+    .logged-in-user i {
+        font-size: 14px;
+    }
+}
