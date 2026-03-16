@@ -36,7 +36,7 @@ console.error("Error loading JSON:", err);
 
 
 
-/* LOGIN SYSTEM */
+/* LOGIN SYSTEM WITH STATUS CHECK */
 
 loginButton.addEventListener("click", function(){
 
@@ -44,29 +44,35 @@ loginButton.addEventListener("click", function(){
     let pass = loginPass.value.trim();
 
     if(!user || !pass){
-        loginError.innerText="Enter username and password";
+        loginError.innerText = "Enter username and password";
         return;
     }
 
-    let valid=false;
+    let valid = false;
+    let cancelled = false;
 
     data.forEach(card=>{
         let names = card.name.trim().toLowerCase().split(" ");
         let username = names[0] + names[names.length-1]; // first + last name
 
-        // NEW PASSWORD LOGIC: last part of CNo
         let cnoParts = card.CNo.split("-");
-        let password = cnoParts[cnoParts.length-1];
+        let password = cnoParts[cnoParts.length-1]; // last part of CNo
 
-        if(user===username && pass===password){
-            valid=true;
+        if(user === username && pass === password){
+            if(card.Status && card.Status.toLowerCase() === "active"){
+                valid = true; // active card → login allowed
+            } else {
+                cancelled = true; // card is cancelled
+            }
         }
     });
 
     if(valid){
-        loginOverlay.style.display="none";
-    }else{
-        loginError.innerText="Invalid login details";
+        loginOverlay.style.display = "none";
+    } else if(cancelled){
+        loginError.innerText = "This user cannot login as the card is already cancelled.";
+    } else {
+        loginError.innerText = "Invalid login details";
     }
 
 });
