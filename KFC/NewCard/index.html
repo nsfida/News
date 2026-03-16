@@ -1,61 +1,298 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Khawrai Falahi Committee e-Card</title>
-<link rel="stylesheet" href="style.css">
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body{display:flex;flex-direction:column;align-items:center;background:linear-gradient(135deg,#e0eaff,#ffffff);padding:20px;font-family:Calibri,sans-serif;margin:0;}
-.form-container{background:rgba(255,255,255,0.25);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border-radius:55px;padding:30px;width:500px;max-width:95%;box-shadow:0 8px 32px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.3);position:relative;overflow:hidden;}
-.form-container::before{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 100%);border-radius:55px;pointer-events:none;}
-h2{font-size:22px;color:#0d3c91;text-align:center;margin-bottom:15px;font-weight:bold;}
-label{display:block;text-align:left;margin-bottom:5px;color:#555;font-weight:bold;}
-input,select{width:100%;padding:10px;margin-bottom:12px;border-radius:50px;border:1.5px solid rgba(0,0,0,0.1);font-size:14px;outline:none;transition:0.3s;}
-input:focus, select:focus{border-color:#1976d2;box-shadow:0 0 10px rgba(25,118,210,0.3);}
-button{padding:12px 20px;background:#1976d2;color:#fff;font-size:16px;border:none;border-radius:50px;cursor:pointer;transition:0.3s;display:flex;justify-content:center;align-items:center;gap:5px;}
-button:hover{background:#125fa6;}
-.translate-link{text-align:right;font-size:12px;margin-bottom:10px;}
-.translate-link a{color:#1976d2;text-decoration:none;font-weight:bold;}
-.logo-title{display:flex;align-items:center;flex-direction:column;animation:fadeInDown 1s ease forwards;margin-bottom:10px;}
-.logo-title h2{font-size:24px;color:#0d3c91;font-weight:bold;text-align:center;}
-.uae-text{font-size:18px;color:#0d3c91;margin-top:5px;text-align:center;}
-@keyframes fadeInDown{0%{opacity:0;transform:translateY(-20px);}100%{opacity:1;transform:translateY(0);}}
-.logo-title img{width:60px;margin-bottom:10px;animation:logoFade 2.5s ease-in-out infinite;}
-@keyframes logoFade{0%{opacity:0.8;transform:scale(1);}50%{opacity:1;transform:scale(1.05);}100%{opacity:0.8;transform:scale(1);}}
 
-.contact-banner{display:flex;justify-content:center;gap:20px;padding:10px 20px;margin-top:20px;font-size:14px;flex-wrap:wrap;background:rgba(255,255,255,0.25);backdrop-filter:blur(18px) saturate(180%);border-radius:25px;border:1px solid rgba(255,255,255,0.3);box-shadow:0 8px 32px rgba(0,0,0,0.15);position:relative;overflow:hidden;}
-.contact-banner a{text-decoration:none;color:#0d3c91;display:flex;align-items:center;gap:6px;}
-.contact-banner a:hover{color:#125fa6;transform:translateY(-2px);}
-.contact-banner .role-tag{font-size:12px;font-weight:bold;margin-left:4px;color:#125fa6;}
+/* RESET */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-footer{margin-top:15px;font-size:14px;text-align:center;}
+/* URDU FONT */
+@font-face{
+font-family:'UrduFont';
+src:url('static/fonts/Urdu.ttf') format('truetype');
+}
+
+/* BODY */
+
+body{
+font-family:Calibri,sans-serif;
+min-height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+padding:20px;
+overflow-x:hidden;
+
+background:linear-gradient(270deg,#cfe8ff,#ffffff,#e8f3ff);
+background-size:600% 600%;
+animation:gradientMove 20s ease infinite;
+}
+
+@keyframes gradientMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+/* FLOATING LOGOS BACKGROUND */
+
+.floating-logos{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:-1;
+overflow:hidden;
+}
+
+.floating-logos::before,
+.floating-logos::after{
+content:"";
+position:absolute;
+width:120%;
+height:120%;
+background-image:url("static/images/logo.png");
+background-size:90px;
+background-repeat:repeat;
+opacity:0.05;
+animation:floatLogos 80s linear infinite;
+}
+
+.floating-logos::after{
+animation-direction:reverse;
+opacity:0.03;
+}
+
+@keyframes floatLogos{
+0%{transform:translateY(0);}
+50%{transform:translateY(-200px);}
+100%{transform:translateY(0);}
+}
+
+/* HEADER */
+
+.logo-title{
+display:flex;
+flex-direction:column;
+align-items:center;
+text-align:center;
+margin-bottom:15px;
+}
+
+.logo-title img{
+width:80px;
+margin-bottom:10px;
+animation:logoFade 3s ease-in-out infinite;
+}
+
+@keyframes logoFade{
+0%{opacity:0.4}
+50%{opacity:1}
+100%{opacity:0.4}
+}
+
+.logo-title h2{
+font-size:26px;
+color:#0d3c91;
+font-weight:bold;
+}
+
+.uae-text{
+font-family:'UrduFont';
+direction:rtl;
+text-align:center;
+font-size:20px;
+color:#0d3c91;
+margin-top:5px;
+}
+
+/* FORM CONTAINER */
+
+.form-container{
+background:rgba(255,255,255,0.25);
+backdrop-filter:blur(20px);
+border-radius:30px;
+padding:30px;
+width:500px;
+max-width:95%;
+box-shadow:0 20px 40px rgba(0,0,0,0.15);
+border:1px solid rgba(255,255,255,0.5);
+margin-top:10px;
+}
+
+/* LABELS */
+
+label{
+display:block;
+margin-bottom:5px;
+color:#555;
+font-weight:bold;
+}
+
+/* INPUTS */
+
+input,select{
+width:100%;
+padding:10px;
+margin-bottom:12px;
+border-radius:50px;
+border:1px solid rgba(0,0,0,0.1);
+font-size:14px;
+outline:none;
+transition:0.3s;
+}
+
+input:focus,select:focus{
+border-color:#1976d2;
+box-shadow:0 0 10px rgba(25,118,210,0.3);
+}
+
+/* BUTTON */
+
+button{
+padding:12px 20px;
+background:linear-gradient(135deg,#1976d2,#125fa6);
+color:white;
+font-size:16px;
+border:none;
+border-radius:50px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:6px;
+transition:0.3s;
+box-shadow:0 8px 20px rgba(0,0,0,0.15);
+}
+
+button:hover{
+transform:translateY(-3px);
+}
+
+/* TRANSLATE LINK */
+
+.translate-link{
+text-align:right;
+font-size:12px;
+margin-bottom:10px;
+}
+
+.translate-link a{
+color:#1976d2;
+text-decoration:none;
+font-weight:bold;
+}
+
+/* CONTACT BANNER */
+
+.contact-banner{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:20px;
+margin-top:20px;
+padding:15px 20px;
+
+background:rgba(255,255,255,0.25);
+backdrop-filter:blur(20px);
+border-radius:25px;
+box-shadow:0 15px 30px rgba(0,0,0,0.15);
+}
+
+.contact-banner a{
+text-decoration:none;
+color:#0d3c91;
+display:flex;
+align-items:center;
+gap:6px;
+font-weight:bold;
+transition:0.3s;
+}
+
+.contact-banner a:hover{
+transform:translateY(-3px);
+}
+
+.role-tag{
+font-size:12px;
+color:#125fa6;
+font-weight:bold;
+}
+
+/* FOOTER */
+
+footer{
+margin-top:15px;
+font-size:14px;
+text-align:center;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+.logo-title h2{font-size:22px;}
+.uae-text{font-size:17px;}
+
+.form-container{
+padding:25px;
+}
+
+input{
+font-size:14px;
+}
+
+button{
+font-size:14px;
+}
+
+}
+
 </style>
 
 </head>
+
 <body>
 
+<div class="floating-logos"></div>
+
 <div class="logo-title">
-  <img src="static/images/logo.png" alt="Logo">
-  <h2>Khawrai Falahi Committee UAE</h2>
-  <p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+<img src="static/images/logo.png">
+<h2>Khawrai Falahi Committee UAE</h2>
+<p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
 </div>
 
 <div class="form-container">
+
 <form id="ecardForm">
 
-<label for="name">Name (English)</label> <input type="text" id="name" required>
+<label for="name">Name (English)</label>
+<input type="text" id="name" required>
 
-<label for="urdu_name">Name (Urdu)</label> <input type="text" id="urdu_name" required>
+<label for="urdu_name">Name (Urdu)</label>
+<input type="text" id="urdu_name" required>
 
 <div class="translate-link">
-<a href="https://www.google.com/search?q=english+to+urdu" target="_blank">Translate to Urdu</a>
+<a href="https://www.google.com/search?q=english+to+urdu" target="_blank">
+Translate to Urdu
+</a>
 </div>
 
-<label for="designation">Designation</label> <select id="designation" required>
+<label for="designation">Designation</label>
+<select id="designation" required>
 
 <option value="Committee Member">Committee Member</option>
 <option value="President">President</option>
@@ -65,11 +302,14 @@ footer{margin-top:15px;font-size:14px;text-align:center;}
 <option value="Media Secretary">Media Secretary</option>
 <option value="Committee Guardian">Committee Guardian</option>
 <option value="Other">Other</option>
+
 </select>
 
-<label for="card_number">Card Number</label> <input type="text" id="card_number" value="746-210-" required>
+<label for="card_number">Card Number</label>
+<input type="text" id="card_number" value="746-210-" required>
 
-<label for="blood_group">Blood Group</label> <select id="blood_group" required>
+<label for="blood_group">Blood Group</label>
+<select id="blood_group" required>
 
 <option value="A+">A+</option>
 <option value="A-">A-</option>
@@ -80,139 +320,91 @@ footer{margin-top:15px;font-size:14px;text-align:center;}
 <option value="AB+">AB+</option>
 <option value="AB-">AB-</option>
 <option value="N/A">N/A</option>
+
 </select>
 
-<label for="contact">Contact (Mobile)</label> <input type="text" id="contact" placeholder="+9715..." required>
+<label for="contact">Contact (Mobile)</label>
+<input type="text" id="contact" placeholder="+9715..." required>
 
-<label for="photo">Upload Photo</label> <input type="file" id="photo" accept="image/*" required>
+<label for="photo">Upload Photo</label>
+<input type="file" id="photo" accept="image/*" required>
 
 <button type="submit">
-<i class="fas fa-plus-circle"></i> Generate e-Card
+<i class="fas fa-plus-circle"></i>
+Generate e-Card
 </button>
 
 </form>
+
 </div>
 
 <div class="contact-banner">
-<a href="https://wa.me/971557353212" target="_blank"><i class="fab fa-whatsapp"></i> Arbab M. Rizwan <span class="role-tag">President</span></a>
-<a href="https://wa.me/971588840090" target="_blank"><i class="fab fa-whatsapp"></i> Salar Khan <span class="role-tag">Vice President</span></a>
-<a href="https://wa.me/971568039690" target="_blank"><i class="fab fa-whatsapp"></i> Ahmad A. Khattak <span class="role-tag">Acting President</span></a>
-<a href="https://wa.me/971529297289" target="_blank"><i class="fab fa-whatsapp"></i> Naveed A. Liaqat <span class="role-tag">Finance Manager</span></a>
+
+<a href="https://wa.me/971557353212" target="_blank">
+<i class="fab fa-whatsapp"></i>
+Arbab M. Rizwan <span class="role-tag">President</span>
+</a>
+
+<a href="https://wa.me/971588840090" target="_blank">
+<i class="fab fa-whatsapp"></i>
+Salar Khan <span class="role-tag">Vice President</span>
+</a>
+
+<a href="https://wa.me/971568039690" target="_blank">
+<i class="fab fa-whatsapp"></i>
+Ahmad A. Khattak <span class="role-tag">Acting President</span>
+</a>
+
+<a href="https://wa.me/971529297289" target="_blank">
+<i class="fab fa-whatsapp"></i>
+Naveed A. Liaqat <span class="role-tag">Finance Manager</span>
+</a>
+
 </div>
 
 <footer>
-<p>Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a></p>
+<p>
+Powered by
+<a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">
+Nadeem Shahzad Fida
+</a>
+</p>
 </footer>
 
 <script>
 
-if(!localStorage.getItem("loggedInUser")) window.location.href="login.html";
+/* LOGIN CHECK */
 
-/* ===========================
-   LOAD + DECRYPT DATABASE
-=========================== */
+if(!localStorage.getItem("loggedInUser"))
+window.location.href="login.html";
 
-const DECRYPTION_KEY="g/eGWoWh/OqqEj8yaVg2vknvHghIFhuGGoG324DKBds=";
-let cardsDatabase=[];
 
-function base64ToBytes(base64){
-const binary=atob(base64);
-const bytes=new Uint8Array(binary.length);
-for(let i=0;i<binary.length;i++){bytes[i]=binary.charCodeAt(i);}
-return bytes;
-}
+/* AUTO NEXT CARD NUMBER */
 
-async function decryptDatabase(buffer){
+fetch("https://livenews.live/KFC/cards.json")
+.then(res=>res.json())
+.then(data=>{
 
-try{
+if(!data || data.length===0) return;
 
-const encrypted=new Uint8Array(buffer);
+let last=data[data.length-1].CNo || data[data.length-1].cardNumber;
 
-const nonce=encrypted.slice(0,12);
-const ciphertext=encrypted.slice(12);
+if(!last) return;
 
-const keyBytes=base64ToBytes(DECRYPTION_KEY);
+let parts=last.split("-");
+let number=parseInt(parts[2]) + 1;
 
-const cryptoKey=await crypto.subtle.importKey(
-"raw",
-keyBytes,
-{name:"AES-GCM"},
-false,
-["decrypt"]
-);
+let newNumber=number.toString().padStart(3,"0");
 
-const decrypted=await crypto.subtle.decrypt(
-{name:"AES-GCM",iv:nonce},
-cryptoKey,
-ciphertext
-);
+document.getElementById("card_number").value=parts[0]+"-"+parts[1]+"-"+newNumber;
 
-const text=new TextDecoder().decode(decrypted);
-
-return JSON.parse(text);
-
-}catch(err){
-
-console.error("Decryption failed",err);
-return[];
-
-}
-
-}
-
-async function loadDatabase(){
-
-try{
-
-const token=Math.random().toString(36).substring(2);
-
-const response=await fetch(`https://livenews.live/KFC/file.json.encrypted?t=${token}`);
-
-const buffer=await response.arrayBuffer();
-
-cardsDatabase = await decryptDatabase(buffer);
-generateNextCardNumber();
-
-console.log("Database Loaded:",cardsDatabase.length);
-
-}catch(err){
-
-console.error("Database load error",err);
-
-}
-
-}
-
-loadDatabase();
-function generateNextCardNumber(){
-
-if(!cardsDatabase.length) return;
-
-let max = 0;
-
-cardsDatabase.forEach(card=>{
-
-if(card.CNo){
-
-let parts = card.CNo.split("-");
-let num = parseInt(parts[parts.length-1]);
-
-if(num > max) max = num;
-
-}
-
+})
+.catch(err=>{
+console.log("Card auto number not loaded");
 });
 
-let next = max + 1;
 
-let nextFormatted = next.toString().padStart(3,"0");
-
-document.getElementById("card_number").value = "746-210-" + nextFormatted;
-
-}
-/* ===========================
-   FORM SYSTEM
-=========================== */
+/* FORM */
 
 document.getElementById("ecardForm").addEventListener("submit",function(e){
 
@@ -226,13 +418,17 @@ const blood=document.getElementById("blood_group").value;
 const contact=document.getElementById("contact").value;
 const file=document.getElementById("photo").files[0];
 
-if(!file){alert("Please upload a photo");return;}
+if(!file){
+alert("Please upload a photo");
+return;
+}
 
 const reader=new FileReader();
 
 reader.onload=function(evt){
 
 localStorage.setItem("ecardData",JSON.stringify({
+
 name:name,
 urduName:urdu,
 designation:designation,
@@ -240,6 +436,7 @@ cardNumber:cardNo,
 bloodGroup:blood,
 contact:contact,
 photoData:evt.target.result
+
 }));
 
 window.location.href="generate.html";
