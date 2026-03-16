@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
             resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
         });
 
-    /* LOGIN SYSTEM WITH STATUS CHECK, ANIMATION, PRIVACY, WELCOME POPUP */
+    /* LOGIN SYSTEM WITH STATUS CHECK, ANIMATION, PRIVACY, FULLSCREEN WELCOME */
     loginButton.addEventListener("click", function(){
 
         let user = loginUser.value.trim().toLowerCase();
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             setTimeout(() => {
                 loginOverlay.style.display = "none";
-                showWelcomePopup(loggedInFullName);
+                showFullScreenWelcome(loggedInFullName);
                 renderTable(); 
             }, 800);
 
@@ -103,29 +103,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    /* WELCOME POPUP */
-    function showWelcomePopup(fullName){
-        const popup = document.createElement("div");
-        popup.innerText = `Welcome, ${fullName}`;
-        popup.style.position = "fixed";
-        popup.style.top = "20px";
-        popup.style.left = "50%";
-        popup.style.transform = "translateX(-50%)";
-        popup.style.background = "#0d3c91";
-        popup.style.color = "#fff";
-        popup.style.padding = "15px 25px";
-        popup.style.borderRadius = "12px";
-        popup.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
-        popup.style.fontSize = "16px";
-        popup.style.zIndex = "9999";
-        popup.style.opacity = "0";
-        popup.style.transition = "opacity 0.5s ease";
+    /* FULLSCREEN WELCOME ANIMATION */
+    function showFullScreenWelcome(fullName){
+        const welcomeOverlay = document.createElement("div");
+        welcomeOverlay.style.position = "fixed";
+        welcomeOverlay.style.top = "0";
+        welcomeOverlay.style.left = "0";
+        welcomeOverlay.style.width = "100%";
+        welcomeOverlay.style.height = "100%";
+        welcomeOverlay.style.background = "linear-gradient(135deg,#0d3c91,#125fa6)";
+        welcomeOverlay.style.color = "#fff";
+        welcomeOverlay.style.display = "flex";
+        welcomeOverlay.style.flexDirection = "column";
+        welcomeOverlay.style.alignItems = "center";
+        welcomeOverlay.style.justifyContent = "center";
+        welcomeOverlay.style.zIndex = "9999";
+        welcomeOverlay.style.fontFamily = "Calibri, sans-serif";
+        welcomeOverlay.style.fontSize = "32px";
+        welcomeOverlay.style.opacity = "0";
+        welcomeOverlay.style.transform = "scale(0.8)";
+        welcomeOverlay.style.transition = "opacity 0.6s ease, transform 0.6s ease";
 
-        document.body.appendChild(popup);
+        const message = document.createElement("div");
+        message.innerText = `Welcome, ${fullName}`;
+        message.style.fontSize = "48px";
+        message.style.fontWeight = "bold";
+        message.style.textAlign = "center";
+        message.style.marginBottom = "20px";
 
-        setTimeout(()=> popup.style.opacity = "1", 50); // fade in
-        setTimeout(()=> popup.style.opacity = "0", 3500); // fade out after 3s
-        setTimeout(()=> document.body.removeChild(popup), 4000); // remove after fade out
+        const subMessage = document.createElement("div");
+        subMessage.innerText = "Loading your dashboard...";
+        subMessage.style.fontSize = "24px";
+        subMessage.style.opacity = "0.8";
+
+        welcomeOverlay.appendChild(message);
+        welcomeOverlay.appendChild(subMessage);
+        document.body.appendChild(welcomeOverlay);
+
+        // Trigger animation
+        setTimeout(() => {
+            welcomeOverlay.style.opacity = "1";
+            welcomeOverlay.style.transform = "scale(1)";
+        }, 50);
+
+        // Fade out after 3 seconds
+        setTimeout(() => {
+            welcomeOverlay.style.opacity = "0";
+            welcomeOverlay.style.transform = "scale(1.2)";
+        }, 3000);
+
+        // Remove from DOM after fade out
+        setTimeout(() => {
+            document.body.removeChild(welcomeOverlay);
+        }, 3800);
     }
 
     /* SEARCH SYSTEM */
