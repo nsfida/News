@@ -2,9 +2,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let data = [];
     let currentSort = { column: null, asc: true };
+
     let loggedInUsername = "";
     let loggedInCardNo = "";
     let loggedInFullName = "";
+    let isLoggedIn = false; // SECURITY FLAG
+
     const allowedFullAccess = [
         "746-210-001",
         "746-210-011",
@@ -39,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
     englishConstitution.addEventListener("click", () => window.open("English.pdf","_blank"));
     urduConstitution.addEventListener("click", () => window.open("Urdu.pdf","_blank"));
 
-    // Load JSON
+    // LOAD DATA
     fetch('https://livenews.live/KFC/cards.json')
         .then(response => response.json())
         .then(json => data = json)
@@ -49,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
     /* LOGIN SYSTEM */
+
     loginButton.addEventListener("click", function(){
 
         let user = loginUser.value.trim().toLowerCase();
@@ -65,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let fullNameOfUser = "";
 
         data.forEach(card=>{
+
             let names = card.name.trim().toLowerCase().split(" ");
             let username = names[0] + names[names.length-1];
 
@@ -72,41 +77,56 @@ document.addEventListener("DOMContentLoaded", function () {
             let password = cnoParts[cnoParts.length-1];
 
             if(user === username && pass === password){
+
                 if(card.Status && card.Status.toLowerCase() === "active"){
-                    valid = true; 
+                    valid = true;
                     cardNoOfUser = card.CNo;
                     fullNameOfUser = card.name;
                 } else {
                     cancelled = true;
                 }
+
             }
+
         });
 
         if(valid){
+
             loggedInUsername = user;
             loggedInCardNo = cardNoOfUser;
             loggedInFullName = fullNameOfUser;
+            isLoggedIn = true; // LOGIN SUCCESS FLAG
 
             loginOverlay.classList.add("fadeOut");
 
             setTimeout(() => {
+
                 loginOverlay.style.display = "none";
                 showFullScreenWelcome(loggedInFullName);
                 showLoggedInUser(loggedInFullName);
-                renderTable(); 
+
             }, 800);
 
-        } else if(cancelled){
+        }
+        else if(cancelled){
+
             loginError.innerText = "This user cannot login as the card is already cancelled.";
-        } else {
+
+        }
+        else{
+
             loginError.innerText = "Invalid login details";
+
         }
 
     });
 
-    /* FULLSCREEN WELCOME ANIMATION */
+    /* FULLSCREEN WELCOME */
+
     function showFullScreenWelcome(fullName){
+
         const welcomeOverlay = document.createElement("div");
+
         welcomeOverlay.style.position = "fixed";
         welcomeOverlay.style.top = "0";
         welcomeOverlay.style.left = "0";
@@ -120,10 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
         welcomeOverlay.style.justifyContent = "center";
         welcomeOverlay.style.zIndex = "9999";
         welcomeOverlay.style.fontFamily = "Calibri, sans-serif";
-        welcomeOverlay.style.opacity = "0";
-        welcomeOverlay.style.transform = "scale(0.8)";
-        welcomeOverlay.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-        welcomeOverlay.style.padding = "20px";
         welcomeOverlay.style.textAlign = "center";
 
         const message = document.createElement("div");
@@ -131,7 +147,6 @@ document.addEventListener("DOMContentLoaded", function () {
         message.style.fontSize = "8vw";
         message.style.fontWeight = "bold";
         message.style.marginBottom = "1rem";
-        message.style.wordBreak = "break-word";
 
         const subMessage = document.createElement("div");
         subMessage.innerText = "Loading your dashboard...";
@@ -140,48 +155,92 @@ document.addEventListener("DOMContentLoaded", function () {
 
         welcomeOverlay.appendChild(message);
         welcomeOverlay.appendChild(subMessage);
+
         document.body.appendChild(welcomeOverlay);
 
-        setTimeout(() => {
-            welcomeOverlay.style.opacity = "1";
-            welcomeOverlay.style.transform = "scale(1)";
-        }, 50);
+        setTimeout(()=>{
 
-        setTimeout(() => {
-            welcomeOverlay.style.opacity = "0";
-            welcomeOverlay.style.transform = "scale(1.2)";
-        }, 3000);
+            welcomeOverlay.remove();
 
-        setTimeout(() => {
-            document.body.removeChild(welcomeOverlay);
-        }, 3800);
+        },3500);
+
     }
 
-    /* SHOW LOGGED-IN USER BELOW URDU TITLE */
+    /* SHOW LOGGED USER */
+
     function showLoggedInUser(fullName){
+
         let existing = document.querySelector(".logged-in-user");
         if(existing) existing.remove();
 
         const uaetitle = document.querySelector(".uae-text");
+
         const userDiv = document.createElement("div");
         userDiv.className = "logged-in-user";
+
         userDiv.innerHTML = `<i class="fas fa-user"></i> ${fullName}`;
+
         uaetitle.insertAdjacentElement("afterend", userDiv);
 
-        userDiv.style.opacity = "0";
-        setTimeout(()=> userDiv.style.opacity = "1", 50);
     }
 
     /* SEARCH SYSTEM */
-    searchInput.addEventListener("input", function () {
-        searchButton.disabled = searchInput.value.trim() === "";
+
+searchInput.addEventListener("input", function () {
+
+    if(!isLoggedIn){
+        resultContainer.innerHTML = "<p class='no-data'>⚠ Please login before searching.</p>";
+        searchButton.disabled = true;
+        return;
+    }
+
+    const term = searchInput.value.trim();
+    searchButton.disabled = term === "";
+
+    if(term !== ""){
+        renderTable(); // REAL-TIME RESULTS
+    } else {
+        resultContainer.innerHTML = "";
+        printButton.disabled = true;
+    }
+
+});
+
+    searchField.addEventListener("change", function(){
+
+        if(!isLoggedIn){
+            resultContainer.innerHTML = "<p class='no-data'>⚠ You must login first to use search.</p>";
+            return;
+        }
+
         renderTable();
+
     });
 
-    searchField.addEventListener("change", renderTable);
-    searchButton.addEventListener("click", renderTable);
+    searchButton.addEventListener("click", function(){
+
+        if(!isLoggedIn){
+
+            resultContainer.innerHTML = "<p class='no-data'>⚠ Login required before searching.</p>";
+            return;
+
+        }
+
+        renderTable();
+
+    });
+
+    /* TABLE RENDER */
 
     function renderTable() {
+
+        if(!isLoggedIn){
+
+            resultContainer.innerHTML = "<p class='no-data'>⚠ You must login first to use the search system.</p>";
+            printButton.disabled = true;
+            return;
+
+        }
 
         const term = searchInput.value.trim().toLowerCase();
         const field = searchField.value;
@@ -192,78 +251,116 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let results = data.filter(item => item[field] && item[field].toString().toLowerCase().includes(term));
+        let results = data.filter(item =>
+            item[field] && item[field].toString().toLowerCase().includes(term)
+        );
 
         if(results.length===0){
+
             resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
             printButton.disabled = true;
             return;
+
         }
 
         if(currentSort.column){
+
             results.sort((a,b)=>{
+
                 let valA = a[currentSort.column] ? a[currentSort.column].toString().toLowerCase() : "";
                 let valB = b[currentSort.column] ? b[currentSort.column].toString().toLowerCase() : "";
 
                 if(valA < valB) return currentSort.asc ? -1 : 1;
                 if(valA > valB) return currentSort.asc ? 1 : -1;
                 return 0;
+
             });
+
         }
 
         let table = "<table><thead><tr>";
+
         for(const key in results[0]){
+
             table += `<th onclick="sortTable('${key}')">${key}</th>`;
+
         }
+
         table += "<th>VIEW CARD</th></tr></thead><tbody>";
 
         results.forEach(item=>{
+
             table += "<tr>";
+
             for(const key in item){
+
                 let value = item[key];
 
                 let names = item.name.trim().split(" ");
                 let usernameOfRow = names[0].toLowerCase() + names[names.length-1].toLowerCase();
+
                 let isFullAccessUser = allowedFullAccess.includes(loggedInCardNo);
 
                 if(!isFullAccessUser && loggedInUsername && loggedInUsername.toLowerCase() !== usernameOfRow){
+
                     if(key === "name" && names.length>1){
+
                         value = names.slice(0,-1).join(" ") + " ***";
+
                     }
+
                     if(key === "CNo"){
+
                         let parts = item.CNo.split("-");
                         value = parts.slice(0,-1).join("-") + "-***";
+
                     }
+
                 }
 
                 let cellStyle = "";
+
                 if(key.toLowerCase()==="status"){
+
                     if(value && value.toLowerCase()==="cancel") cellStyle="class='cancel'";
                     if(value && value.toLowerCase()==="active") cellStyle="class='active'";
+
                 }
 
                 table += `<td data-label="${key}" ${cellStyle}>${value}</td>`;
+
             }
 
             let canViewCard = allowedFullAccess.includes(loggedInCardNo) || (item.CNo === loggedInCardNo);
+
             const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
+
             table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')" ${canViewCard ? "" : "disabled"}>VIEW CARD</button></td>`;
+
             table += "</tr>";
+
         });
 
         table += "</tbody></table>";
+
         resultContainer.innerHTML = table;
+
         printButton.disabled = false;
+
     }
 
     window.sortTable = function(column){
+
         if(currentSort.column===column){
             currentSort.asc = !currentSort.asc;
-        } else {
+        }
+        else{
             currentSort.column = column;
             currentSort.asc = true;
         }
+
         renderTable();
+
     };
 
 });
