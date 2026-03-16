@@ -90,7 +90,6 @@ flex-direction:column;
 align-items:center;
 text-align:center;
 margin-bottom:15px;
-animation:fadeDown 1s ease;
 }
 
 .logo-title img{
@@ -378,6 +377,32 @@ Nadeem Shahzad Fida
 
 if(!localStorage.getItem("loggedInUser"))
 window.location.href="login.html";
+
+
+/* AUTO NEXT CARD NUMBER */
+
+fetch("https://livenews.live/KFC/cards.json")
+.then(res=>res.json())
+.then(data=>{
+
+if(!data || data.length===0) return;
+
+let last=data[data.length-1].CNo || data[data.length-1].cardNumber;
+
+if(!last) return;
+
+let parts=last.split("-");
+let number=parseInt(parts[2]) + 1;
+
+let newNumber=number.toString().padStart(3,"0");
+
+document.getElementById("card_number").value=parts[0]+"-"+parts[1]+"-"+newNumber;
+
+})
+.catch(err=>{
+console.log("Card auto number not loaded");
+});
+
 
 /* FORM */
 
