@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
             resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
         });
 
-    /* LOGIN SYSTEM WITH STATUS CHECK, ANIMATION, PRIVACY, FULLSCREEN WELCOME */
+    /* LOGIN SYSTEM */
     loginButton.addEventListener("click", function(){
 
         let user = loginUser.value.trim().toLowerCase();
@@ -66,10 +66,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         data.forEach(card=>{
             let names = card.name.trim().toLowerCase().split(" ");
-            let username = names[0] + names[names.length-1]; // first + last name
+            let username = names[0] + names[names.length-1];
 
             let cnoParts = card.CNo.split("-");
-            let password = cnoParts[cnoParts.length-1]; // last part of CNo
+            let password = cnoParts[cnoParts.length-1];
 
             if(user === username && pass === password){
                 if(card.Status && card.Status.toLowerCase() === "active"){
@@ -92,6 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(() => {
                 loginOverlay.style.display = "none";
                 showFullScreenWelcome(loggedInFullName);
+                showLoggedInUser(loggedInFullName);
                 renderTable(); 
             }, 800);
 
@@ -119,43 +120,56 @@ document.addEventListener("DOMContentLoaded", function () {
         welcomeOverlay.style.justifyContent = "center";
         welcomeOverlay.style.zIndex = "9999";
         welcomeOverlay.style.fontFamily = "Calibri, sans-serif";
-        welcomeOverlay.style.fontSize = "32px";
         welcomeOverlay.style.opacity = "0";
         welcomeOverlay.style.transform = "scale(0.8)";
         welcomeOverlay.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+        welcomeOverlay.style.padding = "20px";
+        welcomeOverlay.style.textAlign = "center";
 
         const message = document.createElement("div");
         message.innerText = `Welcome, ${fullName}`;
-        message.style.fontSize = "48px";
+        message.style.fontSize = "8vw";
         message.style.fontWeight = "bold";
-        message.style.textAlign = "center";
-        message.style.marginBottom = "20px";
+        message.style.marginBottom = "1rem";
+        message.style.wordBreak = "break-word";
 
         const subMessage = document.createElement("div");
         subMessage.innerText = "Loading your dashboard...";
-        subMessage.style.fontSize = "24px";
+        subMessage.style.fontSize = "4vw";
         subMessage.style.opacity = "0.8";
 
         welcomeOverlay.appendChild(message);
         welcomeOverlay.appendChild(subMessage);
         document.body.appendChild(welcomeOverlay);
 
-        // Trigger animation
         setTimeout(() => {
             welcomeOverlay.style.opacity = "1";
             welcomeOverlay.style.transform = "scale(1)";
         }, 50);
 
-        // Fade out after 3 seconds
         setTimeout(() => {
             welcomeOverlay.style.opacity = "0";
             welcomeOverlay.style.transform = "scale(1.2)";
         }, 3000);
 
-        // Remove from DOM after fade out
         setTimeout(() => {
             document.body.removeChild(welcomeOverlay);
         }, 3800);
+    }
+
+    /* SHOW LOGGED-IN USER BELOW URDU TITLE */
+    function showLoggedInUser(fullName){
+        let existing = document.querySelector(".logged-in-user");
+        if(existing) existing.remove();
+
+        const uaetitle = document.querySelector(".uae-text");
+        const userDiv = document.createElement("div");
+        userDiv.className = "logged-in-user";
+        userDiv.innerHTML = `<i class="fas fa-user"></i> ${fullName}`;
+        uaetitle.insertAdjacentElement("afterend", userDiv);
+
+        userDiv.style.opacity = "0";
+        setTimeout(()=> userDiv.style.opacity = "1", 50);
     }
 
     /* SEARCH SYSTEM */
@@ -208,18 +222,17 @@ document.addEventListener("DOMContentLoaded", function () {
             for(const key in item){
                 let value = item[key];
 
-                // MASKING LOGIC
                 let names = item.name.trim().split(" ");
                 let usernameOfRow = names[0].toLowerCase() + names[names.length-1].toLowerCase();
                 let isFullAccessUser = allowedFullAccess.includes(loggedInCardNo);
 
                 if(!isFullAccessUser && loggedInUsername && loggedInUsername.toLowerCase() !== usernameOfRow){
                     if(key === "name" && names.length>1){
-                        value = names.slice(0,-1).join(" ") + " ***"; // hide last part of name
+                        value = names.slice(0,-1).join(" ") + " ***";
                     }
                     if(key === "CNo"){
                         let parts = item.CNo.split("-");
-                        value = parts.slice(0,-1).join("-") + "-***"; // hide last part of card number
+                        value = parts.slice(0,-1).join("-") + "-***";
                     }
                 }
 
@@ -232,7 +245,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 table += `<td data-label="${key}" ${cellStyle}>${value}</td>`;
             }
 
-            // VIEW CARD BUTTON LOGIC
             let canViewCard = allowedFullAccess.includes(loggedInCardNo) || (item.CNo === loggedInCardNo);
             const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
             table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')" ${canViewCard ? "" : "disabled"}>VIEW CARD</button></td>`;
