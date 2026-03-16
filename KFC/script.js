@@ -2,8 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let data = [];
     let currentSort = { column: null, asc: true };
-    let loggedInUsername = ""; // store username after login
-    let loggedInCardNo = ""; // store logged-in card number
+    let loggedInUsername = "";
+    let loggedInCardNo = "";
+    let loggedInFullName = "";
     const allowedFullAccess = [
         "746-210-001",
         "746-210-011",
@@ -47,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
             resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
         });
 
-    /* LOGIN SYSTEM WITH STATUS CHECK, ANIMATION, AND PRIVACY */
+    /* LOGIN SYSTEM WITH STATUS CHECK, ANIMATION, PRIVACY, WELCOME POPUP */
     loginButton.addEventListener("click", function(){
 
         let user = loginUser.value.trim().toLowerCase();
@@ -61,6 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let valid = false;
         let cancelled = false;
         let cardNoOfUser = "";
+        let fullNameOfUser = "";
 
         data.forEach(card=>{
             let names = card.name.trim().toLowerCase().split(" ");
@@ -71,22 +73,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if(user === username && pass === password){
                 if(card.Status && card.Status.toLowerCase() === "active"){
-                    valid = true; // active card → login allowed
+                    valid = true; 
                     cardNoOfUser = card.CNo;
+                    fullNameOfUser = card.name;
                 } else {
-                    cancelled = true; // card is cancelled
+                    cancelled = true;
                 }
             }
         });
 
         if(valid){
-            loggedInUsername = user; // save username
-            loggedInCardNo = cardNoOfUser; // save card number
+            loggedInUsername = user;
+            loggedInCardNo = cardNoOfUser;
+            loggedInFullName = fullNameOfUser;
+
             loginOverlay.classList.add("fadeOut");
+
             setTimeout(() => {
                 loginOverlay.style.display = "none";
-                renderTable(); // render table immediately with masking rules
+                showWelcomePopup(loggedInFullName);
+                renderTable(); 
             }, 800);
+
         } else if(cancelled){
             loginError.innerText = "This user cannot login as the card is already cancelled.";
         } else {
@@ -94,6 +102,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     });
+
+    /* WELCOME POPUP */
+    function showWelcomePopup(fullName){
+        const popup = document.createElement("div");
+        popup.innerText = `Welcome, ${fullName}`;
+        popup.style.position = "fixed";
+        popup.style.top = "20px";
+        popup.style.left = "50%";
+        popup.style.transform = "translateX(-50%)";
+        popup.style.background = "#0d3c91";
+        popup.style.color = "#fff";
+        popup.style.padding = "15px 25px";
+        popup.style.borderRadius = "12px";
+        popup.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
+        popup.style.fontSize = "16px";
+        popup.style.zIndex = "9999";
+        popup.style.opacity = "0";
+        popup.style.transition = "opacity 0.5s ease";
+
+        document.body.appendChild(popup);
+
+        setTimeout(()=> popup.style.opacity = "1", 50); // fade in
+        setTimeout(()=> popup.style.opacity = "0", 3500); // fade out after 3s
+        setTimeout(()=> document.body.removeChild(popup), 4000); // remove after fade out
+    }
 
     /* SEARCH SYSTEM */
     searchInput.addEventListener("input", function () {
@@ -146,20 +179,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 let value = item[key];
 
                 // MASKING LOGIC
-                let names = item.name.trim().toLowerCase().split(" ");
-                let usernameOfRow = names[0] + names[names.length-1];
-
+                let names = item.name.trim().split(" ");
+                let usernameOfRow = names[0].toLowerCase() + names[names.length-1].toLowerCase();
                 let isFullAccessUser = allowedFullAccess.includes(loggedInCardNo);
-                if(!isFullAccessUser && loggedInUsername && loggedInUsername !== usernameOfRow){
-                    if(key === "name"){
-                        if(names.length > 1){
-                            value = names[0] + " ***"; // mask last name
-                        } else {
-                            value = "***";
-                        }
+
+                if(!isFullAccessUser && loggedInUsername && loggedInUsername.toLowerCase() !== usernameOfRow){
+                    if(key === "name" && names.length>1){
+                        value = names.slice(0,-1).join(" ") + " ***"; // hide last part of name
                     }
                     if(key === "CNo"){
-                        value = "***"; // mask card number
+                        let parts = item.CNo.split("-");
+                        value = parts.slice(0,-1).join("-") + "-***"; // hide last part of card number
                     }
                 }
 
