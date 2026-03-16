@@ -1,0 +1,313 @@
+[
+{
+"image": "atlantistheroyal.jpg",
+"title": "Atlantis The Royal",
+"location": "Palm Jumeirah, Dubai",
+"camera": "iPhone 14 Pro Max",
+"lens": "24mm Equivalent Wide",
+"aperture": "f/1.8",
+"shutter": "1/1200s",
+"iso": "20",
+"category": "skyscrapers",
+"story": "Captured from the elevated track of the Dubai Monorail, this photograph frames the architectural marvel of Atlantis The Royal."
+},
+
+{
+"image": "disneydubai.jpg",
+"title": "Golden Dubai Skyline",
+"location": "Dubai, UAE",
+"camera": "DJI Mini 5 Pro",
+"lens": "24mm Equivalent",
+"aperture": "f/4",
+"shutter": "1/800s",
+"iso": "100",
+"category": "skyscrapers",
+"story": "An aerial perspective transforms Dubai into a futuristic canvas of glass towers and desert light."
+},
+
+{
+"image": "jashnerekhtadubai.jpg",
+"title": "Jashn-e-Rekhta Dubai",
+"location": "Dubai Cultural Festival",
+"camera": "iPhone 14 Pro Max",
+"lens": "24mm Wide",
+"aperture": "f/1.8",
+"shutter": "1/200s",
+"iso": "64",
+"category": "people",
+"story": "A memorable cultural moment captured during the Urdu literary festival Jashn-e-Rekhta in Dubai."
+},
+
+{
+"image": "khawriday.jpg",
+"title": "Khawrai — Daylight Over the Valley",
+"location": "Khawrai Village, KPK, Pakistan",
+"camera": "Samsung S10 Plus",
+"lens": "26mm Equivalent",
+"aperture": "f/1.5",
+"shutter": "1/1000s",
+"iso": "50",
+"category": "nature",
+"story": "A peaceful daytime view of Khawrai village surrounded by the rolling hills."
+},
+
+{
+"image": "khawraisunset.jpg",
+"title": "Khawrai Sunset",
+"location": "KPK, Pakistan",
+"camera": "Samsung S10 Plus",
+"lens": "26mm",
+"aperture": "f/1.5",
+"shutter": "1/320s",
+"iso": "100",
+"category": "weather",
+"story": "Warm sunset light spreads across the landscape of Khawrai."
+},
+
+{
+"image": "khaybarsunset.jpg",
+"title": "Khaybar Fort Sunset",
+"location": "Khaybar, Saudi Arabia",
+"camera": "Canon EOS 2000D",
+"lens": "55mm",
+"aperture": "f/8",
+"shutter": "1/500s",
+"iso": "100",
+"category": "weather",
+"story": "The desert landscape glows under golden sunset light near historic Khaybar."
+},
+
+{
+"image": "masjidumarbinkhattab.jpg",
+"title": "Masjid Umar Bin Al-Khattab",
+"location": "Madinah Munawwarah, Saudi Arabia",
+"camera": "iPhone 17 Pro Max",
+"lens": "24mm",
+"aperture": "f/1.6",
+"shutter": "1/640s",
+"iso": "32",
+"category": "skyscrapers",
+"story": "A quiet street view of Masjid Umar Bin Al-Khattab in Madinah."
+},
+
+{
+"image": "palmjumeirah.jpg",
+"title": "Palm Jumeirah Aerial",
+"location": "Dubai, UAE",
+"camera": "DJI Mini 5 Pro",
+"lens": "24mm",
+"aperture": "f/4",
+"shutter": "1/1000s",
+"iso": "100",
+"category": "nature",
+"story": "The palm-shaped island reveals its remarkable engineering from above."
+},
+
+{
+"image": "rozaerasool.jpg",
+"title": "Roza-e-Rasool ﷺ",
+"location": "Masjid an-Nabawi, Madinah",
+"camera": "iPhone 17 Pro Max",
+"lens": "24mm",
+"aperture": "f/1.6",
+"shutter": "1/60s",
+"iso": "200",
+"category": "things",
+"story": "A sacred moment captured within Masjid an-Nabawi."
+},
+
+{
+"image": "turquoiseboundarylandscape.jpg",
+"title": "Turquoise Boundary",
+"location": "Palm Jumeirah, Dubai",
+"camera": "DJI Mini 5 Pro",
+"lens": "24mm",
+"aperture": "f/4",
+"shutter": "1/800s",
+"iso": "100",
+"category": "nature",
+"story": "Turquoise water drifts into a shore of time worn pebbles."
+},
+
+{
+"image": "noon_minutes_delivery.jpg",
+"title": "Delivery in Minutes",
+"location": "Dubai, UAE",
+"camera": "Canon EOS 2000D",
+"lens": "EF75-300mm",
+"aperture": "f/11",
+"shutter": "1/125s",
+"iso": "100",
+"category": "people",
+"story": "A dynamic panning shot capturing a delivery rider in motion."
+},
+
+{
+"image": "golden_sunset_palm.jpg",
+"title": "Golden Sunset",
+"location": "Palm Jumeirah, Dubai",
+"camera": "DJI Mini 5 Pro",
+"lens": "24mm",
+"aperture": "f/1.7",
+"shutter": "1/200s",
+"iso": "100",
+"category": "weather",
+"story": "Palm Jumeirah bathed in the warm glow of sunset."
+},
+
+{
+"image": "perched_pigeon.jpg",
+"title": "Urban Observer",
+"location": "Dubai, UAE",
+"camera": "Canon EOS 2000D",
+"lens": "EF75-300mm",
+"aperture": "f/5.6",
+"shutter": "1/500s",
+"iso": "200",
+"category": "animals",
+"story": "A close-up of a pigeon resting on a railing."
+},
+
+{
+"image": "al_qudra_love_lake_sunset.jpg",
+"title": "Desert Heart Sunset",
+"location": "Al Qudra Love Lake, Dubai",
+"camera": "DJI Mini 5 Pro",
+"lens": "24mm",
+"aperture": "f/1.7",
+"shutter": "1/160s",
+"iso": "100",
+"category": "weather",
+"story": "A wide aerial view of Love Lake as the sun touches the horizon."
+},
+
+{
+"image": "theroalclocktower.jpg",
+"title": "The Makkah Beacon",
+"location": "Makkah, Saudi Arabia",
+"camera": "iPhone 17 Pro Max",
+"lens": "120mm",
+"aperture": "f/2.8",
+"shutter": "1/1200s",
+"iso": "50",
+"category": "skyscrapers",
+"story": "The Royal Clock Tower dominating the Makkah skyline."
+},
+
+{
+"image": "skyscrapers.jpg",
+"title": "Towers in the Clouds",
+"location": "Sheikh Zayed Road, Dubai",
+"camera": "iPhone 17 Pro Max",
+"lens": "77mm",
+"aperture": "f/2.8",
+"shutter": "1/250s",
+"iso": "64",
+"category": "skyscrapers",
+"story": "Dubai skyscrapers rising through thick winter fog."
+},
+
+{
+"image": "jazeera_airways_madinah.jpg",
+"title": "Clearance for Landing",
+"location": "Madinah Airport",
+"camera": "Canon EOS 2000D",
+"lens": "75-300mm",
+"aperture": "f/9",
+"shutter": "1/640s",
+"iso": "100",
+"category": "things",
+"story": "A Jazeera Airways Airbus A320neo on final approach."
+},
+
+{
+"image": "common_myna_infinity_bridge.jpg",
+"title": "Vocal Resident",
+"location": "Infinity Bridge, Dubai",
+"camera": "Canon EOS 2000D",
+"lens": "75-300mm",
+"aperture": "f/8",
+"shutter": "1/640s",
+"iso": "500",
+"category": "animals",
+"story": "A candid moment of a Common Myna mid-call."
+},
+
+{
+"image": "sheikha_bint_saeed_masjid_sunset.jpg",
+"title": "Serenity in Silhouette",
+"location": "JLT, Dubai",
+"camera": "Canon EOS 2000D",
+"lens": "75-300mm",
+"aperture": "f/11",
+"shutter": "1/400s",
+"iso": "100",
+"category": "weather",
+"story": "Mosque silhouette against a fiery sunset sky."
+},
+
+{
+"image": "emirates_a380_deira.jpg",
+"title": "Low Altitude Giant",
+"location": "Deira, Dubai",
+"camera": "iPhone 14 Pro Max",
+"lens": "77mm",
+"aperture": "f/2.8",
+"shutter": "1/266s",
+"iso": "32",
+"category": "things",
+"story": "An Emirates A380 flying low over Deira."
+},
+
+{
+"image": "atlantis_palm_sunset.jpg",
+"title": "Atlantis Golden Hour",
+"location": "Atlantis The Palm, Dubai",
+"camera": "iPhone 14 Pro Max",
+"lens": "24mm",
+"aperture": "f/1.78",
+"shutter": "1/40s",
+"iso": "400",
+"category": "skyscrapers",
+"story": "Atlantis The Palm glowing in warm sunset light."
+},
+
+{
+"image": "dubai_marina_skyline.jpg",
+"title": "Marsa Dubai Heights",
+"location": "Dubai Marina",
+"camera": "iPhone 14 Pro Max",
+"lens": "77mm",
+"aperture": "f/2.8",
+"shutter": "1/995s",
+"iso": "32",
+"category": "skyscrapers",
+"story": "A telephoto view of the Dubai Marina skyline."
+},
+
+{
+"image": "burj_khalifa_night.jpg",
+"title": "The Khalifa Radiance",
+"location": "Downtown Dubai",
+"camera": "iPhone 14 Pro Max",
+"lens": "24mm",
+"aperture": "f/1.78",
+"shutter": "1s",
+"iso": "50",
+"category": "skyscrapers",
+"story": "A long exposure night shot of the Burj Khalifa."
+},
+
+{
+"image": "burj_al_arab_s10.jpg",
+"title": "Monochrome Icons",
+"location": "Dubai Metro",
+"camera": "Samsung Galaxy S10 Plus",
+"lens": "52mm",
+"aperture": "f/2.4",
+"shutter": "1/1500s",
+"iso": "50",
+"category": "skyscrapers",
+"story": "A dramatic black and white capture of Burj Al Arab."
+}
+]

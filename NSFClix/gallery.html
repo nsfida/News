@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gallery | NSF Clix</title>
+
+<meta name="description" content="Photography albums from NSF Clix featuring architecture, landscapes, people, wildlife and atmospheric moments.">
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
+<style>
+
+.albums{
+padding:120px 8%;
+}
+
+.album-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:30px;
+}
+
+.album{
+position:relative;
+overflow:hidden;
+border-radius:12px;
+text-decoration:none;
+color:white;
+}
+
+.album img{
+width:100%;
+height:260px;
+object-fit:cover;
+transition:0.6s;
+display:block;
+}
+
+.album:hover img{
+transform:scale(1.08);
+}
+
+.album-title{
+position:absolute;
+bottom:0;
+left:0;
+width:100%;
+padding:20px;
+background:linear-gradient(transparent,rgba(0,0,0,0.9));
+font-size:20px;
+font-weight:600;
+}
+
+body.light .album-title{
+background:linear-gradient(transparent,rgba(255,255,255,0.9));
+color:#111;
+}
+
+.page-header{
+height:55vh;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+background:url("images/disneydubai.jpg") center/cover no-repeat;
+position:relative;
+}
+
+.page-header::after{
+content:"";
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+}
+
+.page-header h1{
+position:relative;
+z-index:2;
+font-size:48px;
+letter-spacing:3px;
+}
+
+</style>
+
+</head>
+
+<body class="dark">
+
+<header class="header">
+
+<div class="logo">
+<img src="logo.png" alt="NSF Clix" id="logo">
+</div>
+
+<div class="nav-links">
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="gallery.html">Gallery</a></li>
+<li><a href="index.html#exhibitions">Exhibitions</a></li>
+<li><a href="index.html#about">About</a></li>
+<li><a href="index.html#contact">Contact</a></li>
+</ul>
+</div>
+
+<div class="theme-icons">
+<i class="fas fa-sun" id="lightMode"></i>
+<i class="fas fa-moon" id="darkMode"></i>
+</div>
+
+<div class="menu-toggle" id="menuToggle">
+<span></span>
+<span></span>
+<span></span>
+</div>
+
+</header>
+
+<section class="page-header">
+<h1>Photography Albums</h1>
+</section>
+
+<section class="albums">
+
+<h2 class="section-title">Explore Albums</h2>
+
+<div class="album-grid">
+
+<a href="album.html?category=skyscrapers" class="album">
+<img src="images/albums/skyscrapers.jpg">
+<div class="album-title">Skyscrapers</div>
+</a>
+
+<a href="album.html?category=nature" class="album">
+<img src="images/albums/nature.jpg">
+<div class="album-title">Nature</div>
+</a>
+
+<a href="album.html?category=people" class="album">
+<img src="images/albums/people.jpg">
+<div class="album-title">People</div>
+</a>
+
+<a href="album.html?category=animals" class="album">
+<img src="images/albums/animals.jpg">
+<div class="album-title">Animals</div>
+</a>
+
+<a href="album.html?category=weather" class="album">
+<img src="images/albums/weather.jpg">
+<div class="album-title">Weather</div>
+</a>
+
+<a href="album.html?category=things" class="album">
+<img src="images/albums/things.jpg">
+<div class="album-title">Things</div>
+</a>
+
+</div>
+
+</section>
+
+<footer>
+<p>© 2026 NSF Clix • Photography by Nadeem Shahzad Fida</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>

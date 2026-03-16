@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NSF Clix | Video Gallery</title>
+
+<meta name="description" content="Video gallery of NSF Clix featuring cinematic footage, aerial perspectives and visual storytelling.">
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
+</head>
+
+<body class="dark">
+
+<div class="animated-bg"></div>
+<div class="color-orb orb1"></div>
+<div class="color-orb orb2"></div>
+<div class="color-orb orb3"></div>
+
+<header class="header">
+
+<div class="logo">
+<a href="index.html">
+<img src="logo.png" alt="NSF Clix" id="logo">
+</a>
+</div>
+
+<div class="nav-links">
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="gallery.html">Photos</a></li>
+<li><a href="videos.html">Videos</a></li>
+<li><a href="index.html#about">About</a></li>
+<li><a href="index.html#contact">Contact</a></li>
+</ul>
+</div>
+
+<div class="theme-icons">
+<i class="fas fa-sun" id="lightMode" title="Light Mode"></i>
+<i class="fas fa-moon" id="darkMode" title="Dark Mode"></i>
+</div>
+
+<div class="menu-toggle" id="menuToggle">
+<span></span>
+<span></span>
+<span></span>
+</div>
+
+</header>
+
+
+<section class="gallery">
+
+<h2 class="section-title">Video Gallery</h2>
+
+<div class="gallery-grid" id="videoGallery">
+
+<!-- Videos will load here from video.json -->
+
+</div>
+
+</section>
+
+
+<!-- LIGHTBOX -->
+
+<div id="lightbox">
+
+<span class="close-lightbox">&times;</span>
+
+<video class="lightbox-video" controls autoplay style="max-width:90%; max-height:70%; border-radius:10px;"></video>
+
+<div class="lightbox-details"></div>
+
+</div>
+
+
+<footer>
+
+<p>© 2026 NSF Clix • Photography by Nadeem Shahzad Fida</p>
+
+</footer>
+
+
+<script src="script.js"></script>
+
+<script>
+
+/* VIDEO GALLERY LOADER */
+
+fetch("video.json")
+.then(response => response.json())
+.then(data => {
+
+const gallery = document.getElementById("videoGallery");
+
+data.videos.forEach(video => {
+
+const item = document.createElement("div");
+item.className = "gallery-item";
+
+item.innerHTML = `
+<video src="${video.src}" muted loop></video>
+
+<div class="gallery-overlay">
+<h3>${video.title}</h3>
+<p>${video.location}</p>
+</div>
+
+<div class="photo-details">
+<h3>${video.title}</h3>
+<p>${video.description}</p>
+</div>
+`;
+
+gallery.appendChild(item);
+
+});
+
+/* VIDEO LIGHTBOX */
+
+const items = document.querySelectorAll(".gallery-item");
+const lightbox = document.getElementById("lightbox");
+const lightboxVideo = document.querySelector(".lightbox-video");
+const lightboxDetails = document.querySelector(".lightbox-details");
+const closeLightbox = document.querySelector(".close-lightbox");
+
+items.forEach(item => {
+
+const vid = item.querySelector("video");
+const details = item.querySelector(".photo-details").innerHTML;
+
+vid.addEventListener("click", () => {
+
+lightbox.style.display = "flex";
+lightboxVideo.src = vid.src;
+lightboxDetails.innerHTML = details;
+
+document.body.style.overflow = "hidden";
+
+});
+
+});
+
+closeLightbox.addEventListener("click", () => {
+
+lightbox.style.display = "none";
+lightboxVideo.pause();
+document.body.style.overflow = "auto";
+
+});
+
+document.addEventListener("keydown", e => {
+
+if(e.key === "Escape"){
+
+lightbox.style.display = "none";
+lightboxVideo.pause();
+document.body.style.overflow = "auto";
+
+}
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
