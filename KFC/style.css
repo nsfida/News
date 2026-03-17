@@ -244,8 +244,7 @@ background:#f5f9ff;
 /* STATUS COLORS */
 
 .active{
-background:#28a745;
-color:white;
+color:#28a745;
 font-weight:bold;
 text-align:center;
 }
@@ -509,4 +508,65 @@ text-transform:uppercase;
 text-align:left;
 }
 
+}
+/* PRINT SETTINGS */
+@media print{
+/* Hide VIEW CARD column */
+th:last-child,
+td:last-child{
+display:none !important;
+}
+/* Hide search + controls */
+.form-container,
+.buttons-container,
+.contact-banner,
+footer,
+.logged-in-user,
+.user-dropdown{
+display:none !important;
+}
+
+/* Remove body padding so result starts from top */
+body{
+padding:0;
+background:white !important;
+}
+
+/* Keep header visible */
+.logo-title{
+margin-bottom:10px;
+}
+
+/* Make result take full space */
+#resultContainer{
+margin-top:0;
+max-width:100%;
+}
+
+/* Preserve colors exactly */
+*{
+-webkit-print-color-adjust:exact !important;
+print-color-adjust:exact !important;
+}
+
+/* Table styling for print */
+table{
+box-shadow:none;
+border-radius:15px;
+overflow:hidden;
+}
+
+th{
+background:#0d3c91 !important;
+color:white !important;
+}
+
+.active{
+color:#28a745 !important;
+}
+
+/* Prevent row breaking */
+tr{
+page-break-inside:avoid;
+}
 }
