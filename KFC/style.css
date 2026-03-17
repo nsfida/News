@@ -578,3 +578,43 @@ page-break-inside:avoid;
     font-size: 16px;
     margin: 20px 0;
 }
+
+@media print {
+    /* Hide normal contact banner in screen */
+    .contact-banner {
+        display: none !important;
+    }
+
+    /* Print footer at bottom of every page */
+@media print {
+    .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(135deg, #0d3c91, #125fa6);
+        color: white;
+        padding: 8px 0;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        font-size: 12px;
+        text-align: center;
+        z-index: 9999;
+    }
+
+    .print-footer a {
+        color: white !important;
+        text-decoration: none;
+        margin: 0 12px;
+        display: inline-block;
+    }
+
+    .print-footer a span {
+        display: block;
+        font-weight: bold;
+        font-size: 11px;
+    }
+
+    tr { page-break-inside: avoid; }
+    table { page-break-inside: auto; }
+}
