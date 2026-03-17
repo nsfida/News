@@ -270,13 +270,21 @@ function renderTable() {
     }
 
     let table = "<table><thead><tr>";
+
+    // ✅ S.No Header
+    table += "<th>S.No.</th>";
+
     for(const key in results[0]){
         table += `<th onclick="sortTable('${key}')">${key}</th>`;
     }
     table += "<th>VIEW CARD</th></tr></thead><tbody>";
 
-    results.forEach(item=>{
+    results.forEach((item, index)=>{
         table += "<tr>";
+
+        // ✅ S.No Value
+        table += `<td data-label="S.No.">${index + 1}</td>`;
+
         for(const key in item){
             let value = item[key];
             let names = item.name.trim().split(" ");
@@ -305,7 +313,11 @@ function renderTable() {
 
         let canViewCard = allowedFullAccess.includes(loggedInCardNo) || (item.CNo === loggedInCardNo);
         const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
-        table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')" ${canViewCard ? "" : "disabled"}>VIEW CARD</button></td>`;
+
+        table += `<td data-label='VIEW CARD'>
+        <button onclick="window.open('${cardFileName}','_blank')" ${canViewCard ? "" : "disabled"}>
+        VIEW CARD</button></td>`;
+
         table += "</tr>";
     });
 
