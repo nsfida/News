@@ -8,11 +8,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const footer = document.createElement("div");
         footer.className = "print-footer";
         footer.innerHTML = `
+            <a href="#"><i class="fas fa-users"></i>  <span>CABINET MEMBERS</span></a>
             <a href="#"><i class="fas fa-user"></i> Arbab M. Rizwan <span>President</span></a>
             <a href="#"><i class="fas fa-user"></i> Salar Khan <span>Vice President</span></a>
             <a href="#"><i class="fas fa-user"></i> Ahmad A. Khattak <span>Acting President</span></a>
             <a href="#"><i class="fas fa-user"></i> Naveed A. Liaqat <span>Finance Manager</span></a>
             <a href="#"><i class="fas fa-user"></i> Nadeem Shahzad Fida <span>Media Manager</span></a>
+            <a href="#"><i class="fas fa-user"></i> Sabir Ali <span>Joint Finance Secretary</span></a>
+            <a href="#"><i class="fas fa-user"></i> Amjad Ali Khattak <span>General Secretary</span></a>
         `;
         document.body.appendChild(footer);
     }
