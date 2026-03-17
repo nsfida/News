@@ -4,7 +4,11 @@ margin:0;
 padding:0;
 box-sizing:border-box;
 }
-
+:root{
+--primary-blue:#125fa6;
+--primary-blue-dark:#0d3c91;
+--primary-blue-light:#1976d2;
+}
 /* URDU FONT */
 @font-face{
 font-family:'UrduFont';
@@ -181,7 +185,7 @@ button{
 border:none;
 padding:9px 20px;
 border-radius:40px;
-background:linear-gradient(135deg,#1976d2,#125fa6);
+background:linear-gradient(135deg,var(--primary-blue-light),var(--primary-blue));
 color:white;
 cursor:pointer;
 font-size:14px;
@@ -425,7 +429,7 @@ position:fixed;
 top:40%;
 left:50%;
 transform:translate(-50%, -50%);
-background:linear-gradient(135deg,#0d3c91,#125fa6);
+background:linear-gradient(135deg,var(--primary-blue-dark),var(--primary-blue));
 color:white;
 padding:12px 20px;
 border-radius:20px;
