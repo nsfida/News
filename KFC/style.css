@@ -570,3 +570,11 @@ tr{
 page-break-inside:avoid;
 }
 }
+
+.no-data{
+    color: red;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 20px 0;
+}
