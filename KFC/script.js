@@ -275,7 +275,7 @@ function renderTable() {
     table += "<th>S.No.</th>";
 
     for(const key in results[0]){
-        table += `<th onclick="sortTable('${key}')">${key}</th>`;
+        table += `<th onclick="sortTable('${key}')">${key === "Room" ? "ROOM/ADDRESS" : key}</th>`;
     }
     table += "<th>VIEW CARD</th></tr></thead><tbody>";
 
