@@ -166,7 +166,7 @@ function showLoggedInUser(fullName){
     const accessType = allowedFullAccess.includes(loggedInCardNo) ? "Full Access" : "Limited Access";
 
     profileBox.innerHTML = `
-        <div class="profile-banner" style="background-color:#007BFF;color:white;padding:5px;border-radius:3px;text-align:center;font-weight:bold">
+        <div class="profile-banner" style="background-color:#125fa6;color:white;padding:5px;border-radius:3px;text-align:center;font-weight:bold">
             Welcome, ${loggedInFullName}
         </div>
         <div style="text-align:center;margin:5px 0;font-weight:bold">${accessType}</div>
