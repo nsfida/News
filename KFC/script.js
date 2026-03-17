@@ -98,7 +98,17 @@ document.addEventListener("DOMContentLoaded", function () {
         showWelcomeBox(loggedInFullName);
         showLoggedInUser(loggedInFullName);
     }
-
+if (isLoggedIn) {
+    if (!allowedFullAccess.includes(loggedInCardNo)) {
+        generateButton.disabled = true;          // disable the button
+        generateButton.title = "Full Access members only";  // optional tooltip
+        generateButton.style.cursor = "not-allowed";
+    } else {
+        generateButton.disabled = false;
+    }
+} else {
+    generateButton.disabled = true;  // default for not logged-in users
+}
     // ------------------- LOGIN SYSTEM -------------------
     loginButton.addEventListener("click", function(){
         let user = loginUser.value.trim().toLowerCase();
