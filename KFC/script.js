@@ -291,16 +291,21 @@ function renderTable() {
             let usernameOfRow = names[0].toLowerCase() + names[names.length-1].toLowerCase();
 
             let isFullAccessUser = allowedFullAccess.includes(loggedInCardNo);
-
-            if(!isFullAccessUser && loggedInUsername && loggedInUsername.toLowerCase() !== usernameOfRow){
-                if(key === "name" && names.length>1){
-                    value = names.slice(0,-1).join(" ") + " ***";
-                }
-                if(key === "CNo"){
-                    let parts = item.CNo.split("-");
-                    value = parts.slice(0,-1).join("-") + "-***";
-                }
-            }
+if(!isFullAccessUser && loggedInUsername && loggedInUsername.toLowerCase() !== usernameOfRow){
+    if(key === "name"){
+        if(names.length > 2){
+            value = "*** " + names.slice(1, -1).join(" ") + " ***";
+        } else if(names.length === 2){
+            value = "*** ***";
+        } else {
+            value = "***";
+        }
+    }
+    if(key === "CNo"){
+        let parts = item.CNo.split("-");
+        value = parts.slice(0,-1).join("-") + "-***";
+    }
+}
 
             let cellStyle = "";
             if(key.toLowerCase()==="status"){
