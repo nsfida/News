@@ -86,9 +86,21 @@ body{
   100%{opacity:0.8;transform:scale(1);}
 }
 .logo-title h1 span{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  flex-direction:row-reverse; /* icon on left */
+
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
+}
+
+/* Important: reset icon so it follows parent */
+.logo-title h1 span i{
+  font-size:1em;
+  background:none;
+  -webkit-text-fill-color:inherit;
 }
 
 /* ALERT CARD */
@@ -252,7 +264,9 @@ body{
 
 <div class="logo-title">
 <img src="../logo.png" class="logo">
-<h1><span>Alerts</span></h1>
+<h1>
+  <span><i class="fa-solid fa-bell"></i> Alerts</span>
+</h1>
 </div>
 
 <div id="alerts-container">
@@ -296,7 +310,7 @@ async function loadAlerts() {
       <div class="alert-title" lang="en">${item.title_en}</div>
       <div class="alert-title" lang="ur" style="font-family: 'UrduFont', serif;">${item.title_ur}</div>
       <div class="alert-body" lang="ur" style="font-family: 'UrduFont', serif;">${item.body_ur}</div>
-      <div class="share-icon" title="Share this alert"><i class="fa-solid fa-share-from-square"></i></div>
+      <div class="share-icon" title="Share this alert"><i class="fa-solid fa-bell"></i></i></div>
     `;
 
     card.addEventListener('click', () => card.classList.toggle('active'));
