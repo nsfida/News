@@ -68,7 +68,11 @@ const menu = document.getElementById('menuList');
 toggle.addEventListener('click', () => {
   menu.classList.toggle('show');
 });
-
+document.addEventListener('click', function (e) {
+  if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+    menu.classList.remove('show');
+  }
+});
 
     printButton.disabled = true;
     searchButton.disabled = true;
