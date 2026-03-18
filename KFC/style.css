@@ -233,13 +233,13 @@ tr:hover{
 .active{
     color:#28a745;
     font-weight:bold;
-    text-align:center;
+    text-align:right;
 }
 
 .cancel{
     color:red;
     font-weight:bold;
-    text-align:center;
+    text-align:right;
 }
 
 /* CONTACT BANNER */
