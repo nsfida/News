@@ -1,3 +1,5 @@
+This script is perfectly fine, however the saved photo is is not perfect, because Urdu texts are ruined in the photo, but in the browser they are looking perfect. Please fix and write the full script.
+
 <!DOCTYPE html>
 <html lang="ur">
 <head>
@@ -16,7 +18,6 @@
 @font-face{
   font-family:'UrduFont';
   src:url('../NewCard/static/fonts/Urdu.ttf') format('truetype');
-  font-display:swap;
 }
 
 /* Reset */
@@ -296,21 +297,22 @@ body{
 </section>
 
 <script>
-async function loadAlerts(){
-  const res = await fetch('https://livenews.live/KFC/message/alerts.json');
-  const data = await res.json();
-
-  // Sort descending by date
+fetch('https://livenews.live/KFC/message/alerts.json')
+.then(res => res.json())
+.then(data=>{
+  // Sort descending by date (newest first)
   data.sort((a,b)=>{
     const [dA,mA,yA] = a.date.split('-').map(Number);
     const [dB,mB,yB] = b.date.split('-').map(Number);
-    return new Date(yB,mB-1,dB) - new Date(yA,mA-1,dA);
+    const dateA = new Date(yA,mA-1,dA);
+    const dateB = new Date(yB,mB-1,dB);
+    return dateB - dateA;
   });
 
   const container = document.getElementById('alerts-container');
   container.innerHTML = '';
 
-  for(const item of data){
+  data.forEach(item=>{
     const card = document.createElement('div');
     card.className = 'alert-card';
     card.innerHTML = `
@@ -326,24 +328,9 @@ async function loadAlerts(){
     });
 
     // Share functionality
-    const shareBtn = card.querySelector('.share-icon');
-    shareBtn.addEventListener('click', async e=>{
+    card.querySelector('.share-icon').addEventListener('click', e=>{
       e.stopPropagation();
-
-      // Ensure font is loaded
-      await document.fonts.load('18px UrduFont');
-
-      html2canvas(card, {
-        scale:3,
-        useCORS:true,
-        logging:true,
-        scrollX:0,
-        scrollY:0,
-        windowWidth:card.scrollWidth,
-        windowHeight:card.scrollHeight,
-        fontFace: true,
-        foreignObjectRendering:true
-      }).then(canvas=>{
+      html2canvas(card, {scale:3, useCORS:true}).then(canvas=>{
         canvas.toBlob(blob=>{
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
@@ -356,11 +343,8 @@ async function loadAlerts(){
     });
 
     container.appendChild(card);
-  }
-}
-
-// Load alerts on page load
-loadAlerts();
+  });
+});
 </script>
 
 </body>
