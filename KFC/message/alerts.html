@@ -1,5 +1,3 @@
-This script is perfectly fine, however the saved photo is is not perfect, because Urdu texts are ruined in the photo, but in the browser they are looking perfect. Please fix and write the full script.
-
 <!DOCTYPE html>
 <html lang="ur">
 <head>
@@ -7,10 +5,7 @@ This script is perfectly fine, however the saved photo is is not perfect, becaus
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alerts - Khawrai Falahi Committee UAE</title>
 
-<!-- Font Awesome Pro for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- html2canvas for screenshot sharing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
@@ -18,11 +13,11 @@ This script is perfectly fine, however the saved photo is is not perfect, becaus
 @font-face{
   font-family:'UrduFont';
   src:url('../NewCard/static/fonts/Urdu.ttf') format('truetype');
+  font-display:swap;
 }
 
 /* Reset */
 *{margin:0;padding:0;box-sizing:border-box;}
-
 body{
   font-family:'Calibri',sans-serif;
   display:flex;
@@ -35,8 +30,6 @@ body{
   direction:rtl;
   text-align:right;
 }
-
-/* Apply Urdu font only to Urdu content */
 [lang="ur"]{
   font-family:'UrduFont',serif;
   direction:rtl;
@@ -53,7 +46,6 @@ body{
   width:100%;
   padding:1.5rem;
 }
-
 .hero-overlay{
   position:absolute;
   width:100%;
@@ -63,7 +55,6 @@ body{
   z-index:1;
   border-radius:50px;
 }
-
 .hero-content{
   position:relative;
   z-index:2;
@@ -84,19 +75,16 @@ body{
   align-items:center;
   margin-bottom:20px;
 }
-
 .logo-title img.logo{
   width:80px;
   margin-bottom:12px;
   animation:logoFade 2.5s ease-in-out infinite;
 }
-
 @keyframes logoFade{
   0%{opacity:0.8;transform:scale(1);}
   50%{opacity:1;transform:scale(1.05);}
   100%{opacity:0.8;transform:scale(1);}
 }
-
 .logo-title h1 span{
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
   -webkit-background-clip:text;
@@ -117,7 +105,6 @@ body{
   position:relative;
   overflow:hidden;
 }
-
 /* Background logo in card */
 .alert-card::before{
   content:'';
@@ -131,7 +118,6 @@ body{
   transform:translate(-50%,-50%);
   pointer-events:none;
 }
-
 /* Logo top-right on card */
 .alert-card .card-logo{
   position:absolute;
@@ -140,7 +126,6 @@ body{
   width:40px;
   height:40px;
 }
-
 /* Card hover effect */
 .alert-card:hover{
   transform:translateY(-4px);
@@ -166,7 +151,6 @@ body{
   font-weight:600;
   margin-bottom:6px;
 }
-
 .alert-title[lang="ur"]{
   font-size:18px;
   font-weight:600;
@@ -182,7 +166,6 @@ body{
   color:#333;
   white-space:pre-line;
 }
-
 .alert-body[lang="ur"]{
   font-size:18px;
   color:#333;
@@ -191,7 +174,6 @@ body{
   overflow:hidden;
   transition:max-height 0.5s ease;
 }
-
 .alert-card.active .alert-body{
   max-height:1000px;
 }
@@ -206,7 +188,6 @@ body{
   cursor:pointer;
   transition:0.3s;
 }
-
 .share-icon:hover{
   color:#ff6ec4;
 }
@@ -227,11 +208,9 @@ body{
   box-shadow:0 8px 20px rgba(0,0,0,0.25);
   transition:all 0.3s ease;
 }
-
 .main-button i{
   font-size:1rem;
 }
-
 .main-button:hover{
   transform:translateY(-4px);
   box-shadow:0 12px 25px rgba(0,0,0,0.35);
@@ -245,11 +224,9 @@ body{
   animation:floatShapes 8s ease-in-out infinite;
   z-index:0;
 }
-
 .shape1{width:120px;height:120px;background:#ff9a9e;top:10%;left:5%;}
 .shape2{width:180px;height:180px;background:#a1c4fd;bottom:15%;right:10%;}
 .shape3{width:90px;height:90px;background:#fccb90;top:50%;left:70%;}
-
 @keyframes floatShapes{
   0%,100%{transform:translateY(0);}
   50%{transform:translateY(15px);}
@@ -259,7 +236,6 @@ body{
 @media(max-width:768px){
   .alert-card{width:90%; margin:auto;}
 }
-
 @media(max-width:480px){
   .alert-card{width:100%;}
 }
@@ -283,7 +259,6 @@ body{
 <!-- Alerts will load here dynamically -->
 </div>
 
-<!-- Buttons -->
 <div style="text-align:center;">
   <a href="../index.html" class="main-button"><i class="fa-solid fa-house"></i>Back to Home</a>
 </div>
@@ -297,41 +272,49 @@ body{
 </section>
 
 <script>
-fetch('https://livenews.live/KFC/message/alerts.json')
-.then(res => res.json())
-.then(data=>{
-  // Sort descending by date (newest first)
+async function loadAlerts() {
+  await document.fonts.ready; // wait for all fonts to load
+
+  const res = await fetch('https://livenews.live/KFC/message/alerts.json');
+  const data = await res.json();
+
   data.sort((a,b)=>{
     const [dA,mA,yA] = a.date.split('-').map(Number);
     const [dB,mB,yB] = b.date.split('-').map(Number);
-    const dateA = new Date(yA,mA-1,dA);
-    const dateB = new Date(yB,mB-1,dB);
-    return dateB - dateA;
+    return new Date(yB,mB-1,dB) - new Date(yA,mA-1,dA);
   });
 
   const container = document.getElementById('alerts-container');
   container.innerHTML = '';
 
-  data.forEach(item=>{
+  data.forEach(item => {
     const card = document.createElement('div');
     card.className = 'alert-card';
     card.innerHTML = `
       <img src="../logo.png" class="card-logo" alt="Logo">
       <div class="alert-date" lang="en"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
       <div class="alert-title" lang="en">${item.title_en}</div>
-      <div class="alert-title" lang="ur">${item.title_ur}</div>
-      <div class="alert-body" lang="ur">${item.body_ur}</div>
+      <div class="alert-title" lang="ur" style="font-family: 'UrduFont', serif;">${item.title_ur}</div>
+      <div class="alert-body" lang="ur" style="font-family: 'UrduFont', serif;">${item.body_ur}</div>
       <div class="share-icon" title="Share this alert"><i class="fa-solid fa-share-from-square"></i></div>
     `;
-    card.addEventListener('click', ()=>{
-      card.classList.toggle('active');
-    });
+
+    card.addEventListener('click', () => card.classList.toggle('active'));
 
     // Share functionality
-    card.querySelector('.share-icon').addEventListener('click', e=>{
+    const shareBtn = card.querySelector('.share-icon');
+    shareBtn.addEventListener('click', async e => {
       e.stopPropagation();
-      html2canvas(card, {scale:3, useCORS:true}).then(canvas=>{
-        canvas.toBlob(blob=>{
+      await document.fonts.ready; // ensure font loaded
+
+      html2canvas(card, {
+        scale: 3,
+        useCORS: true,
+        logging: true,
+        scrollX: 0,
+        scrollY: 0
+      }).then(canvas => {
+        canvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
@@ -344,7 +327,9 @@ fetch('https://livenews.live/KFC/message/alerts.json')
 
     container.appendChild(card);
   });
-});
+}
+
+loadAlerts();
 </script>
 
 </body>
