@@ -137,6 +137,7 @@ body{
 .form-container{
     width:100%;
     max-width:900px;
+    position:relative; /* IMPORTANT */
 }
 
 label{
@@ -182,7 +183,7 @@ button{
     align-items:center;
     gap:6px;
     transition:0.35s;
-    box-shadow:0 8px 20px rgba(0,0,0,0.15);
+    box-shadow:0 15px 20px rgba(0,0,0,0.15);
 }
 
 button:hover:enabled{
@@ -553,22 +554,22 @@ footer a{
     }
 }
 .menu-container{
-  position:absolute;
-  top:20px;
-  right:20px;
-  z-index:5;
+  position:absolute;   /* change from absolute (page) to inside box */
+  top:10px;
+  right:15px;
+  z-index:10;
 }
 
 .menu-icon{
-  width:50px;
-  height:50px;
+  width:30px;
+  height:30px;
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  border-radius:50%;
+  border-radius:100%;
   display:flex;
   justify-content:center;
   align-items:center;
   color:#fff;
-  font-size:1.5rem;
+  font-size:1rem;
   cursor:pointer;
   box-shadow:0 6px 18px rgba(0,0,0,0.25);
   transition:all 0.3s ease;
@@ -600,13 +601,13 @@ footer a{
 .menu-list a{
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
   padding:0.6rem 1.5rem;
-  font-size:0.95rem;
+  font-size:0.9rem;
   font-weight:bold;
   color:#fff;
   text-decoration:none;
-  border-radius:50px;
+  border-radius:30px;
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
   box-shadow:0 6px 18px rgba(0,0,0,0.25);
   transition:all 0.3s ease;
