@@ -16,6 +16,7 @@
 @font-face{
   font-family:'UrduFont';
   src:url('../NewCard/static/fonts/Urdu.ttf') format('truetype');
+  font-display:swap;
 }
 
 /* Reset */
@@ -295,22 +296,21 @@ body{
 </section>
 
 <script>
-fetch('https://livenews.live/KFC/message/alerts.json')
-.then(res => res.json())
-.then(data=>{
-  // Sort descending by date (newest first)
+async function loadAlerts(){
+  const res = await fetch('https://livenews.live/KFC/message/alerts.json');
+  const data = await res.json();
+
+  // Sort descending by date
   data.sort((a,b)=>{
     const [dA,mA,yA] = a.date.split('-').map(Number);
     const [dB,mB,yB] = b.date.split('-').map(Number);
-    const dateA = new Date(yA,mA-1,dA);
-    const dateB = new Date(yB,mB-1,dB);
-    return dateB - dateA;
+    return new Date(yB,mB-1,dB) - new Date(yA,mA-1,dA);
   });
 
   const container = document.getElementById('alerts-container');
   container.innerHTML = '';
 
-  data.forEach(item=>{
+  for(const item of data){
     const card = document.createElement('div');
     card.className = 'alert-card';
     card.innerHTML = `
@@ -326,9 +326,24 @@ fetch('https://livenews.live/KFC/message/alerts.json')
     });
 
     // Share functionality
-    card.querySelector('.share-icon').addEventListener('click', e=>{
+    const shareBtn = card.querySelector('.share-icon');
+    shareBtn.addEventListener('click', async e=>{
       e.stopPropagation();
-      html2canvas(card, {scale:3, useCORS:true}).then(canvas=>{
+
+      // Ensure font is loaded
+      await document.fonts.load('18px UrduFont');
+
+      html2canvas(card, {
+        scale:3,
+        useCORS:true,
+        logging:true,
+        scrollX:0,
+        scrollY:0,
+        windowWidth:card.scrollWidth,
+        windowHeight:card.scrollHeight,
+        fontFace: true,
+        foreignObjectRendering:true
+      }).then(canvas=>{
         canvas.toBlob(blob=>{
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
@@ -341,8 +356,11 @@ fetch('https://livenews.live/KFC/message/alerts.json')
     });
 
     container.appendChild(card);
-  });
-});
+  }
+}
+
+// Load alerts on page load
+loadAlerts();
 </script>
 
 </body>
