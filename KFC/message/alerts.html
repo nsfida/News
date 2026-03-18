@@ -8,6 +8,9 @@
 <!-- Font Awesome Pro for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<!-- html2canvas for screenshot sharing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
 /* Urdu Font */
 @font-face{
@@ -102,33 +105,73 @@ body{
 .alert-card{
   background:rgba(255,255,255,0.25);
   border-radius:25px;
-  padding:15px;
+  padding:15px 20px;
   box-shadow:0 8px 32px rgba(0,0,0,0.15);
   margin-bottom:20px;
   text-align:center;
   transition:0.3s;
   cursor:pointer;
   direction:rtl;
+  position:relative;
+  overflow:hidden;
 }
 
+/* Background logo in card */
+.alert-card::before{
+  content:'';
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:120px;
+  height:120px;
+  background:url('../logo.png') center/contain no-repeat;
+  opacity:0.08;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+
+/* Logo top-right on card */
+.alert-card .card-logo{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:40px;
+  height:40px;
+}
+
+/* Card hover effect */
 .alert-card:hover{
   transform:translateY(-4px);
 }
 
-.alert-date{
-  font-weight:bold;
-  font-size:10px;
-  margin-bottom:8px;
-  color:#0d3c91;
-  font-family:'Calibri',sans-serif;
+/* Date on card */
+.alert-date {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #0d3c91;
+  font-family: 'Calibri', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
 }
 
+/* Titles */
 .alert-title{
   font-size:13px;
   font-weight:600;
   margin-bottom:6px;
 }
 
+.alert-title[lang="ur"]{
+  font-size:18px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+/* Body */
 .alert-body{
   max-height:0;
   overflow:hidden;
@@ -138,8 +181,32 @@ body{
   white-space:pre-line;
 }
 
+.alert-body[lang="ur"]{
+  font-size:18px;
+  color:#333;
+  white-space:pre-line;
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.5s ease;
+}
+
 .alert-card.active .alert-body{
   max-height:1000px;
+}
+
+/* Modern Share icon */
+.share-icon{
+  position:absolute;
+  top:15px;
+  left:15px;
+  font-size:1rem;
+  color:#0d3c91;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.share-icon:hover{
+  color:#ff6ec4;
 }
 
 /* Buttons */
@@ -175,21 +242,6 @@ body{
   opacity:0.25;
   animation:floatShapes 8s ease-in-out infinite;
   z-index:0;
-}
-/* Urdu alert text */
-.alert-title[lang="ur"]{
-  font-size:18px; /* increased from 18px */
-  font-weight:600;
-  margin-bottom:6px;
-}
-
-.alert-body[lang="ur"]{
-  font-size:18px; /* increased from 14px */
-  color:#333;
-  white-space:pre-line;
-  max-height:0;
-  overflow:hidden;
-  transition:max-height 0.5s ease;
 }
 
 .shape1{width:120px;height:120px;background:#ff9a9e;top:10%;left:5%;}
@@ -262,14 +314,32 @@ fetch('https://livenews.live/KFC/message/alerts.json')
     const card = document.createElement('div');
     card.className = 'alert-card';
     card.innerHTML = `
+      <img src="../logo.png" class="card-logo" alt="Logo">
       <div class="alert-date" lang="en"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
       <div class="alert-title" lang="en">${item.title_en}</div>
       <div class="alert-title" lang="ur">${item.title_ur}</div>
       <div class="alert-body" lang="ur">${item.body_ur}</div>
+      <div class="share-icon" title="Share this alert"><i class="fa-solid fa-share-from-square"></i></div>
     `;
     card.addEventListener('click', ()=>{
       card.classList.toggle('active');
     });
+
+    // Share functionality
+    card.querySelector('.share-icon').addEventListener('click', e=>{
+      e.stopPropagation();
+      html2canvas(card, {scale:3, useCORS:true}).then(canvas=>{
+        canvas.toBlob(blob=>{
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `Alert_${item.date}.png`;
+          link.click();
+          URL.revokeObjectURL(url);
+        });
+      });
+    });
+
     container.appendChild(card);
   });
 });
