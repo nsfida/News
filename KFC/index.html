@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Khawrai Falahi Committee UAE</title>
 
-<!-- Font Awesome Pro (replace with your Pro kit link if needed) -->
+<!-- Font Awesome Pro -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -128,30 +128,70 @@ body{
   margin-bottom:1.5rem;
 }
 
-/* Buttons */
-.main-button{
-  display:inline-flex;
+/* ----- Floating Menu Icon ----- */
+.menu-container{
+  position:absolute;
+  top:20px;
+  right:20px;
+  z-index:5;
+}
+
+.menu-icon{
+  width:50px;
+  height:50px;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#fff;
+  font-size:1.5rem;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  transition:all 0.3s ease;
+}
+
+.menu-icon:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 22px rgba(0,0,0,0.35);
+}
+
+/* ----- Hidden Menu ----- */
+.menu-list{
+  position:absolute;
+  top:60px;
+  right:0;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  opacity:0;
+  visibility:hidden;
+  transition:all 0.3s ease;
+}
+
+.menu-list.show{
+  opacity:1;
+  visibility:visible;
+}
+
+.menu-list a{
+  display:flex;
   align-items:center;
   gap:8px;
-  padding:0.75rem 1.8rem;
-  font-size:1rem;
+  padding:0.6rem 1.5rem;
+  font-size:0.95rem;
   font-weight:bold;
   color:#fff;
   text-decoration:none;
   border-radius:50px;
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
   transition:all 0.3s ease;
-  margin:6px;
 }
 
-.main-button i{
-  font-size:1.1rem;
-}
-
-.main-button:hover{
-  transform:translateY(-4px);
-  box-shadow:0 12px 25px rgba(0,0,0,0.35);
+.menu-list a:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 22px rgba(0,0,0,0.35);
 }
 
 /* Floating Shapes */
@@ -215,25 +255,13 @@ body{
   overflow:hidden;
 }
 
-.glass-panel::before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 100%);
-  pointer-events:none;
-  border-radius:25px;
-}
-
 /* Responsive */
 @media(max-width:768px){
   .hero-content{padding:1.5rem 1rem;}
   .logo-title h1{font-size:20px;}
   .hero-title-ur{font-size:14px;}
   .intro-en,.intro-ur{font-size:0.85rem;}
-  .main-button{padding:0.65rem 1.6rem;font-size:0.95rem;}
+  .menu-list a{padding:0.55rem 1.3rem;font-size:0.85rem;}
 }
 
 @media(max-width:480px){
@@ -241,7 +269,7 @@ body{
   .logo-title h1{font-size:18px;}
   .hero-title-ur{font-size:13px;}
   .intro-en,.intro-ur{font-size:0.8rem;}
-  .main-button{padding:0.6rem 1.4rem;font-size:0.9rem;}
+  .menu-list a{padding:0.5rem 1.2rem;font-size:0.8rem;}
 }
 
 </style>
@@ -256,22 +284,18 @@ body{
 <div class="hero-content glass-panel">
 
 <div class="logo-title">
-
-<img src="logo.png" alt="Logo" class="logo">
-
-<h1>Welcome to <span>Khawrai Falahi Committee UAE</span></h1>
-
-<h2 class="hero-title-ur" lang="ur">
-خاورئی فلاحی کمیٹی متحدہ عرب امارات میں خوش آمدید
-</h2>
-
+  <img src="logo.png" alt="Logo" class="logo">
+  <h1>Welcome to <span>Khawrai Falahi Committee UAE</span></h1>
+  <h2 class="hero-title-ur" lang="ur">
+    خاورئی فلاحی کمیٹی متحدہ عرب امارات میں خوش آمدید
+  </h2>
 </div>
 
 <p class="intro-en">
 The Khawrai Falahi Committee UAE was established in December 2016. 
 The purpose of the committee is to address the issues faced by residents 
 of Khawrai in the United Arab Emirates and its surroundings, and to 
-resolve them in a a timely and professional manner. The leadership of the 
+resolve them in a timely and professional manner. The leadership of the 
 committee is committed to serving the residents of Khawrai in the United 
 Arab Emirates and is determined to address and resolve their various 
 issues promptly.
@@ -286,12 +310,15 @@ issues promptly.
 پُرعزم ہے۔
 </p>
 
-<!-- Buttons -->
-<div>
-  <a href="database.html" class="main-button"><i class="fa-solid fa-database"></i>Explore Database</a>
-  <a href="message/president.html" class="main-button"><i class="fa-solid fa-user-tie"></i>President's Message</a>
-  <a href="message/cabinet.html" class="main-button"><i class="fa-solid fa-users"></i>Cabinet Members</a>
-  <a href="message/alerts.html" class="main-button"><i class="fa-solid fa-bell"></i>Alerts</a>
+<!-- Floating Menu -->
+<div class="menu-container">
+  <div class="menu-icon" id="menuToggle"><i class="fa-solid fa-bars"></i></div>
+  <div class="menu-list" id="menuList">
+    <a href="message/president.html"><i class="fa-solid fa-user-tie"></i>President's Message</a>
+    <a href="message/alerts.html"><i class="fa-solid fa-bell"></i>Alerts</a>
+    <a href="database.html"><i class="fa-solid fa-database"></i>Explore Database</a>
+    <a href="message/cabinet.html"><i class="fa-solid fa-users"></i>Cabinet Members</a>
+  </div>
 </div>
 
 </div>
@@ -301,6 +328,15 @@ issues promptly.
 <div class="floating-shape shape3"></div>
 
 </section>
+
+<script>
+const toggle = document.getElementById('menuToggle');
+const menu = document.getElementById('menuList');
+
+toggle.addEventListener('click', () => {
+  menu.classList.toggle('show');
+});
+</script>
 
 </body>
 </html>
