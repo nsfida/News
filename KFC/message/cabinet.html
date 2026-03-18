@@ -26,6 +26,7 @@ body{
   flex-direction:column;
   align-items:center;
   background: linear-gradient(135deg,#e0eaff,#ffffff);
+  color:#1a1a1a;
   padding:15px;
   overflow-x:hidden;
 }
@@ -35,7 +36,7 @@ body{
   position:absolute;
   top:15px;
   left:15px;
-  z-index:5;
+  z-index:10;
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
   color:#fff;
   border:none;
@@ -51,21 +52,21 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
+  text-align:center;
+  min-height:100vh;
   width:100%;
 }
 
-/* overlay */
 .hero-overlay{
   position:absolute;
   width:100%;
   height:100%;
   background:rgba(255,255,255,0.15);
   backdrop-filter:blur(18px);
-  border-radius:20px;
   z-index:1;
+  border-radius:20px;
 }
 
-/* MAIN BOX */
 .hero-content{
   position:relative;
   z-index:2;
@@ -79,27 +80,19 @@ body{
   overflow:hidden;
 }
 
-/* BACKGROUND WATERMARK LOGO */
-.hero-content::before{
-  content:"";
+/* REAL BACKGROUND LOGO (VISIBLE TO CANVAS) */
+.bg-logo{
   position:absolute;
-  inset:0;
-  background:url('../logo.png') center/250px no-repeat;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:250px;
   opacity:0.06;
   z-index:0;
+  pointer-events:none;
 }
 
-/* TOP RIGHT LOGO */
-.top-logo{
-  position:absolute;
-  top:15px;
-  right:15px;
-  width:60px;
-  opacity:0.9;
-  z-index:3;
-}
-
-/* Logo title */
+/* Logo */
 .logo-title{
   display:flex;
   flex-direction:column;
@@ -126,6 +119,7 @@ body{
   display:grid;
   grid-template-columns:repeat(3, minmax(0,1fr));
   gap:12px;
+  width:100%;
   position:relative;
   z-index:2;
 }
@@ -136,6 +130,7 @@ body{
   background:rgba(255,255,255,0.25);
   border-radius:16px;
   padding:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.12);
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -156,8 +151,15 @@ body{
   font-size:13px;
   font-weight:700;
   text-align:center;
+  background:linear-gradient(90deg,#0d3c91,#4facfe);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
-.member-role{font-size:11px;color:#555;}
+
+.member-role{
+  font-size:11px;
+  color:#555;
+}
 
 .member-extra{
   max-height:0;
@@ -186,22 +188,31 @@ body{
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
 }
 
-/* mobile */
-@media(max-width:480px){
-  .member-name{font-size:11px;}
-  .member-role{font-size:9px;}
-}
-
 /* floating shapes */
 .floating-shape{
   position:absolute;
   border-radius:50%;
   opacity:0.2;
+  animation:floatShapes 8s ease-in-out infinite;
   z-index:0;
 }
+
 .shape1{width:90px;height:90px;background:#ff9a9e;top:10%;left:5%;}
 .shape2{width:120px;height:120px;background:#a1c4fd;bottom:10%;right:8%;}
 .shape3{width:70px;height:70px;background:#fccb90;top:50%;left:70%;}
+
+@keyframes floatShapes{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(10px);}
+}
+
+/* mobile */
+@media(max-width:480px){
+  .logo-title h1 span{font-size:16px;}
+  .member-name{font-size:11px;}
+  .member-role{font-size:9px;}
+  .member-extra{font-size:9px;}
+}
 
 </style>
 </head>
@@ -218,63 +229,31 @@ body{
 
 <div class="hero-content" id="capture">
 
-<img src="../logo.png" class="top-logo">
+<img src="../logo.png" class="bg-logo">
 
 <div class="logo-title">
 <img src="../logo.png" class="logo">
-<h1><span><i class="fa-solid fa-users"></i> Cabinet Members</span></h1>
+<h1>
+  <span><i class="fa-solid fa-users"></i> Cabinet Members</span>
+</h1>
 </div>
 
 <div class="members-grid">
 
-<div class="member-card">
-<img src="president.png" class="member-img">
-<div class="member-name">Arbab Muhammad Rizwan Sultan Muhammad</div>
-<div class="member-role">President</div>
-<div class="member-extra">Serving the community with leadership and dedication.</div>
-</div>
+<!-- SAME CARDS -->
+<div class="member-card"><img src="president.png" class="member-img"><div class="member-name">Arbab Muhammad Rizwan Sultan Muhammad</div><div class="member-role">President</div><div class="member-extra">Serving the community with leadership and dedication.</div></div>
 
-<div class="member-card">
-<img src="vice.png" class="member-img">
-<div class="member-name">Salar Khan Ihsan Ul Haq</div>
-<div class="member-role">Vice President</div>
-<div class="member-extra">Supporting operations and assisting leadership decisions.</div>
-</div>
+<div class="member-card"><img src="vice.png" class="member-img"><div class="member-name">Salar Khan Ihsan Ul Haq</div><div class="member-role">Vice President</div><div class="member-extra">Supporting operations and assisting leadership decisions.</div></div>
 
-<div class="member-card">
-<img src="acting.png" class="member-img">
-<div class="member-name">Ahmad Aman Khattak</div>
-<div class="member-role">Acting President</div>
-<div class="member-extra">Ensuring continuity and smooth execution of responsibilities.</div>
-</div>
+<div class="member-card"><img src="acting.png" class="member-img"><div class="member-name">Ahmad Aman Khattak</div><div class="member-role">Acting President</div><div class="member-extra">Ensuring continuity and smooth execution of responsibilities.</div></div>
 
-<div class="member-card">
-<img src="general.png" class="member-img">
-<div class="member-name">Amjad Ali Khattak</div>
-<div class="member-role">General Secretary</div>
-<div class="member-extra">Managing communications and administrative affairs.</div>
-</div>
+<div class="member-card"><img src="general.png" class="member-img"><div class="member-name">Amjad Ali Khattak</div><div class="member-role">General Secretary</div><div class="member-extra">Managing communications and administrative affairs.</div></div>
 
-<div class="member-card">
-<img src="finance.png" class="member-img">
-<div class="member-name">Naveed Ali Liaqat</div>
-<div class="member-role">Finance Manager</div>
-<div class="member-extra">Overseeing financial planning and transparency.</div>
-</div>
+<div class="member-card"><img src="finance.png" class="member-img"><div class="member-name">Naveed Ali Liaqat</div><div class="member-role">Finance Manager</div><div class="member-extra">Overseeing financial planning and transparency.</div></div>
 
-<div class="member-card">
-<img src="joint.png" class="member-img">
-<div class="member-name">Sabir Ali Akbar Ali</div>
-<div class="member-role">Joint Finance Manager</div>
-<div class="member-extra">Assisting in budgeting and financial operations.</div>
-</div>
+<div class="member-card"><img src="joint.png" class="member-img"><div class="member-name">Sabir Ali Akbar Ali</div><div class="member-role">Joint Finance Manager</div><div class="member-extra">Assisting in budgeting and financial operations.</div></div>
 
-<div class="member-card">
-<img src="media.png" class="member-img">
-<div class="member-name">Nadeem Shahzad Fida</div>
-<div class="member-role">Media Manager</div>
-<div class="member-extra">Handling media presence and public communication.</div>
-</div>
+<div class="member-card"><img src="media.png" class="member-img"><div class="member-name">Nadeem Shahzad Fida</div><div class="member-role">Media Manager</div><div class="member-extra">Handling media presence and public communication.</div></div>
 
 </div>
 
@@ -297,16 +276,17 @@ document.querySelectorAll(".member-card").forEach(card=>{
 });
 
 function saveImage(){
-  const btn = document.querySelector(".save-btn");
+  const btn=document.querySelector(".save-btn");
   btn.style.display="none";
 
   html2canvas(document.querySelector("#capture"),{
-    scale:3,
-    useCORS:true
+    scale:window.devicePixelRatio * 2,
+    useCORS:true,
+    backgroundColor:null
   }).then(canvas=>{
     const link=document.createElement("a");
     link.download="cabinet-members.png";
-    link.href=canvas.toDataURL();
+    link.href=canvas.toDataURL("image/png",1.0);
     link.click();
     btn.style.display="block";
   });
