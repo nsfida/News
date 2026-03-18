@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabinet Members - Khawrai Falahi Committee UAE</title>
+
+<style>
+
+/* Urdu Font */
+@font-face{
+  font-family:'UrduFont';
+  src:url('../NewCard/static/fonts/Urdu.ttf') format('truetype');
+}
+
+/* Reset */
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Calibri',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background: linear-gradient(135deg,#e0eaff,#ffffff);
+  color:#1a1a1a;
+  padding:20px;
+  overflow-x:hidden;
+}
+
+/* Hero */
+.hero{
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  min-height:100vh;
+  width:100%;
+  padding:1.5rem;
+}
+
+.hero-overlay{
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(18px);
+  z-index:1;
+  border-radius:25px;
+}
+
+.hero-content{
+  position:relative;
+  z-index:2;
+  max-width:950px;
+  width:100%;
+  padding:2rem 1.5rem;
+  border-radius:25px;
+  background:rgba(255,255,255,0.2);
+  box-shadow:0 8px 32px rgba(0,0,0,0.15);
+  border:1px solid rgba(255,255,255,0.3);
+}
+
+/* Logo */
+.logo-title{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.logo-title img.logo{
+  width:80px;
+  margin-bottom:12px;
+  animation:logoFade 2.5s ease-in-out infinite;
+}
+
+@keyframes logoFade{
+  0%{opacity:0.8;transform:scale(1);}
+  50%{opacity:1;transform:scale(1.05);}
+  100%{opacity:0.8;transform:scale(1);}
+}
+
+.logo-title h1 span{
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* ROW STRUCTURE */
+.row{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
+}
+
+/* CARD */
+.member-card{
+  width:250px;
+  background:rgba(255,255,255,0.25);
+  border-radius:20px;
+  padding:15px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.15);
+  transition:0.3s;
+  cursor:pointer;
+}
+
+.member-card:hover{
+  transform:translateY(-6px);
+}
+
+/* IMAGE */
+.member-img{
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  object-fit:cover;
+  margin:10px auto;
+  border:3px solid rgba(255,255,255,0.6);
+}
+
+/* NAME */
+.member-name{
+  font-size:16px;
+  font-weight:700;
+  background:linear-gradient(90deg,#0d3c91,#4facfe);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* ROLE */
+.member-role{
+  font-size:13px;
+  color:#555;
+}
+
+/* NEW: EXPAND CONTENT */
+.member-extra{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.4s ease;
+  font-size:13px;
+  color:#333;
+  margin-top:8px;
+}
+
+.member-card.active .member-extra{
+  max-height:120px;
+}
+
+/* BUTTON */
+.main-button{
+  display:inline-block;
+  margin-top:20px;
+  padding:0.7rem 1.6rem;
+  font-size:0.95rem;
+  font-weight:bold;
+  color:#fff;
+  text-decoration:none;
+  border-radius:50px;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+}
+
+/* Floating Shapes */
+.floating-shape{
+  position:absolute;
+  border-radius:50%;
+  opacity:0.25;
+  animation:floatShapes 8s ease-in-out infinite;
+  z-index:0;
+}
+
+.shape1{width:120px;height:120px;background:#ff9a9e;top:10%;left:5%;}
+shape2{width:180px;height:180px;background:#a1c4fd;bottom:15%;right:10%;}
+.shape3{width:90px;height:90px;background:#fccb90;top:50%;left:70%;}
+
+@keyframes floatShapes{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(15px);}
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .member-card{width:45%;}
+}
+
+@media(max-width:480px){
+  .member-card{width:100%;}
+}
+
+</style>
+</head>
+
+<body>
+
+<section class="hero">
+
+<div class="hero-overlay"></div>
+
+<div class="hero-content">
+
+<div class="logo-title">
+<img src="../logo.png" class="logo">
+<h1><span>Cabinet Members</span></h1>
+</div>
+
+<!-- ROW 1 -->
+<div class="row">
+  <div class="member-card">
+    <img src="president.png" class="member-img">
+    <div class="member-name">Arbab Muhammad Rizwan Sultan Muhammad</div>
+    <div class="member-role">President</div>
+    <div class="member-extra">Serving the community with leadership and dedication.</div>
+  </div>
+
+  <div class="member-card">
+    <img src="vice.png" class="member-img">
+    <div class="member-name">Salar Khan Ihsan Ul Haq</div>
+    <div class="member-role">Vice President</div>
+    <div class="member-extra">Supporting operations and assisting leadership decisions.</div>
+  </div>
+
+  <div class="member-card">
+    <img src="acting.png" class="member-img">
+    <div class="member-name">Ahmad Aman Khattak</div>
+    <div class="member-role">Acting President</div>
+    <div class="member-extra">Ensuring continuity and smooth execution of responsibilities.</div>
+  </div>
+</div>
+
+<!-- ROW 2 -->
+<div class="row">
+  <div class="member-card">
+    <img src="general.png" class="member-img">
+    <div class="member-name">Amjad Ali Khattak</div>
+    <div class="member-role">General Secretary</div>
+    <div class="member-extra">Managing communications and administrative affairs.</div>
+  </div>
+
+  <div class="member-card">
+    <img src="finance.png" class="member-img">
+    <div class="member-name">Naveed Ali Liaqat</div>
+    <div class="member-role">Finance Manager</div>
+    <div class="member-extra">Overseeing financial planning and transparency.</div>
+  </div>
+
+  <div class="member-card">
+    <img src="joint.png" class="member-img">
+    <div class="member-name">Sabir Ali Akbar Ali</div>
+    <div class="member-role">Joint Finance Manager</div>
+    <div class="member-extra">Assisting in budgeting and financial operations.</div>
+  </div>
+</div>
+
+<!-- ROW 3 -->
+<div class="row">
+  <div class="member-card">
+    <img src="media.png" class="member-img">
+    <div class="member-name">Nadeem Shahzad Fida</div>
+    <div class="member-role">Media Manager</div>
+    <div class="member-extra">Handling media presence and public communication.</div>
+  </div>
+</div>
+
+<a href="../index.html" class="main-button">Back to Home</a>
+
+</div>
+
+<div class="floating-shape shape1"></div>
+<div class="floating-shape shape2"></div>
+<div class="floating-shape shape3"></div>
+
+</section>
+
+<script>
+document.querySelectorAll(".member-card").forEach(card=>{
+  card.addEventListener("click", ()=>{
+    card.classList.toggle("active");
+  });
+});
+</script>
+
+</body>
+</html>
