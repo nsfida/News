@@ -62,6 +62,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const englishConstitution = document.getElementById("englishConstitution");
     const urduConstitution = document.getElementById("urduConstitution");
 
+const toggle = document.getElementById('menuToggle');
+const menu = document.getElementById('menuList');
+
+toggle.addEventListener('click', () => {
+  menu.classList.toggle('show');
+});
+
+
     printButton.disabled = true;
     searchButton.disabled = true;
 
