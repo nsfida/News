@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alerts - Khawrai Falahi Committee UAE</title>
+
+<!-- Font Awesome Pro for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* Urdu Font */
+@font-face{
+  font-family:'UrduFont';
+  src:url('../NewCard/static/fonts/Urdu.ttf') format('truetype');
+}
+
+/* Reset */
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Calibri',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background: linear-gradient(135deg,#e0eaff,#ffffff);
+  color:#1a1a1a;
+  padding:20px;
+  overflow-x:hidden;
+  direction:rtl;
+  text-align:right;
+}
+
+/* Apply Urdu font only to Urdu content */
+[lang="ur"]{
+  font-family:'UrduFont',serif;
+  direction:rtl;
+}
+
+/* Hero */
+.hero{
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  text-align:right;
+  min-height:100vh;
+  width:100%;
+  padding:1.5rem;
+}
+
+.hero-overlay{
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(18px) saturate(180%);
+  z-index:1;
+  border-radius:25px;
+}
+
+.hero-content{
+  position:relative;
+  z-index:2;
+  max-width:950px;
+  width:100%;
+  padding:2rem 1.5rem;
+  border-radius:25px;
+  background:rgba(255,255,255,0.2);
+  box-shadow:0 8px 32px rgba(0,0,0,0.15);
+  border:1px solid rgba(255,255,255,0.3);
+  overflow:hidden;
+}
+
+/* Logo */
+.logo-title{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.logo-title img.logo{
+  width:80px;
+  margin-bottom:12px;
+  animation:logoFade 2.5s ease-in-out infinite;
+}
+
+@keyframes logoFade{
+  0%{opacity:0.8;transform:scale(1);}
+  50%{opacity:1;transform:scale(1.05);}
+  100%{opacity:0.8;transform:scale(1);}
+}
+
+.logo-title h1 span{
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* ALERT CARD */
+.alert-card{
+  background:rgba(255,255,255,0.25);
+  border-radius:25px;
+  padding:15px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.15);
+  margin-bottom:20px;
+  text-align:center;
+  transition:0.3s;
+  cursor:pointer;
+  direction:rtl;
+}
+
+.alert-card:hover{
+  transform:translateY(-4px);
+}
+
+.alert-date{
+  font-weight:bold;
+  font-size:16px;
+  margin-bottom:8px;
+  color:#0d3c91;
+  font-family:'Calibri',sans-serif;
+}
+
+.alert-title{
+  font-size:18px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+.alert-body{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.5s ease;
+  font-size:14px;
+  color:#333;
+  white-space:pre-line;
+}
+
+.alert-card.active .alert-body{
+  max-height:1000px;
+}
+
+/* Buttons */
+.main-button{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:20px;
+  padding:0.75rem 1.8rem;
+  font-size:1rem;
+  font-weight:bold;
+  color:#fff;
+  text-decoration:none;
+  border-radius:50px;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+  transition:all 0.3s ease;
+}
+
+.main-button i{
+  font-size:1.1rem;
+}
+
+.main-button:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 25px rgba(0,0,0,0.35);
+}
+
+/* Floating Shapes */
+.floating-shape{
+  position:absolute;
+  border-radius:50%;
+  opacity:0.25;
+  animation:floatShapes 8s ease-in-out infinite;
+  z-index:0;
+}
+/* Urdu alert text */
+.alert-title[lang="ur"]{
+  font-size:30px; /* increased from 18px */
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+.alert-body[lang="ur"]{
+  font-size:20px; /* increased from 14px */
+  color:#333;
+  white-space:pre-line;
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.5s ease;
+}
+
+.shape1{width:120px;height:120px;background:#ff9a9e;top:10%;left:5%;}
+.shape2{width:180px;height:180px;background:#a1c4fd;bottom:15%;right:10%;}
+.shape3{width:90px;height:90px;background:#fccb90;top:50%;left:70%;}
+
+@keyframes floatShapes{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(15px);}
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .alert-card{width:90%; margin:auto;}
+}
+
+@media(max-width:480px){
+  .alert-card{width:100%;}
+}
+</style>
+</head>
+
+<body>
+
+<section class="hero">
+
+<div class="hero-overlay"></div>
+
+<div class="hero-content">
+
+<div class="logo-title">
+<img src="../logo.png" class="logo">
+<h1><span>Alerts</span></h1>
+</div>
+
+<div id="alerts-container">
+<!-- Alerts will load here dynamically -->
+</div>
+
+<!-- Buttons -->
+<div style="text-align:center;">
+  <a href="../index.html" class="main-button"><i class="fa-solid fa-house"></i>Back to Home</a>
+  <a href="message/president.html" class="main-button"><i class="fa-solid fa-user-tie"></i>President's Message</a>
+  <a href="message/cabinet.html" class="main-button"><i class="fa-solid fa-users"></i>Cabinet Members</a>
+</div>
+
+</div>
+
+<div class="floating-shape shape1"></div>
+<div class="floating-shape shape2"></div>
+<div class="floating-shape shape3"></div>
+
+</section>
+
+<script>
+fetch('https://livenews.live/KFC/message/alerts.json')
+.then(res => res.json())
+.then(data=>{
+  // Sort descending by date (newest first)
+  data.sort((a,b)=>{
+    const [dA,mA,yA] = a.date.split('-').map(Number);
+    const [dB,mB,yB] = b.date.split('-').map(Number);
+    const dateA = new Date(yA,mA-1,dA);
+    const dateB = new Date(yB,mB-1,dB);
+    return dateB - dateA;
+  });
+
+  const container = document.getElementById('alerts-container');
+  container.innerHTML = '';
+
+  data.forEach(item=>{
+    const card = document.createElement('div');
+    card.className = 'alert-card';
+    card.innerHTML = `
+      <div class="alert-date" lang="en"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
+      <div class="alert-title" lang="en">${item.title_en}</div>
+      <div class="alert-title" lang="ur">${item.title_ur}</div>
+      <div class="alert-body" lang="ur">${item.body_ur}</div>
+    `;
+    card.addEventListener('click', ()=>{
+      card.classList.toggle('active');
+    });
+    container.appendChild(card);
+  });
+});
+</script>
+
+</body>
+</html>
