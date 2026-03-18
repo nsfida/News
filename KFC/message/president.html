@@ -115,6 +115,27 @@ body{
   border:3px solid rgba(255,255,255,0.5);
 }
 
+/* Improved Name Styling */
+.president-name{
+  font-size:20px;
+  font-weight:700;
+  margin-top:10px;
+  background:linear-gradient(90deg,#0d3c91,#4facfe);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  letter-spacing:0.3px;
+}
+
+/* Improved Designation Styling */
+.president-role{
+  font-size:14px;
+  font-weight:500;
+  color:#555;
+  margin-bottom:12px;
+  opacity:0.9;
+}
+
+/* Old Section Title (kept for consistency if reused) */
 .section-title{
   font-size:18px;
   color:#0d3c91;
@@ -201,6 +222,7 @@ body{
 @media(max-width:768px){
   .hero-content{padding:1.5rem 1rem;}
   .message,.message-ur{font-size:0.85rem;}
+  .president-name{font-size:18px;}
 }
 
 </style>
@@ -221,7 +243,8 @@ body{
 
 <img src="president.png" alt="President" class="president-img">
 
-<h2 class="section-title">Message from the President</h2>
+<div class="president-name">Arbab Muhammad Rizwan Sultan Muhammad</div>
+<div class="president-role">President, Khawrai Falahi Committee UAE</div>
 
 <p class="message">
 It is my honor to serve the Khawrai community in the United Arab Emirates. 
