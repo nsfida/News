@@ -12,6 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
+/* Urdu Font */
 @font-face{
   font-family:'UrduFont';
   src:url('../NewCard/static/fonts/Urdu.ttf') format('truetype');
@@ -33,6 +34,7 @@ body{
   text-align:right;
 }
 
+/* Apply Urdu font only to Urdu content */
 [lang="ur"]{
   font-family:'UrduFont',serif;
   direction:rtl;
@@ -114,13 +116,15 @@ body{
   overflow:hidden;
 }
 
-/* Actual background logo for html2canvas capture */
-.alert-card .card-bg-logo{
+/* Background logo in card */
+.alert-card::before{
+  content:'';
   position:absolute;
   top:50%;
   left:50%;
   width:120px;
   height:120px;
+  background:url('../logo.png') center/contain no-repeat;
   opacity:0.08;
   transform:translate(-50%,-50%);
   pointer-events:none;
@@ -195,7 +199,7 @@ body{
   position:absolute;
   top:15px;
   left:15px;
-  font-size:1rem;
+  font-size:0.8rem;
   color:#0d3c91;
   cursor:pointer;
   transition:0.3s;
@@ -277,6 +281,7 @@ body{
 <!-- Alerts will load here dynamically -->
 </div>
 
+<!-- Buttons -->
 <div style="text-align:center;">
   <a href="../index.html" class="main-button"><i class="fa-solid fa-house"></i>Back to Home</a>
 </div>
@@ -293,6 +298,7 @@ body{
 fetch('https://livenews.live/KFC/message/alerts.json')
 .then(res => res.json())
 .then(data=>{
+  // Sort descending by date (newest first)
   data.sort((a,b)=>{
     const [dA,mA,yA] = a.date.split('-').map(Number);
     const [dB,mB,yB] = b.date.split('-').map(Number);
@@ -309,7 +315,6 @@ fetch('https://livenews.live/KFC/message/alerts.json')
     card.className = 'alert-card';
     card.innerHTML = `
       <img src="../logo.png" class="card-logo" alt="Logo">
-      <img src="../logo.png" class="card-bg-logo" alt="Background Logo">
       <div class="alert-date" lang="en"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
       <div class="alert-title" lang="en">${item.title_en}</div>
       <div class="alert-title" lang="ur">${item.title_ur}</div>
@@ -320,9 +325,10 @@ fetch('https://livenews.live/KFC/message/alerts.json')
       card.classList.toggle('active');
     });
 
+    // Share functionality
     card.querySelector('.share-icon').addEventListener('click', e=>{
       e.stopPropagation();
-      html2canvas(card, {scale:3, useCORS:true, allowTaint:true, logging:false}).then(canvas=>{
+      html2canvas(card, {scale:3, useCORS:true}).then(canvas=>{
         canvas.toBlob(blob=>{
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
