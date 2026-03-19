@@ -1,4 +1,3 @@
-
 // ================= GLOBAL VARIABLES =================
 let users = [];
 let currentUser = null;
@@ -64,6 +63,7 @@ function generatePassword(card) {
 
 // ================= LOGIN FUNCTION =================
 function login() {
+    loginError.innerText = ""; // clear previous errors
     let uname = loginUsername.value.trim().toLowerCase();
     let pass = loginPassword.value.trim();
 
@@ -72,6 +72,7 @@ function login() {
         return;
     }
 
+    // Find user by generated username and password
     const user = users.find(u => {
         let genUser = generateUsername(u.name);
         let genPass = generatePassword(u.CNo);
@@ -83,12 +84,19 @@ function login() {
         return;
     }
 
+    // Check if Status is Cancelled
+    let status = user.Status ? user.Status.toString().trim().toLowerCase() : "";
+    if (status === "cancel") {
+        loginError.innerText = "This username cannot login, this card is already cancelled";
+        return;
+    }
+
+    // ✅ Login successful
     currentUser = user;
     localStorage.setItem("kfcUser", JSON.stringify(user));
 
     applyUser();
     showWelcome(user.name);
-
     loginOverlay.classList.remove("show");
 }
 
@@ -113,6 +121,16 @@ function checkSession() {
     const saved = localStorage.getItem("kfcUser");
     if (saved) {
         currentUser = JSON.parse(saved);
+
+        let status = currentUser.Status ? currentUser.Status.toString().trim().toLowerCase() : "";
+        if (status === "cancelled") {
+            // Cancelled card cannot stay logged in
+            localStorage.removeItem("kfcUser");
+            currentUser = null;
+            loginError.innerText = "This username cannot login, this card is already cancelled";
+            return;
+        }
+
         applyUser();
     }
 }
@@ -174,12 +192,12 @@ function showWelcome(name) {
 function calculateStats() {
     totalMembers.innerText = users.length;
 
-    let active = users.filter(u => u.Status.toLowerCase() === "active");
+    let active = users.filter(u => u.Status && u.Status.toString().trim().toLowerCase() === "active");
     activeMembers.innerText = active.length;
 
     let leaders = users.filter(u =>
-        u.Desg.toLowerCase().includes("president") ||
-        u.Desg.toLowerCase().includes("guardian")
+        u.Desg && (u.Desg.toLowerCase().includes("president") ||
+        u.Desg.toLowerCase().includes("guardian"))
     );
     leadersCount.innerText = leaders.length;
 }
@@ -189,3 +207,13 @@ function calculateStats() {
     await loadUsers();
     checkSession();
 })();
+
+// Click outside sidebar to close on mobile
+document.addEventListener("click", (e) => {
+    const sidebar = document.querySelector(".sidebar");
+    if(window.innerWidth <= 600 && sidebar.style.display === "flex"){
+        if(!sidebar.contains(e.target) && e.target.id !== "mobileMenuToggle"){
+            sidebar.style.display = "none";
+        }
+    }
+});
