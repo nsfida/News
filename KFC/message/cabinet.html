@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cabinet Members - Khawrai Falahi Committee UAE</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
 
@@ -17,7 +17,6 @@
 
 /* Reset */
 *{margin:0;padding:0;box-sizing:border-box;}
-
 body{
   font-family:'Calibri',sans-serif;
   display:flex;
@@ -39,7 +38,6 @@ body{
   min-height:100vh;
   width:100%;
 }
-
 .hero-overlay{
   position:absolute;
   width:100%;
@@ -49,7 +47,6 @@ body{
   z-index:1;
   border-radius:20px;
 }
-
 .hero-content{
   position:relative;
   z-index:2;
@@ -60,7 +57,34 @@ body{
   background:rgba(255,255,255,0.2);
   box-shadow:0 8px 32px rgba(0,0,0,0.15);
   border:1px solid rgba(255,255,255,0.3);
-  overflow:hidden; /* IMPORTANT FIX */
+  overflow:hidden;
+}
+
+/* Top-left Home, Gallery & Alerts Icons */
+.top-icons{
+  position:absolute;
+  top:15px;
+  left:15px;
+  display:flex;
+  gap:10px;
+  z-index:5;
+}
+.top-icons a{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  color:#fff;
+  text-decoration:none;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  transition:0.3s;
+  font-size:18px;
+}
+.top-icons a:hover{
+  transform:scale(1.1);
 }
 
 /* Logo */
@@ -70,12 +94,10 @@ body{
   align-items:center;
   margin-bottom:15px;
 }
-
 .logo-title img.logo{
   width:100px;
   margin-bottom:10px;
 }
-
 .logo-title h1 span{
   font-size:40px;
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
@@ -86,29 +108,27 @@ body{
 /* GRID */
 .members-grid{
   display:grid;
-  grid-template-columns:repeat(3, minmax(0,1fr)); /* KEY FIX */
+  grid-template-columns:repeat(3, minmax(0,1fr));
   gap:12px;
   width:100%;
 }
 
-/* CARD (SQUARE) */
+/* CARD */
 .member-card{
   width:100%;
-  aspect-ratio:1/1; /* PERFECT SQUARE */
+  aspect-ratio:1/1;
   background:rgba(255,255,255,0.25);
   border-radius:16px;
   padding:10px;
   box-shadow:0 6px 18px rgba(0,0,0,0.12);
   transition:0.3s;
   cursor:pointer;
-
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
   overflow:hidden;
 }
-
 .member-card:hover{
   transform:translateY(-4px);
 }
@@ -151,7 +171,6 @@ body{
   margin-top:4px;
   text-align:center;
 }
-
 .member-card.active .member-extra{
   max-height:80px;
 }
@@ -159,19 +178,6 @@ body{
 /* CENTER LAST CARD */
 .member-card:nth-child(7){
   grid-column:2;
-}
-
-/* BUTTON */
-.main-button{
-  display:inline-block;
-  margin-top:15px;
-  padding:0.6rem 1.4rem;
-  font-size:0.85rem;
-  font-weight:bold;
-  color:#fff;
-  text-decoration:none;
-  border-radius:40px;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
 }
 
 /* Floating Shapes */
@@ -182,52 +188,41 @@ body{
   animation:floatShapes 8s ease-in-out infinite;
   z-index:0;
 }
-
 .shape1{width:90px;height:90px;background:#ff9a9e;top:10%;left:5%;}
 .shape2{width:120px;height:120px;background:#a1c4fd;bottom:10%;right:8%;}
 .shape3{width:70px;height:70px;background:#fccb90;top:50%;left:70%;}
-
 @keyframes floatShapes{
   0%,100%{transform:translateY(0);}
   50%{transform:translateY(10px);}
 }
 
-/* MOBILE OPTIMIZATION */
+/* MOBILE */
 @media(max-width:480px){
-
-  .logo-title h1 span{
-    font-size:16px;
-  }
-
-  .member-name{
-    font-size:11px;
-  }
-
-  .member-role{
-    font-size:9px;
-  }
-
-  .member-extra{
-    font-size:9px;
-  }
+  .logo-title h1 span{font-size:16px;}
+  .member-name{font-size:11px;}
+  .member-role{font-size:9px;}
+  .member-extra{font-size:9px;}
 }
-
 </style>
 </head>
 
 <body>
 
 <section class="hero">
-
 <div class="hero-overlay"></div>
 
 <div class="hero-content">
 
+<!-- Top-left Home, Gallery & Alerts Icons -->
+<div class="top-icons">
+  <a href="../index.html" title="Home"><i class="fa-solid fa-house"></i></a>
+  <a href="../message/Gallery/gallery.html" title="Gallery"><i class="fa-solid fa-images"></i></a>
+  <a href="alerts.html" title="Alerts"><i class="fa-solid fa-bell"></i></a>
+</div>
+
 <div class="logo-title">
 <img src="../logo.png" class="logo">
-<h1>
-  <span><i class="fa-solid fa-users"></i> Cabinet Members</span>
-</h1>
+<h1><span><i class="fa-solid fa-users"></i> Cabinet Members</span></h1>
 </div>
 
 <div class="members-grid">
@@ -282,8 +277,6 @@ body{
   </div>
 
 </div>
-
-  <a href="../index.html" class="main-button"><i class="fa-solid fa-house"></i> Back to Home</a>
 
 </div>
 
