@@ -2,347 +2,247 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Khawrai Falahi Committee UAE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Khawrai Falahi Committee UAE - Responsive Dashboard</title>
 
-<!-- Font Awesome Pro -->
+<link rel="stylesheet" href="main.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<style>
-
-/* ----- Urdu Font ----- */
-@font-face{
-  font-family:'UrduFont';
-  src:url('https://livenews.live/KFC/NewCard/static/fonts/urdu.ttf') format('truetype');
-  font-weight:normal;
-  font-style:normal;
-}
-
-/* ----- Reset & Base Styles ----- */
-*{margin:0;padding:0;box-sizing:border-box;}
-
-body{
-  font-family:'Calibri',sans-serif;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  background: linear-gradient(135deg,#e0eaff,#ffffff);
-  color:#1a1a1a;
-  padding:20px;
-  overflow-x:hidden;
-}
-
-/* Automatically apply Urdu font */
-:lang(ur){
-  font-family:'UrduFont',serif;
-  direction:rtl;
-}
-
-/* ----- Hero Section (Liquid Glass) ----- */
-.hero{
-  position:relative;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  min-height:100vh;
-  width:100%;
-  padding:1.5rem;
-  backdrop-filter:blur(18px) saturate(180%);
-}
-
-.hero-overlay{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(255,255,255,0.15);
-  backdrop-filter:blur(18px) saturate(180%);
-  z-index:1;
-  border-radius:25px;
-}
-
-.hero-content{
-  position:relative;
-  z-index:2;
-  max-width:850px;
-  padding:2rem 1.5rem;
-  border-radius:25px;
-  background:rgba(255,255,255,0.2);
-  box-shadow:0 8px 32px rgba(0,0,0,0.15);
-  border:1px solid rgba(255,255,255,0.3);
-  overflow:hidden;
-  animation:fadeInUp 1s ease forwards;
-}
-
-/* Logo + Title */
-.logo-title{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-bottom:15px;
-  flex-direction:column;
-}
-
-.logo-title img.logo{
-  width:80px;
-  margin-bottom:12px;
-  animation:logoFade 2.5s ease-in-out infinite;
-}
-
-@keyframes logoFade{
-  0%{opacity:0.8;transform:scale(1);}
-  50%{opacity:1;transform:scale(1.05);}
-  100%{opacity:0.8;transform:scale(1);}
-}
-
-.logo-title h1,
-.logo-title h2{
-  margin-bottom:8px;
-  text-shadow:1px 1px 10px rgba(0,0,0,0.1);
-}
-
-.logo-title h1{
-  font-size:22px;
-}
-
-.logo-title h1 span{
-  color:#fff;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-.hero-title-ur{
-  font-size:16px;
-  color:#0d3c91;
-  margin-bottom:1rem;
-}
-
-.intro-en,
-.intro-ur{
-  font-size:0.95rem;
-  line-height:1.5;
-  color:#111;
-  margin-bottom:1.5rem;
-}
-
-/* ----- Floating Menu Icon ----- */
-.menu-container{
-  position:absolute;
-  top:20px;
-  right:20px;
-  z-index:5;
-}
-
-.menu-icon{
-  width:50px;
-  height:50px;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  border-radius:50%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  color:#fff;
-  font-size:1.5rem;
-  cursor:pointer;
-  box-shadow:0 6px 18px rgba(0,0,0,0.25);
-  transition:all 0.3s ease;
-}
-
-.menu-icon:hover{
-  transform:translateY(-3px);
-  box-shadow:0 10px 22px rgba(0,0,0,0.35);
-}
-
-/* ----- Hidden Menu ----- */
-.menu-list{
-  position:absolute;
-  top:60px;
-  right:0;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  opacity:0;
-  visibility:hidden;
-  transition:all 0.3s ease;
-}
-
-.menu-list.show{
-  opacity:1;
-  visibility:visible;
-}
-
-.menu-list a{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:0.6rem 1.5rem;
-  font-size:0.95rem;
-  font-weight:bold;
-  color:#fff;
-  text-decoration:none;
-  border-radius:50px;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  box-shadow:0 6px 18px rgba(0,0,0,0.25);
-  transition:all 0.3s ease;
-}
-
-.menu-list a:hover{
-  transform:translateY(-3px);
-  box-shadow:0 10px 22px rgba(0,0,0,0.35);
-}
-
-/* Floating Shapes */
-.floating-shape{
-  position:absolute;
-  border-radius:50%;
-  opacity:0.25;
-  animation:floatShapes 8s ease-in-out infinite;
-  z-index:0;
-}
-
-.shape1{
-  width:120px;
-  height:120px;
-  background:linear-gradient(135deg,#ff9a9e,#fad0c4);
-  top:10%;
-  left:5%;
-}
-
-.shape2{
-  width:180px;
-  height:180px;
-  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
-  bottom:15%;
-  right:10%;
-}
-
-.shape3{
-  width:90px;
-  height:90px;
-  background:linear-gradient(135deg,#fccb90,#d57eeb);
-  top:50%;
-  left:70%;
-}
-
-@keyframes fadeInUp{
-  0%{opacity:0;transform:translateY(40px);}
-  100%{opacity:1;transform:translateY(0);}
-}
-
-@keyframes floatShapes{
-  0%,100%{transform:translateY(0) rotate(0deg);}
-  25%{transform:translateY(-15px) rotate(45deg);}
-  50%{transform:translateY(15px) rotate(90deg);}
-  75%{transform:translateY(-10px) rotate(135deg);}
-}
-
-/* Glass Panel Style */
-.glass-panel{
-  background:rgba(255,255,255,0.2);
-  backdrop-filter:blur(18px) saturate(180%);
-  -webkit-backdrop-filter:blur(18px) saturate(180%);
-  border-radius:25px;
-  padding:15px;
-  margin-bottom:20px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.15);
-  border:1px solid rgba(255,255,255,0.3);
-  border-left:2px solid rgba(255,255,255,0.4);
-  border-top:2px solid rgba(255,255,255,0.4);
-  position:relative;
-  overflow:hidden;
-}
-
-/* Responsive */
-@media(max-width:768px){
-  .hero-content{padding:1.5rem 1rem;}
-  .logo-title h1{font-size:20px;}
-  .hero-title-ur{font-size:14px;}
-  .intro-en,.intro-ur{font-size:0.85rem;}
-  .menu-list a{padding:0.55rem 1.3rem;font-size:0.85rem;}
-}
-
-@media(max-width:480px){
-  .logo-title img.logo{width:70px;}
-  .logo-title h1{font-size:18px;}
-  .hero-title-ur{font-size:13px;}
-  .intro-en,.intro-ur{font-size:0.8rem;}
-  .menu-list a{padding:0.5rem 1.2rem;font-size:0.8rem;}
-}
-
-</style>
 </head>
 
 <body>
 
-<section class="hero">
+<!-- ================= HEADER ================= -->
+<header class="top-header">
 
-<div class="hero-overlay"></div>
-
-<div class="hero-content glass-panel">
-
-<div class="logo-title">
-  <img src="logo.png" alt="Logo" class="logo">
-  <h1>Welcome to <span>Khawrai Falahi Committee UAE</span></h1>
-  <h2 class="hero-title-ur" lang="ur">
-    خاورئی فلاحی کمیٹی متحدہ عرب امارات میں خوش آمدید
-  </h2>
-</div>
-
-<p class="intro-en">
-The Khawrai Falahi Committee UAE was established in December 2016. 
-The purpose of the committee is to address the issues faced by residents 
-of Khawrai in the United Arab Emirates and its surroundings, and to 
-resolve them in a timely and professional manner. The leadership of the 
-committee is committed to serving the residents of Khawrai in the United 
-Arab Emirates and is determined to address and resolve their various 
-issues promptly.
-</p>
-
-<p class="intro-ur" lang="ur">
-متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ 
-کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں 
-کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل 
-کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت 
-کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے 
-پُرعزم ہے۔
-</p>
-
-<!-- Floating Menu -->
-<div class="menu-container">
-  <div class="menu-icon" id="menuToggle"><i class="fa-solid fa-bars"></i></div>
-  <div class="menu-list" id="menuList">
-    <a href="message/president.html"><i class="fa-solid fa-user-tie"></i>President's Message</a>
-    <a href="message/alerts.html"><i class="fa-solid fa-bell"></i>Alerts</a>
-    <a href="database.html"><i class="fa-solid fa-database"></i>Explore Database</a>
-    <a href="message/cabinet.html"><i class="fa-solid fa-users"></i>Cabinet Members</a>
-    <a href="message/Gallery/gallery.html"><i class="fa-solid fa-images"></i>Gallery</a>
+  <div class="logo-area">
+    <img src="logo.png" alt="KFC Logo">
+    <div class="logo-text">
+      <h1>Khawrai Falahi Committee UAE</h1>
+      <p lang="ur">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+    </div>
   </div>
-</div>
+
+  <!-- USER AREA -->
+  <div class="user-area" id="userArea">
+    <i class="fa-solid fa-user-circle"></i>
+    <span id="username">Welcome, Guest</span>
+    <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+  </div>
+
+</header>
+
+<!-- ================= USER DROPDOWN ================= -->
+<div id="userDropdown" class="user-dropdown glass">
+
+  <!-- BEFORE LOGIN -->
+  <div id="guestView">
+    <h3>Welcome Guest</h3>
+    <p>Please sign in to access your account</p>
+    <button id="openLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+  </div>
+
+  <!-- AFTER LOGIN -->
+  <div id="userView" style="display:none;">
+    <h3 id="userFullName"></h3>
+
+    <div class="user-info">
+      <p id="userCard"></p>
+      <p id="userDesg"></p>
+      <p id="userStatus"></p>
+      <p id="userRoom"></p>
+    </div>
+
+    <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+  </div>
 
 </div>
 
-<div class="floating-shape shape1"></div>
-<div class="floating-shape shape2"></div>
-<div class="floating-shape shape3"></div>
+<!-- ================= LOGIN OVERLAY ================= -->
+<div id="loginOverlay" class="login-overlay">
 
-</section>
+  <div class="login-box glass">
 
-<script>
-const toggle = document.getElementById('menuToggle');
-const menu = document.getElementById('menuList');
+    <h2><i class="fa-solid fa-user-lock"></i> Secure Login</h2>
 
-toggle.addEventListener('click', () => {
-  menu.classList.toggle('show');
-});
-document.addEventListener('click', function (e) {
-  if (!menu.contains(e.target) && !toggle.contains(e.target)) {
-    menu.classList.remove('show');
-  }
-});
-</script>
+
+    <input type="text" id="loginUsername" placeholder="Enter Username">
+    <input type="password" id="loginPassword" placeholder="Enter Password">
+
+    <button id="loginBtn">Login</button>
+    <p id="loginError"></p>
+
+  </div>
+
+</div>
+
+<!-- ================= WELCOME POPUP ================= -->
+<div id="welcomePopup" class="welcome-popup">
+  <p id="welcomeText"></p>
+</div>
+
+<!-- ================= MAIN LAYOUT ================= -->
+<div class="dashboard-container">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar glass">
+
+    <div class="sidebar-header">
+      <h2>Main Menu</h2>
+      <i class="fa-solid fa-bars" id="sidebarToggle"></i>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#"><i class="fa-solid fa-house"></i> Dashboard</a>
+      <a href="https://livenews.live/KFC/message/president.html"><i class="fa-solid fa-user-tie"></i> President Message</a>
+      <a href="https://livenews.live/KFC/message/alerts.html"><i class="fa-solid fa-bell"></i> Alerts</a>
+      <a href="https://livenews.live/KFC/database.html"><i class="fa-solid fa-database"></i> Member Database</a>
+      <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users"></i> Cabinet Members</a>
+      <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images"></i> Gallery</a>
+    </nav>
+
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+
+    <!-- ===== HERO / WELCOME SECTION ===== -->
+    <section class="welcome-section glass">
+
+      <div class="welcome-text">
+        <h2>Welcome to Khawrai Falahi Committee UAE</h2>
+        <h3 lang="ur">خوش آمدید</h3>
+
+        <p>
+          This official platform connects the Khawrai Falahi Committee members across the UAE with a secure,
+          transparent, and responsive dashboard. Access your membership details, view
+          committee updates, alerts, and gallery from any device.
+        </p>
+
+        <p lang="ur">
+          یہ پلیٹ فارم خاورئی فلاحی کمیٹی متحدہ عرب امارات کے تمام ممبران کو ایک جگہ پر اکٹھا کرنے کے لیے بنایا گیا ہے
+          تاکہ وہ اپنی معلومات دیکھ سکیں اور اپڈیٹس حاصل کر سکیں۔
+        </p>
+      </div>
+
+      <div class="welcome-image">
+        <img src="logo.png" alt="KFC Logo">
+      </div>
+
+    </section>
+
+    <!-- ===== QUICK STATS ===== -->
+    <section class="stats-section">
+
+      <div class="stat glass">
+        <h3>Total Members</h3>
+        <p id="totalMembers">Loading...</p>
+      </div>
+
+      <div class="stat glass">
+        <h3>Active Members</h3>
+        <p id="activeMembers">Loading...</p>
+      </div>
+
+      <div class="stat glass">
+        <h3>Committee Leaders</h3>
+        <p id="leadersCount">Loading...</p>
+      </div>
+
+    </section>
+
+    <!-- ===== FEATURE CARDS ===== -->
+    <section class="cards-section">
+
+      <div class="card glass">
+        <i class="fa-solid fa-user-tie"></i>
+        <h3>President Message</h3>
+        <p>Official message from leadership</p>
+        <a href="https://livenews.live/KFC/message/president.html">Open</a>
+      </div>
+
+      <div class="card glass">
+        <i class="fa-solid fa-bell"></i>
+        <h3>Alerts</h3>
+        <p>Latest announcements</p>
+        <a href="https://livenews.live/KFC/message/alerts.html">View</a>
+      </div>
+
+      <div class="card glass">
+        <i class="fa-solid fa-database"></i>
+        <h3>Database</h3>
+        <p>Secure member records</p>
+        <a href="https://livenews.live/KFC/database.html">Access</a>
+      </div>
+
+      <div class="card glass">
+        <i class="fa-solid fa-users"></i>
+        <h3>Cabinet</h3>
+        <p>Leadership & structure</p>
+        <a href="https://livenews.live/KFC/message/cabinet.html">Open</a>
+      </div>
+
+      <div class="card glass">
+        <i class="fa-solid fa-images"></i>
+        <h3>Gallery</h3>
+        <p>Community events & memories</p>
+        <a href="https://livenews.live/KFC/message/Gallery/gallery.html">View</a>
+      </div>
+
+    </section>
+
+    <!-- ===== DETAILED INFO SECTIONS ===== -->
+    <section class="info-section glass">
+      <h2>About the Committee</h2>
+      <p>
+        Since its establishment in 2016, Khawrai Falahi Committee UAE has been providing
+        structured support, organizing community events, and maintaining transparent records.
+      </p>
+    </section>
+
+    <section class="info-section glass">
+      <h2>Mission</h2>
+      <p>
+        To create a connected, supportive, and transparent environment for all members.
+      </p>
+    </section>
+
+    <section class="info-section glass">
+      <h2>Vision</h2>
+      <p>
+        To build a digitally accessible, strong, and self-supporting Khawrai community in UAE.
+      </p>
+    </section>
+
+    <section class="info-section glass">
+      <h2>Member Benefits</h2>
+      <ul>
+        <li>Secure digital identity & login</li>
+        <li>Access to member database</li>
+        <li>Direct updates from leadership</li>
+        <li>Emergency support and communication</li>
+        <li>Community event access & gallery</li>
+      </ul>
+    </section>
+
+    <section class="info-section glass">
+      <h2>System Features</h2>
+      <p>
+        Fully responsive dashboard, secure username/password login, persistent session
+        across refresh, dynamic stats, and mobile-friendly interface.
+      </p>
+    </section>
+
+  </main>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <p>© 2026 Khawrai Falahi Committee UAE | All Rights Reserved</p>
+</footer>
+
+<script src="main.js"></script>
 
 </body>
 </html>
