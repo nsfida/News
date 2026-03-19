@@ -1,0 +1,58 @@
+[
+  {
+    "type": "image",
+    "src": "gallery/images/photo1.jpg",
+    "title": "Khawrai Community Gathering",
+    "date": "March 5, 2026",
+    "caption": "A peaceful and productive gathering where community members discussed important matters and future plans."
+  },
+  {
+    "type": "video",
+    "src": "gallery/videos/video1.mp4",
+    "title": "Ramadan Charity Distribution",
+    "date": "March 8, 2026",
+    "caption": "Highlights from our Ramadan charity campaign, where essentials were distributed among deserving families."
+  },
+  {
+    "type": "image",
+    "src": "gallery/images/photo2.jpg",
+    "title": "Executive Committee Meeting",
+    "date": "March 10, 2026",
+    "caption": "A formal meeting of cabinet members focusing on ongoing community issues and their resolutions."
+  },
+  {
+    "type": "image",
+    "src": "gallery/images/photo3.jpg",
+    "title": "Volunteer Appreciation Moment",
+    "date": "March 11, 2026",
+    "caption": "Recognizing the dedication and hard work of our volunteers who continuously serve the community."
+  },
+  {
+    "type": "video",
+    "src": "gallery/videos/video2.mp4",
+    "title": "Event Highlights",
+    "date": "March 12, 2026",
+    "caption": "A quick look at some memorable moments from our recent event held in Dubai."
+  },
+  {
+    "type": "image",
+    "src": "gallery/images/photo4.jpg",
+    "title": "Community Support Initiative",
+    "date": "March 13, 2026",
+    "caption": "Members coming together to support those in need, reflecting unity and compassion."
+  },
+  {
+    "type": "video",
+    "src": "gallery/videos/video3.mp4",
+    "title": "Message from President",
+    "date": "March 14, 2026",
+    "caption": "A short message from the President addressing the community and outlining future goals."
+  },
+  {
+    "type": "image",
+    "src": "gallery/images/photo5.jpg",
+    "title": "Iftar Gathering",
+    "date": "March 15, 2026",
+    "caption": "A warm and spiritual Iftar gathering bringing the community closer during Ramadan."
+  }
+]
