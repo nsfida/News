@@ -309,5 +309,57 @@
 "iso": "50",
 "category": "skyscrapers",
 "story": "A dramatic black and white capture of Burj Al Arab."
+},
+  
+{
+"image": "marina_reflection.jpeg",
+"title": "Marina Reflection",
+"location": "Dubai Marina",
+"camera": "iPhone 17 Pro Max",
+"lens": "100mm",
+"aperture": "f/2.8",
+"shutter": "1/787s",
+"iso": "20",
+"category": "wallpapers",
+"story": "The deep blue facade of the Crowne Plaza stands in sharp contrast to the sun-drenched towers of Dubai Marina."
+},
+  
+{
+"image": "golden_framing.jpeg",
+"title": "Golden Framing",
+"location": "Dubai Marina",
+"camera": "iPhone 17 Pro Max",
+"lens": "100mm",
+"aperture": "f/2.8",
+"shutter": "1/663s",
+"iso": "16",
+"category": "wallpapers",
+"story": "A sun-lit view of Dubai Marina’s residential towers, perfectly framed by the stark shadows of neighboring skyscrapers."
+},
+  
+{
+"image": "urban_pulse.jpeg",
+"title": "Urban Pulse",
+"location": "Dubai Marina",
+"camera": "iPhone 17 Pro Max",
+"lens": "200mm",
+"aperture": "f/2.8",
+"shutter": "1/1139s",
+"iso": "16",
+"category": "wallpapers",
+"story": "A Keeta delivery rider maneuvers through the vast scale of Sheikh Zayed Road, framed by the towering landmarks of Dubai Marina."
+},
+  
+{
+"image": "almas_pinnacle.jpeg",
+"title": "Almas Pinnacle",
+"location": "Jumeirah Lakes Towers",
+"camera": "iPhone 17 Pro Max",
+"lens": "100mm",
+"aperture": "f/2.8",
+"shutter": "1/1039s",
+"iso": "16",
+"category": "wallpapers",
+"story": "A Keeta delivery rider maneuvers through the vast scale of Sheikh Zayed Road, framed by the towering landmarks of Dubai Marina."
 }
 ]
