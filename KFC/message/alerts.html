@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
+
 /* Urdu Font */
 @font-face{
   font-family:'UrduFont';
@@ -62,9 +63,9 @@ body{
   width:100%;
   padding:2rem 1.5rem;
   border-radius:25px;
-  background:rgba(255,255,255,0.2);
-  box-shadow:0 8px 32px rgba(0,0,0,0.15);
-  border:1px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.25);
+  box-shadow:0 12px 40px rgba(0,0,0,0.18);
+  border:1px solid rgba(255,255,255,0.4);
   overflow:hidden;
 }
 
@@ -81,13 +82,13 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  width:40px;
-  height:40px;
+  width:42px;
+  height:42px;
   border-radius:50%;
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
   color:#fff;
   text-decoration:none;
-  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
   transition:0.3s;
   font-size:18px;
 }
@@ -106,6 +107,7 @@ body{
   width:100px;
   margin-bottom:12px;
   animation:logoFade 2.5s ease-in-out infinite;
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,0.35));
 }
 @keyframes logoFade{
   0%{opacity:0.8;transform:scale(1);}
@@ -123,16 +125,14 @@ body{
 }
 .logo-title h1 span i{
   font-size:1em;
-  background:none;
-  -webkit-text-fill-color:inherit;
 }
 
 /* ALERT CARD */
 .alert-card{
-  background:rgba(255,255,255,0.25);
+  background:rgba(255,255,255,0.35);
   border-radius:25px;
   padding:15px 20px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.15);
+  box-shadow:0 12px 35px rgba(0,0,0,0.25);
   margin-bottom:20px;
   text-align:center;
   transition:0.3s;
@@ -148,10 +148,9 @@ body{
   left:50%;
   width:200px;
   height:200px;
-  background:url('../logo.png') center/contain no-repeat;
-  opacity:0.08;
+  background:url('https://livenews.live/KFC/logo.png') center/contain no-repeat;
+  opacity:0.06;
   transform:translate(-50%,-50%);
-  pointer-events:none;
 }
 .alert-card .card-logo{
   position:absolute;
@@ -159,23 +158,22 @@ body{
   right:30px;
   width:80px;
   height:80px;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));
 }
 .alert-card:hover{
   transform:translateY(-4px);
 }
 
-/* Date on card */
-.alert-date {
-  font-weight: bold;
-  font-size: 12px;
-  margin-bottom: 8px;
-  color: #0d3c91;
-  font-family: 'Calibri', sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  text-align: center;
+/* Date */
+.alert-date{
+  font-weight:bold;
+  font-size:12px;
+  margin-bottom:8px;
+  color:#0d3c91;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
 }
 
 /* Titles */
@@ -186,8 +184,6 @@ body{
 }
 .alert-title[lang="ur"]{
   font-size:18px;
-  font-weight:600;
-  margin-bottom:6px;
 }
 
 /* Body */
@@ -201,8 +197,6 @@ body{
 }
 .alert-body[lang="ur"]{
   font-size:18px;
-  color:#333;
-  white-space:pre-line;
 }
 .alert-card.active .alert-body{
   max-height:1000px;
@@ -217,34 +211,28 @@ body{
   color:#0d3c91;
   cursor:pointer;
   transition:0.3s;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35));
 }
 .share-icon:hover{
   color:#ff6ec4;
 }
 
-/* Floating Shapes */
+/* Floating shapes */
 .floating-shape{
   position:absolute;
   border-radius:50%;
   opacity:0.25;
   animation:floatShapes 8s ease-in-out infinite;
-  z-index:0;
 }
 .shape1{width:120px;height:120px;background:#ff9a9e;top:10%;left:5%;}
 .shape2{width:180px;height:180px;background:#a1c4fd;bottom:15%;right:10%;}
 .shape3{width:90px;height:90px;background:#fccb90;top:50%;left:70%;}
+
 @keyframes floatShapes{
   0%,100%{transform:translateY(0);}
   50%{transform:translateY(15px);}
 }
 
-/* Responsive */
-@media(max-width:768px){
-  .alert-card{width:90%; margin:auto;}
-}
-@media(max-width:480px){
-  .alert-card{width:100%;}
-}
 </style>
 </head>
 
@@ -255,11 +243,10 @@ body{
 
 <div class="hero-content">
 
-<!-- Top-left Home, Gallery & Users Icons -->
 <div class="top-icons">
-  <a href="https://livenews.live/KFC/message/Gallery/gallery.html" title="Gallery"><i class="fa-solid fa-images"></i></a>
+  <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images"></i></a>
   <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users"></i></a>
-  <a href="https://livenews.live/KFC/index.html" title="Home"><i class="fa-solid fa-house"></i></a>
+  <a href="https://livenews.live/KFC/index.html"><i class="fa-solid fa-house"></i></a>
 </div>
 
 <div class="logo-title">
@@ -267,9 +254,7 @@ body{
 <h1><span><i class="fa-solid fa-bell"></i> Alerts</span></h1>
 </div>
 
-<div id="alerts-container">
-<!-- Alerts will load here dynamically -->
-</div>
+<div id="alerts-container"></div>
 
 </div>
 
@@ -299,12 +284,12 @@ async function loadAlerts() {
     const card = document.createElement('div');
     card.className = 'alert-card';
     card.innerHTML = `
-      <img src="https://livenews.live/KFC/logo.png" class="card-logo" alt="Logo">
-      <div class="alert-date" lang="en"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
-      <div class="alert-title" lang="en">${item.title_en}</div>
+      <img src="https://livenews.live/KFC/logo.png" class="card-logo">
+      <div class="alert-date"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
+      <div class="alert-title">${item.title_en}</div>
       <div class="alert-title" lang="ur">${item.title_ur}</div>
       <div class="alert-body" lang="ur">${item.body_ur}</div>
-      <div class="share-icon" title="Share this alert"><i class="fa-solid fa-bell"></i></div>
+      <div class="share-icon"><i class="fa-solid fa-bell"></i></div>
     `;
 
     card.addEventListener('click', () => card.classList.toggle('active'));
@@ -313,9 +298,33 @@ async function loadAlerts() {
     shareBtn.addEventListener('click', async e => {
       e.stopPropagation();
       await document.fonts.ready;
-      html2canvas(card, {scale:3,useCORS:true,scrollX:0,scrollY:0})
-      .then(canvas => {
-        canvas.toBlob(blob => {
+
+      html2canvas(card, {
+        scale:4,
+        useCORS:true,
+        backgroundColor:null
+      }).then(canvas => {
+
+        // create premium wrapper
+        const finalCanvas = document.createElement('canvas');
+        const ctx = finalCanvas.getContext('2d');
+
+        const padding = 40;
+        finalCanvas.width = canvas.width + padding * 2;
+        finalCanvas.height = canvas.height + padding * 2;
+
+        // white background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,finalCanvas.width,finalCanvas.height);
+
+        // shadow
+        ctx.shadowColor = "rgba(0,0,0,0.25)";
+        ctx.shadowBlur = 30;
+        ctx.shadowOffsetY = 10;
+
+        ctx.drawImage(canvas, padding, padding);
+
+        finalCanvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
