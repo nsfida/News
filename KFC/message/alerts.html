@@ -68,6 +68,33 @@ body{
   overflow:hidden;
 }
 
+/* Top-left icons */
+.top-icons{
+  position:absolute;
+  top:15px;
+  left:15px;
+  display:flex;
+  gap:10px;
+  z-index:5;
+}
+.top-icons a{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  color:#fff;
+  text-decoration:none;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  transition:0.3s;
+  font-size:18px;
+}
+.top-icons a:hover{
+  transform:scale(1.1);
+}
+
 /* Logo */
 .logo-title{
   display:flex;
@@ -89,14 +116,11 @@ body{
   display:inline-flex;
   align-items:center;
   gap:8px;
-  flex-direction:row-reverse; /* icon on left */
-
+  flex-direction:row-reverse; 
   background:linear-gradient(90deg,#ff6ec4,#7873f5);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
-
-/* Important: reset icon so it follows parent */
 .logo-title h1 span i{
   font-size:1em;
   background:none;
@@ -117,7 +141,6 @@ body{
   position:relative;
   overflow:hidden;
 }
-/* Background logo in card */
 .alert-card::before{
   content:'';
   position:absolute;
@@ -130,7 +153,6 @@ body{
   transform:translate(-50%,-50%);
   pointer-events:none;
 }
-/* Logo top-right on card */
 .alert-card .card-logo{
   position:absolute;
   top:10px;
@@ -138,7 +160,6 @@ body{
   width:80px;
   height:80px;
 }
-/* Card hover effect */
 .alert-card:hover{
   transform:translateY(-4px);
 }
@@ -182,15 +203,12 @@ body{
   font-size:18px;
   color:#333;
   white-space:pre-line;
-  max-height:0;
-  overflow:hidden;
-  transition:max-height 0.5s ease;
 }
 .alert-card.active .alert-body{
   max-height:1000px;
 }
 
-/* Modern Share icon */
+/* Share icon */
 .share-icon{
   position:absolute;
   top:15px;
@@ -202,30 +220,6 @@ body{
 }
 .share-icon:hover{
   color:#ff6ec4;
-}
-
-/* Buttons */
-.main-button{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  margin-top:20px;
-  padding:0.75rem 1.8rem;
-  font-size:0.7rem;
-  font-weight:bold;
-  color:#fff;
-  text-decoration:none;
-  border-radius:50px;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  box-shadow:0 8px 20px rgba(0,0,0,0.25);
-  transition:all 0.3s ease;
-}
-.main-button i{
-  font-size:1rem;
-}
-.main-button:hover{
-  transform:translateY(-4px);
-  box-shadow:0 12px 25px rgba(0,0,0,0.35);
 }
 
 /* Floating Shapes */
@@ -244,7 +238,7 @@ body{
   50%{transform:translateY(15px);}
 }
 
-/* RESPONSIVE */
+/* Responsive */
 @media(max-width:768px){
   .alert-card{width:90%; margin:auto;}
 }
@@ -257,24 +251,24 @@ body{
 <body>
 
 <section class="hero">
-
 <div class="hero-overlay"></div>
 
 <div class="hero-content">
 
+<!-- Top-left Home, Gallery & Users Icons -->
+<div class="top-icons">
+  <a href="https://livenews.live/KFC/index.html" title="Home"><i class="fa-solid fa-house"></i></a>
+  <a href="https://livenews.live/KFC/message/Gallery/gallery.html" title="Gallery"><i class="fa-solid fa-images"></i></a>
+  <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users"></i></a>
+</div>
+
 <div class="logo-title">
-<img src="../logo.png" class="logo">
-<h1>
-  <span><i class="fa-solid fa-bell"></i> Alerts</span>
-</h1>
+<img src="https://livenews.live/KFC/logo.png" class="logo">
+<h1><span><i class="fa-solid fa-bell"></i> Alerts</span></h1>
 </div>
 
 <div id="alerts-container">
 <!-- Alerts will load here dynamically -->
-</div>
-
-<div style="text-align:center;">
-  <a href="../index.html" class="main-button"><i class="fa-solid fa-house"></i>Back to Home</a>
 </div>
 
 </div>
@@ -287,7 +281,7 @@ body{
 
 <script>
 async function loadAlerts() {
-  await document.fonts.ready; // wait for all fonts to load
+  await document.fonts.ready;
 
   const res = await fetch('https://livenews.live/KFC/message/alerts.json');
   const data = await res.json();
@@ -308,26 +302,19 @@ async function loadAlerts() {
       <img src="../logo.png" class="card-logo" alt="Logo">
       <div class="alert-date" lang="en"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
       <div class="alert-title" lang="en">${item.title_en}</div>
-      <div class="alert-title" lang="ur" style="font-family: 'UrduFont', serif;">${item.title_ur}</div>
-      <div class="alert-body" lang="ur" style="font-family: 'UrduFont', serif;">${item.body_ur}</div>
-      <div class="share-icon" title="Share this alert"><i class="fa-solid fa-bell"></i></i></div>
+      <div class="alert-title" lang="ur">${item.title_ur}</div>
+      <div class="alert-body" lang="ur">${item.body_ur}</div>
+      <div class="share-icon" title="Share this alert"><i class="fa-solid fa-bell"></i></div>
     `;
 
     card.addEventListener('click', () => card.classList.toggle('active'));
 
-    // Share functionality
     const shareBtn = card.querySelector('.share-icon');
     shareBtn.addEventListener('click', async e => {
       e.stopPropagation();
-      await document.fonts.ready; // ensure font loaded
-
-      html2canvas(card, {
-        scale: 3,
-        useCORS: true,
-        logging: true,
-        scrollX: 0,
-        scrollY: 0
-      }).then(canvas => {
+      await document.fonts.ready;
+      html2canvas(card, {scale:3,useCORS:true,scrollX:0,scrollY:0})
+      .then(canvas => {
         canvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
