@@ -47,6 +47,7 @@ body{
   position:sticky;
   top:0;
   z-index:100;
+  gap:10px;
 }
 
 .logo-area{
@@ -215,6 +216,8 @@ body{
   transition:0.3s;
   display:flex;
   flex-direction:column;
+  z-index:500;
+  position:relative;
 }
 
 .sidebar-header{
@@ -377,7 +380,6 @@ body{
     flex-direction:column;
   }
 
-  /* ===== HORIZONTAL SIDEBAR ===== */
   .sidebar{
     width:100%;
     flex-direction:row;
@@ -408,6 +410,7 @@ body{
   }
 }
 
+/* ===== MOBILE (<600px) ===== */
 @media(max-width:600px){
   .logo-text h1{
     font-size:16px;
@@ -434,6 +437,22 @@ body{
     width:90%;
   }
 
+  /* Hide sidebar by default */
+  .sidebar{
+    display:none;
+    position:fixed;
+    top:60px;
+    left:0;
+    height:calc(100vh - 60px);
+    width:200px;
+    flex-direction:column;
+    background:rgba(255,255,255,0.25);
+    backdrop-filter:blur(18px);
+    padding:20px;
+    z-index:999;
+    transition:0.3s;
+  }
+
   /* Optional: hide scrollbars for horizontal menu */
   .sidebar::-webkit-scrollbar {
     height: 6px;
@@ -442,4 +461,35 @@ body{
     background: rgba(120,115,245,0.5);
     border-radius: 3px;
   }
+
+  /* Mobile toggle button */
+  #mobileMenuToggle{
+    display:block;
+    font-size:22px;
+    cursor:pointer;
+    color:#7873f5;
+  }
+}
+
+/* ===== STATS ===== */
+.stats-section .stat {
+  text-align: center;  /* Centers all text */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* optional: vertically centers if height set */
+  align-items: center;     /* horizontally centers flex children */
+}
+
+/* ===== CARDS ===== */
+.cards-section .card {
+  text-align: center; /* Centers title, icon, text, button */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== INFO SECTIONS ===== */
+.info-section {
+  text-align: center;  /* Centers headings and paragraphs */
 }
