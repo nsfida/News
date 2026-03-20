@@ -62,11 +62,15 @@ body{
 
 .logo-text h1{
   font-size:18px;
+  text-align: center; /* centers both h1 and p */
+
 }
 
 .logo-text p{
   font-size:12px;
   color:#0d3c91;
+  text-align: center; /* centers both h1 and p */
+
 }
 
 /* ===== USER AREA ===== */
@@ -95,9 +99,12 @@ body{
   right:15px;
   width:240px;
   padding:15px;
+
   display:none;
   flex-direction:column;
-  gap:10px;
+  justify-content:space-between; /* space between content & button */
+  height:auto; /* allow auto height or set min-height */
+  max-height:400px; /* optional max height */
   z-index:999;
 }
 
@@ -107,22 +114,41 @@ body{
 
 .user-dropdown h3{
   margin-bottom:5px;
+  text-align:center; /* centers the name */
 }
 
 .user-dropdown p{
   font-size:13px;
+  text-align:center; /* centers all lines */
+  margin:2px 0;
 }
 
-.user-dropdown button{
-  margin-top:10px;
-  padding:8px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  color:#fff;
-  cursor:pointer;
+.user-dropdown .user-info{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  align-items:center; /* center all user info */
 }
 
+/* ===== SIGN OUT BUTTON STYLE ===== */
+.user-dropdown button#logoutBtn {
+    margin-top: 10px;
+    align-self: center;         /* centers horizontally */
+    width: 30%;                 /* same width as other buttons */
+    padding: 10px 0;            /* vertical padding */
+    border: none;
+    border-radius: 50px;        /* fully rounded/circled */
+    background: linear-gradient(90deg,#ff6ec4,#7873f5); /* pinkish-purple gradient */
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.user-dropdown button#logoutBtn:hover {
+    opacity: 0.9; /* subtle hover effect */
+    transform: translateY(-2px);
+}
 /* ===== LOGIN OVERLAY ===== */
 .login-overlay{
   position:fixed;
@@ -493,3 +519,111 @@ body{
 .info-section {
   text-align: center;  /* Centers headings and paragraphs */
 }
+
+/* ===== GRADIENT BLUE TITLES ===== */
+h1, h2, h3 {
+  background: linear-gradient(
+    90deg,
+    #0d3c91 0%,
+    #4facfe 50%,
+    #0d3c91 100%
+  );
+
+  display: inline-block;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== CLICKABLE ===== */
+.clickable {
+  cursor: pointer;
+}
+
+/* ===== OVERLAY (SOFT GLASS BACKDROP) ===== */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* 🔥 softer, brighter */
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(10px);
+
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+.overlay.show {
+  display: flex;
+}
+
+/* ===== LEADERS BOX (BRIGHT GLASS) ===== */
+.leaders-box {
+  width: 90%;
+  max-width: 420px;
+  padding: 20px;
+
+  /* 🔥 brighter glass */
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(20px);
+
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.6);
+
+  box-shadow: 0 10px 35px rgba(0,0,0,0.15);
+
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* HEADER */
+.leaders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.leaders-header h2 {
+  background: linear-gradient(90deg,#0d3c91,#4facfe,#00c6ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.leaders-header i {
+  color: #0d3c91;
+  transition: 0.3s;
+}
+
+.leaders-header i:hover {
+  color: #ff4d4d;
+  transform: scale(1.2);
+}
+
+/* LIST */
+.leaders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ITEM */
+.leader-item {
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.2);
+}
+
+.leader-item h4 {
+  margin-bottom: 3px;
+}
+
+.leader-item p {
+  font-size: 12px;
+}
+
