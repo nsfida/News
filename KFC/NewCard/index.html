@@ -372,7 +372,45 @@ Nadeem Shahzad Fida
 </footer>
 
 <script>
+let typingTimer;
+const delay = 400; // delay to avoid too many API calls
 
+const nameInput = document.getElementById("name");
+const urduInput = document.getElementById("urdu_name");
+
+nameInput.addEventListener("input", () => {
+
+clearTimeout(typingTimer);
+
+const text = nameInput.value.trim();
+
+if(!text){
+urduInput.value = "";
+return;
+}
+
+typingTimer = setTimeout(async () => {
+
+try{
+
+const res = await fetch(
+"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=" 
++ encodeURIComponent(text)
+);
+
+const data = await res.json();
+
+const translated = data[0].map(item => item[0]).join("");
+
+urduInput.value = translated;
+
+}catch(err){
+console.log("Translation error", err);
+}
+
+}, delay);
+
+});
 /* LOGIN CHECK */
 
 if(!localStorage.getItem("loggedInUser"))
