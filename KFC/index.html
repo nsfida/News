@@ -16,9 +16,9 @@
 <header class="top-header">
 
   <div class="logo-area">
-    <img src="https://livenews.live/KFC/logo.png" alt="KFC Logo">
+    <img src="logo.png" alt="KFC Logo">
     <div class="logo-text">
-      <h1>Khawrai Falahi Committee UAE</h1>
+      <h1>Khawrai Falahi Committee</h1>
       <p lang="ur">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
     </div>
   </div>
@@ -42,19 +42,22 @@
     <button id="openLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
   </div>
 
-  <!-- AFTER LOGIN -->
-  <div id="userView" style="display:none;">
+<!-- AFTER LOGIN -->
+<div id="userView" style="display:none; flex-direction:column; align-items:center; gap:6px;">
     <h3 id="userFullName"></h3>
 
     <div class="user-info">
       <p id="userCard"></p>
       <p id="userDesg"></p>
-      <p id="userStatus"></p>
-      <p id="userRoom"></p>
+      <p id="userBlood"></p>
+      <p id="userMobile"></p>
     </div>
 
-    <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
-  </div>
+    <div class="user-buttons" style="display:flex; flex-direction:column; gap:8px; width:100%; align-items:center;">
+        <a id="viewCardBtn" href="#" target="_blank">View Card</a>
+        <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+    </div>
+</div>
 
 </div>
 
@@ -126,7 +129,7 @@
       </div>
 
       <div class="welcome-image">
-        <img src="https://livenews.live/KFC/logo.png" alt="KFC Logo">
+        <img src="logo.png" alt="KFC Logo">
       </div>
 
     </section>
@@ -145,7 +148,7 @@
       </div>
 
       <div class="stat glass">
-        <h3>Committee Leaders</h3>
+        <h3 id="leadersBtn" class="clickable">Committee Leaders</h3>
         <p id="leadersCount">Loading...</p>
       </div>
 
@@ -256,6 +259,23 @@ issues promptly.
 </footer>
 
 <script src="main.js"></script>
+
+<!-- ===== LEADERS POPUP ===== -->
+<div id="leadersOverlay" class="overlay">
+  <div class="leaders-box glass">
+
+    <div class="leaders-header">
+      <h2>Committee Leaders</h2>
+      <i class="fa-solid fa-xmark" id="closeLeaders"></i>
+    </div>
+
+    <div id="leadersList" class="leaders-list">
+      <!-- JS will fill this -->
+    </div>
+
+  </div>
+</div>
+
 
 </body>
 </html>
