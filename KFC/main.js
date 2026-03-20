@@ -63,7 +63,7 @@ function generatePassword(card) {
 
 // ================= LOGIN FUNCTION =================
 function login() {
-    loginError.innerText = ""; // clear previous errors
+    loginError.innerText = "";
     let uname = loginUsername.value.trim().toLowerCase();
     let pass = loginPassword.value.trim();
 
@@ -72,7 +72,6 @@ function login() {
         return;
     }
 
-    // Find user by generated username and password
     const user = users.find(u => {
         let genUser = generateUsername(u.name);
         let genPass = generatePassword(u.CNo);
@@ -84,14 +83,12 @@ function login() {
         return;
     }
 
-    // Check if Status is Cancelled
     let status = user.Status ? user.Status.toString().trim().toLowerCase() : "";
-    if (status === "cancel") {
+    if (status === "cancel" || status === "cancelled") {
         loginError.innerText = "This username cannot login, this card is already cancelled";
         return;
     }
 
-    // ✅ Login successful
     currentUser = user;
     localStorage.setItem("kfcUser", JSON.stringify(user));
 
@@ -104,16 +101,23 @@ function login() {
 function applyUser() {
     if (!currentUser) return;
 
-    usernameText.innerText = currentUser.name;
+    // Show first name in top-right
+    const firstName = currentUser.name.split(" ")[0];
+    usernameText.innerText = `Welcome, ${firstName}`;
 
     guestView.style.display = "none";
     userView.style.display = "flex";
 
     userFullName.innerText = "Welcome, " + currentUser.name;
-    userCard.innerText = "Card: " + currentUser.CNo;
+    userCard.innerText = "Card Number: " + currentUser.CNo;
     userDesg.innerText = "Designation: " + currentUser.Desg;
-    userStatus.innerText = "Status: " + currentUser.Status;
-    userRoom.innerText = "Room: " + currentUser.Room;
+    userBlood.innerText = "Blood Group: " + (currentUser.BG || "Not available");
+    userMobile.innerText = "Registered Mobile: " + (currentUser.mobile || "Not available");
+
+    // Set View Card button link
+    const viewCardBtn = document.getElementById("viewCardBtn");
+    const nameForLink = encodeURIComponent(currentUser.name + " e-Card.pdf");
+    viewCardBtn.href = "https://livenews.live/KFC/e-Cards/" + nameForLink;
 }
 
 // ================= CHECK SESSION =================
@@ -121,16 +125,13 @@ function checkSession() {
     const saved = localStorage.getItem("kfcUser");
     if (saved) {
         currentUser = JSON.parse(saved);
-
         let status = currentUser.Status ? currentUser.Status.toString().trim().toLowerCase() : "";
-        if (status === "cancelled") {
-            // Cancelled card cannot stay logged in
+        if (status === "cancel" || status === "cancelled") {
             localStorage.removeItem("kfcUser");
             currentUser = null;
             loginError.innerText = "This username cannot login, this card is already cancelled";
             return;
         }
-
         applyUser();
     }
 }
@@ -152,40 +153,29 @@ document.addEventListener("click", () => {
     dropdown.classList.remove("show");
 });
 
-dropdown.addEventListener("click", e => {
-    e.stopPropagation();
-});
+dropdown.addEventListener("click", e => e.stopPropagation());
 
 // ================= OPEN LOGIN =================
-openLoginBtn.addEventListener("click", () => {
-    loginOverlay.classList.add("show");
-});
+openLoginBtn.addEventListener("click", () => loginOverlay.classList.add("show"));
 
 // ================= CLOSE LOGIN OUTSIDE =================
 loginOverlay.addEventListener("click", e => {
-    if (e.target === loginOverlay) {
-        loginOverlay.classList.remove("show");
-    }
+    if (e.target === loginOverlay) loginOverlay.classList.remove("show");
 });
 
 // ================= LOGIN BUTTON =================
 loginBtn.addEventListener("click", login);
 
 // ENTER KEY LOGIN
-document.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && loginOverlay.classList.contains("show")) {
-        login();
-    }
+document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && loginOverlay.classList.contains("show")) login();
 });
 
 // ================= WELCOME POPUP =================
 function showWelcome(name) {
     welcomeText.innerText = "Welcome, " + name + " 👋";
     welcomePopup.classList.add("show");
-
-    setTimeout(() => {
-        welcomePopup.classList.remove("show");
-    }, 2500);
+    setTimeout(() => welcomePopup.classList.remove("show"), 2500);
 }
 
 // ================= CALCULATE STATS =================
@@ -195,10 +185,25 @@ function calculateStats() {
     let active = users.filter(u => u.Status && u.Status.toString().trim().toLowerCase() === "active");
     activeMembers.innerText = active.length;
 
-    let leaders = users.filter(u =>
-        u.Desg && (u.Desg.toLowerCase().includes("president") ||
-        u.Desg.toLowerCase().includes("guardian"))
-    );
+    // ===== FILTER AND COUNT LEADERS =====
+    const allowedRoles = [
+        "president",
+        "acting president",
+        "vice president",
+        "committee guardian",
+        "committee guardian (ex-president)",
+        "general secretary",
+        "finance manager",
+        "joint finance secretary",
+        "media manager"
+
+    ];
+
+    let leaders = users.filter(u => {
+        if (!u.Desg) return false;
+        return allowedRoles.includes(u.Desg.toLowerCase().trim());
+    });
+
     leadersCount.innerText = leaders.length;
 }
 
@@ -208,12 +213,77 @@ function calculateStats() {
     checkSession();
 })();
 
-// Click outside sidebar to close on mobile
-document.addEventListener("click", (e) => {
+// ================= MOBILE SIDEBAR CLOSE =================
+document.addEventListener("click", e => {
     const sidebar = document.querySelector(".sidebar");
-    if(window.innerWidth <= 600 && sidebar.style.display === "flex"){
-        if(!sidebar.contains(e.target) && e.target.id !== "mobileMenuToggle"){
+    if (window.innerWidth <= 600 && sidebar.style.display === "flex") {
+        if (!sidebar.contains(e.target) && e.target.id !== "mobileMenuToggle") {
             sidebar.style.display = "none";
         }
+    }
+});
+
+// ================= LEADERS POPUP =================
+document.addEventListener("DOMContentLoaded", () => {
+    const leadersBtn = document.getElementById("leadersBtn");
+    const leadersOverlay = document.getElementById("leadersOverlay");
+    const closeLeaders = document.getElementById("closeLeaders");
+    const leadersList = document.getElementById("leadersList");
+
+    if (!leadersBtn) return;
+
+    leadersBtn.addEventListener("click", () => {
+        showLeaders();
+        leadersOverlay.classList.add("show");
+    });
+
+    closeLeaders.addEventListener("click", () => leadersOverlay.classList.remove("show"));
+
+    leadersOverlay.addEventListener("click", e => {
+        if (e.target === leadersOverlay) leadersOverlay.classList.remove("show");
+    });
+
+    function showLeaders() {
+        leadersList.innerHTML = "";
+
+        const allowedRoles = [
+            "president",
+            "acting president",
+            "vice president",
+            "committee guardian",
+            "committee guardian (ex-president)",
+            "general secretary",
+            "finance manager",
+            "joint finance secretary",
+            "media manager"
+        ];
+
+        let leaders = users.filter(u => {
+            if (!u.Desg) return false;
+            return allowedRoles.includes(u.Desg.toLowerCase().trim());
+        });
+
+        // Sort in proper order
+        const order = allowedRoles;
+        leaders.sort((a, b) => order.indexOf(a.Desg.toLowerCase().trim()) - order.indexOf(b.Desg.toLowerCase().trim()));
+
+        if (leaders.length === 0) {
+            leadersList.innerHTML = "<p>No leaders found</p>";
+            return;
+        }
+
+        leaders.forEach(l => {
+            let div = document.createElement("div");
+            div.className = "leader-item";
+
+            div.innerHTML = `
+                <h4>${l.name}</h4>
+                <p>${l.Desg}</p>
+                <p class="leader-phone">
+                    <i class="fa-solid fa-phone"></i> ${l.mobile || "Not available"}
+                </p>
+            `;
+            leadersList.appendChild(div);
+        });
     }
 });
