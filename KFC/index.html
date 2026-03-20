@@ -4,17 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Khawrai Falahi Committee UAE - Responsive Dashboard</title>
-
 <link rel="stylesheet" href="main.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 </head>
-
 <body>
-
-<!-- ================= HEADER ================= -->
+<div class="floating-circles"><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div></div>
 <header class="top-header">
-
   <div class="logo-area">
     <img src="logo.png" alt="KFC Logo">
     <div class="logo-text">
@@ -23,78 +18,55 @@
     </div>
   </div>
 
-  <!-- USER AREA -->
   <div class="user-area" id="userArea">
     <i class="fa-solid fa-user-circle"></i>
     <span id="username">Welcome, Guest</span>
     <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
   </div>
-
 </header>
 
-<!-- ================= USER DROPDOWN ================= -->
 <div id="userDropdown" class="user-dropdown glass">
-
-  <!-- BEFORE LOGIN -->
   <div id="guestView">
     <h3>Welcome Guest</h3>
     <p>Please sign in to access your account</p>
     <button id="openLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
   </div>
 
-<!-- AFTER LOGIN -->
-<div id="userView" style="display:none; flex-direction:column; align-items:center; gap:6px;">
+  <div id="userView" style="display:none; flex-direction:column; align-items:center; gap:6px;">
     <h3 id="userFullName"></h3>
-
     <div class="user-info">
       <p id="userCard"></p>
       <p id="userDesg"></p>
       <p id="userBlood"></p>
       <p id="userMobile"></p>
     </div>
-
     <div class="user-buttons" style="display:flex; flex-direction:column; gap:8px; width:100%; align-items:center;">
-        <a id="viewCardBtn" href="#" target="_blank">View Card</a>
-        <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+      <a id="viewCardBtn" href="#" target="_blank">View Card</a>
+      <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
     </div>
+  </div>
 </div>
 
-</div>
-
-<!-- ================= LOGIN OVERLAY ================= -->
 <div id="loginOverlay" class="login-overlay">
-
   <div class="login-box glass">
-
     <h2><i class="fa-solid fa-user-lock"></i> Secure Login</h2>
-
-
     <input type="text" id="loginUsername" placeholder="Enter Username">
     <input type="password" id="loginPassword" placeholder="Enter Password">
-
     <button id="loginBtn">Login</button>
     <p id="loginError"></p>
-
   </div>
-
 </div>
 
-<!-- ================= WELCOME POPUP ================= -->
 <div id="welcomePopup" class="welcome-popup">
   <p id="welcomeText"></p>
 </div>
 
-<!-- ================= MAIN LAYOUT ================= -->
 <div class="dashboard-container">
-
-  <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar glass">
-
     <div class="sidebar-header">
       <h2>Main Menu</h2>
       <i class="fa-solid fa-bars" id="sidebarToggle"></i>
     </div>
-
     <nav class="sidebar-nav">
       <a href="#"><i class="fa-solid fa-house"></i> Dashboard</a>
       <a href="https://livenews.live/KFC/message/president.html"><i class="fa-solid fa-user-tie"></i> President Message</a>
@@ -103,131 +75,83 @@
       <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users"></i> Cabinet Members</a>
       <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images"></i> Gallery</a>
     </nav>
-
   </aside>
 
-  <!-- ===== MAIN CONTENT ===== -->
   <main class="main-content">
-
-    <!-- ===== HERO / WELCOME SECTION ===== -->
     <section class="welcome-section glass">
-
       <div class="welcome-text">
         <h2>Welcome to Khawrai Falahi Committee UAE</h2>
         <h3 lang="ur">خاورئی فلاحی کمیٹی متحدہ عرب امارات میں خوش آمدید</h3>
-
-        <p>
-          This official platform connects the Khawrai Falahi Committee members across the UAE with a secure,
-          transparent, and responsive dashboard. Access your membership details, view
-          committee updates, alerts, and gallery from any device.
-        </p>
-
-        <p lang="ur">
-          یہ پلیٹ فارم خاورئی فلاحی کمیٹی متحدہ عرب امارات کے تمام ممبران کو ایک جگہ پر اکٹھا کرنے کے لیے بنایا گیا ہے
-          تاکہ وہ اپنی معلومات دیکھ سکیں اور اپڈیٹس حاصل کر سکیں۔
-        </p>
+        <p>This official platform connects the Khawrai Falahi Committee members across the UAE with a secure, transparent, and responsive dashboard. Access your membership details, view committee updates, alerts, and gallery from any device.</p>
+        <p lang="ur">یہ پلیٹ فارم خاورئی فلاحی کمیٹی متحدہ عرب امارات کے تمام ممبران کو ایک جگہ پر اکٹھا کرنے کے لیے بنایا گیا ہے تاکہ وہ اپنی معلومات دیکھ سکیں اور اپڈیٹس حاصل کر سکیں۔</p>
       </div>
-
       <div class="welcome-image">
         <img src="logo.png" alt="KFC Logo">
       </div>
-
     </section>
 
-    <!-- ===== QUICK STATS ===== -->
     <section class="stats-section">
-
       <div class="stat glass">
         <h3>Total Members</h3>
         <p id="totalMembers">Loading...</p>
       </div>
-
       <div class="stat glass">
         <h3>Active Members</h3>
         <p id="activeMembers">Loading...</p>
       </div>
-
       <div class="stat glass">
         <h3 id="leadersBtn" class="clickable">Committee Leaders</h3>
         <p id="leadersCount">Loading...</p>
       </div>
-
     </section>
 
-    <!-- ===== FEATURE CARDS ===== -->
     <section class="cards-section">
-
       <div class="card glass">
         <i class="fa-solid fa-user-tie"></i>
         <h3>President Message</h3>
         <p>Official message from leadership</p>
         <a href="https://livenews.live/KFC/message/president.html">Open</a>
       </div>
-
       <div class="card glass">
         <i class="fa-solid fa-bell"></i>
         <h3>Alerts</h3>
         <p>Latest announcements</p>
         <a href="https://livenews.live/KFC/message/alerts.html">View</a>
       </div>
-
       <div class="card glass">
         <i class="fa-solid fa-database"></i>
         <h3>Database</h3>
         <p>Secure member records</p>
         <a href="https://livenews.live/KFC/database.html">Access</a>
       </div>
-
       <div class="card glass">
         <i class="fa-solid fa-users"></i>
         <h3>Cabinet</h3>
         <p>Leadership & structure</p>
         <a href="https://livenews.live/KFC/message/cabinet.html">Open</a>
       </div>
-
       <div class="card glass">
         <i class="fa-solid fa-images"></i>
         <h3>Gallery</h3>
         <p>Community events & memories</p>
         <a href="https://livenews.live/KFC/message/Gallery/gallery.html">View</a>
       </div>
-
     </section>
 
-    <!-- ===== DETAILED INFO SECTIONS ===== -->
     <section class="info-section glass">
       <h2>About the Committee</h2>
-      <p>
-The Khawrai Falahi Committee UAE was established in December 2016. 
-The purpose of the committee is to address the issues faced by residents 
-of Khawrai in the United Arab Emirates and its surroundings, and to 
-resolve them in a timely and professional manner. The leadership of the 
-committee is committed to serving the residents of Khawrai in the United 
-Arab Emirates and is determined to address and resolve their various 
-issues promptly.
-      </p>
-<p class="intro-ur" lang="ur">
-متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ 
-کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں 
-کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل 
-کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت 
-کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے 
-پُرعزم ہے۔
-</p>
+      <p>The Khawrai Falahi Committee UAE was established in December 2016. The purpose of the committee is to address the issues faced by residents of Khawrai in the United Arab Emirates and its surroundings, and to resolve them in a timely and professional manner. The leadership of the committee is committed to serving the residents of Khawrai in the United Arab Emirates and is determined to address and resolve their various issues promptly.</p>
+      <p class="intro-ur" lang="ur">متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے پُرعزم ہے۔</p>
     </section>
 
     <section class="info-section glass">
       <h2>Mission</h2>
-      <p>
-        To create a connected, supportive, and transparent environment for all members.
-      </p>
+      <p>To create a connected, supportive, and transparent environment for all members.</p>
     </section>
 
     <section class="info-section glass">
       <h2>Vision</h2>
-      <p>
-        To build a digitally accessible, strong, and self-supporting Khawrai community in UAE.
-      </p>
+      <p>To build a digitally accessible, strong, and self-supporting Khawrai community in UAE.</p>
     </section>
 
     <section class="info-section glass">
@@ -243,39 +167,27 @@ issues promptly.
 
     <section class="info-section glass">
       <h2>System Features</h2>
-      <p>
-        Fully responsive dashboard, secure username/password login, persistent session
-        across refresh, dynamic stats, and mobile-friendly interface.
-      </p>
+      <p>Fully responsive dashboard, secure username/password login, persistent session across refresh, dynamic stats, and mobile-friendly interface.</p>
     </section>
 
   </main>
-
 </div>
 
-<!-- ================= FOOTER ================= -->
 <footer class="footer">
   <p>© 2026 Khawrai Falahi Committee UAE | All Rights Reserved</p>
 </footer>
 
 <script src="main.js"></script>
 
-<!-- ===== LEADERS POPUP ===== -->
 <div id="leadersOverlay" class="overlay">
   <div class="leaders-box glass">
-
     <div class="leaders-header">
       <h2>Committee Leaders</h2>
       <i class="fa-solid fa-xmark" id="closeLeaders"></i>
     </div>
-
-    <div id="leadersList" class="leaders-list">
-      <!-- JS will fill this -->
-    </div>
-
+    <div id="leadersList" class="leaders-list"></div>
   </div>
 </div>
-
 
 </body>
 </html>
