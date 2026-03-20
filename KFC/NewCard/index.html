@@ -156,7 +156,8 @@ const copyBtn=document.querySelector(".copy-btn");
 function formatMobile(number){ return number.replace(/\s+/g,''); }
 
 function updateJSON(){
-const data=`,{
+const data=`,
+{
 "name":"${nameInput.value}",
 "Desg":"${designationInput.value}",
 "CNo":"${cardInput.value}",
@@ -165,7 +166,7 @@ const data=`,{
 "Status":"Active",
 "Room":"Room - (-)",
 "Issue":"-"
-},`;
+}`;
 jsonPreview.textContent=data;
 }
 
