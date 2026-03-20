@@ -6,6 +6,8 @@
 <title>Khawrai Falahi Committee e-Card</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
 <style>
 /* RESET */
@@ -58,6 +60,13 @@ input,select{width:100%;padding:10px;margin-bottom:12px;border-radius:50px;borde
 input:focus,select:focus{border-color:#1976d2;box-shadow:0 0 10px rgba(25,118,210,0.3);}
 button{padding:12px 20px;background:linear-gradient(135deg,#1976d2,#125fa6);color:white;font-size:16px;border:none;border-radius:50px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:0.3s;box-shadow:0 8px 20px rgba(0,0,0,0.15);}
 button:hover{transform:translateY(-3px);}
+button:disabled{background:#ccc;cursor:not-allowed;}
+
+/* MODAL FOR CROPPER */
+#cropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center;flex-direction:column;}
+.crop-container{width:90%;max-width:500px;background:#white;border-radius:15px;overflow:hidden;background:#fff;padding:10px;}
+.crop-actions{margin-top:10px;display:flex;gap:10px;}
+
 .translate-link{text-align:right;font-size:12px;margin-bottom:10px;}
 .translate-link a{color:#1976d2;text-decoration:none;font-weight:bold;}
 .contact-banner{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-top:20px;padding:15px 20px;background:rgba(255,255,255,0.25);backdrop-filter:blur(20px);border-radius:25px;box-shadow:0 15px 30px rgba(0,0,0,0.15);}
@@ -66,7 +75,6 @@ button:hover{transform:translateY(-3px);}
 .role-tag{font-size:12px;color:#125fa6;font-weight:bold;}
 footer{margin-top:15px;font-size:14px;text-align:center;}
 
-/* MOBILE */
 @media(max-width:600px){.logo-title h2{font-size:22px;}.uae-text{font-size:17px;}.form-container{padding:25px;}input{font-size:14px;}button{font-size:14px;}.json-container{width:100%;margin-top:20px;}.main-container{flex-direction:column;align-items:center;}}
 </style>
 </head>
@@ -78,6 +86,17 @@ footer{margin-top:15px;font-size:14px;text-align:center;}
 <img src="static/images/logo.png">
 <h2>Khawrai Falahi Committee UAE</h2>
 <p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+</div>
+
+<!-- Modal for Cropping -->
+<div id="cropModal">
+    <div class="crop-container">
+        <img id="imageToCrop" style="max-width: 100%;">
+    </div>
+    <div class="crop-actions">
+        <button id="cancelCrop" style="background: #666;">Cancel</button>
+        <button id="saveCrop">Crop & Continue</button>
+    </div>
 </div>
 
 <div class="main-container">
@@ -118,7 +137,7 @@ footer{margin-top:15px;font-size:14px;text-align:center;}
 <label for="photo">Upload Photo</label>
 <input type="file" id="photo" accept="image/*" required>
 
-<button type="submit"><i class="fas fa-plus-circle"></i>Generate e-Card</button>
+<button type="submit" id="submitBtn"><i class="fas fa-plus-circle"></i>Generate e-Card</button>
 </form>
 </div>
 
@@ -140,6 +159,9 @@ footer{margin-top:15px;font-size:14px;text-align:center;}
 <p>Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a></p>
 </footer>
 
+<!-- Cropper.js Script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
 <script>
 let typingTimer;
 const delay=400;
@@ -152,6 +174,18 @@ const bloodInput=document.getElementById("blood_group");
 const contactInput=document.getElementById("contact");
 const jsonPreview=document.getElementById("jsonPreview");
 const copyBtn=document.querySelector(".copy-btn");
+const photoInput = document.getElementById("photo");
+const submitBtn = document.getElementById("submitBtn");
+
+// Elements for Cropping
+const cropModal = document.getElementById("cropModal");
+const imageToCrop = document.getElementById("imageToCrop");
+const saveCrop = document.getElementById("saveCrop");
+const cancelCrop = document.getElementById("cancelCrop");
+
+let cropper;
+let finalPhotoBlob = null;
+const REMOVE_BG_API_KEY = "auT2fSvQYDK9YoGw6SeaENzS"; // Replace with your remove.bg API key
 
 function formatMobile(number){ return number.replace(/\s+/g,''); }
 
@@ -168,6 +202,73 @@ const data=`,
 "Issue":"-"
 }`;
 jsonPreview.textContent=data;
+}
+
+// Photo Cropping Logic
+photoInput.addEventListener("change", function(e) {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            imageToCrop.src = event.target.result;
+            cropModal.style.display = "flex";
+            if(cropper) cropper.destroy();
+            cropper = new Cropper(imageToCrop, {
+                aspectRatio: 1, // Square crop for cards
+                viewMode: 1
+            });
+        };
+        reader.readAsDataURL(files[0]);
+    }
+});
+
+cancelCrop.addEventListener("click", () => {
+    cropModal.style.display = "none";
+    photoInput.value = "";
+});
+
+saveCrop.addEventListener("click", () => {
+    const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+    canvas.toBlob((blob) => {
+        finalPhotoBlob = blob;
+        cropModal.style.display = "none";
+    });
+});
+
+// Remove Background Function
+async function removeBackground(blob) {
+    if (REMOVE_BG_API_KEY === "YOUR_API_KEY_HERE") {
+        console.warn("Background removal skipped: No API Key provided.");
+        return blob;
+    }
+
+    const formData = new FormData();
+    formData.append("image_file", blob);
+    formData.append("size", "auto");
+
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+
+        const response = await fetch("https://api.remove.bg/v1.0/removebg", {
+            method: "POST",
+            headers: { "X-Api-Key": REMOVE_BG_API_KEY },
+            body: formData
+        });
+
+        if (response.ok) {
+            return await response.blob();
+        } else {
+            console.error("BG Removal Error:", await response.text());
+            return blob; // Fallback to original crop if API fails
+        }
+    } catch (err) {
+        console.error(err);
+        return blob;
+    } finally {
+        submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Generate e-Card';
+        submitBtn.disabled = false;
+    }
 }
 
 nameInput.addEventListener("input",()=>{
@@ -209,30 +310,27 @@ updateJSON();
 })
 .catch(err=>console.log("Card auto number not loaded"));
 
-document.getElementById("ecardForm").addEventListener("submit",function(e){
-e.preventDefault();
-const name=nameInput.value;
-const urdu=urduInput.value;
-const designation=designationInput.value;
-const cardNo=cardInput.value;
-const blood=bloodInput.value;
-const contact=contactInput.value;
-const file=document.getElementById("photo").files[0];
-if(!file){alert("Please upload a photo");return;}
-const reader=new FileReader();
-reader.onload=function(evt){
-localStorage.setItem("ecardData",JSON.stringify({
-name:name,
-urduName:urdu,
-designation:designation,
-cardNumber:cardNo,
-bloodGroup:blood,
-contact:contact,
-photoData:evt.target.result
-}));
-window.location.href="generate.html";
-};
-reader.readAsDataURL(file);
+document.getElementById("ecardForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    if(!finalPhotoBlob){alert("Please select and crop a photo");return;}
+
+    // Process background removal
+    const processedBlob = await removeBackground(finalPhotoBlob);
+
+    const reader = new FileReader();
+    reader.onload = function(evt){
+        localStorage.setItem("ecardData",JSON.stringify({
+            name: nameInput.value,
+            urduName: urduInput.value,
+            designation: designationInput.value,
+            cardNumber: cardInput.value,
+            bloodGroup: bloodInput.value,
+            contact: contactInput.value,
+            photoData: evt.target.result
+        }));
+        window.location.href="generate.html";
+    };
+    reader.readAsDataURL(processedBlob);
 });
 </script>
 </body>
