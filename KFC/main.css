@@ -134,7 +134,7 @@ body{
 .user-dropdown button#logoutBtn {
     margin-top: 10px;
     align-self: center;         /* centers horizontally */
-    width: 30%;                 /* same width as other buttons */
+    width: 50%;                 /* same width as other buttons */
     padding: 10px 0;            /* vertical padding */
     border: none;
     border-radius: 50px;        /* fully rounded/circled */
