@@ -1,0 +1,54 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "category": "World",
+      "title": "G7 Issues Urgent Warning as Middle East Conflict Escalates Following Natanz Strike",
+      "excerpt": "Foreign ministers from the G7 nations have condemned retaliatory strikes on energy infrastructure, warning of a 'catastrophic' impact on global security and oil markets.",
+      "image": "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=1000",
+      "author": "Elena Rodriguez",
+      "date": "March 22, 2026",
+      "content": "The G7 Foreign Ministers released a joint statement today expressing grave concern over the 'reckless' escalation in the Middle East. This follows Saturday's reported strike on Iran’s Natanz nuclear facility and subsequent retaliatory attacks on civilian infrastructure across the region.\n\nThe statement emphasizes the critical importance of keeping the Strait of Hormuz open, as the waterway handles roughly 20% of the world's seaborne oil and gas. 'The de facto closure of these maritime routes threatens not only regional stability but the entire global supply chain,' the communiqué read. \n\nIn Tehran, officials claimed the Natanz facility suffered no radioactive leakage but vowed that 'defensive measures' would continue. Meanwhile, in Washington, the Pentagon confirmed it is exploring new ammunition production lines in the Philippines and Japan to bolster Indo-Pacific security as global tensions stretch military resources thin."
+    },
+    {
+      "id": 2,
+      "category": "Technology",
+      "title": "NVIDIA Unveils 'Space-1' AI Module, Bringing Data Center Power to Orbit",
+      "excerpt": "CEO Jensen Huang announced the Vera Rubin Space-1 module, designed to run massive AI models directly on satellites to bypass Earth-link bottlenecks.",
+      "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000",
+      "author": "Marcus Chen",
+      "date": "March 21, 2026",
+      "content": "At the GTC 2026 keynote, NVIDIA CEO Jensen Huang declared that 'the final frontier of computing has arrived.' The company launched the Space-1 Vera Rubin Module, a ruggedized AI supercomputer designed for orbital data centers. \n\nTraditionally, satellites have had to beam raw data back to Earth for processing—a process limited by bandwidth and latency. Space-1 allows satellites to perform real-time geospatial analysis, autonomous navigation, and even large-language model (LLM) inference while in orbit. \n\nIndustry partners like Planet Labs and Axiom Space are already integrating the tech. 'We are moving from raw pixels to actionable insights in near real-time,' said Planet Labs CEO Will Marshall. The module is powered by high-efficiency solar arrays and features Blackwell-architecture GPUs specifically shielded against cosmic radiation."
+    },
+    {
+      "id": 3,
+      "category": "Science",
+      "title": "Artemis 2 Astronauts Enter Final Pre-Launch Quarantine for April Moon Mission",
+      "excerpt": "NASA's quartet of astronauts has moved into isolation as the SLS rocket returns to Pad 39B for the historic 10-day lunar journey.",
+      "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1000",
+      "author": "Sarah Vance",
+      "date": "March 20, 2026",
+      "content": "The crew of Artemis 2—Victor Glover, Reid Wiseman, Christina Koch, and Jeremy Hansen—officially entered pre-flight quarantine at the Johnson Space Center. They are scheduled to launch on April 1st for a 10-day mission that will carry humans around the Moon for the first time in over 50 years.\n\nTechnicians at Kennedy Space Center completed final checks on the Space Launch System (SLS) rocket after a minor helium valve issue was resolved last week. The massive rocket began its slow rollout back to Launch Complex 39B on Thursday evening. \n\nNASA officials noted that while the current global geopolitical situation is tense, the mission represents a 'triumph of international cooperation,' specifically highlighting the inclusion of the Canadian Space Agency's Jeremy Hansen on the crew."
+    },
+    {
+      "id": 4,
+      "category": "Economy",
+      "title": "Global Oil Prices Surge Past $100 Amid Strait of Hormuz Blockade Fears",
+      "excerpt": "The IMF warns of a 'stagflationary shock' as energy costs spike, with the Philippine Peso hitting a record low of 60 against the USD.",
+      "image": "https://images.unsplash.com/photo-1611270629569-8b357cb88da9?q=80&w=1000",
+      "author": "David Sterling",
+      "date": "March 22, 2026",
+      "content": "Financial markets are reeling as Brent Crude futures breached the $100 per barrel mark this morning. The surge is driven by military activity near the Strait of Hormuz, sparking fears of a prolonged supply disruption. \n\nIn Asia, the economic impact is becoming stark. The Philippine Peso hit the 60-level against the US Dollar for the first time, prompting the central bank to intervene. Japan has already begun releasing 80 million barrels from its strategic reserves to stabilize domestic prices. \n\nIMF analysts have revised the 2026 global growth forecast to 3.3%, noting that while the AI investment boom provides a structural floor for the economy, the 'geopolitical tax' of the Middle East war could lead to persistent inflation in the Eurozone and the UK."
+    },
+    {
+      "id": 5,
+      "category": "Politics",
+      "title": "PM Mark Carney to Meet Modi in Delhi for High-Stakes Trade and Security Talks",
+      "excerpt": "Canadian PM arrives in India as New Delhi proposes a new West Asia security framework to halt ongoing hostilities in the Middle East.",
+      "image": "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1000",
+      "author": "Anjali Sharma",
+      "date": "March 22, 2026",
+      "content": "Canadian Prime Minister Mark Carney landed in New Delhi today for a series of bilateral meetings with Indian PM Narendra Modi. While the primary agenda is a new trade corridor, the ongoing war in West Asia has taken center stage.\n\nIndia, acting as the current BRICS chair, has proposed a 'Security and Cooperation Framework' intended to bring Iran and its neighbors to the negotiating table. The Indian government has faced pressure from domestic opposition to take a firmer stance on recent airstrikes. \n\n'The world cannot afford another decade-long conflict,' PM Carney said upon arrival. 'We are here to support India's leadership in finding a diplomatic exit ramp.' Discussions are also expected to cover the 'Partnership for Indo-Pacific Industrial Resilience' (PIPIR) as Western nations look to diversify defense manufacturing."
+    }
+  ]
+}
