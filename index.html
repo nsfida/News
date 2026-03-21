@@ -3,487 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live News by NSF | Live Conflict Dashboard</title>
-
-<!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3391223258091641"
-     crossorigin="anonymous"></script>
-
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<!-- Main Stylesheet -->
+<title>LiveNews</title>
 <link rel="stylesheet" href="style.css">
-
-<script>
-// Blinking Title Effect
-let originalTitle = document.title;
-setInterval(() => {
-    if(document.title === originalTitle){
-        document.title = '🔴 LIVE — ' + originalTitle;
-    } else {
-        document.title = originalTitle;
-    }
-}, 800);
-</script>
-
-<style>
-
-/* NEWS BACKGROUND */
-.news-bg{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-z-index:-1;
-overflow:hidden;
-background:linear-gradient(120deg,#050914,#0b1c3d);
-}
-
-/* rotating globe */
-.globe{
-position:absolute;
-top:20%;
-left:10%;
-font-size:120px;
-color:rgba(0,120,255,0.15);
-animation:rotateGlobe 40s linear infinite;
-}
-
-.globe2{
-position:absolute;
-top:40%;
-left:60%;
-font-size:120px;
-color:rgba(0,120,255,0.15);
-animation:rotateGlobe 40s linear infinite;
-}
-
-.plane{
-position:absolute;
-top:60%;
-left:-10%;
-font-size:60px;
-color:rgba(255,0,0,0.25);
-animation:flyPlane 25s linear infinite;
-}
-
-.plane3{
-position:absolute;
-top:80%;
-left:-10%;
-font-size:60px;
-color:rgba(255,0,0,0.25);
-animation:flyPlane 25s linear infinite;
-}
-
-.plane4{
-position:absolute;
-top:70%;
-left:-10%;
-font-size:60px;
-color:rgba(255,0,0,0.25);
-animation:flyPlane 25s linear infinite;
-}
-
-.plane2{
-position:absolute;
-top:30%;
-left:-15%;
-font-size:50px;
-color:rgba(0,150,255,0.25);
-animation:flyPlane2 35s linear infinite;
-}
-
-.radar{
-position:absolute;
-bottom:15%;
-right:15%;
-width:120px;
-height:120px;
-border:2px solid rgba(255,0,0,0.25);
-border-radius:50%;
-animation:radarPulse 4s infinite;
-}
-
-.radar::after{
-content:"";
-position:absolute;
-top:-20px;
-left:-20px;
-width:160px;
-height:160px;
-border:2px solid rgba(255,0,0,0.15);
-border-radius:50%;
-}
-
-.graph{
-position:absolute;
-bottom:0;
-left:0;
-width:100%;
-height:120px;
-background:repeating-linear-gradient(
-90deg,
-transparent,
-transparent 40px,
-rgba(255,255,255,0.03) 41px
-);
-}
-
-.graph::before{
-content:"";
-position:absolute;
-bottom:20px;
-left:-200px;
-width:200%;
-height:2px;
-background:linear-gradient(90deg,transparent,#00aaff,transparent);
-animation:graphMove 8s linear infinite;
-}
-
-@keyframes rotateGlobe{
-0%{transform:rotate(0deg);}
-100%{transform:rotate(360deg);}
-}
-
-@keyframes flyPlane{
-0%{transform:translateX(0) translateY(0);}
-50%{transform:translateX(60vw) translateY(-60px);}
-100%{transform:translateX(120vw) translateY(0);}
-}
-
-@keyframes flyPlane2{
-0%{transform:translateX(0) translateY(0);}
-50%{transform:translateX(70vw) translateY(80px);}
-100%{transform:translateX(130vw) translateY(0);}
-}
-
-@keyframes radarPulse{
-0%{transform:scale(0.7);opacity:0.4;}
-70%{transform:scale(1.3);opacity:0.1;}
-100%{transform:scale(0.7);opacity:0.4;}
-}
-
-@keyframes graphMove{
-0%{transform:translateX(0);}
-100%{transform:translateX(-50%);}
-}
-
-/* Increased size for LIVE CONFLICT DASHBOARD badge */
-.hero-badge {
-    font-size: 1.5rem;
-    padding: 15px 30px;
-    display: inline-block;
-}
-
-/* UAE Guide pinned badge */
-.uae-guide {
-    width:100%;
-    text-align:center;
-    background:#ffcc00;
-    padding:12px;
-    font-weight:600;
-    font-size:1rem;
-    border-bottom:3px solid #e0a800;
-}
-
-.uae-guide a{
-    color:#000;
-    text-decoration:none;
-}
-
-.uae-guide i{
-    margin-right:8px;
-}
-
-.uae-guide:hover{
-    background:#ffd633;
-}
-
-/* Modern share popup near header */
-.header-share {
-    position: relative;
-    display: inline-block;
-    margin-left: 10px;
-    cursor: pointer;
-}
-
-.header-share svg {
-    width: 24px;
-    height: 24px;
-    fill: #00aaff;
-    transition: transform 0.3s;
-}
-
-.header-share:hover svg {
-    transform: rotate(360deg);
-}
-
-.share-popup-header {
-    position: absolute;
-    top: 30px;
-    right: 0;
-    background: rgba(0,0,0,0.95);
-    border-radius: 10px;
-    display: none;
-    flex-direction: row;
-    padding: 8px 12px;
-    gap: 12px;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    animation: popupAppear 0.3s ease-in-out;
-}
-
-.share-popup-header a {
-    color: #fff;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-@keyframes popupAppear {
-    0% {opacity:0; transform: scale(0.8);}
-    100% {opacity:1; transform: scale(1);}
-}
-
-</style>
-
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-<div class="news-bg">
-<i class="fa-solid fa-rocket globe"></i>
-<i class="fa-solid fa-globe globe2"></i>
-<i class="fa-solid fa-jet-fighter plane"></i>
-<i class="fa-solid fa-jet-fighter plane2"></i>
-<i class="fa-solid fa-jet-fighter plane3"></i>
-<i class="fa-solid fa-jet-fighter plane4"></i>
-<div class="radar"></div>
-<div class="graph"></div>
+<!-- TOP BREAKING BAR -->
+<div class="breaking-bar">
+<div class="breaking-label">BREAKING</div>
+<div class="breaking-ticker" id="breakingTicker"></div>
 </div>
 
-<header>
-    <a href="index.html" class="logo">
-        <img src="logo.png" alt="Logo">
-        <h1></h1>
-    </a>
-    <div class="live-"></div>
+<!-- HEADER -->
+<header class="header glass">
+<div class="header-left">
+<img src="logo.png" class="logo">
+</div>
 
-<!-- Collapsible Other List -->
-<div class="other-list">
-    <span>Other ▼</span>
-    
-    <!-- Modern Share Icon near Other -->
-    <div class="header-share" id="headerShare">
-        <svg viewBox="0 0 24 24">
-            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.486 2.486 0 000-1.39l7.05-4.11a2.49 2.49 0 10-.91-1.36L8 9.74a2.5 2.5 0 100 4.52l7.13 4.16c.5-.45 1.16-.74 1.87-.74a2.5 2.5 0 100-5z"/>
-        </svg>
-        <div class="share-popup-header" id="headerSharePopup">
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://livenews.live/" target="_blank"><i class="fa-brands fa-facebook"></i></a>
-            <a href="https://api.whatsapp.com/send?text=https://livenews.live/" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
-            <a href="https://www.instagram.com/?url=https://livenews.live/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://twitter.com/intent/tweet?url=https://livenews.live/" target="_blank"><i class="fa-brands fa-twitter"></i></a>
-            <a href="https://www.tiktok.com/share?url=https://livenews.live/" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
-            <a href="https://www.youtube.com/share?url=https://livenews.live/" target="_blank"><i class="fa-brands fa-youtube"></i></a>
-        </div>
-    </div>
+<div class="header-center">
+<input type="text" id="searchInput" placeholder="Search global news...">
+</div>
 
-    <ul>
-        <li><a href="Books/index.html" target="_self"><i class="fa-solid fa-book"></i> Books</a></li>
-        <li><a href="KFC/index.html" target="_self"><i class="fa-solid fa-people-group"></i> Khawrai Falahi Committee UAE</a></li>
-        <li><a href="https://www.pcr.ae" target="_self"><i class="fa-solid fa-car-side"></i> Premium Car Rentals Dubai</a></li>
-        <li><a href="https://www.youtube.com/@NSFEntertainment" target="_self"><i class="fa-brands fa-youtube"></i> YouTube (NSF Entertainment)</a></li>
-        <li><a href="NSFClix/index.html" target="_self"><i class="fa-solid fa-photo-film"></i> NSF Clix</a></li>
-    </ul>
+<div class="header-right">
+<div class="live-indicator"><span></span>LIVE</div>
 </div>
 </header>
 
-<!-- UAE Guide Pinned Badge -->
-<div class="uae-guide">
-<a href="UAE_Guide.pdf" target="_self">
-<i class="fa-solid fa-triangle-exclamation"></i>
-UAE Guide during current conflict, for UAE Residence
-</a>
-</div>
+<!-- NAVBAR -->
+<nav class="navbar glass">
+<ul>
+<li class="active" data-category="all">All</li>
+<li data-category="world">World</li>
+<li data-category="politics">Politics</li>
+<li data-category="business">Business</li>
+<li data-category="technology">Technology</li>
+<li data-category="war">War</li>
+<li data-category="economy">Economy</li>
+<li data-category="energy">Energy</li>
+</ul>
+</nav>
 
-<div class="ticker">
-     <span>مشرقِ وسطیٰ میں امریکہ، اسرائیل اور ایران کے درمیان جاری جنگ بارہویں دن میں داخل ہو چکی ہے اور خطے میں کشیدگی مسلسل بڑھ رہی ہے۔ یہ جنگ 28 فروری کو اس وقت شروع ہوئی جب امریکہ اور اسرائیل نے ایران کے مختلف اہداف پر مشترکہ حملے کیے۔ امریکی صدر Donald Trump نے کہا کہ یہ کارروائی ایران کی جانب سے مبینہ “فوری خطرات” کو ختم کرنے کے لیے کی گئی۔ ایران نے ان الزامات کو مسترد کرتے ہوئے کہا کہ وہ ایٹمی ہتھیار حاصل کرنے کی کوشش نہیں کر رہا اور ان حملوں کو اپنی خودمختاری کی کھلی خلاف ورزی قرار دیا۔
+<!-- MAIN -->
+<main class="main-container">
 
-ابتدائی حملوں کے دوران ایران کے سپریم لیڈر Ali Khamenei اور کئی اعلیٰ فوجی کمانڈر ہلاک ہو گئے۔ ان کی ہلاکت کے بعد ان کے بیٹے مجتبیٰ خامنہ ای کو نیا سپریم لیڈر منتخب کیا گیا۔ حکام کے مطابق وہ جنگ کے دوران زخمی ہونے کے باوجود محفوظ ہیں۔
-
-ایران نے ان حملوں کے جواب میں اسرائیل اور خلیجی ممالک پر جوابی کارروائیاں شروع کر دیں۔ گزشتہ رات ایران کی بمباری کے دوران اسرائیل میں لوگوں میں شدید خوف و ہراس پھیل گیا۔ اسرائیلی ایمبولینس سروس کے مطابق پناہ گاہوں کی طرف بھاگتے ہوئے بھگدڑ مچنے سے 29 اسرائیلی زخمی ہوگئے۔ اسرائیلی حکام کے مطابق ایرانی حملوں کے نتیجے میں اب تک کم از کم 11 شہری ہلاک ہو چکے ہیں۔
-
-جنگ کے اثرات خطے کے دیگر ممالک تک بھی پہنچ گئے ہیں۔ سعودی وزارتِ دفاع کے مطابق فضائی دفاعی نظام نے Prince Sultan Air Base کی جانب داغے گئے تین بیلسٹک میزائل تباہ کر دیے۔ دوسری جانب امریکہ کا کہنا ہے کہ اس نے بارودی سرنگیں بچھانے والے ایران کے 16 بحری جہاز تباہ کر دیے ہیں، جبکہ ایران نے خطے میں مزید حملے شروع کر دیے ہیں جس سے سمندری راستوں اور علاقائی سلامتی کو خطرات لاحق ہو گئے ہیں۔
-
-متحدہ عرب امارات نے بھی دفاعی کارروائیاں تیز کر دی ہیں۔ حکام کے مطابق ایران کے حملوں کے گیارہویں دن امارات نے 8 بیلسٹک میزائل تباہ کیے اور 26 ڈرون مار گرائے۔ حکام نے بتایا کہ اب تک امارات میں ہلاکتوں کی تعداد 6 ہو گئی ہے جبکہ 122 افراد زخمی ہوئے ہیں۔
-
-عالمی سطح پر اس جنگ کے پھیلاؤ پر تشویش بڑھ رہی ہے۔ فرانسیسی صدارت کے مطابق Group of Seven (جی سیون) ممالک کے رہنما بدھ کے روز ویڈیو کانفرنس کے ذریعے مشرقِ وسطیٰ کی صورتحال اور جنگ کو مزید پھیلنے سے روکنے کے اقدامات پر بات کریں گے۔ ادھر اقوام متحدہ میں ایران کے سفیر نے 10 مارچ کو کہا کہ امریکہ اور اسرائیل کے حملوں کے نتیجے میں ایران میں 1300 سے زائد شہری ہلاک ہو چکے ہیں، جو اس جاری جنگ کے سنگین انسانی نقصان کو ظاہر کرتا ہے۔
-     </span>
-</div>
-<div class="ticker-en">
-    <span>The conflict between the United States, Israel, and Iran has entered its 12th day, with tensions continuing to escalate across the Middle East. The war began on February 28, when the United States and Israel launched coordinated strikes on Iranian targets, claiming the operations were necessary to eliminate what US President Donald Trump described as “imminent threats” from Iran. Iran strongly denied accusations that it was pursuing nuclear weapons and condemned the attacks as a violation of its sovereignty. During the initial strikes, Iran’s long-time Supreme Leader Ali Khamenei and several senior military commanders were reportedly killed. Following his death, his son Mojtaba Khamenei was announced as the new leader, with officials saying he remains safe despite reportedly suffering injuries during the conflict.
-
-Iran has responded with a wave of retaliatory attacks targeting Israel and several Gulf countries. Overnight, Iranian bombing raids triggered panic in parts of Israel, where the Israeli ambulance service reported that 29 Israelis were injured in a stampede while people rushed toward shelters during the strikes. Israeli authorities say at least 11 civilians have been killed since the Iranian attacks began.
-
-The conflict has also spread to other parts of the region. According to the Saudi Ministry of Defense, Saudi air defense systems successfully intercepted and destroyed three ballistic missiles that were launched toward Prince Sultan Air Base. Meanwhile, the United States reported that 16 Iranian ships believed to be laying naval mines were “eliminated”, as Iran expanded its attacks across the region, raising fears of disruption to shipping lanes and broader regional instability.
-
-The United Arab Emirates has also been on high alert. Officials confirmed that the country destroyed eight ballistic missiles and intercepted 26 drones during the 11th day of Iranian attacks. Authorities reported that the death toll in the UAE has risen to six people, with 122 others injured so far as a result of the strikes and interceptions.
-
-On the diplomatic front, international leaders are increasingly concerned about the growing conflict. The French presidency announced that leaders of the Group of Seven (G7) will hold a video conference on Wednesday to discuss the war and possible steps to prevent further escalation in the Middle East. Meanwhile, Iran’s ambassador to the United Nations said on March 10 that more than 1,300 civilians in Iran have been killed as a result of the US-Israeli strikes, highlighting the severe human cost of the ongoing war.</span>
-</div>
-
-<section class="hero">
-    <div class="live-badge hero-badge">🔴LIVE CONFLICT DASHBOARD</div>
-    <p>Click any icon below to track live developments instantly.</p>
-    <div class="author">Updates by <strong>NSF</strong></div>
+<!-- NEWS GRID -->
+<section class="news-grid" id="newsGrid">
 </section>
 
-<section class="dashboard">
+<!-- EXPANDED NEWS -->
+<section class="news-expanded" id="newsExpanded">
 
-<a href="https://iran.liveuamap.com/" target="_self" class="card blink">
-<i class="fa-solid fa-map-location-dot"></i>
-<span>Iran Live Map</span>
-</a>
+<div class="expanded-container glass">
 
-<a href="https://liveuamap.com/" target="_self" class="card">
-<i class="fa-solid fa-globe"></i>
-<span>Global Map</span>
-</a>
+<div class="expanded-header">
+<h1 id="expandedTitle"></h1>
+<div class="expanded-meta">
+<span id="expandedDate"></span>
+<span id="expandedCategory"></span>
+</div>
+</div>
 
-<a href="https://syria.liveuamap.com/" target="_self" class="card">
-<i class="fa-solid fa-mountain-city"></i>
-<span>Syria Map</span>
-</a>
+<div class="expanded-image">
+<img id="expandedImage" src="">
+</div>
 
-<a href="https://israelpalestine.liveuamap.com/" target="_self" class="card">
-<i class="fa-solid fa-flag"></i>
-<span>Israel-Palestine</span>
-</a>
+<div class="expanded-content" id="expandedContent"></div>
 
-<a href="https://www.flightradar24.com/" target="_self" class="card">
-<i class="fa-solid fa-plane"></i>
-<span>Flight Radar</span>
-</a>
+<div class="expanded-actions">
+<button class="close-btn" id="closeExpanded">Close</button>
+</div>
 
-<a href="https://globe.adsbexchange.com/" target="_self" class="card">
-<i class="fa-solid fa-satellite-dish"></i>
-<span>ADS-B Exchange</span>
-</a>
-
-<a href="https://www.marinetraffic.com/" target="_self" class="card">
-<i class="fa-solid fa-ship"></i>
-<span>Marine Traffic</span>
-</a>
-
-<a href="https://www.aljazeera.com/" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>Al Jazeera</span>
-</a>
-
-<a href="https://www.reuters.com/world/" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>Reuters</span>
-</a>
-
-<a href="https://www.bbc.com/news" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>BBC News</span>
-</a>
-
-<a href="https://www.bbc.com/urdu" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>BBC Urdu</span>
-</a>
-
-<a href="https://www.express.pk/" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>Express News (Urdu)</span>
-</a>
-
-<a href="https://www.express.com.pk/" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>Express Newspaper (Urdu)</span>
-</a>
-
-<a href="https://www.geonewsurdu.tv/" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>Geo News (Urdu)</span>
-</a>
-
-<a href="https://urdu.arynews.tv/" target="_self" class="card">
-<i class="fa-solid fa-newspaper"></i>
-<span>ARY News (Urdu)</span>
-</a>
-
-<a href="https://jmail.world" target="_self" class="card">
-<i class="fa-solid fa-file-lines"></i>
-<span>Epstein Files</span>
-</a>
+</div>
 
 </section>
 
-<div class="app-banner">
-<span>App Coming Soon:</span>
-<a href="#" target="_self"><img src="appstore.svg" alt="iOS App"></a>
-<a href="#" target="_self"><img src="googleplay.svg" alt="Android App"></a>
-</div>
+</main>
 
-<footer>
-<div class="footer-links">
-<a href="about.html" target="_self"><i class="fa-solid fa-user"></i>About</a>
-<a href="contact.html" target="_self"><i class="fa-solid fa-envelope"></i>Contact</a>
-<a href="privacy.html" target="_self"><i class="fa-solid fa-shield-halved"></i>Privacy Policy</a>
+<!-- FOOTER -->
+<footer class="footer glass">
+<div class="footer-content">
+<p>© 2026 LiveNews. Global News Network. All rights reserved.</p>
 </div>
-© 2026 Live News by NSF | Independent Live Conflict Reporting
 </footer>
 
-<script>
-const otherSpan = document.querySelector('.other-list span');
-const otherMenu = document.querySelector('.other-list ul');
-
-otherSpan.addEventListener('click', () => {
-    if(otherMenu.style.display === 'block'){
-        otherMenu.style.display = 'none';
-    } else {
-        otherMenu.style.display = 'block';
-    }
-});
-
-document.addEventListener('click', function(event){
-    if(!event.target.closest('.other-list')){
-        otherMenu.style.display = 'none';
-    }
-});
-
-// Modern Header Share Popup Toggle
-const headerShare = document.getElementById('headerShare');
-const headerSharePopup = document.getElementById('headerSharePopup');
-
-headerShare.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    if(headerSharePopup.style.display === 'flex'){
-        headerSharePopup.style.display = 'none';
-    } else {
-        headerSharePopup.style.display = 'flex';
-    }
-});
-
-document.addEventListener('click', function(){
-    headerSharePopup.style.display = 'none';
-});
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
-
-
-
-
-
-
