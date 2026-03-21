@@ -12,7 +12,10 @@ function login(){loginError.innerText="";let uname=loginUsername.value.trim().to
 
 function applyUser(){if(!currentUser)return;const firstName=currentUser.name.split(" ")[0];usernameText.innerText=`Welcome, ${firstName}`;guestView.style.display="none";userView.style.display="flex";userFullName.innerText="Welcome, "+currentUser.name;userCard.innerText="Card Number: "+currentUser.CNo;userDesg.innerText="Designation: "+currentUser.Desg;userBlood.innerText="Blood Group: "+(currentUser.BG||"Not available");userMobile.innerText="Registered Mobile: "+(currentUser.mobile||"Not available");const viewCardBtn=document.getElementById("viewCardBtn");const nameForLink=encodeURIComponent(currentUser.name+" e-Card.pdf");viewCardBtn.href="https://livenews.live/KFC/e-Cards/"+nameForLink;}
 
-function checkSession(){const saved=localStorage.getItem("kfcUser");if(saved){currentUser=JSON.parse(saved);let status=currentUser.Status?currentUser.Status.toString().trim().toLowerCase():"";if(status==="cancel"||status==="cancelled"){localStorage.removeItem("kfcUser");currentUser=null;loginError.innerText="This username cannot login, this card is already cancelled";return;}applyUser();}}
+function checkSession(){const saved=localStorage.getItem("kfcUser");if(saved){currentUser=JSON.parse(saved);let status=currentUser.Status?currentUser.Status.toString().trim().toLowerCase():"";if(status==="cancel"||status==="cancelled"){localStorage.removeItem("kfcUser");currentUser=null;loginError.innerText="This username cannot login, this card is already cancelled";return;}applyUser();}
+    if (!currentUser) {
+        notiBadge.style.display = "none";
+    }}
 
 logoutBtn.addEventListener("click",()=>{localStorage.removeItem("kfcUser");currentUser=null;location.reload();});
 
@@ -45,6 +48,20 @@ const notiList = document.getElementById("notiList");
 notificationBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     notiDropdown.classList.toggle("show");
+
+    // 🔐 Check login
+    if (!currentUser) {
+        notiList.innerHTML = `
+            <p style="text-align:center; padding:20px;">
+                Please sign-in to view recent alerts
+            </p>
+        `;
+        notiBadge.style.display = "none";
+        return;
+    }
+
+    // If logged in → load alerts
+    fetchUrduAlerts();
     notiBadge.style.display = "none";
 });
 
@@ -58,37 +75,43 @@ async function fetchUrduAlerts() {
         const response = await fetch("https://livenews.live/KFC/message/alerts.json");
         const alerts = await response.json();
         notiList.innerHTML = "";
-        
+
         if (alerts.length > 0) {
             notiBadge.style.display = "block";
-            
-            // Show latest 8 notifications
-            alerts.reverse().slice(0, 8).forEach(alert => {
-                const item = document.createElement("div");
-                item.className = "noti-item";
-                
-                item.innerHTML = `
-                    <div class="noti-top-row">
-                        <span class="noti-title-ur">${alert.title_ur || "اعلان"}</span>
-                        <span class="noti-date">${alert.date}</span>
-                    </div>
-                    <div class="noti-body-ur" lang="ur">${alert.body_ur}</div>
-                `;
 
-                item.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (item.classList.contains("expanded")) {
-                        // Second click opens the full alerts page
-                        window.location.href = "https://livenews.live/KFC/message/alerts.html";
-                    } else {
-                        // First click expands this one and collapses others
-                        document.querySelectorAll('.noti-item').forEach(el => el.classList.remove('expanded'));
-                        item.classList.add("expanded");
-                    }
-                });
-                
-                notiList.appendChild(item);
+            // Show only the latest notification
+            const latest = alerts.reverse()[0]; // most recent
+            const item = document.createElement("div");
+            item.className = "noti-item";
+
+            item.innerHTML = `
+                <div class="noti-top-row">
+                    <span class="noti-title-ur">${latest.title_ur || "اعلان"}</span>
+                    <span class="noti-date">${latest.date}</span>
+                </div>
+                <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
+            `;
+
+            // Expand/collapse logic (same as before)
+            item.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (item.classList.contains("expanded")) {
+                    item.classList.remove("expanded"); // close on second click
+                } else {
+                    document.querySelectorAll('.noti-item').forEach(el => el.classList.remove('expanded'));
+                    item.classList.add("expanded"); // expand on first click
+                }
             });
+
+            notiList.appendChild(item);
+
+            // Add "Click here to see all notifications" link below
+            const seeAll = document.createElement("div");
+            seeAll.style.textAlign = "center";
+            seeAll.style.marginTop = "10px";
+            seeAll.innerHTML = `<a href="https://livenews.live/KFC/message/alerts.html" style="font-weight:bold; color:#7873f5; text-decoration:underline;">Click here to see all notifications</a>`;
+            notiList.appendChild(seeAll);
+
         } else {
             notiList.innerHTML = "<p style='text-align:center; font-family:UrduFont;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
         }
@@ -96,6 +119,3 @@ async function fetchUrduAlerts() {
         notiList.innerHTML = "<p style='text-align:center;'>Error loading notifications.</p>";
     }
 }
-
-// Initialize
-fetchUrduAlerts();
