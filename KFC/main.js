@@ -1,37 +1,289 @@
-let users=[];let currentUser=null;
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
 
-const userArea=document.getElementById("userArea");const usernameText=document.getElementById("username");const dropdown=document.getElementById("userDropdown");const guestView=document.getElementById("guestView");const userView=document.getElementById("userView");const openLoginBtn=document.getElementById("openLoginBtn");const loginOverlay=document.getElementById("loginOverlay");const loginBtn=document.getElementById("loginBtn");const loginUsername=document.getElementById("loginUsername");const loginPassword=document.getElementById("loginPassword");const loginError=document.getElementById("loginError");const logoutBtn=document.getElementById("logoutBtn");const userFullName=document.getElementById("userFullName");const userCard=document.getElementById("userCard");const userDesg=document.getElementById("userDesg");const userBlood=document.getElementById("userBlood");const userMobile=document.getElementById("userMobile");const welcomePopup=document.getElementById("welcomePopup");const welcomeText=document.getElementById("welcomeText");const totalMembers=document.getElementById("totalMembers");const activeMembers=document.getElementById("activeMembers");const leadersCount=document.getElementById("leadersCount");
+@font-face{font-family:'UrduFont';src:url('https://livenews.live/KFC/NewCard/static/fonts/urdu.ttf') format('truetype');}
 
-async function loadUsers(){try{const res=await fetch("https://livenews.live/KFC/cards.json");users=await res.json();calculateStats();}catch(e){console.error("Error loading JSON:",e);}}
+body{font-family:Calibri,sans-serif;background:linear-gradient(135deg,#e0eaff,#ffffff);min-height:100vh;color:#1a1a1a;overflow-x:hidden;}
+:lang(ur){font-family:'UrduFont',serif;direction:rtl;}
 
-function generateUsername(name){let parts=name.toLowerCase().split(" ");if(parts.length<2)return name.toLowerCase();let first=parts[0];let last=parts[parts.length-1];return(first+last).replace(/\s/g,'');}
+.glass{background:rgba(255,255,255,0.25);backdrop-filter:blur(18px);border-radius:20px;border:1px solid rgba(255,255,255,0.3);box-shadow:0 8px 30px rgba(0,0,0,0.1);}
 
-function generatePassword(card){if(!card)return"";let parts=card.split("-");return parts[parts.length-1];}
+.top-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:rgba(255,255,255,0.25);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.3);position:sticky;top:0;z-index:100;gap:10px;}
+.logo-area{display:flex;align-items:center;gap:10px;}
+.logo-area img{width:50px;}
+.logo-text h1{font-size:18px;text-align:center;}
+.logo-text p{font-size:12px;color:#0d3c91;text-align:center;}
 
-function login(){loginError.innerText="";let uname=loginUsername.value.trim().toLowerCase();let pass=loginPassword.value.trim();if(!uname||!pass){loginError.innerText="Enter username & password";return;}const user=users.find(u=>{let genUser=generateUsername(u.name);let genPass=generatePassword(u.CNo);return genUser===uname&&genPass===pass;});if(!user){loginError.innerText="Invalid credentials";return;}let status=user.Status?user.Status.toString().trim().toLowerCase():"";if(status==="cancel"||status==="cancelled"){loginError.innerText="This username cannot login, this card is already cancelled";return;}currentUser=user;localStorage.setItem("kfcUser",JSON.stringify(user));applyUser();showWelcome(user.name);loginOverlay.classList.remove("show");}
+.user-area{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:bold;position:relative;}
+.user-area i{font-size:24px;color:#7873f5;}
+.dropdown-arrow{font-size:14px;}
 
-function applyUser(){if(!currentUser)return;const firstName=currentUser.name.split(" ")[0];usernameText.innerText=`Welcome, ${firstName}`;guestView.style.display="none";userView.style.display="flex";userFullName.innerText="Welcome, "+currentUser.name;userCard.innerText="Card Number: "+currentUser.CNo;userDesg.innerText="Designation: "+currentUser.Desg;userBlood.innerText="Blood Group: "+(currentUser.BG||"Not available");userMobile.innerText="Registered Mobile: "+(currentUser.mobile||"Not available");const viewCardBtn=document.getElementById("viewCardBtn");const nameForLink=encodeURIComponent(currentUser.name+" e-Card.pdf");viewCardBtn.href="https://livenews.live/KFC/e-Cards/"+nameForLink;}
+.user-dropdown{position:absolute;top:60px;right:15px;width:240px;padding:15px;display:none;flex-direction:column;justify-content:space-between;height:auto;max-height:400px;z-index:999;}
+.user-dropdown.show{display:flex;}
+.user-dropdown h3{margin-bottom:5px;text-align:center;}
+.user-dropdown p{font-size:13px;text-align:center;margin:2px 0;}
+.user-dropdown .user-info{display:flex;flex-direction:column;gap:4px;align-items:center;}
 
-function checkSession(){const saved=localStorage.getItem("kfcUser");if(saved){currentUser=JSON.parse(saved);let status=currentUser.Status?currentUser.Status.toString().trim().toLowerCase():"";if(status==="cancel"||status==="cancelled"){localStorage.removeItem("kfcUser");currentUser=null;loginError.innerText="This username cannot login, this card is already cancelled";return;}applyUser();}}
+.user-dropdown button#logoutBtn{margin-top:10px;align-self:center;width:50%;padding:10px 0;border:none;border-radius:50px;background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;}
+.user-dropdown button#logoutBtn:hover{opacity:0.9;transform:translateY(-2px);}
 
-logoutBtn.addEventListener("click",()=>{localStorage.removeItem("kfcUser");currentUser=null;location.reload();});
+.login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:2000;}
+.login-overlay.show{display:flex;}
+.login-box{width:90%;max-width:360px;padding:25px;text-align:center;}
+.login-box h2{margin-bottom:10px;}
+.login-info{font-size:12px;margin-bottom:10px;color:#333;}
+.login-box input{width:100%;padding:10px;margin-bottom:10px;border:none;border-radius:10px;}
+.login-box button{width:100%;padding:10px;border:none;border-radius:20px;background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;cursor:pointer;font-weight:bold;}
+#loginError{color:red;font-size:12px;margin-top:5px;}
 
-userArea.addEventListener("click",e=>{e.stopPropagation();dropdown.classList.toggle("show");});
-document.addEventListener("click",()=>{dropdown.classList.remove("show");});
-dropdown.addEventListener("click",e=>e.stopPropagation());
-openLoginBtn.addEventListener("click",()=>loginOverlay.classList.add("show"));
-loginOverlay.addEventListener("click",e=>{if(e.target===loginOverlay)loginOverlay.classList.remove("show");});
-loginBtn.addEventListener("click",login);
-document.addEventListener("keydown",e=>{if(e.key==="Enter"&&loginOverlay.classList.contains("show"))login();});
+.welcome-popup{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;padding:12px 25px;border-radius:25px;display:none;z-index:3000;}
+.welcome-popup.show{display:block;}
 
-function showWelcome(name){welcomeText.innerText="Welcome, "+name+" 👋";welcomePopup.classList.add("show");setTimeout(()=>welcomePopup.classList.remove("show"),2500);}
+.dashboard-container{display:flex;flex-direction:row;min-height:calc(100vh - 60px);}
 
-function calculateStats(){totalMembers.innerText=users.length;let active=users.filter(u=>u.Status&&u.Status.toString().trim().toLowerCase()==="active");activeMembers.innerText=active.length;const allowedRoles=["president","acting president","vice president","committee guardian","committee guardian (ex-president)","general secretary","finance manager","joint finance secretary","media manager"];let leaders=users.filter(u=>{if(!u.Desg)return false;return allowedRoles.includes(u.Desg.toLowerCase().trim());});leadersCount.innerText=leaders.length;}
+.sidebar{width:250px;padding:20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(18px);transition:0.3s;display:flex;flex-direction:column;z-index:500;position:relative;}
+.sidebar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
+.sidebar-nav{display:flex;flex-direction:column;gap:8px;}
+.sidebar-nav a{text-decoration:none;padding:10px;border-radius:10px;color:#333;display:flex;align-items:center;gap:10px;transition:0.3s;}
+.sidebar-nav a:hover{background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;}
 
-(async function(){await loadUsers();checkSession();})();
+.main-content{flex:1;padding:20px;}
 
-document.addEventListener("click",e=>{const sidebar=document.querySelector(".sidebar");if(window.innerWidth<=600&&sidebar.style.display==="flex"){if(!sidebar.contains(e.target)&&e.target.id!=="mobileMenuToggle"){sidebar.style.display="none";}}});
+.welcome-section{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:20px;margin-bottom:20px;gap:15px;}
+.welcome-text p{font-size:14px;margin-top:10px;line-height:1.6;}
+.welcome-image img{width:120px;margin-top:10px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
 
-document.addEventListener("DOMContentLoaded",()=>{const leadersBtn=document.getElementById("leadersBtn");const leadersOverlay=document.getElementById("leadersOverlay");const closeLeaders=document.getElementById("closeLeaders");const leadersList=document.getElementById("leadersList");if(!leadersBtn)return;leadersBtn.addEventListener("click",()=>{showLeaders();leadersOverlay.classList.add("show");});closeLeaders.addEventListener("click",()=>leadersOverlay.classList.remove("show"));leadersOverlay.addEventListener("click",e=>{if(e.target===leadersOverlay)leadersOverlay.classList.remove("show");});function showLeaders(){leadersList.innerHTML="";const allowedRoles=["president","acting president","vice president","committee guardian","committee guardian (ex-president)","general secretary","finance manager","joint finance secretary","media manager"];let leaders=users.filter(u=>{if(!u.Desg)return false;return allowedRoles.includes(u.Desg.toLowerCase().trim());});const order=allowedRoles;leaders.sort((a,b)=>order.indexOf(a.Desg.toLowerCase().trim())-order.indexOf(b.Desg.toLowerCase().trim()));if(leaders.length===0){leadersList.innerHTML="<p>No leaders found</p>";return;}leaders.forEach(l=>{let div=document.createElement("div");div.className="leader-item";div.innerHTML=`<h4>${l.name}</h4><p>${l.Desg}</p><p class="leader-phone"><i class="fa-solid fa-phone"></i> ${l.mobile||"Not available"}</p>`;leadersList.appendChild(div);});}});
-[totalMembers, activeMembers].forEach(el => el.parentElement.onclick = () => window.location.href = "https://livenews.live/KFC/database.html");
-window.addEventListener("load",()=>{document.body.classList.add("loaded");});
+.stats-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px;}
+.stat{padding:15px;text-align:center;}
+.stat h3{margin-bottom:8px;}
+.stat p{font-size:20px;font-weight:bold;color:#7873f5;}
+
+.cards-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:20px;}
+.card{padding:15px;text-align:center;transition:0.3s;}
+.card i{font-size:28px;margin-bottom:8px;color:#7873f5;}
+.card h3{margin-bottom:5px;}
+.card p{font-size:13px;}
+.card a{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:20px;background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;text-decoration:none;}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,0,0,0.12);}
+
+.info-section{padding:15px;margin-bottom:15px;}
+.info-section h2{margin-bottom:10px;}
+.info-section p, .info-section ul{font-size:13px;line-height:1.5;}
+
+.footer{text-align:center;padding:12px;background:rgba(255,255,255,0.2);margin-top:20px;font-size:12px;}
+
+@media(max-width:1024px){.dashboard-container{flex-direction:column;}.sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:10px;}.sidebar-nav{flex-direction:row;gap:10px;}.sidebar-nav a{flex-shrink:0;white-space:nowrap;padding:8px 12px;font-size:13px;border-radius:15px;}.welcome-section{flex-direction:column;text-align:center;}.welcome-image img{width:100px;}}
+
+@media(max-width:600px){.logo-text h1{font-size:16px;}.welcome-text p{font-size:12px;}.stats-section{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}.cards-section{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}.user-dropdown{width:90%;right:5%;}.login-box{width:90%;}.sidebar{display:none;position:fixed;top:60px;left:0;height:calc(100vh - 60px);width:200px;flex-direction:column;background:rgba(255,255,255,0.25);backdrop-filter:blur(18px);padding:20px;z-index:999;transition:0.3s;}.sidebar::-webkit-scrollbar{height:6px;}.sidebar::-webkit-scrollbar-thumb{background:rgba(120,115,245,0.5);border-radius:3px;}#mobileMenuToggle{display:block;font-size:22px;cursor:pointer;color:#7873f5;}}
+
+.stats-section .stat{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+.cards-section .card{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+.info-section{text-align:center;}
+h1,h2,h3{background:linear-gradient(90deg,#0d3c91,#0d3c91);display:inline-block;-webkit-background-clip:text;-webkit-text-fill-color:transparent;width:100%;text-align:center;}
+.clickable{cursor:pointer;}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.25);backdrop-filter:blur(10px);display:none;justify-content:center;align-items:center;z-index:3000;}
+.overlay.show{display:flex;}
+.leaders-box{width:90%;max-width:420px;padding:20px;background:rgba(255,255,255,0.45);backdrop-filter:blur(20px);border-radius:20px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 10px 35px rgba(0,0,0,0.15);max-height:70vh;overflow-y:auto;}
+.leaders-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.leaders-header h2{background:linear-gradient(90deg,#0d3c91,#4facfe,#00c6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.leaders-header i{color:#0d3c91;transition:0.3s;}
+.leaders-header i:hover{color:#ff4d4d;transform:scale(1.2);}
+.leaders-list{display:flex;flex-direction:column;gap:10px;}
+.leader-item{padding:10px;border-radius:12px;background:rgba(255,255,255,0.2);}
+.leader-item h4{margin-bottom:3px;}
+.leader-item p{font-size:12px;}
+.floating-circles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:0;}
+.floating-circles .circle{position:absolute;border-radius:50%;background:rgba(255,110,196,0.25);filter:blur(25px);animation:floatRandom linear infinite;}
+.floating-circles .circle:nth-child(1){top:10%;left:15%;width:120px;height:120px;animation-duration:30s;animation-delay:0s;}
+.floating-circles .circle:nth-child(2){top:50%;left:25%;width:90px;height:90px;animation-duration:35s;animation-delay:5s;}
+.floating-circles .circle:nth-child(3){top:30%;left:70%;width:150px;height:150px;animation-duration:40s;animation-delay:2s;}
+.floating-circles .circle:nth-child(4){top:80%;left:40%;width:100px;height:100px;animation-duration:38s;animation-delay:7s;}
+.floating-circles .circle:nth-child(5){top:60%;left:80%;width:80px;height:80px;animation-duration:32s;animation-delay:3s;}
+@keyframes floatRandom{0%{transform:translate(0,0) rotate(0deg);}25%{transform:translate(50px,-30px) rotate(90deg);}50%{transform:translate(-40px,40px) rotate(180deg);}75%{transform:translate(30px,20px) rotate(270deg);}100%{transform:translate(0,0) rotate(360deg);}}
+.welcome-text p[lang="ur"] { text-align: center; width: 100%; }
+#welcomePopup { left: 50%; transform: translateX(-50%); text-align: center; }
+.stat { cursor: pointer; }
+body.loaded *{opacity:1;transform:translateY(0);}
+body *{opacity:0;transform:translateY(-40px);transition:all 0.8s ease;}
+
+.top-header{transition-delay:0.1s;}
+.sidebar{transition-delay:0.2s;}
+.welcome-section{transition-delay:0.3s;}
+.stats-section{transition-delay:0.5s;}
+.cards-section{transition-delay:0.7s;}
+.info-section:nth-of-type(1){transition-delay:0.9s;}
+.info-section:nth-of-type(2){transition-delay:1.1s;}
+.info-section:nth-of-type(3){transition-delay:1.3s;}
+.info-section:nth-of-type(4){transition-delay:1.5s;}
+.info-section:nth-of-type(5){transition-delay:1.7s;}
+.footer{transition-delay:1.9s;}
+.dancing-logo{width:50px;animation:logoZoomFade 3s ease-in-out infinite;cursor:pointer;transition:0.3s;}
+.dancing-logo:hover{transform:scale(1.1);}
+@keyframes logoZoomFade{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.6;transform:scale(1.2);}}
+/* --- Notification System Styles --- */
+.notification-wrapper { 
+  position: relative; 
+  margin-right: 12px; 
+  display: flex; 
+  align-items: center; 
+}
+
+.notification-wrapper i { 
+  font-size: 20px; 
+  color: #7873f5; 
+  cursor: pointer; 
+}
+
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4d4d;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+  border: 2px solid #fff;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 45px;
+  right: -60px;
+  width: 320px;
+  max-height: 500px;
+  background: #ffffff !important; /* Solid white background */
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  display: none;
+  flex-direction: column;
+  padding: 15px;
+  z-index: 2000;
+  direction: rtl; 
+}
+
+.notification-dropdown.show { display: flex; }
+
+.noti-header {
+  font-family: 'UrduFont', serif !important;
+  font-weight: bold;
+  font-size: 20px;
+  color: #0d3c91;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.noti-list {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.noti-item {
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border-right: 4px solid #7873f5;
+  transition: all 0.3s ease;
+}
+
+.noti-top-row { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+}
+
+.noti-date { 
+  font-size: 11px; 
+  color: #888; 
+  direction: ltr; 
+  font-family: Arial, sans-serif;
+}
+
+.noti-title-ur { 
+  font-family: 'UrduFont', serif !important;
+  font-weight: bold; 
+  font-size: 17px; 
+  color: #000; 
+  flex: 1; 
+}
+
+.noti-body-ur {
+  display: none; /* Hidden until first click */
+  font-family: 'UrduFont', serif !important;
+  font-size: 15px;
+  color: #333;
+  line-height: 1.8;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #7873f5;
+  text-align: right;
+  white-space: pre-line;
+}
+
+/* Toggle expansion */
+.noti-item.expanded .noti-body-ur { display: block; }
+.noti-item.expanded { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+/* --- Expanded Notification with Logo Background --- */
+
+/* Base style for the expanded container */
+.noti-item.expanded {
+  background-color: #ffffff; /* Solid white base to ensure readability */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative; /* Context for potential overlays/positions */
+  overflow: hidden; /* Ensures background doesn't leak out */
+}
+
+/* Background image applied ONLY when expanded */
+.noti-item.expanded::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
+  /* Path to your logo */
+  background-image: url('logo.png'); 
+  
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain; /* Or '60%' if it's too big */
+  
+  /* Very low visibility (10%) */
+  opacity: 0.1; 
+  
+  z-index: 0; /* Placed below the text */
+}
+
+/* Ensure notification text stays ABOVE the background logo */
+.noti-item.expanded .noti-top-row,
+.noti-item.expanded .noti-body-ur {
+  position: relative;
+  z-index: 1; /* Puts text on top */
+}
+
+/* Base body style (no change, just included for context) */
+.noti-body-ur {
+  display: none; 
+  font-family: 'UrduFont', serif !important;
+  font-size: 15px;
+  color: #333;
+  line-height: 1.8;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #7873f5;
+  text-align: right;
+  white-space: pre-line;
+}
+
+/* Unhides the body when the container is expanded */
+.noti-item.expanded .noti-body-ur {
+  display: block;
+}
