@@ -91,6 +91,7 @@ function login() {
 
 function applyUser() {
     if (!currentUser) return;
+
     const firstName = currentUser.name.split(" ")[0];
     usernameText.innerText = `Welcome, ${firstName}`;
     guestView.style.display = "none";
@@ -100,9 +101,14 @@ function applyUser() {
     userDesg.innerText = "Designation: " + currentUser.Desg;
     userBlood.innerText = "Blood Group: " + (currentUser.BG || "Not available");
     userMobile.innerText = "Registered Mobile: " + (currentUser.mobile || "Not available");
+
     const viewCardBtn = document.getElementById("viewCardBtn");
     const nameForLink = encodeURIComponent(currentUser.name + " e-Card.pdf");
     viewCardBtn.href = "https://livenews.live/KFC/e-Cards/" + nameForLink;
+
+    // **Show notification & message icons immediately**
+    msgBtn.style.display = "flex";           // or "inline-flex"
+    notificationBtn.style.display = "flex";
 }
 
 function checkSession() {
@@ -118,10 +124,17 @@ function checkSession() {
         }
         applyUser();
     }
-    if (!currentUser) {
-        notiBadge.style.display = "none";
+
+    // Show or hide notification and message icons
+    if (currentUser) {
+        msgBtn.style.display = "flex";           // or "inline-flex" if needed
+        notificationBtn.style.display = "flex";
+    } else {
+        msgBtn.style.display = "none";
+        notificationBtn.style.display = "none";
     }
 }
+loadUsers().then(() => checkSession());
 
 function showWelcome(name) {
     welcomeText.innerText = "Welcome, " + name + " 👋";
