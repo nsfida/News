@@ -303,3 +303,4 @@ body *{opacity:0;transform:translateY(-40px);transition:all 0.8s ease;}
 .noti-item.expanded .noti-body-ur {
   display: block;
 }
+.download-btn:hover{transform:scale(1.2);}
