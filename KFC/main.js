@@ -19,7 +19,7 @@ function checkSession(){const saved=localStorage.getItem("kfcUser");if(saved){cu
 
 logoutBtn.addEventListener("click",()=>{localStorage.removeItem("kfcUser");currentUser=null;location.reload();});
 
-userArea.addEventListener("click",e=>{e.stopPropagation();dropdown.classList.toggle("show");});
+userArea.addEventListener("click",e=>{e.stopPropagation();notiDropdown.classList.remove("show");dropdown.classList.toggle("show");});
 document.addEventListener("click",()=>{dropdown.classList.remove("show");});
 dropdown.addEventListener("click",e=>e.stopPropagation());
 openLoginBtn.addEventListener("click",()=>loginOverlay.classList.add("show"));
@@ -45,9 +45,7 @@ const notiBadge = document.getElementById("notiBadge");
 const notiList = document.getElementById("notiList");
 
 // Toggle visibility and hide badge on click
-notificationBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    notiDropdown.classList.toggle("show");
+notificationBtn.addEventListener("click",(e)=>{e.stopPropagation();dropdown.classList.remove("show");notiDropdown.classList.toggle("show");
 
     // 🔐 Check login
     if (!currentUser) {
