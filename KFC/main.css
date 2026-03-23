@@ -305,3 +305,25 @@ body *{opacity:0;transform:translateY(-40px);transition:all 0.8s ease;}
   display: block;
 }
 .download-btn:hover{transform:scale(1.2);}
+/* Ensure messages are LTR and body is hidden by default */
+.msg-item {
+  direction: ltr !important;
+  text-align: left !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.msg-body {
+  display: none; /* Hidden by default */
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #7873f5;
+  color: #444;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Show body when parent has .expanded class */
+.msg-item.expanded .msg-body {
+  display: block;
+}
