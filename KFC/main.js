@@ -141,3 +141,88 @@ downloadBtn.addEventListener("click", async (e) => {
         notiList.innerHTML = "<p style='text-align:center;'>Error loading notifications.</p>";
     }
 }
+// --- Private Messaging System Logic ---
+const msgBtn = document.getElementById("msgBtn");
+const msgDropdown = document.getElementById("msgDropdown");
+const msgBadge = document.getElementById("msgBadge");
+const msgList = document.getElementById("msgList");
+
+msgBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.remove("show");
+    notiDropdown.classList.remove("show"); // Close other dropdown
+    msgDropdown.classList.toggle("show");
+
+    if (!currentUser) {
+        msgList.innerHTML = `<p style="text-align:center; padding:20px;">Please sign-in to view your messages</p>`;
+        msgBadge.style.display = "none";
+        return;
+    }
+
+    fetchPersonalMessages();
+});
+
+// Close when clicking outside
+document.addEventListener("click", () => msgDropdown.classList.remove("show"));
+
+async function fetchPersonalMessages() {
+    try {
+        const response = await fetch("https://livenews.live/KFC/messages.json");
+        const messages = await response.json();
+        msgList.innerHTML = "";
+
+        // ✅ Updated Filter: Matches specific card OR "All"
+        const myMessages = messages.filter(m => 
+            m.cardNumber === currentUser.CNo || 
+            m.cardNumber?.toLowerCase() === "all"
+        );
+
+        if (myMessages.length > 0) {
+            msgBadge.style.display = "none";
+
+            // Sort by date (newest first)
+            myMessages.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            myMessages.forEach(msg => {
+                const item = document.createElement("div");
+                item.className = "noti-item msg-item";
+                
+                // Add a special style if it's a global message
+                const isGlobal = msg.cardNumber?.toLowerCase() === "all";
+                const typeLabel = isGlobal ? '<span style="color:#ff6ec4; font-size:10px;">[Public]</span>' : '<span style="color:#7873f5; font-size:10px;">[Private]</span>';
+
+                item.innerHTML = `
+                    <div class="noti-top-row" style="flex-direction: column; align-items: flex-start;">
+                        <span class="msg-date">${msg.date} ${typeLabel}</span>
+                        <strong class="msg-title" style="color:#0d3c91; font-size: 15px;">
+                            <i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-right: 5px;"></i> 
+                            ${msg.title}
+                        </strong>
+                    </div>
+                    <div class="msg-body">
+                        ${msg.body}
+                    </div>
+                `;
+
+                item.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const isExpanded = item.classList.contains("expanded");
+                    document.querySelectorAll('.msg-item').forEach(el => el.classList.remove('expanded'));
+                    
+                    if (!isExpanded) {
+                        item.classList.add("expanded");
+                        item.querySelector('i').className = "fa-solid fa-chevron-down";
+                    } else {
+                        item.querySelector('i').className = "fa-solid fa-chevron-right";
+                    }
+                });
+
+                msgList.appendChild(item);
+            });
+        } else {
+            msgList.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No messages found.</p>";
+        }
+    } catch (error) {
+        msgList.innerHTML = "<p style='text-align:center;'>Error loading messages.</p>";
+    }
+}
