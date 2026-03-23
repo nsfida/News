@@ -289,7 +289,8 @@ body *{opacity:0;transform:translateY(-40px);transition:all 0.8s ease;}
 .noti-body-ur {
   display: none; 
   font-family: 'UrduFont', serif !important;
-  font-size: 15px;
+  font-size: 12px;
+  font-weight: normal; /* ensures body text is not bold */
   color: #333;
   line-height: 1.8;
   margin-top: 10px;
