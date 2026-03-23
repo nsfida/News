@@ -82,14 +82,27 @@ async function fetchUrduAlerts() {
             const item = document.createElement("div");
             item.className = "noti-item";
 
-            item.innerHTML = `
-                <div class="noti-top-row">
-                    <span class="noti-title-ur">${latest.title_ur || "اعلان"}</span>
-                    <span class="noti-date">${latest.date}</span>
-                </div>
-                <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
-            `;
+item.innerHTML = `
+    <div class="noti-top-row" style="position:relative;">
+        <i class="fa-solid fa-download download-btn" style="position:absolute;left:0;top:0;cursor:pointer;font-size:14px;color:#7873f5;"></i>
+        <span class="noti-title-ur">${latest.title_ur || "اعلان"}</span>
+        <span class="noti-date">${latest.date}</span>
+    </div>
+    <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
+`;
+const downloadBtn = item.querySelector(".download-btn");
 
+downloadBtn.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    item.classList.add("expanded");
+
+    html2canvas(item,{backgroundColor:null,scale:2}).then(canvas=>{
+        const link=document.createElement("a");
+        link.download="notification.png";
+        link.href=canvas.toDataURL("image/png");
+        link.click();
+    });
+});
             // Expand/collapse logic (same as before)
             item.addEventListener("click", (e) => {
                 e.stopPropagation();
