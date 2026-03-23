@@ -77,46 +77,50 @@ async function fetchUrduAlerts() {
         if (alerts.length > 0) {
             notiBadge.style.display = "block";
 
-            // Show only the latest notification
-            const latest = alerts.reverse()[0]; // most recent
-            const item = document.createElement("div");
-            item.className = "noti-item";
+            // ✅ Show latest 3 notifications
+            alerts.reverse().slice(0,3).forEach(latest=>{
 
-item.innerHTML = `
-    <div class="noti-top-row" style="position:relative;">
-        <i class="fa-solid fa-download download-btn" style="position:absolute;left:0;top:0;cursor:pointer;font-size:14px;color:#7873f5;"></i>
-        <span class="noti-title-ur">${latest.title_ur || "اعلان"}</span>
-        <span class="noti-date">${latest.date}</span>
-    </div>
-    <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
-`;
-const downloadBtn = item.querySelector(".download-btn");
+                const item = document.createElement("div");
+                item.className = "noti-item";
 
-downloadBtn.addEventListener("click",(e)=>{
-    e.stopPropagation();
-    item.classList.add("expanded");
+                item.innerHTML = `
+                    <div class="noti-top-row" style="position:relative;">
+                        <i class="fa-solid fa-download download-btn" style="position:absolute;left:0;top:0;cursor:pointer;font-size:14px;color:#7873f5;"></i>
+                        <span class="noti-title-ur">${latest.title_ur || "اعلان"}</span>
+                        <span class="noti-date">${latest.date}</span>
+                    </div>
+                    <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
+                `;
 
-    html2canvas(item,{backgroundColor:null,scale:2}).then(canvas=>{
-        const link=document.createElement("a");
-        link.download="notification.png";
-        link.href=canvas.toDataURL("image/png");
-        link.click();
-    });
-});
-            // Expand/collapse logic (same as before)
-            item.addEventListener("click", (e) => {
-                e.stopPropagation();
-                if (item.classList.contains("expanded")) {
-                    item.classList.remove("expanded"); // close on second click
-                } else {
-                    document.querySelectorAll('.noti-item').forEach(el => el.classList.remove('expanded'));
-                    item.classList.add("expanded"); // expand on first click
-                }
+                // ✅ Download button
+                const downloadBtn = item.querySelector(".download-btn");
+                downloadBtn.addEventListener("click",(e)=>{
+                    e.stopPropagation();
+                    item.classList.add("expanded");
+
+                    html2canvas(item,{backgroundColor:null,scale:2}).then(canvas=>{
+                        const link=document.createElement("a");
+                        link.download="notification.png";
+                        link.href=canvas.toDataURL("image/png");
+                        link.click();
+                    });
+                });
+
+                // ✅ Expand/collapse
+                item.addEventListener("click",(e)=>{
+                    e.stopPropagation();
+                    if(item.classList.contains("expanded")){
+                        item.classList.remove("expanded");
+                    } else {
+                        document.querySelectorAll('.noti-item').forEach(el=>el.classList.remove('expanded'));
+                        item.classList.add("expanded");
+                    }
+                });
+
+                notiList.appendChild(item);
             });
 
-            notiList.appendChild(item);
-
-            // Add "Click here to see all notifications" link below
+            // ✅ See all link (unchanged)
             const seeAll = document.createElement("div");
             seeAll.style.textAlign = "center";
             seeAll.style.marginTop = "10px";
