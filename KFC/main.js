@@ -92,19 +92,26 @@ async function fetchUrduAlerts() {
                     <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
                 `;
 
-                // ✅ Download button
-                const downloadBtn = item.querySelector(".download-btn");
-                downloadBtn.addEventListener("click",(e)=>{
-                    e.stopPropagation();
-                    item.classList.add("expanded");
+// ✅ Download button
+const downloadBtn = item.querySelector(".download-btn");
+downloadBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    item.classList.add("expanded");
 
-                    html2canvas(item,{backgroundColor:null,scale:2}).then(canvas=>{
-                        const link=document.createElement("a");
-                        link.download="notification.png";
-                        link.href=canvas.toDataURL("image/png");
-                        link.click();
-                    });
-                });
+    // wait a tiny bit to ensure expanded class applied
+    setTimeout(async () => {
+        if (typeof html2canvas === "undefined") {
+            alert("html2canvas not loaded!");
+            return;
+        }
+
+        const canvas = await html2canvas(item, { backgroundColor: null, scale: 2 });
+        const link = document.createElement("a");
+        link.download = "notification.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    }, 50);
+});
 
                 // ✅ Expand/collapse
                 item.addEventListener("click",(e)=>{
