@@ -1,14 +1,20 @@
 [
-    {
-        "CNo": "746-210-011",
-        "title_ur": "اہم اطلاع",
-        "body_ur": "آپ کی ممبرشپ کی تازہ ترین معلومات دستیاب ہیں",
-        "date": "2026-03-23"
-    },
-    {
-        "CNo": "789-101",
-        "title_ur": "پیغام برائے ممبر",
-        "body_ur": "یہ آپ کے لیے خصوصی پیغام ہے",
-        "date": "2026-03-22"
-    }
+  {
+    "cardNumber": "746-210-011",
+    "title": "Welcome to Khawrai Falahi Committee",
+    "body": "Dear member, we are delighted to have you onboard. Please explore our new online platform for donations and updates. Your participation makes a difference.",
+    "date": "2026-03-23"
+  },
+  {
+    "cardNumber": "1234567890",
+    "title": "Monthly Newsletter - March",
+    "body": "The March newsletter is out now. It includes updates on welfare projects, recent initiatives, and upcoming events. Stay informed and engaged.",
+    "date": "2026-03-20"
+  },
+  {
+    "cardNumber": "9876543210",
+    "title": "Important Security Update",
+    "body": "We have updated our website security protocols. Please reset your password at your earliest convenience to ensure your account remains secure.",
+    "date": "2026-03-21"
+  }
 ]
