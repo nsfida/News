@@ -1,354 +1,136 @@
-document.addEventListener("DOMContentLoaded", function () {
+let users=[];let currentUser=null;
 
-    // ------------------- PRINT FOOTER -------------------
-    function createPrintFooter() {
-        const existing = document.querySelector(".print-footer");
-        if (existing) existing.remove();
+const userArea=document.getElementById("userArea");const usernameText=document.getElementById("username");const dropdown=document.getElementById("userDropdown");const guestView=document.getElementById("guestView");const userView=document.getElementById("userView");const openLoginBtn=document.getElementById("openLoginBtn");const loginOverlay=document.getElementById("loginOverlay");const loginBtn=document.getElementById("loginBtn");const loginUsername=document.getElementById("loginUsername");const loginPassword=document.getElementById("loginPassword");const loginError=document.getElementById("loginError");const logoutBtn=document.getElementById("logoutBtn");const userFullName=document.getElementById("userFullName");const userCard=document.getElementById("userCard");const userDesg=document.getElementById("userDesg");const userBlood=document.getElementById("userBlood");const userMobile=document.getElementById("userMobile");const welcomePopup=document.getElementById("welcomePopup");const welcomeText=document.getElementById("welcomeText");const totalMembers=document.getElementById("totalMembers");const activeMembers=document.getElementById("activeMembers");const leadersCount=document.getElementById("leadersCount");
 
-        const footer = document.createElement("div");
-        footer.className = "print-footer";
-        footer.innerHTML = `
-            <a href="#"><i class="fas fa-users"></i>  <span>CABINET MEMBERS</span></a>
-            <a href="#"><i class="fas fa-user"></i> Arbab M. Rizwan <span>President</span></a>
-            <a href="#"><i class="fas fa-user"></i> Salar Khan <span>Vice President</span></a>
-            <a href="#"><i class="fas fa-user"></i> Ahmad A. Khattak <span>Acting President</span></a>
-            <a href="#"><i class="fas fa-user"></i> Naveed A. Liaqat <span>Finance Manager</span></a>
-            <a href="#"><i class="fas fa-user"></i> Nadeem Shahzad Fida <span>Media Manager</span></a>
-            <a href="#"><i class="fas fa-user"></i> Sabir Ali <span>Joint Finance Secretary</span></a>
-            <a href="#"><i class="fas fa-user"></i> Amjad Ali Khattak <span>General Secretary</span></a>
+async function loadUsers(){try{const res=await fetch("https://livenews.live/KFC/cards.json");users=await res.json();calculateStats();}catch(e){console.error("Error loading JSON:",e);}}
+
+function generateUsername(name){let parts=name.toLowerCase().split(" ");if(parts.length<2)return name.toLowerCase();let first=parts[0];let last=parts[parts.length-1];return(first+last).replace(/\s/g,'');}
+
+function generatePassword(card){if(!card)return"";let parts=card.split("-");return parts[parts.length-1];}
+
+function login(){loginError.innerText="";let uname=loginUsername.value.trim().toLowerCase();let pass=loginPassword.value.trim();if(!uname||!pass){loginError.innerText="Enter username & password";return;}const user=users.find(u=>{let genUser=generateUsername(u.name);let genPass=generatePassword(u.CNo);return genUser===uname&&genPass===pass;});if(!user){loginError.innerText="Invalid credentials";return;}let status=user.Status?user.Status.toString().trim().toLowerCase():"";if(status==="cancel"||status==="cancelled"){loginError.innerText="This username cannot login, this card is already cancelled";return;}currentUser=user;localStorage.setItem("kfcUser",JSON.stringify(user));applyUser();showWelcome(user.name);loginOverlay.classList.remove("show");}
+
+function applyUser(){if(!currentUser)return;const firstName=currentUser.name.split(" ")[0];usernameText.innerText=`Welcome, ${firstName}`;guestView.style.display="none";userView.style.display="flex";userFullName.innerText="Welcome, "+currentUser.name;userCard.innerText="Card Number: "+currentUser.CNo;userDesg.innerText="Designation: "+currentUser.Desg;userBlood.innerText="Blood Group: "+(currentUser.BG||"Not available");userMobile.innerText="Registered Mobile: "+(currentUser.mobile||"Not available");const viewCardBtn=document.getElementById("viewCardBtn");const nameForLink=encodeURIComponent(currentUser.name+" e-Card.pdf");viewCardBtn.href="https://livenews.live/KFC/e-Cards/"+nameForLink;}
+
+function checkSession(){const saved=localStorage.getItem("kfcUser");if(saved){currentUser=JSON.parse(saved);let status=currentUser.Status?currentUser.Status.toString().trim().toLowerCase():"";if(status==="cancel"||status==="cancelled"){localStorage.removeItem("kfcUser");currentUser=null;loginError.innerText="This username cannot login, this card is already cancelled";return;}applyUser();}
+    if (!currentUser) {
+        notiBadge.style.display = "none";
+    }}
+
+logoutBtn.addEventListener("click",()=>{localStorage.removeItem("kfcUser");currentUser=null;location.reload();});
+
+userArea.addEventListener("click",e=>{e.stopPropagation();notiDropdown.classList.remove("show");dropdown.classList.toggle("show");});
+document.addEventListener("click",()=>{dropdown.classList.remove("show");});
+dropdown.addEventListener("click",e=>e.stopPropagation());
+openLoginBtn.addEventListener("click",()=>loginOverlay.classList.add("show"));
+loginOverlay.addEventListener("click",e=>{if(e.target===loginOverlay)loginOverlay.classList.remove("show");});
+loginBtn.addEventListener("click",login);
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&loginOverlay.classList.contains("show"))login();});
+
+function showWelcome(name){welcomeText.innerText="Welcome, "+name+" 👋";welcomePopup.classList.add("show");setTimeout(()=>welcomePopup.classList.remove("show"),2500);}
+
+function calculateStats(){totalMembers.innerText=users.length;let active=users.filter(u=>u.Status&&u.Status.toString().trim().toLowerCase()==="active");activeMembers.innerText=active.length;const allowedRoles=["president","acting president","vice president","committee guardian","committee guardian (ex-president)","general secretary","finance manager","joint finance secretary","media manager"];let leaders=users.filter(u=>{if(!u.Desg)return false;return allowedRoles.includes(u.Desg.toLowerCase().trim());});leadersCount.innerText=leaders.length;}
+
+(async function(){await loadUsers();checkSession();})();
+
+document.addEventListener("click",e=>{const sidebar=document.querySelector(".sidebar");if(window.innerWidth<=600&&sidebar.style.display==="flex"){if(!sidebar.contains(e.target)&&e.target.id!=="mobileMenuToggle"){sidebar.style.display="none";}}});
+
+document.addEventListener("DOMContentLoaded",()=>{const leadersBtn=document.getElementById("leadersBtn");const leadersOverlay=document.getElementById("leadersOverlay");const closeLeaders=document.getElementById("closeLeaders");const leadersList=document.getElementById("leadersList");if(!leadersBtn)return;leadersBtn.addEventListener("click",()=>{showLeaders();leadersOverlay.classList.add("show");});closeLeaders.addEventListener("click",()=>leadersOverlay.classList.remove("show"));leadersOverlay.addEventListener("click",e=>{if(e.target===leadersOverlay)leadersOverlay.classList.remove("show");});function showLeaders(){leadersList.innerHTML="";const allowedRoles=["president","acting president","vice president","committee guardian","committee guardian (ex-president)","general secretary","finance manager","joint finance secretary","media manager"];let leaders=users.filter(u=>{if(!u.Desg)return false;return allowedRoles.includes(u.Desg.toLowerCase().trim());});const order=allowedRoles;leaders.sort((a,b)=>order.indexOf(a.Desg.toLowerCase().trim())-order.indexOf(b.Desg.toLowerCase().trim()));if(leaders.length===0){leadersList.innerHTML="<p>No leaders found</p>";return;}leaders.forEach(l=>{let div=document.createElement("div");div.className="leader-item";div.innerHTML=`<h4>${l.name}</h4><p>${l.Desg}</p><p class="leader-phone"><i class="fa-solid fa-phone"></i> ${l.mobile||"Not available"}</p>`;leadersList.appendChild(div);});}});
+[totalMembers, activeMembers].forEach(el => el.parentElement.onclick = () => window.location.href = "https://livenews.live/KFC/database.html");
+window.addEventListener("load",()=>{document.body.classList.add("loaded");});
+// --- Notification System Logic ---
+const notificationBtn = document.getElementById("notificationBtn");
+const notiDropdown = document.getElementById("notiDropdown");
+const notiBadge = document.getElementById("notiBadge");
+const notiList = document.getElementById("notiList");
+
+// Toggle visibility and hide badge on click
+notificationBtn.addEventListener("click",(e)=>{e.stopPropagation();dropdown.classList.remove("show");notiDropdown.classList.toggle("show");
+
+    // 🔐 Check login
+    if (!currentUser) {
+        notiList.innerHTML = `
+            <p style="text-align:center; padding:20px;">
+                Please sign-in to view recent alerts
+            </p>
         `;
-        document.body.appendChild(footer);
+        notiBadge.style.display = "none";
+        return;
     }
 
-    window.onbeforeprint = createPrintFooter;
-    window.onafterprint = () => {
-        const footer = document.querySelector(".print-footer");
-        if (footer) footer.remove();
-    };
-
-    // ------------------- VARIABLES -------------------
-    let data = [];
-    let currentSort = { column: null, asc: true };
-
-    let loggedInUsername = "";
-    let loggedInCardNo = "";
-    let loggedInFullName = "";
-    let loggedInStatus = "";
-    let isLoggedIn = false;
-
-    const allowedFullAccess = [
-        "746-210-001",
-        "746-210-011",
-        "746-210-040",
-        "746-210-006",
-        "746-210-007",
-        "746-210-008",
-        "746-210-021"
-    ];
-
-    const loginOverlay = document.getElementById("loginOverlay");
-    const loginButton = document.getElementById("loginButton");
-    const loginUser = document.getElementById("loginUser");
-    const loginPass = document.getElementById("loginPass");
-    const loginError = document.getElementById("loginError");
-
-    const searchInput = document.getElementById("searchInput");
-    const searchField = document.getElementById("searchField");
-    const searchButton = document.getElementById("searchButton");
-    const resultContainer = document.getElementById("resultContainer");
-    const printButton = document.getElementById("printButton");
-
-    const generateButton = document.getElementById("generateButton");
-    const englishConstitution = document.getElementById("englishConstitution");
-    const urduConstitution = document.getElementById("urduConstitution");
-
-const toggle = document.getElementById('menuToggle');
-const menu = document.getElementById('menuList');
-
-toggle.addEventListener('click', () => {
-  menu.classList.toggle('show');
-});
-document.addEventListener('click', function (e) {
-  if (!menu.contains(e.target) && !toggle.contains(e.target)) {
-    menu.classList.remove('show');
-  }
+    // If logged in → load alerts
+    fetchUrduAlerts();
+    notiBadge.style.display = "none";
 });
 
-    printButton.disabled = true;
-    searchButton.disabled = true;
+// Close dropdown when clicking anywhere else
+document.addEventListener("click", () => {
+    notiDropdown.classList.remove("show");
+});
 
-    // ------------------- BUTTON EVENTS -------------------
-    printButton.addEventListener("click", () => window.print());
-    generateButton.addEventListener("click", () => window.location.href = "NewCard/login.html");
-    englishConstitution.addEventListener("click", () => window.open("English.pdf","_blank"));
-    urduConstitution.addEventListener("click", () => window.open("Urdu.pdf","_blank"));
+async function fetchUrduAlerts() {
+    try {
+        const response = await fetch("https://livenews.live/KFC/message/alerts.json");
+        const alerts = await response.json();
+        notiList.innerHTML = "";
 
-    // ------------------- LOAD DATA -------------------
-    function loadData(){
-        const token = Math.random().toString(36).substring(2);
-        fetch(`https://livenews.live/KFC/cards.json?t=${token}`)
-            .then(response => response.json())
-            .then(json => data = json)
-            .catch(err => {
-                console.error("Error loading JSON:", err);
-                resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
+        if (alerts.length > 0) {
+            notiBadge.style.display = "block";
+
+            // ✅ Show latest 3 notifications
+            alerts.reverse().slice(0,3).forEach(latest=>{
+
+                const item = document.createElement("div");
+                item.className = "noti-item";
+
+                item.innerHTML = `
+                    <div class="noti-top-row" style="position:relative;">
+                        <i class="fa-solid fa-download download-btn" style="position:absolute;left:0;top:0;cursor:pointer;font-size:14px;color:#7873f5;"></i>
+                        <span class="noti-title-ur">${latest.title_ur || "اعلان"}</span>
+                        <span class="noti-date">${latest.date}</span>
+                    </div>
+                    <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
+                `;
+
+                // ✅ Download button
+                const downloadBtn = item.querySelector(".download-btn");
+                downloadBtn.addEventListener("click",(e)=>{
+                    e.stopPropagation();
+                    item.classList.add("expanded");
+
+                    html2canvas(item,{backgroundColor:null,scale:2}).then(canvas=>{
+                        const link=document.createElement("a");
+                        link.download="notification.png";
+                        link.href=canvas.toDataURL("image/png");
+                        link.click();
+                    });
+                });
+
+                // ✅ Expand/collapse
+                item.addEventListener("click",(e)=>{
+                    e.stopPropagation();
+                    if(item.classList.contains("expanded")){
+                        item.classList.remove("expanded");
+                    } else {
+                        document.querySelectorAll('.noti-item').forEach(el=>el.classList.remove('expanded'));
+                        item.classList.add("expanded");
+                    }
+                });
+
+                notiList.appendChild(item);
             });
-    }
-    loadData();
 
-    // ------------------- CHECK SAVED LOGIN -------------------
-    const savedLogin = localStorage.getItem("kfcLogin");
-    if(savedLogin){
-        const session = JSON.parse(savedLogin);
-        loggedInUsername = session.username;
-        loggedInCardNo = session.cardNo;
-        loggedInFullName = session.fullName;
-        loggedInStatus = session.status;
-        isLoggedIn = true;
+            // ✅ See all link (unchanged)
+            const seeAll = document.createElement("div");
+            seeAll.style.textAlign = "center";
+            seeAll.style.marginTop = "10px";
+            seeAll.innerHTML = `<a href="https://livenews.live/KFC/message/alerts.html" style="font-weight:bold; color:#7873f5; text-decoration:underline;">Click here to see all notifications</a>`;
+            notiList.appendChild(seeAll);
 
-        loginOverlay.style.display = "none";
-        showWelcomeBox(loggedInFullName);
-        showLoggedInUser(loggedInFullName);
-    }
-if (isLoggedIn) {
-    if (!allowedFullAccess.includes(loggedInCardNo)) {
-        generateButton.disabled = true;          // disable the button
-        generateButton.title = "Full Access members only";  // optional tooltip
-        generateButton.style.cursor = "not-allowed";
-    } else {
-        generateButton.disabled = false;
-    }
-} else {
-    generateButton.disabled = true;  // default for not logged-in users
-}
-    // ------------------- LOGIN SYSTEM -------------------
-    loginButton.addEventListener("click", function(){
-        let user = loginUser.value.trim().toLowerCase();
-        let pass = loginPass.value.trim();
-
-        if(!user || !pass){
-            loginError.innerText = "Enter username and password";
-            return;
-        }
-
-        let valid = false;
-        let cancelled = false;
-        let cardNoOfUser = "";
-        let fullNameOfUser = "";
-        let statusOfUser = "";
-
-        data.forEach(card=>{
-            let names = card.name.trim().toLowerCase().split(" ");
-            let username = names[0] + names[names.length-1];
-            let cnoParts = card.CNo.split("-");
-            let password = cnoParts[cnoParts.length-1];
-
-            if(user === username && pass === password){
-                if(card.Status && card.Status.toLowerCase() === "active"){
-                    valid = true;
-                    cardNoOfUser = card.CNo;
-                    fullNameOfUser = card.name;
-                    statusOfUser = card.Status;
-                } else {
-                    cancelled = true;
-                }
-            }
-        });
-
-        if(valid){
-            loggedInUsername = user;
-            loggedInCardNo = cardNoOfUser;
-            loggedInFullName = fullNameOfUser;
-            loggedInStatus = statusOfUser;
-            isLoggedIn = true;
-
-            localStorage.setItem("kfcLogin", JSON.stringify({
-                username: loggedInUsername,
-                cardNo: loggedInCardNo,
-                fullName: loggedInFullName,
-                status: loggedInStatus
-            }));
-
-            loginOverlay.classList.add("fadeOut");
-            setTimeout(() => {
-                loginOverlay.style.display = "none";
-                showWelcomeBox(loggedInFullName);
-                showLoggedInUser(loggedInFullName);
-            }, 800);
-        }
-        else if(cancelled){
-            loginError.innerText = "This user cannot login as the card is already cancelled.";
-        }
-        else{
-            loginError.innerText = "Invalid login details";
-        }
-    });
-
-    // ------------------- WELCOME MESSAGE -------------------
-    function showWelcomeBox(fullName){
-        const box = document.createElement("div");
-        box.className="welcome-box";
-        box.innerText = `Welcome, ${fullName}`;
-        document.body.appendChild(box);
-        setTimeout(()=>{
-            box.remove();
-        },3500);
-    }
-
-    // ------------------- LOGGED IN USER -------------------
-    function showLoggedInUser(fullName){
-        let existing = document.querySelector(".logged-in-user");
-        if(existing) existing.remove();
-
-        const uaetitle = document.querySelector(".uae-text");
-
-        const userDiv = document.createElement("div");
-        userDiv.className = "logged-in-user";
-        userDiv.innerHTML = `<i class="fas fa-user"></i> ${fullName}`;
-        uaetitle.insertAdjacentElement("afterend", userDiv);
-
-        const profileBox = document.createElement("div");
-        profileBox.className = "user-dropdown";
-        const accessType = allowedFullAccess.includes(loggedInCardNo) ? "Full Access" : "Limited Access";
-
-        profileBox.innerHTML = `
-            <div class="profile-banner" style="background-color:#125fa6;color:white;padding:5px;border-radius:3px;text-align:center;font-weight:bold">
-                Welcome, ${loggedInFullName}
-            </div>
-            <div style="text-align:center;margin:5px 0;font-weight:bold">${accessType}</div>
-            <div>Card No: ${loggedInCardNo}</div>
-            <div>Status: ${loggedInStatus || "Active"}</div>
-            <hr>
-            <div id="signOutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
-        `;
-        userDiv.appendChild(profileBox);
-
-        userDiv.addEventListener("click",function(e){
-            e.stopPropagation();
-            profileBox.style.display = profileBox.style.display === "block" ? "none" : "block";
-        });
-
-        profileBox.querySelector("#signOutBtn").addEventListener("click",function(){
-            localStorage.removeItem("kfcLogin");
-            location.reload();
-        });
-
-        document.addEventListener("click",function(){
-            profileBox.style.display="none";
-        });
-    }
-
-    // ------------------- SEARCH SYSTEM -------------------
-    searchInput.addEventListener("input", handleSearch);
-    searchField.addEventListener("change", handleSearch);
-    searchButton.addEventListener("click", handleSearch);
-
-    function handleSearch(){
-        if(!isLoggedIn){
-            resultContainer.innerHTML = "<p class='no-data'>⚠ Please login before searching.</p>";
-            searchButton.disabled = true;
-            printButton.disabled = true;
-            return;
-        }
-
-        const term = searchInput.value.trim();
-        searchButton.disabled = term === "";
-        if(term !== ""){
-            renderTable();
         } else {
-            resultContainer.innerHTML = "";
-            printButton.disabled = true;
+            notiList.innerHTML = "<p style='text-align:center; font-family:UrduFont;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
         }
+    } catch (error) {
+        notiList.innerHTML = "<p style='text-align:center;'>Error loading notifications.</p>";
     }
-
-    // ------------------- TABLE RENDER -------------------
-    function renderTable() {
-        if(!isLoggedIn){
-            resultContainer.innerHTML = "<p class='no-data'>⚠ Login required to search.</p>";
-            printButton.disabled = true;
-            return;
-        }
-
-        const term = searchInput.value.trim().toLowerCase();
-        const field = searchField.value;
-        if(!data.length || term === ""){
-            resultContainer.innerHTML = "";
-            printButton.disabled = true;
-            return;
-        }
-
-        let results = data.filter(item =>
-            item[field] && item[field].toString().toLowerCase().includes(term)
-        );
-
-        if(results.length===0){
-            resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
-            printButton.disabled = true;
-            return;
-        }
-
-        if(currentSort.column){
-            results.sort((a,b)=>{
-                let valA = a[currentSort.column] ? a[currentSort.column].toString().toLowerCase() : "";
-                let valB = b[currentSort.column] ? b[currentSort.column].toString().toLowerCase() : "";
-                if(valA < valB) return currentSort.asc ? -1 : 1;
-                if(valA > valB) return currentSort.asc ? 1 : -1;
-                return 0;
-            });
-        }
-
-        let table = "<table><thead><tr><th>S.No.</th>";
-
-        for(const key in results[0]){
-            table += `<th onclick="sortTable('${key}')">${key==="Room"?"ROOM/ADDRESS":key}</th>`;
-        }
-        table += "<th>VIEW CARD</th></tr></thead><tbody>";
-
-        results.forEach((item,index)=>{
-            table += "<tr>";
-            table += `<td data-label="S.No.">${index+1}</td>`;
-
-            for(const key in item){
-                let value = item[key];
-                let names = item.name.trim().split(" ");
-                let usernameOfRow = names[0].toLowerCase() + names[names.length-1].toLowerCase();
-                let isFullAccessUser = allowedFullAccess.includes(loggedInCardNo);
-
-                if(!isFullAccessUser && loggedInUsername && loggedInUsername.toLowerCase()!==usernameOfRow){
-                    if(key==="name"){
-                        if(names.length>2) value="*** "+names.slice(1,-1).join(" ")+" ***";
-                        else if(names.length===2) value="*** ***";
-                        else value="***";
-                    }
-                    if(key==="CNo"){
-                        let parts = item.CNo.split("-");
-                        value = parts.slice(0,-1).join("-")+"-***";
-                    }
-                }
-
-                let cellStyle="";
-                if(key.toLowerCase()==="status"){
-                    if(value && value.toLowerCase()==="cancel") cellStyle="class='cancel'";
-                    if(value && value.toLowerCase()==="active") cellStyle="class='active'";
-                }
-
-                table += `<td data-label="${key}" ${cellStyle}>${value}</td>`;
-            }
-
-            const canViewCard = allowedFullAccess.includes(loggedInCardNo) || (item.CNo === loggedInCardNo);
-            const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
-            table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')" ${canViewCard?"":"disabled"}>VIEW CARD</button></td>`;
-            table += "</tr>";
-        });
-
-        table += "</tbody></table>";
-        resultContainer.innerHTML = table;
-        printButton.disabled = false;
-    }
-
-    window.sortTable = function(column){
-        if(currentSort.column===column) currentSort.asc=!currentSort.asc;
-        else { currentSort.column=column; currentSort.asc=true; }
-        renderTable();
-    };
-});
+}
