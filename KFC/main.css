@@ -327,3 +327,6 @@ body *{opacity:0;transform:translateY(-40px);transition:all 0.8s ease;}
 .msg-item.expanded .msg-body {
   display: block;
 }
+#msgBtn, #notificationBtn {
+  display: none;
+}
