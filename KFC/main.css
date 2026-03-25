@@ -340,15 +340,15 @@ body *{opacity:0;transform:translateY(-40px);transition:all 0.8s ease;}
 }
 /* --- Info Banner: Liquid Glass --- */
 .info-banner {
-  background: rgba(255, 255, 255, 0.15); /* semi-transparent */
+  background: rgba(167,199,203, 0.15); /* semi-transparent */
   backdrop-filter: blur(15px) saturate(180%);
   -webkit-backdrop-filter: blur(15px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 15px;
-  color: #C92500;
+  border-radius: 0px;
+  color: #501AB0;
   font-weight: bold;
-  font-size: 25px;
-  padding: 12px 20px;
+  font-size: 20px;
+  padding: 5px 20px;
   display: flex;
   align-items: center;
   overflow: hidden;
