@@ -186,7 +186,7 @@ body *{opacity:0;transform:translateY(-40px);transition:all 0.8s ease;}
   direction: rtl;
   width: 90vw;
   max-width: 320px;
-  right: -120px; 
+  right: -150px; 
 }
 
 .notification-dropdown.show { display: flex; }
