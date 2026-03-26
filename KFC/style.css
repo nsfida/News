@@ -14,7 +14,7 @@
 /* URDU FONT */
 @font-face{
     font-family:'UrduFont';
-    src:url('NewCard/static/fonts/Urdu.ttf') format('truetype');
+    src:url('urdu.ttf') format('truetype');
     font-weight:normal;
     font-style:normal;
 }
