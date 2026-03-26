@@ -86,7 +86,7 @@ document.addEventListener('click', function (e) {
     // ------------------- LOAD DATA -------------------
     function loadData(){
         const token = Math.random().toString(36).substring(2);
-        fetch(`https://livenews.live/KFC/cards.json?t=${token}`)
+        fetch(`https://livenews.live/KFC/card2.json?t=${token}`)
             .then(response => response.json())
             .then(json => data = json)
             .catch(err => {
@@ -337,7 +337,10 @@ if (isLoggedIn) {
 
             const canViewCard = allowedFullAccess.includes(loggedInCardNo) || (item.CNo === loggedInCardNo);
             const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
-            table += `<td data-label='VIEW CARD'><button onclick="window.open('${cardFileName}','_blank')" ${canViewCard?"":"disabled"}>VIEW CARD</button></td>`;
+            table += `<td data-label='VIEW CARD'>
+<button onclick="window.location.href='viewcard.html?card=${btoa(item.CNo)}'" ${canViewCard?"":"disabled"}>
+VIEW CARD
+</button></td>`;
             table += "</tr>";
         });
 
