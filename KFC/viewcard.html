@@ -53,11 +53,11 @@ body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
 
 .text-container{ position:absolute; bottom:60px; top:180px; left:40px; font-family:"Courier New", monospace; color:#00427a; font-weight:bold; line-height:1.7; z-index:12; }
 .text-container p{ margin:2px 0; }
-.text-urdu{ font-family:'UrduFont'; font-size:15px; color:#00427a; font-weight:bold; }
+.text-urdu{ font-family:'UrduFont'; font-size:10px; color:#00427a; font-weight:bold; }
 .designation{ color:purple; font-weight:bold; }
 
-.header-text{ position:absolute; top:40px; left:50%; transform:translateX(-50%); text-align:center; color:#301934; font-size:18px; font-weight:500; font-family:'UrduFont'; z-index:15; white-space:nowrap; }
-.header-text-urdu{ position:absolute; top:75px; left:50%; transform:translateX(-50%); text-align:center; font-family:'UrduFont'; color:#301934; font-size:18px; font-weight:500; line-height:1; z-index:12; }
+.header-text{ position:absolute; top:40px; left:50%; transform:translateX(-50%); text-align:center; color:#301934; font-size:14px; font-weight:auto; font-family:'Times'; z-index:15; white-space:nowrap; }
+.header-text-urdu{ position:absolute; top:70px; left:50%; transform:translateX(-50%); text-align:center; font-family:'UrduFont'; color:#301934; font-size:18px; font-weight:regular; line-height:1; z-index:12; }
 
 .strip-hole{ position:absolute; top:9px; left:50%; transform:translateX(-50%); width:71px; height:10px; background-color:grey; border-radius:5px; z-index:11; }
 .strip-hole2{ position:absolute; top:10px; left:50%; transform:translateX(-50%); width:70px; height:9.3px; background-color:white; border-radius:5px; z-index:11; }
@@ -318,7 +318,7 @@ if(card.Status && card.Status.toLowerCase() === "cancel"){
   }
 
   const encoded = encodeCard(card.CNo);
-  const url = "https://livenews.live/KFC/viewcard.html?card=" + encoded;
+  const url = "https://livenews.live/KFC/ViewCard/viewcard.html?card=" + encoded;
   verifyQR.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(url);
   verifyName.textContent = card.name;
   currentDateEl.textContent = "ISSUE DATE: "+card.Issue;
