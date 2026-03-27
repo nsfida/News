@@ -102,9 +102,9 @@ function applyUser() {
     userBlood.innerText = "Blood Group: " + (currentUser.BG || "Not available");
     userMobile.innerText = "Registered Mobile: " + (currentUser.mobile || "Not available");
 
-    const viewCardBtn = document.getElementById("viewCardBtn");
-    const nameForLink = encodeURIComponent(currentUser.name + " e-Card.pdf");
-    viewCardBtn.href = "https://livenews.live/KFC/e-Cards/" + nameForLink;
+const viewCardBtn = document.getElementById("viewCardBtn");
+viewCardBtn.href = "viewcard.html?card=" + btoa(currentUser.CNo);
+viewCardBtn.target = "_blank"; // open in new tab
 
     // **Show notification & message icons immediately**
     msgBtn.style.display = "flex";           // or "inline-flex"
