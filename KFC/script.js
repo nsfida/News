@@ -338,7 +338,7 @@ if (isLoggedIn) {
             const canViewCard = allowedFullAccess.includes(loggedInCardNo) || (item.CNo === loggedInCardNo);
             const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
             table += `<td data-label='VIEW CARD'>
-<button onclick="window.location.href='viewcard.html?card=${btoa(item.CNo)}'" ${canViewCard?"":"disabled"}>
+<button onclick="window.open('viewcard.html?card=${btoa(item.CNo)}','_blank')" ${canViewCard?"":"disabled"}>
 VIEW CARD
 </button></td>`;
             table += "</tr>";
