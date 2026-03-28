@@ -1,0 +1,72 @@
+{
+  "personal": {
+    "name": "Nadeem Shahzad Fida",
+    "dob": "21-04-1993",
+    "phone": "+971 55 921 6280",
+    "email": "nadeemshahzadfida@outlook.com",
+    "role": "Creative Developer | 3D Web Designer | Tech Enthusiast"
+  },
+
+  "projects": [
+    {
+      "id": 1,
+      "title": "3D Interactive Portfolio",
+      "description": "A modern 3D portfolio built using Three.js with interactive particles, smooth animations, and futuristic UI design.",
+      "category": "Web Development",
+      "tech": ["HTML", "CSS", "JavaScript", "Three.js"],
+      "image": "assets/projects/project1.png",
+      "link": "https://your-portfolio-link.com",
+      "github": "https://github.com/yourusername/portfolio",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "title": "News Dashboard System",
+      "description": "A dynamic news dashboard with real-time updates, category filters, and expandable detailed news views.",
+      "category": "Web App",
+      "tech": ["JavaScript", "Firebase", "CSS"],
+      "image": "assets/projects/project2.png",
+      "link": "https://your-news-site.com",
+      "github": "https://github.com/yourusername/news-dashboard",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "title": "User Authentication System",
+      "description": "Secure login system with OTP verification, session handling, and protected dashboard access.",
+      "category": "Security",
+      "tech": ["JavaScript", "Firebase Auth"],
+      "image": "assets/projects/project3.png",
+      "link": "https://your-auth-system.com",
+      "github": "https://github.com/yourusername/auth-system",
+      "featured": false
+    },
+    {
+      "id": 4,
+      "title": "Card Generator Tool",
+      "description": "A custom web-based ID card generator with dynamic user data, QR verification, and export functionality.",
+      "category": "Tool",
+      "tech": ["HTML", "CSS", "JavaScript"],
+      "image": "assets/projects/project4.png",
+      "link": "https://your-card-tool.com",
+      "github": "https://github.com/yourusername/card-generator",
+      "featured": false
+    }
+  ],
+
+  "skills": [
+    "HTML5",
+    "CSS3",
+    "JavaScript",
+    "Three.js",
+    "Firebase",
+    "UI/UX Design",
+    "Responsive Design"
+  ],
+
+  "socials": {
+    "github": "https://github.com/yourusername",
+    "linkedin": "https://linkedin.com/in/yourprofile",
+    "website": "https://yourwebsite.com"
+  }
+}
