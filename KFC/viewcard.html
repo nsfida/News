@@ -77,7 +77,7 @@ body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
   font-family:Calibri;
   z-index:10;
 }
-.verify-box img{ width:70px; margin-top:5px; background: transparent; }
+.verify-box img{ width:70px; margin-top:5px; }
 .verify-name{ margin-top:5px; font-weight:bold; }
 .verify-photo{ width:60px; opacity:0.15; margin-top:5px; border-radius:6px; }
 
@@ -319,8 +319,7 @@ if(card.Status && card.Status.toLowerCase() === "cancel"){
 
   const encoded = encodeCard(card.CNo);
   const url = "https://livenews.live/KFC/viewcard.html?card=" + encoded;
-  verifyQR.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" 
-  + encodeURIComponent(url) + "&bgcolor=transparent";
+  verifyQR.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(url);
   verifyName.textContent = card.name;
   currentDateEl.textContent = "ISSUE DATE: "+card.Issue;
   
@@ -334,13 +333,7 @@ document.getElementById("saveBtn").addEventListener("click", function(){
     margin:0,
     filename:`${nameText.textContent.replace("Name: ","")} e-Card.pdf`,
     image:{type:'jpeg',quality:1},
-    html2canvas:{
-  scale:5,
-  useCORS:true,
-  backgroundColor: null,   // 🔥 THIS makes transparency work
-  windowWidth: element.scrollWidth,
-  windowHeight: element.scrollHeight
-},
+    html2canvas:{scale:5, useCORS:true, windowWidth: element.scrollWidth, windowHeight: element.scrollHeight},
     jsPDF:{unit:'mm',format:[180,270],orientation:'portrait'}
   };
   html2pdf().set(opt).from(element).save();
