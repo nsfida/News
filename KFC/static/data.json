@@ -1,72 +1,40 @@
 {
-  "personal": {
+  "personal_info": {
     "name": "Nadeem Shahzad Fida",
-    "dob": "21-04-1993",
-    "phone": "+971 55 921 6280",
-    "email": "nadeemshahzadfida@outlook.com",
-    "role": "Creative Developer | 3D Web Designer | Tech Enthusiast"
+    "dob": "1993-04-21",
+    "location": "Dubai, UAE",
+    "contact": {
+      "phone": "+971 55 921 6280",
+      "email": "nadeemshahzadfida@outlook.com",
+      "facebook": "facebook.com/nadeemshahzadfida"
+    }
   },
-
+  "career": {
+    "current_role": "Operations Manager",
+    "company": "Premium Car Rentals DMCC",
+    "skills": ["Python", "C++", "Java", "HTML", "MS Excel Expert"]
+  },
+  "chess_stats": {
+    "title": "International Chess Player",
+    "fide_id": "7807252",
+    "blitz_rating": 1708,
+    "achievements": "Represented Pakistan in multiple international tournaments in Dubai"
+  },
   "projects": [
     {
-      "id": 1,
-      "title": "3D Interactive Portfolio",
-      "description": "A modern 3D portfolio built using Three.js with interactive particles, smooth animations, and futuristic UI design.",
-      "category": "Web Development",
-      "tech": ["HTML", "CSS", "JavaScript", "Three.js"],
-      "image": "assets/projects/project1.png",
-      "link": "https://your-portfolio-link.com",
-      "github": "https://github.com/yourusername/portfolio",
-      "featured": true
+      "title": "Live News",
+      "url": "https://livenews.live",
+      "description": "Primary web development project"
     },
     {
-      "id": 2,
-      "title": "News Dashboard System",
-      "description": "A dynamic news dashboard with real-time updates, category filters, and expandable detailed news views.",
-      "category": "Web App",
-      "tech": ["JavaScript", "Firebase", "CSS"],
-      "image": "assets/projects/project2.png",
-      "link": "https://your-news-site.com",
-      "github": "https://github.com/yourusername/news-dashboard",
-      "featured": true
+      "title": "KFC Database",
+      "url": "https://livenews.live/KFC",
+      "description": "Static database for Khawrai Falahi Committee UAE"
     },
     {
-      "id": 3,
-      "title": "User Authentication System",
-      "description": "Secure login system with OTP verification, session handling, and protected dashboard access.",
-      "category": "Security",
-      "tech": ["JavaScript", "Firebase Auth"],
-      "image": "assets/projects/project3.png",
-      "link": "https://your-auth-system.com",
-      "github": "https://github.com/yourusername/auth-system",
-      "featured": false
-    },
-    {
-      "id": 4,
-      "title": "Card Generator Tool",
-      "description": "A custom web-based ID card generator with dynamic user data, QR verification, and export functionality.",
-      "category": "Tool",
-      "tech": ["HTML", "CSS", "JavaScript"],
-      "image": "assets/projects/project4.png",
-      "link": "https://your-card-tool.com",
-      "github": "https://github.com/yourusername/card-generator",
-      "featured": false
+      "title": "NSFClix",
+      "url": "https://livenews.live/NSFClix",
+      "description": "Professional photography and videography portfolio"
     }
-  ],
-
-  "skills": [
-    "HTML5",
-    "CSS3",
-    "JavaScript",
-    "Three.js",
-    "Firebase",
-    "UI/UX Design",
-    "Responsive Design"
-  ],
-
-  "socials": {
-    "github": "https://github.com/yourusername",
-    "linkedin": "https://linkedin.com/in/yourprofile",
-    "website": "https://yourwebsite.com"
-  }
+  ]
 }
