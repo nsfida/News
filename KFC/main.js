@@ -1,7 +1,17 @@
 let users = [];
 let currentUser = null;
 
-// --- DOM Elements ---
+/* =========================================================
+   CONFIG
+========================================================= */
+const API_BASE = "https://livenews.live/KFC";
+const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
+const DEFAULT_PHOTO = `${PHOTOS_BASE}photo.png`;
+const CARD_LOGO = "logo.png";
+
+/* =========================================================
+   DOM ELEMENTS
+========================================================= */
 const userArea = document.getElementById("userArea");
 const usernameText = document.getElementById("username");
 const dropdown = document.getElementById("userDropdown");
@@ -25,7 +35,7 @@ const totalMembers = document.getElementById("totalMembers");
 const activeMembers = document.getElementById("activeMembers");
 const leadersCount = document.getElementById("leadersCount");
 
-// Profile Picture Elements
+/* Profile Picture Elements */
 const headerProfileImg = document.getElementById("headerProfileImg");
 const headerUserIcon = document.getElementById("headerUserIcon");
 const dropdownProfileImg = document.getElementById("dropdownProfileImg");
@@ -34,7 +44,7 @@ const photoOverlay = document.getElementById("photoOverlay");
 const fullProfileImg = document.getElementById("fullProfileImg");
 const closePhotoOverlay = document.getElementById("closePhotoOverlay");
 
-// Notification & Message Elements
+/* Notification & Message Elements */
 const notificationBtn = document.getElementById("notificationBtn");
 const notiDropdown = document.getElementById("notiDropdown");
 const notiBadge = document.getElementById("notiBadge");
@@ -44,503 +54,885 @@ const msgDropdown = document.getElementById("msgDropdown");
 const msgBadge = document.getElementById("msgBadge");
 const msgList = document.getElementById("msgList");
 
-// Leaders Elements
+/* Leaders Elements */
 const leadersBtn = document.getElementById("leadersBtn");
 const leadersOverlay = document.getElementById("leadersOverlay");
 const closeLeaders = document.getElementById("closeLeaders");
 const leadersList = document.getElementById("leadersList");
 
-// Optional full alerts page button if it exists in HTML
+/* Optional full alerts page button */
 const seeAllAlertsBtn = document.getElementById("seeAllAlertsBtn");
 
-// --- Core Functions ---
-async function loadUsers() {
-    try {
-        const res = await fetch("https://livenews.live/KFC/cards.json");
-        users = await res.json();
-        calculateStats();
-    } catch (e) {
-        console.error("Error loading JSON:", e);
-    }
+/* =========================================================
+   HELPERS
+========================================================= */
+function isCancelledStatus(status) {
+  const s = (status || "").toString().trim().toLowerCase();
+  return s === "cancel" || s === "cancelled";
+}
+
+function normalizeText(value) {
+  return (value || "").toString().trim();
 }
 
 function generateUsername(name) {
-    let parts = name.toLowerCase().split(" ");
-    if (parts.length < 2) return name.toLowerCase();
-    let first = parts[0];
-    let last = parts[parts.length - 1];
-    return (first + last).replace(/\s/g, '');
+  const parts = normalizeText(name).toLowerCase().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return normalizeText(name).toLowerCase();
+  const first = parts[0];
+  const last = parts[parts.length - 1];
+  return (first + last).replace(/\s/g, "");
 }
 
 function generatePassword(card) {
-    if (!card) return "";
-    let parts = card.split("-");
-    return parts[parts.length - 1];
+  if (!card) return "";
+  const parts = String(card).split("-");
+  return parts[parts.length - 1] || "";
+}
+
+function safeCardNo(cardNo) {
+  return encodeURIComponent(String(cardNo || ""));
+}
+
+function getCardImageCandidates(cardNo) {
+  const clean = safeCardNo(cardNo);
+  return [
+    `${PHOTOS_BASE}${clean}.png`,
+    `${PHOTOS_BASE}${clean}.jpg`,
+    DEFAULT_PHOTO
+  ];
+}
+
+function setImageWithFallback(img, sources, fallbackIconEl) {
+  if (!img) return;
+  let index = 0;
+
+  const tryNext = () => {
+    if (index >= sources.length) {
+      img.style.display = "none";
+      if (fallbackIconEl) fallbackIconEl.style.display = "block";
+      return;
+    }
+
+    img.src = sources[index++];
+  };
+
+  img.onerror = () => {
+    tryNext();
+  };
+
+  img.onload = () => {
+    img.style.display = "block";
+    if (fallbackIconEl) fallbackIconEl.style.display = "none";
+  };
+
+  tryNext();
 }
 
 function applyProfileImage(cardNo) {
-    const basePath = "https://livenews.live/KFC/static/images/photos/";
-    const defaultImg = basePath + "photo.png";
-    const pngPath = basePath + cardNo + ".png";
-    const jpgPath = basePath + cardNo + ".jpg";
+  const sources = getCardImageCandidates(cardNo);
 
-    const updateAllSources = (src) => {
-        headerProfileImg.src = src;
-        dropdownProfileImg.src = src;
-        fullProfileImg.src = src;
-    };
-
-    updateAllSources(pngPath);
-
-    const handleImgError = (imgTag) => {
-        if (imgTag.src === pngPath) {
-            updateAllSources(jpgPath);
-        } else if (imgTag.src === jpgPath) {
-            updateAllSources(defaultImg);
-        } else {
-            headerProfileImg.style.display = "none";
-            headerUserIcon.style.display = "block";
-        }
-    };
-
-    headerProfileImg.onerror = () => handleImgError(headerProfileImg);
-    dropdownProfileImg.onerror = () => handleImgError(dropdownProfileImg);
-    
-    headerProfileImg.style.display = "block";
-    headerUserIcon.style.display = "none";
-}
-
-function login() {
-    loginError.innerText = "";
-    let uname = loginUsername.value.trim().toLowerCase();
-    let pass = loginPassword.value.trim();
-    if (!uname || !pass) {
-        loginError.innerText = "Enter username & password";
-        return;
-    }
-    const user = users.find(u => {
-        let genUser = generateUsername(u.name);
-        let genPass = generatePassword(u.CNo);
-        return genUser === uname && genPass === pass;
-    });
-    if (!user) {
-        loginError.innerText = "Invalid credentials";
-        return;
-    }
-    let status = user.Status ? user.Status.toString().trim().toLowerCase() : "";
-    if (status === "cancel" || status === "cancelled") {
-        loginError.innerText = "This username cannot login, this card is already cancelled";
-        return;
-    }
-    currentUser = user;
-    localStorage.setItem("kfcUser", JSON.stringify(user));
-    applyUser();
-    showWelcome(user.name);
-    loginOverlay.classList.remove("show");
-}
-
-function applyUser() {
-    if (!currentUser) return;
-    const firstName = currentUser.name.split(" ")[0];
-    usernameText.innerText = `Welcome, ${firstName}`;
-    guestView.style.display = "none";
-    userView.style.display = "flex";
-    userFullName.innerText = "Welcome, " + currentUser.name;
-    userCard.innerText = "Card Number: " + currentUser.CNo;
-    userDesg.innerText = "Designation: " + currentUser.Desg;
-    userBlood.innerText = "Blood Group: " + (currentUser.BG || "Not available");
-    userMobile.innerText = "Registered Mobile: " + (currentUser.mobile || "Not available");
-
-    applyProfileImage(currentUser.CNo);
-
-    const viewCardBtn = document.getElementById("viewCardBtn");
-    viewCardBtn.href = "viewcard.html?card=" + btoa(currentUser.CNo);
-    viewCardBtn.target = "_blank";
-
-    msgBtn.style.display = "flex";
-    notificationBtn.style.display = "flex";
-}
-
-function checkSession() {
-    const saved = localStorage.getItem("kfcUser");
-    if (saved) {
-        currentUser = JSON.parse(saved);
-        let status = currentUser.Status ? currentUser.Status.toString().trim().toLowerCase() : "";
-        if (status === "cancel" || status === "cancelled") {
-            localStorage.removeItem("kfcUser");
-            currentUser = null;
-            return;
-        }
-        applyUser();
-    }
-    if (!currentUser) {
-        msgBtn.style.display = "none";
-        notificationBtn.style.display = "none";
-        headerProfileImg.style.display = "none";
-        headerUserIcon.style.display = "block";
-    }
+  setImageWithFallback(headerProfileImg, sources, headerUserIcon);
+  setImageWithFallback(dropdownProfileImg, sources, null);
+  setImageWithFallback(fullProfileImg, sources, null);
 }
 
 function showWelcome(name) {
-    welcomeText.innerText = "Welcome, " + name + " 👋";
-    welcomePopup.classList.add("show");
-    setTimeout(() => welcomePopup.classList.remove("show"), 2500);
+  if (!welcomePopup || !welcomeText) return;
+  welcomeText.innerText = `Welcome, ${name} 👋`;
+  welcomePopup.classList.add("show");
+  setTimeout(() => welcomePopup.classList.remove("show"), 2500);
 }
 
 function calculateStats() {
-    totalMembers.innerText = users.length;
-    let active = users.filter(u => u.Status && u.Status.toString().trim().toLowerCase() === "active");
-    activeMembers.innerText = active.length;
-    const allowedRoles = ["president", "acting president", "vice president", "committee guardian", "committee guardian (ex-president)", "general secretary", "finance manager", "joint finance secretary", "media manager"];
-    let leaders = users.filter(u => {
-        if (!u.Desg) return false;
-        return allowedRoles.includes(u.Desg.toLowerCase().trim());
-    });
-    leadersCount.innerText = leaders.length;
+  if (totalMembers) totalMembers.innerText = users.length;
+
+  const active = users.filter(u => {
+    return normalizeText(u.Status).toLowerCase() === "active";
+  });
+
+  if (activeMembers) activeMembers.innerText = active.length;
+
+  const allowedRoles = [
+    "president",
+    "acting president",
+    "vice president",
+    "committee guardian",
+    "committee guardian (ex-president)",
+    "general secretary",
+    "finance manager",
+    "joint finance secretary",
+    "media manager"
+  ];
+
+  const leaders = users.filter(u => {
+    const desg = normalizeText(u.Desg).toLowerCase();
+    return allowedRoles.includes(desg);
+  });
+
+  if (leadersCount) leadersCount.innerText = leaders.length;
 }
 
-// --- Interaction Handlers ---
-userArea.addEventListener("click", e => {
-    e.stopPropagation();
-    notiDropdown.classList.remove("show");
-    msgDropdown.classList.remove("show");
-    dropdown.classList.toggle("show");
-});
+function closeAllDropdowns() {
+  if (dropdown) dropdown.classList.remove("show");
+  if (notiDropdown) notiDropdown.classList.remove("show");
+  if (msgDropdown) msgDropdown.classList.remove("show");
+}
 
-notificationBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    dropdown.classList.remove("show");
-    msgDropdown.classList.remove("show");
-    notiDropdown.classList.toggle("show");
-    if (!currentUser) {
-        notiList.innerHTML = `<p style="text-align:center; padding:20px;">Please sign-in to view recent alerts</p>`;
-        notiBadge.style.display = "none";
-        return;
+function showLoggedOutUI() {
+  if (msgBtn) msgBtn.style.display = "none";
+  if (notificationBtn) notificationBtn.style.display = "none";
+  if (headerProfileImg) headerProfileImg.style.display = "none";
+  if (headerUserIcon) headerUserIcon.style.display = "block";
+
+  if (guestView) guestView.style.display = "block";
+  if (userView) userView.style.display = "none";
+
+  if (usernameText) usernameText.innerText = "Welcome";
+}
+
+function showLoggedInUI() {
+  if (msgBtn) msgBtn.style.display = "flex";
+  if (notificationBtn) notificationBtn.style.display = "flex";
+  if (guestView) guestView.style.display = "none";
+  if (userView) userView.style.display = "flex";
+}
+
+function renderUserToUI(user) {
+  if (!user) return;
+
+  const firstName = normalizeText(user.name).split(" ")[0] || "User";
+
+  if (usernameText) usernameText.innerText = `Welcome, ${firstName}`;
+  if (userFullName) userFullName.innerText = `Welcome, ${user.name}`;
+  if (userCard) userCard.innerText = `Card Number: ${user.CNo}`;
+  if (userDesg) userDesg.innerText = `Designation: ${user.Desg}`;
+  if (userBlood) userBlood.innerText = `Blood Group: ${user.BG || "Not available"}`;
+  if (userMobile) userMobile.innerText = `Registered Mobile: ${user.mobile || "Not available"}`;
+
+  applyProfileImage(user.CNo);
+
+  const viewCardBtn = document.getElementById("viewCardBtn");
+  if (viewCardBtn) {
+    viewCardBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`;
+    viewCardBtn.target = "_blank";
+  }
+
+  showLoggedInUI();
+}
+
+function saveSession(user) {
+  localStorage.setItem("kfcUser", JSON.stringify(user));
+}
+
+function clearSession() {
+  localStorage.removeItem("kfcUser");
+}
+
+function escapeHTML(str) {
+  return String(str || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatDateValue(value) {
+  return normalizeText(value) || "No date";
+}
+
+function createCardBackgroundLogo() {
+  const img = document.createElement("img");
+  img.src = CARD_LOGO;
+  img.alt = "background logo";
+  img.setAttribute("aria-hidden", "true");
+  img.style.cssText = `
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    width:60%;
+    opacity:0.08;
+    z-index:1;
+    pointer-events:none;
+    user-select:none;
+  `;
+  return img;
+}
+
+function createCardTopStripe() {
+  const stripe = document.createElement("div");
+  stripe.style.cssText = "background-color:#0d3c91; height:6px;";
+  return stripe;
+}
+
+function buildCenteredInfoMessage(text) {
+  return `<p style="text-align:center; padding:20px; color:#888;">${escapeHTML(text)}</p>`;
+}
+
+/* =========================================================
+   AUTH
+========================================================= */
+async function loadUsers() {
+  try {
+    const res = await fetch(`${API_BASE}/cards.json`, { cache: "no-store" });
+    users = await res.json();
+    calculateStats();
+  } catch (e) {
+    console.error("Error loading JSON:", e);
+  }
+}
+
+function login() {
+  if (loginError) loginError.innerText = "";
+
+  const uname = normalizeText(loginUsername?.value).toLowerCase();
+  const pass = normalizeText(loginPassword?.value);
+
+  if (!uname || !pass) {
+    if (loginError) loginError.innerText = "Enter username & password";
+    return;
+  }
+
+  const user = users.find(u => {
+    const genUser = generateUsername(u.name);
+    const genPass = generatePassword(u.CNo);
+    return genUser === uname && genPass === pass;
+  });
+
+  if (!user) {
+    if (loginError) loginError.innerText = "Invalid credentials";
+    return;
+  }
+
+  if (isCancelledStatus(user.Status)) {
+    if (loginError) {
+      loginError.innerText = "This username cannot login, this card is already cancelled";
     }
+    return;
+  }
+
+  currentUser = user;
+  saveSession(user);
+  renderUserToUI(user);
+  showWelcome(user.name);
+
+  if (loginOverlay) loginOverlay.classList.remove("show");
+}
+
+function checkSession() {
+  const saved = localStorage.getItem("kfcUser");
+
+  if (!saved) {
+    currentUser = null;
+    showLoggedOutUI();
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+    if (parsed && !isCancelledStatus(parsed.Status)) {
+      currentUser = parsed;
+      renderUserToUI(parsed);
+      return;
+    }
+
+    clearSession();
+    currentUser = null;
+    showLoggedOutUI();
+  } catch (error) {
+    console.error("Session parse error:", error);
+    clearSession();
+    currentUser = null;
+    showLoggedOutUI();
+  }
+}
+
+/* =========================================================
+   DOWNLOAD HELPERS
+========================================================= */
+async function downloadNotificationAsImage(element, fileName) {
+  if (typeof html2canvas === "undefined") {
+    console.error("html2canvas is missing.");
+    return;
+  }
+
+  const clone = element.cloneNode(true);
+
+  clone.style.position = "absolute";
+  clone.style.left = "-99999px";
+  clone.style.top = "0";
+  clone.style.display = "block";
+  clone.style.visibility = "visible";
+  clone.style.pointerEvents = "none";
+  clone.style.width = `${element.getBoundingClientRect().width}px`;
+  clone.style.maxWidth = "none";
+  clone.style.margin = "0";
+  clone.style.transform = "none";
+
+  const cloneBody = clone.querySelector(".noti-body-ur, .msg-body");
+  if (cloneBody) cloneBody.style.display = "block";
+
+  document.body.appendChild(clone);
+
+  try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const canvas = await html2canvas(clone, {
+      scale: 5,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      scrollX: 0,
+      scrollY: 0,
+      width: clone.scrollWidth,
+      height: clone.scrollHeight,
+      windowWidth: document.documentElement.clientWidth,
+      windowHeight: document.documentElement.clientHeight
+    });
+
+    const link = document.createElement("a");
+    link.download = fileName;
+    link.href = canvas.toDataURL("image/png", 1.0);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (error) {
+    console.error("Download error:", error);
+  } finally {
+    clone.remove();
+  }
+}
+
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
+async function fetchUrduAlerts() {
+  try {
+    const response = await fetch(`${API_BASE}/message/alerts.json`, { cache: "no-store" });
+    const alerts = await response.json();
+
+    if (!notiList) return;
+
+    notiList.innerHTML = "";
+    notiList.style.height = "auto";
+    notiList.style.maxHeight = "500px";
+    notiList.style.overflowY = "auto";
+
+    if (!Array.isArray(alerts) || alerts.length === 0) {
+      notiList.innerHTML = buildCenteredInfoMessage("No alerts found.");
+      return;
+    }
+
+    const sortedAlerts = [...alerts].reverse();
+
+    sortedAlerts.slice(0, 3).forEach(latest => {
+      const item = document.createElement("div");
+      item.className = "noti-item";
+      item.style.cssText = `
+        direction: rtl;
+        text-align: right;
+        position: relative;
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        height: auto;
+        min-height: 50px;
+        transition: all 0.3s ease;
+      `;
+
+      item.appendChild(createCardTopStripe());
+      item.appendChild(createCardBackgroundLogo());
+
+      const topRow = document.createElement("div");
+      topRow.className = "noti-top-row";
+      topRow.style.cssText = `
+        padding: 12px 15px;
+        display:flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        cursor: pointer;
+      `;
+
+      const leftWrap = document.createElement("div");
+      leftWrap.style.cssText = "display:flex; align-items:center; gap:10px;";
+
+      const title = document.createElement("span");
+      title.className = "noti-title-ur";
+      title.style.cssText = "font-weight:bold; color:#0d3c91; font-size:15px;";
+      title.textContent = latest.title_ur || "اعلان";
+
+      leftWrap.appendChild(title);
+
+      const rightWrap = document.createElement("div");
+      rightWrap.style.cssText = "display:flex; align-items:center; gap:12px;";
+
+      const downloadBtn = document.createElement("i");
+      downloadBtn.className = "fa-solid fa-download download-btn";
+      downloadBtn.title = "Download";
+      downloadBtn.style.cssText = "cursor:pointer; font-size:16px; color:#7873f5; z-index:3;";
+
+      const dateSpan = document.createElement("span");
+      dateSpan.className = "noti-date";
+      dateSpan.style.cssText = "font-size:11px; color:#888;";
+      dateSpan.textContent = formatDateValue(latest.date);
+
+      rightWrap.appendChild(downloadBtn);
+      rightWrap.appendChild(dateSpan);
+
+      topRow.appendChild(leftWrap);
+      topRow.appendChild(rightWrap);
+
+      const body = document.createElement("div");
+      body.className = "noti-body-ur";
+      body.setAttribute("lang", "ur");
+      body.style.cssText = `
+        display:none;
+        padding: 15px;
+        border-top:1px dashed #eee;
+        white-space:pre-line;
+        position: relative;
+        z-index: 2;
+        font-size: 14px;
+        line-height: 1.8;
+        color: #333;
+      `;
+
+      body.innerHTML = `
+        ${escapeHTML(latest.body_ur || "")}
+        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center; border-top:1px solid #f0f0f0; padding-top:5px;">
+          Khawrai Falahi Committee UAE
+        </div>
+      `;
+
+      item.appendChild(topRow);
+      item.appendChild(body);
+
+      downloadBtn.addEventListener("click", async e => {
+        e.stopPropagation();
+
+        const downloadCard = item.cloneNode(true);
+        downloadCard.style.position = "absolute";
+        downloadCard.style.left = "-99999px";
+        downloadCard.style.top = "0";
+        downloadCard.style.display = "block";
+        downloadCard.style.visibility = "visible";
+        downloadCard.style.width = `${item.getBoundingClientRect().width}px`;
+
+        const downloadBody = downloadCard.querySelector(".noti-body-ur");
+        if (downloadBody) downloadBody.style.display = "block";
+
+        document.body.appendChild(downloadCard);
+
+        const cleanDate = String(latest.date || "alert").replace(/[^\w\-]+/g, "_");
+        await downloadNotificationAsImage(downloadCard, `Alert-${cleanDate}.png`);
+
+        setTimeout(() => {
+          if (downloadCard && downloadCard.parentNode) {
+            downloadCard.remove();
+          }
+        }, 100);
+      });
+
+      item.addEventListener("click", () => {
+        const isVisible = body.style.display === "block";
+
+        document.querySelectorAll(".noti-body-ur").forEach(el => {
+          el.style.display = "none";
+        });
+
+        document.querySelectorAll(".noti-item").forEach(el => {
+          el.style.backgroundColor = "#ffffff";
+        });
+
+        if (!isVisible) {
+          body.style.display = "block";
+          item.style.backgroundColor = "#f9f9ff";
+        }
+      });
+
+      notiList.appendChild(item);
+    });
+
+    const alertsButtonWrap = document.createElement("div");
+    alertsButtonWrap.style.cssText = `
+      margin-top: 12px;
+      text-align: center;
+      padding: 6px 0 2px;
+    `;
+
+    const alertsButton = document.createElement("button");
+    alertsButton.id = "seeAllAlertsBtn";
+    alertsButton.type = "button";
+    alertsButton.innerText = "Click here to see all Alerts";
+    alertsButton.style.cssText = `
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+      box-shadow: 0 8px 18px rgba(120, 115, 245, 0.18);
+    `;
+
+    alertsButton.addEventListener("click", e => {
+      e.stopPropagation();
+      window.location.href = "message/alerts.html";
+    });
+
+    alertsButtonWrap.appendChild(alertsButton);
+    notiList.appendChild(alertsButtonWrap);
+  } catch (error) {
+    console.error("Alerts error:", error);
+    if (notiList) {
+      notiList.innerHTML = buildCenteredInfoMessage("Error loading alerts.");
+    }
+  }
+}
+
+/* =========================================================
+   PERSONAL MESSAGES
+   FIXED: same logo background as notifications
+========================================================= */
+async function fetchPersonalMessages() {
+  try {
+    const response = await fetch(`${API_BASE}/messages.json`, { cache: "no-store" });
+    const messages = await response.json();
+
+    if (!msgList) return;
+
+    msgList.innerHTML = "";
+
+    if (!currentUser) {
+      msgList.innerHTML = buildCenteredInfoMessage("Please sign-in to view your messages");
+      if (msgBadge) msgBadge.style.display = "none";
+      return;
+    }
+
+    const myMessages = (Array.isArray(messages) ? messages : []).filter(m => {
+      const cardNumber = normalizeText(m.cardNumber).toLowerCase();
+      return cardNumber === normalizeText(currentUser.CNo).toLowerCase() || cardNumber === "all";
+    });
+
+    if (myMessages.length === 0) {
+      msgList.innerHTML = buildCenteredInfoMessage("No messages found.");
+      return;
+    }
+
+    myMessages.sort((a, b) => {
+      return new Date(b.date || 0) - new Date(a.date || 0);
+    });
+
+    myMessages.forEach(msg => {
+      const item = document.createElement("div");
+      item.className = "noti-item msg-item";
+      item.style.cssText = `
+        direction:ltr;
+        text-align:left;
+        position:relative;
+        background-color:#ffffff;
+        border:1px solid #e0e0e0;
+        border-radius:8px;
+        margin-bottom:10px;
+        overflow:hidden;
+        height:auto;
+        min-height:50px;
+        transition:all 0.3s ease;
+      `;
+
+      item.appendChild(createCardTopStripe());
+      item.appendChild(createCardBackgroundLogo());
+
+      const isGlobal = normalizeText(msg.cardNumber).toLowerCase() === "all";
+      const typeLabel = isGlobal
+        ? '<span style="color:#ff6ec4; font-size:10px;">[Public]</span>'
+        : '<span style="color:#7873f5; font-size:10px;">[Private]</span>';
+
+      const topRow = document.createElement("div");
+      topRow.className = "noti-top-row";
+      topRow.style.cssText = `
+        padding: 12px 15px;
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:4px;
+        position:relative;
+        z-index:2;
+        cursor:pointer;
+      `;
+
+      const dateSpan = document.createElement("span");
+      dateSpan.className = "msg-date";
+      dateSpan.style.cssText = "font-size:11px; color:#888;";
+      dateSpan.innerHTML = `${escapeHTML(formatDateValue(msg.date))} ${typeLabel}`;
+
+      const title = document.createElement("strong");
+      title.className = "msg-title";
+      title.style.cssText = "color:#0d3c91; font-size:15px; display:flex; align-items:center; gap:5px;";
+
+      const icon = document.createElement("i");
+      icon.className = "fa-solid fa-chevron-right icon-rotate";
+      icon.style.cssText = "font-size:10px;";
+
+      const titleText = document.createElement("span");
+      titleText.textContent = msg.title || "Message";
+
+      title.appendChild(icon);
+      title.appendChild(titleText);
+
+      topRow.appendChild(dateSpan);
+      topRow.appendChild(title);
+
+      const body = document.createElement("div");
+      body.className = "msg-body";
+      body.style.cssText = `
+        display:none;
+        padding:15px;
+        border-top:1px dashed #ccc;
+        margin-top:0;
+        position:relative;
+        z-index:2;
+        font-size:13px;
+        color:#444;
+        line-height:1.8;
+        white-space:pre-line;
+      `;
+      body.innerHTML = escapeHTML(msg.body || "");
+
+      item.appendChild(topRow);
+      item.appendChild(body);
+
+      item.addEventListener("click", () => {
+        const isVisible = body.style.display === "block";
+
+        document.querySelectorAll(".msg-body").forEach(el => {
+          el.style.display = "none";
+        });
+
+        document.querySelectorAll(".icon-rotate").forEach(i => {
+          i.className = "fa-solid fa-chevron-right icon-rotate";
+        });
+
+        document.querySelectorAll(".msg-item").forEach(el => {
+          el.style.backgroundColor = "#ffffff";
+        });
+
+        if (!isVisible) {
+          body.style.display = "block";
+          icon.className = "fa-solid fa-chevron-down icon-rotate";
+          item.style.backgroundColor = "#f9f9ff";
+        }
+      });
+
+      msgList.appendChild(item);
+    });
+
+    const seeAllMsgs = document.createElement("div");
+    seeAllMsgs.style.cssText = "text-align:center; margin-top:10px;";
+    seeAllMsgs.innerHTML = `<span style="font-size:12px; color:#999;">End of messages</span>`;
+    msgList.appendChild(seeAllMsgs);
+  } catch (error) {
+    console.error("Messages error:", error);
+    if (msgList) {
+      msgList.innerHTML = buildCenteredInfoMessage("Error loading messages.");
+    }
+  }
+}
+
+/* =========================================================
+   LEADERS
+========================================================= */
+function showLeaders() {
+  if (!leadersList) return;
+
+  leadersList.innerHTML = "";
+
+  const allowedRoles = [
+    "president",
+    "acting president",
+    "vice president",
+    "committee guardian",
+    "committee guardian (ex-president)",
+    "general secretary",
+    "finance manager",
+    "joint finance secretary",
+    "media manager"
+  ];
+
+  const leaders = users
+    .filter(u => u.Desg && allowedRoles.includes(normalizeText(u.Desg).toLowerCase().trim()))
+    .sort((a, b) => {
+      return allowedRoles.indexOf(normalizeText(a.Desg).toLowerCase().trim()) -
+             allowedRoles.indexOf(normalizeText(b.Desg).toLowerCase().trim());
+    });
+
+  leaders.forEach(l => {
+    const div = document.createElement("div");
+    div.className = "leader-item";
+    div.innerHTML = `
+      <h4>${escapeHTML(l.name || "")}</h4>
+      <p>${escapeHTML(l.Desg || "")}</p>
+      <p class="leader-phone"><i class="fa-solid fa-phone"></i> ${escapeHTML(l.mobile || "Not available")}</p>
+    `;
+    leadersList.appendChild(div);
+  });
+}
+
+/* =========================================================
+   EVENTS
+========================================================= */
+if (userArea) {
+  userArea.addEventListener("click", e => {
+    e.stopPropagation();
+    if (notiDropdown) notiDropdown.classList.remove("show");
+    if (msgDropdown) msgDropdown.classList.remove("show");
+    if (dropdown) dropdown.classList.toggle("show");
+  });
+}
+
+if (notificationBtn) {
+  notificationBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    if (dropdown) dropdown.classList.remove("show");
+    if (msgDropdown) msgDropdown.classList.remove("show");
+    if (notiDropdown) notiDropdown.classList.toggle("show");
+
+    if (!currentUser) {
+      if (notiList) notiList.innerHTML = buildCenteredInfoMessage("Please sign-in to view recent alerts");
+      if (notiBadge) notiBadge.style.display = "none";
+      return;
+    }
+
     fetchUrduAlerts();
-    notiBadge.style.display = "none";
-});
+    if (notiBadge) notiBadge.style.display = "none";
+  });
+}
 
-msgBtn.addEventListener("click", (e) => {
+if (msgBtn) {
+  msgBtn.addEventListener("click", e => {
     e.stopPropagation();
-    dropdown.classList.remove("show");
-    notiDropdown.classList.remove("show");
-    msgDropdown.classList.toggle("show");
+    if (dropdown) dropdown.classList.remove("show");
+    if (notiDropdown) notiDropdown.classList.remove("show");
+    if (msgDropdown) msgDropdown.classList.toggle("show");
+
     if (!currentUser) {
-        msgList.innerHTML = `<p style="text-align:center; padding:20px;">Please sign-in to view your messages</p>`;
-        msgBadge.style.display = "none";
-        return;
+      if (msgList) msgList.innerHTML = buildCenteredInfoMessage("Please sign-in to view your messages");
+      if (msgBadge) msgBadge.style.display = "none";
+      return;
     }
+
     fetchPersonalMessages();
-});
+  });
+}
 
-viewPhotoBtn.addEventListener("click", () => {
-    photoOverlay.classList.add("show");
-    dropdown.classList.remove("show");
-});
+if (viewPhotoBtn) {
+  viewPhotoBtn.addEventListener("click", () => {
+    if (photoOverlay) photoOverlay.classList.add("show");
+    if (dropdown) dropdown.classList.remove("show");
+  });
+}
 
-closePhotoOverlay.addEventListener("click", () => photoOverlay.classList.remove("show"));
-photoOverlay.addEventListener("click", e => { if (e.target === photoOverlay) photoOverlay.classList.remove("show"); });
+if (closePhotoOverlay) {
+  closePhotoOverlay.addEventListener("click", () => {
+    if (photoOverlay) photoOverlay.classList.remove("show");
+  });
+}
+
+if (photoOverlay) {
+  photoOverlay.addEventListener("click", e => {
+    if (e.target === photoOverlay) photoOverlay.classList.remove("show");
+  });
+}
 
 document.addEventListener("click", () => {
-    dropdown.classList.remove("show");
-    notiDropdown.classList.remove("show");
-    msgDropdown.classList.remove("show");
+  closeAllDropdowns();
 });
 
 [dropdown, notiDropdown, msgDropdown].forEach(box => {
-    if (box) box.addEventListener("click", e => e.stopPropagation());
+  if (box) {
+    box.addEventListener("click", e => e.stopPropagation());
+  }
 });
 
-logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("kfcUser");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    clearSession();
     currentUser = null;
     location.reload();
+  });
+}
+
+if (openLoginBtn) {
+  openLoginBtn.addEventListener("click", () => {
+    if (loginOverlay) loginOverlay.classList.add("show");
+  });
+}
+
+if (loginOverlay) {
+  loginOverlay.addEventListener("click", e => {
+    if (e.target === loginOverlay) loginOverlay.classList.remove("show");
+  });
+}
+
+if (loginBtn) {
+  loginBtn.addEventListener("click", login);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && loginOverlay && loginOverlay.classList.contains("show")) {
+    login();
+  }
 });
 
-openLoginBtn.addEventListener("click", () => loginOverlay.classList.add("show"));
-loginOverlay.addEventListener("click", e => { if (e.target === loginOverlay) loginOverlay.classList.remove("show"); });
-loginBtn.addEventListener("click", login);
-document.addEventListener("keydown", e => { if (e.key === "Enter" && loginOverlay.classList.contains("show")) login(); });
-
-// --- Download Helper ---
-async function downloadNotificationAsImage(element, fileName) {
-    if (typeof html2canvas === "undefined") {
-        console.error("html2canvas is missing.");
-        return;
-    }
-
-    const clone = element.cloneNode(true);
-
-    clone.style.position = "absolute";
-    clone.style.left = "-99999px";
-    clone.style.top = "0";
-    clone.style.display = "block";
-    clone.style.visibility = "visible";
-    clone.style.pointerEvents = "none";
-    clone.style.width = `${element.getBoundingClientRect().width}px`;
-    clone.style.maxWidth = "none";
-    clone.style.margin = "0";
-    clone.style.transform = "none";
-
-    const cloneBody = clone.querySelector(".noti-body-ur");
-    if (cloneBody) cloneBody.style.display = "block";
-
-    document.body.appendChild(clone);
-
-    try {
-        if (document.fonts && document.fonts.ready) {
-            await document.fonts.ready;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 80));
-
-        const canvas = await html2canvas(clone, {
-            scale: 5,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scrollX: 0,
-            scrollY: 0,
-            width: clone.scrollWidth,
-            height: clone.scrollHeight,
-            windowWidth: document.documentElement.clientWidth,
-            windowHeight: document.documentElement.clientHeight
-        });
-
-        const link = document.createElement("a");
-        link.download = fileName;
-        link.href = canvas.toDataURL("image/png", 1.0);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-    } catch (error) {
-        console.error("Notification download error:", error);
-    } finally {
-        clone.remove();
-    }
-}
-
-// --- Data Systems ---
-async function fetchUrduAlerts() {
-    try {
-        const response = await fetch("https://livenews.live/KFC/message/alerts.json");
-        const alerts = await response.json();
-        
-        // Ensure the container itself can expand
-        notiList.style.height = "auto";
-        notiList.style.maxHeight = "500px";
-        notiList.style.overflowY = "auto";
-        notiList.innerHTML = "";
-        
-        if (alerts.length > 0) {
-            const sortedAlerts = [...alerts].reverse(); 
-            sortedAlerts.slice(0, 3).forEach(latest => {
-                const item = document.createElement("div");
-                item.className = "noti-item";
-                
-                // Professional Styling with Auto Height
-                item.style.cssText = `
-                    direction: rtl;
-                    text-align: right;
-                    position: relative;
-                    background-color: #ffffff;
-                    border: 1px solid #e0e0e0;
-                    border-radius: 8px;
-                    margin-bottom: 10px;
-                    overflow: hidden;
-                    height: auto;
-                    min-height: 50px;
-                    transition: all 0.3s ease;
-                `;
-
-                item.innerHTML = `
-                    <div style="background-color:#0d3c91; height:6px;"></div>
-                    <img src="logo.png" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60%; opacity:0.08; z-index:1; pointer-events:none;">
-                    
-                    <div class="noti-top-row" style="padding: 12px 15px; display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91; font-size: 15px;">${latest.title_ur || "اعلان"}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <i class="fa-solid fa-download download-btn" title="Download" style="cursor:pointer; font-size:16px; color:#7873f5; z-index: 3;"></i>
-                            <span class="noti-date" style="font-size:11px; color:#888;">${latest.date}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="noti-body-ur" lang="ur" style="display:none; padding: 15px; border-top:1px dashed #eee; white-space:pre-line; position: relative; z-index: 2; font-size: 14px; line-height: 1.8; color: #333;">
-                        ${latest.body_ur}
-                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center; border-top: 1px solid #f0f0f0; padding-top: 5px;">Khawrai Falahi Committee UAE</div>
-                    </div>
-                `;
-                
-                // --- Download directly as high-quality image ---
-                const downloadBtn = item.querySelector(".download-btn");
-                downloadBtn.addEventListener("click", async (e) => {
-                    e.stopPropagation();
-
-                    const downloadCard = item.cloneNode(true);
-                    downloadCard.style.position = "absolute";
-                    downloadCard.style.left = "-99999px";
-                    downloadCard.style.top = "0";
-                    downloadCard.style.display = "block";
-                    downloadCard.style.visibility = "visible";
-                    downloadCard.style.width = `${item.getBoundingClientRect().width}px`;
-
-                    const downloadBody = downloadCard.querySelector(".noti-body-ur");
-                    if (downloadBody) downloadBody.style.display = "block";
-
-                    document.body.appendChild(downloadCard);
-
-                    const cleanDate = String(latest.date || "alert").replace(/[^\w\-]+/g, "_");
-                    await downloadNotificationAsImage(downloadCard, `Alert-${cleanDate}.png`);
-
-                    setTimeout(() => {
-                        if (downloadCard && downloadCard.parentNode) {
-                            downloadCard.remove();
-                        }
-                    }, 100);
-                });
-
-                // --- Accordion Logic ---
-                item.addEventListener("click", () => {
-                    const body = item.querySelector(".noti-body-ur");
-                    const isVisible = body.style.display === "block";
-                    
-                    // Close others
-                    document.querySelectorAll('.noti-body-ur').forEach(el => el.style.display = 'none');
-                    
-                    if (!isVisible) {
-                        body.style.display = "block";
-                        item.style.backgroundColor = "#f9f9ff";
-                    } else {
-                        item.style.backgroundColor = "#ffffff";
-                    }
-                });
-                
-                notiList.appendChild(item);
-            });
-
-            // --- Click here to see all Alerts button ---
-            const alertsButtonWrap = document.createElement("div");
-            alertsButtonWrap.style.cssText = `
-                margin-top: 12px;
-                text-align: center;
-                padding: 6px 0 2px;
-            `;
-
-            const alertsButton = document.createElement("button");
-            alertsButton.id = "seeAllAlertsBtn";
-            alertsButton.type = "button";
-            alertsButton.innerText = "Click here to see all Alerts";
-            alertsButton.style.cssText = `
-                width: 100%;
-                padding: 10px 14px;
-                border: none;
-                border-radius: 999px;
-                background: linear-gradient(90deg, #ff6ec4, #7873f5);
-                color: #fff;
-                font-weight: bold;
-                cursor: pointer;
-                font-size: 13px;
-                box-shadow: 0 8px 18px rgba(120, 115, 245, 0.18);
-            `;
-
-            alertsButton.addEventListener("click", (e) => {
-                e.stopPropagation();
-                window.location.href = "message/alerts.html";
-            });
-
-            alertsButtonWrap.appendChild(alertsButton);
-            notiList.appendChild(alertsButtonWrap);
-        } else {
-            notiList.innerHTML = `<p style="text-align:center; padding:20px; color:#888;">No alerts found.</p>`;
-        }
-    } catch (error) { 
-        console.error("Alerts error:", error);
-    }
-}
-
-async function fetchPersonalMessages() {
-    try {
-        const response = await fetch("https://livenews.live/KFC/messages.json");
-        const messages = await response.json();
-        msgList.innerHTML = "";
-        const myMessages = messages.filter(m => m.cardNumber === currentUser.CNo || m.cardNumber?.toLowerCase() === "all");
-        if (myMessages.length > 0) {
-            myMessages.sort((a, b) => new Date(b.date) - new Date(a.date));
-            myMessages.forEach(msg => {
-                const item = document.createElement("div");
-                item.className = "noti-item msg-item";
-                item.style.direction = "ltr"; 
-                item.style.textAlign = "left";
-                const isGlobal = msg.cardNumber?.toLowerCase() === "all";
-                const typeLabel = isGlobal ? '<span style="color:#ff6ec4; font-size:10px;">[Public]</span>' : '<span style="color:#7873f5; font-size:10px;">[Private]</span>';
-                item.innerHTML = `
-                    <div class="noti-top-row" style="flex-direction: column; align-items: flex-start;">
-                        <span class="msg-date" style="font-size:11px; color:#888;">${msg.date} ${typeLabel}</span>
-                        <strong class="msg-title" style="color:#0d3c91; font-size: 15px; display:flex; align-items:center; gap:5px;">
-                            <i class="fa-solid fa-chevron-right icon-rotate" style="font-size: 10px;"></i> ${msg.title}
-                        </strong>
-                    </div>
-                    <div class="msg-body" style="display:none; padding-top:10px; font-size:13px; color:#444; border-top:1px dashed #ccc; margin-top:5px;">${msg.body}</div>
-                `;
-                item.addEventListener("click", () => {
-                    const body = item.querySelector(".msg-body");
-                    const icon = item.querySelector(".icon-rotate");
-                    const isVisible = body.style.display === "block";
-                    document.querySelectorAll('.msg-body').forEach(el => el.style.display = 'none');
-                    document.querySelectorAll('.icon-rotate').forEach(i => i.className = "fa-solid fa-chevron-right icon-rotate");
-                    if (!isVisible) {
-                        body.style.display = "block";
-                        icon.className = "fa-solid fa-chevron-down icon-rotate";
-                    }
-                });
-                msgList.appendChild(item);
-            });
-            const seeAllMsgs = document.createElement("div");
-            seeAllMsgs.style.textAlign = "center";
-            seeAllMsgs.style.marginTop = "10px";
-            seeAllMsgs.innerHTML = `<span style="font-size:12px; color:#999;">End of messages</span>`;
-            msgList.appendChild(seeAllMsgs);
-        } else {
-            msgList.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No messages found.</p>";
-        }
-    } catch (error) { 
-        msgList.innerHTML = "<p style='text-align:center;'>Error loading messages.</p>";
-    }
-}
-
-(async function() {
-    await loadUsers();
-    checkSession();
-})();
-
+/* Leaders overlay */
 document.addEventListener("DOMContentLoaded", () => {
-    const leadersBtn = document.getElementById("leadersBtn");
-    const leadersOverlay = document.getElementById("leadersOverlay");
-    const closeLeaders = document.getElementById("closeLeaders");
-    const leadersList = document.getElementById("leadersList");
-    if (!leadersBtn) return;
-    leadersBtn.addEventListener("click", () => {
-        showLeaders();
-        leadersOverlay.classList.add("show");
-    });
-    closeLeaders.addEventListener("click", () => leadersOverlay.classList.remove("show"));
-    leadersOverlay.addEventListener("click", e => { if (e.target === leadersOverlay) leadersOverlay.classList.remove("show"); });
-    function showLeaders() {
-        leadersList.innerHTML = "";
-        const allowedRoles = ["president", "acting president", "vice president", "committee guardian", "committee guardian (ex-president)", "general secretary", "finance manager", "joint finance secretary", "media manager"];
-        let leaders = users.filter(u => u.Desg && allowedRoles.includes(u.Desg.toLowerCase().trim()));
-        leaders.sort((a, b) => allowedRoles.indexOf(a.Desg.toLowerCase().trim()) - allowedRoles.indexOf(b.Desg.toLowerCase().trim()));
-        leaders.forEach(l => {
-            let div = document.createElement("div");
-            div.className = "leader-item";
-            div.innerHTML = `<h4>${l.name}</h4><p>${l.Desg}</p><p class="leader-phone"><i class="fa-solid fa-phone"></i> ${l.mobile || "Not available"}</p>`;
-            leadersList.appendChild(div);
-        });
-    }
+  if (!leadersBtn || !leadersOverlay || !closeLeaders || !leadersList) return;
+
+  leadersBtn.addEventListener("click", () => {
+    showLeaders();
+    leadersOverlay.classList.add("show");
+  });
+
+  closeLeaders.addEventListener("click", () => leadersOverlay.classList.remove("show"));
+
+  leadersOverlay.addEventListener("click", e => {
+    if (e.target === leadersOverlay) leadersOverlay.classList.remove("show");
+  });
 });
 
-[totalMembers, activeMembers].forEach(el => el.parentElement.onclick = () => window.location.href = "https://livenews.live/KFC/database.html");
-window.addEventListener("load", () => { document.body.classList.add("loaded"); });
+/* Members counters */
+if (totalMembers && totalMembers.parentElement) {
+  totalMembers.parentElement.onclick = () => {
+    window.location.href = `${API_BASE}/database.html`;
+  };
+}
+
+if (activeMembers && activeMembers.parentElement) {
+  activeMembers.parentElement.onclick = () => {
+    window.location.href = `${API_BASE}/database.html`;
+  };
+}
+
+/* Page loaded */
+window.addEventListener("load", () => {
+  document.body.classList.add("loaded");
+});
+
+/* =========================================================
+   INIT
+========================================================= */
+(async function init() {
+  await loadUsers();
+  checkSession();
+})();
