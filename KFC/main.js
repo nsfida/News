@@ -293,7 +293,7 @@ async function fetchUrduAlerts() {
                     
                     <div class="noti-body-ur" lang="ur" style="display:none; padding: 0 15px 15px 15px; border-top:1px dashed #eee; margin-top:5px; white-space:pre-line; position: relative; z-index: 2; font-size: 14px; line-height: 1.8; color: #333; font-weight: 500;">
                         ${latest.body_ur}
-                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center;">KFC Official Notification</div>
+                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center;">Khawrai Falahi Committee UAE</div>
                     </div>
                 `;
                 
@@ -312,7 +312,7 @@ async function fetchUrduAlerts() {
                             logging: false
                         });
                         const link = document.createElement("a");
-                        link.download = `KFC-Alert-${latest.date}.png`;
+                        link.download = `Alert-${latest.date}.png`;
                         link.href = canvas.toDataURL("image/png", 1.0);
                         link.click();
                     } catch (err) {
