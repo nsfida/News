@@ -196,36 +196,100 @@ if (isLoggedIn) {
     }
 
     // ------------------- LOGGED IN USER -------------------
-    function showLoggedInUser(fullName){
-        let existing = document.querySelector(".logged-in-user");
-        if(existing) existing.remove();
+function showLoggedInUser(fullName){
+    let existing = document.querySelector(".logged-in-user");
+    if(existing) existing.remove();
 
-        const uaetitle = document.querySelector(".uae-text");
+    const uaetitle = document.querySelector(".uae-text");
 
+    // Try .png first, then .jpg, then default photo.png
+    function getProfileImagePath(cardNo) {
+        const basePath = `static/images/photos/${cardNo}`;
+        const defaultPath = "static/images/photos/photo.png";
+
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(`${basePath}.png`);
+            img.onerror = () => {
+                const imgJpg = new Image();
+                imgJpg.onload = () => resolve(`${basePath}.jpg`);
+                imgJpg.onerror = () => resolve(defaultPath);
+                imgJpg.src = `${basePath}.jpg`;
+            };
+            img.src = `${basePath}.png`;
+        });
+    }
+
+    getProfileImagePath(loggedInCardNo).then(profileImgPath => {
         const userDiv = document.createElement("div");
         userDiv.className = "logged-in-user";
-        userDiv.innerHTML = `<i class="fas fa-user"></i> ${fullName}`;
+
+        userDiv.innerHTML = `
+            <img src="${profileImgPath}" class="user-avatar">
+            <span>Welcome, ${fullName}</span>
+        `;
+
         uaetitle.insertAdjacentElement("afterend", userDiv);
 
         const profileBox = document.createElement("div");
         profileBox.className = "user-dropdown";
+
         const accessType = allowedFullAccess.includes(loggedInCardNo) ? "Full Access" : "Limited Access";
 
         profileBox.innerHTML = `
-            <div class="profile-banner" style="background-color:#125fa6;color:white;padding:5px;border-radius:3px;text-align:center;font-weight:bold">
-                Welcome, ${loggedInFullName}
+            <div class="profile-banner">
+                <img src="${profileImgPath}" class="profile-large">
+                <div style="margin-top:6px;font-weight:bold">${loggedInFullName}</div>
             </div>
+
             <div style="text-align:center;margin:5px 0;font-weight:bold">${accessType}</div>
             <div>Card No: ${loggedInCardNo}</div>
             <div>Status: ${loggedInStatus || "Active"}</div>
+
+            <div class="photo-action">
+                <button id="viewPhotoBtn" class="view-photo-btn">
+                    View Photo
+                </button>
+            </div>
+
             <hr>
             <div id="signOutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
         `;
+
         userDiv.appendChild(profileBox);
 
         userDiv.addEventListener("click",function(e){
             e.stopPropagation();
             profileBox.style.display = profileBox.style.display === "block" ? "none" : "block";
+        });
+
+        // PHOTO MODAL
+        let existingModal = document.getElementById("photoModal");
+        if(!existingModal){
+            const modal = document.createElement("div");
+            modal.id = "photoModal";
+            modal.innerHTML = `
+                <div class="photo-modal-content">
+                    <span class="close-photo">&times;</span>
+                    <img id="modalImage" src="">
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        profileBox.querySelector("#viewPhotoBtn").addEventListener("click", function(e){
+            e.stopPropagation();
+            const modal = document.getElementById("photoModal");
+            const modalImg = document.getElementById("modalImage");
+            modalImg.src = profileImgPath;
+            modal.style.display = "flex";
+        });
+
+        document.addEventListener("click", function(e){
+            const modal = document.getElementById("photoModal");
+            if(e.target.classList.contains("close-photo") || e.target.id === "photoModal"){
+                modal.style.display = "none";
+            }
         });
 
         profileBox.querySelector("#signOutBtn").addEventListener("click",function(){
@@ -236,7 +300,8 @@ if (isLoggedIn) {
         document.addEventListener("click",function(){
             profileBox.style.display="none";
         });
-    }
+    });
+}
 
     // ------------------- SEARCH SYSTEM -------------------
     searchInput.addEventListener("input", handleSearch);
