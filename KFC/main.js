@@ -370,7 +370,7 @@ async function fetchUrduAlerts() {
                     
                     <div class="noti-body-ur" lang="ur" style="display:none; padding: 15px; border-top:1px dashed #eee; white-space:pre-line; position: relative; z-index: 2; font-size: 14px; line-height: 1.8; color: #333;">
                         ${latest.body_ur}
-                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center; border-top: 1px solid #f0f0f0; padding-top: 5px;">KFC Official Notification</div>
+                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center; border-top: 1px solid #f0f0f0; padding-top: 5px;">Khawrai Falahi Committee UAE</div>
                     </div>
                 `;
                 
@@ -393,7 +393,7 @@ async function fetchUrduAlerts() {
                     document.body.appendChild(downloadCard);
 
                     const cleanDate = String(latest.date || "alert").replace(/[^\w\-]+/g, "_");
-                    await downloadNotificationAsImage(downloadCard, `KFC-Alert-${cleanDate}.png`);
+                    await downloadNotificationAsImage(downloadCard, `Alert-${cleanDate}.png`);
 
                     setTimeout(() => {
                         if (downloadCard && downloadCard.parentNode) {
