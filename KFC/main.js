@@ -69,7 +69,6 @@ function generatePassword(card) {
     return parts[parts.length - 1];
 }
 
-// Fixed Image Fallback Logic
 function applyProfileImage(cardNo) {
     const basePath = "https://livenews.live/KFC/static/images/photos/";
     const defaultImg = basePath + "photo.png";
@@ -82,7 +81,6 @@ function applyProfileImage(cardNo) {
         fullProfileImg.src = src;
     };
 
-    // Reset and try PNG first
     updateAllSources(pngPath);
 
     const handleImgError = (imgTag) => {
@@ -91,7 +89,6 @@ function applyProfileImage(cardNo) {
         } else if (imgTag.src === jpgPath) {
             updateAllSources(defaultImg);
         } else {
-            // Final fallback: show icon if even default fails
             headerProfileImg.style.display = "none";
             headerUserIcon.style.display = "block";
         }
@@ -271,77 +268,67 @@ async function fetchUrduAlerts() {
         notiList.innerHTML = "";
         
         if (alerts.length > 0) {
-            // Sort to show newest first (Recent on top)
             const sortedAlerts = [...alerts].reverse(); 
             
             sortedAlerts.slice(0, 3).forEach(latest => {
                 const item = document.createElement("div");
                 item.className = "noti-item";
                 
-                // RESTORED: Direction and Watermark Background
                 item.style.direction = "rtl"; 
                 item.style.textAlign = "right";
                 item.style.position = "relative";
-item.style.backgroundImage = "url('logo.png')";
-item.style.backgroundRepeat = "no-repeat";
-item.style.backgroundPosition = "center";
-item.style.backgroundSize = "60%"; // smaller logo
-item.style.backgroundColor = "rgba(255,255,255,0.98)";
-item.style.backgroundBlendMode = "normal";
-item.style.opacity = "1";
+                item.style.backgroundImage = "url('logo.png')";
+                item.style.backgroundRepeat = "no-repeat";
+                item.style.backgroundPosition = "center";
+                item.style.backgroundSize = "70%"; // Adjusted size
+                item.style.backgroundColor = "rgba(255, 255, 255, 0.97)"; 
+                item.style.backgroundBlendMode = "soft-light"; // Fix 3: Lower visibility for logo
 
                 item.innerHTML = `
-                    <div class="noti-top-row" style="display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
+                    <div class="noti-top-row" style="display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; flex-direction: row-reverse;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <i class="fa-solid fa-download download-btn" title="Download as Image" style="cursor:pointer; font-size:16px; color:#7873f5;"></i>
                             <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91; font-size: 14px;">${latest.title_ur || "اعلان"}</span>
                         </div>
-                        <span class="noti-date" style="font-size:11px; color:#888;">${latest.date}</span>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fa-solid fa-download download-btn" title="Download as Image" style="cursor:pointer; font-size:16px; color:#7873f5;"></i>
+                            <span class="noti-date" style="font-size:11px; color:#888;">${latest.date}</span>
+                        </div>
                     </div>
-                    <div class="noti-body-ur" lang="ur" style="display:none; padding-top:10px; border-top:1px dashed #7873f5; margin-top:5px; white-space:pre-line; position: relative; z-index: 2; font-size: 13px; line-height: 1.6;">${latest.body_ur}</div>
+                    <div class="noti-body-ur" lang="ur" style="display:none; padding-top:10px; border-top:1px dashed #7873f5; margin-top:5px; white-space:pre-line; position: relative; z-index: 2; font-size: 13px; line-height: 1.6; color: #000; font-weight: 500;">${latest.body_ur}</div>
                 `;
                 
-                // RESTORED: Functioning Download Logic
                 const downloadBtn = item.querySelector(".download-btn");
                 downloadBtn.addEventListener("click", async (e) => {
                     e.stopPropagation();
                     const body = item.querySelector(".noti-body-ur");
                     const wasVisible = body.style.display === "block";
                     
-                    // Temporarily show body and format for capture
                     body.style.display = "block";
                     item.style.borderRadius = "10px";
                     item.style.padding = "20px";
                     
                     try {
                         const canvas = await html2canvas(item, { 
-    backgroundColor: "#ffffff",
-    scale: 4, // 🔥 higher = sharper image
-    useCORS: true,
-    allowTaint: true,
-    logging: false,
-    width: item.scrollWidth,
-    height: item.scrollHeight
-});
+                            backgroundColor: "#ffffff", 
+                            scale: 4, // Fix 2: High quality download
+                            useCORS: true 
+                        });
                         const link = document.createElement("a");
                         link.download = `KFC-Alert-${latest.date}.png`;
-                        link.href = canvas.toDataURL("image/png");
+                        link.href = canvas.toDataURL("image/png", 1.0);
                         link.click();
                     } catch (err) {
                         console.error("Download failed", err);
                     } finally {
-                        // Revert visibility if it wasn't expanded
                         if (!wasVisible) body.style.display = "none";
-                        item.style.padding = ""; // Reset padding
+                        item.style.padding = ""; 
                     }
                 });
 
-                // Accordion Toggle
                 item.addEventListener("click", () => {
                     const body = item.querySelector(".noti-body-ur");
                     const isVisible = body.style.display === "block";
                     
-                    // Close other alerts
                     document.querySelectorAll('.noti-body-ur').forEach(el => el.style.display = 'none');
                     document.querySelectorAll('.noti-item').forEach(el => el.classList.remove('expanded'));
                     
@@ -354,14 +341,13 @@ item.style.opacity = "1";
                 notiList.appendChild(item);
             });
 
-            // RESTORED: "See All" link at bottom
             const seeAllContainer = document.createElement("div");
             seeAllContainer.style.textAlign = "center";
             seeAllContainer.style.padding = "10px 0";
             seeAllContainer.innerHTML = `
                 <a href="https://livenews.live/KFC/message/alerts.html" 
                    style="font-weight:bold; color:#7873f5; text-decoration:none; font-size:13px; border-top: 1px solid #eee; display: block; padding-top: 10px;">
-                   See all notifications <i class="fa-solid fa-arrow-right-long"></i>
+                    See all notifications <i class="fa-solid fa-arrow-right-long"></i>
                 </a>`;
             notiList.appendChild(seeAllContainer);
 
@@ -412,7 +398,6 @@ async function fetchPersonalMessages() {
                 msgList.appendChild(item);
             });
 
-            // "See All" link for Messages (optional, directs to dashboard/messages if applicable)
             const seeAllMsgs = document.createElement("div");
             seeAllMsgs.style.textAlign = "center";
             seeAllMsgs.style.marginTop = "10px";
@@ -422,6 +407,7 @@ async function fetchPersonalMessages() {
         } else { msgList.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No messages found.</p>"; }
     } catch (error) { msgList.innerHTML = "<p style='text-align:center;'>Error loading messages.</p>"; }
 }
+
 (async function() {
     await loadUsers();
     checkSession();
