@@ -269,43 +269,104 @@ async function fetchUrduAlerts() {
         const response = await fetch("https://livenews.live/KFC/message/alerts.json");
         const alerts = await response.json();
         notiList.innerHTML = "";
+        
         if (alerts.length > 0) {
-            // Sort to show newest first
+            // Sort to show newest first (Recent on top)
             const sortedAlerts = [...alerts].reverse(); 
+            
             sortedAlerts.slice(0, 3).forEach(latest => {
                 const item = document.createElement("div");
                 item.className = "noti-item";
+                
+                // RESTORED: Direction and Watermark Background
                 item.style.direction = "rtl"; 
                 item.style.textAlign = "right";
+                item.style.position = "relative";
+                item.style.backgroundImage = "url('logo.png')";
+                item.style.backgroundRepeat = "no-repeat";
+                item.style.backgroundPosition = "center";
+                item.style.backgroundSize = "contain";
+                item.style.backgroundColor = "rgba(255, 255, 255, 0.95)"; // Keep text readable
+                item.style.backgroundBlendMode = "overlay";
+
                 item.innerHTML = `
-                    <div class="noti-top-row" style="position:relative; display:flex; justify-content: space-between; align-items: center;">
-                        <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91;">${latest.title_ur || "اعلان"}</span>
+                    <div class="noti-top-row" style="display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-download download-btn" title="Download as Image" style="cursor:pointer; font-size:16px; color:#7873f5;"></i>
+                            <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91; font-size: 14px;">${latest.title_ur || "اعلان"}</span>
+                        </div>
                         <span class="noti-date" style="font-size:11px; color:#888;">${latest.date}</span>
-                        <i class="fa-solid fa-download download-btn" style="cursor:pointer;font-size:14px;color:#7873f5; margin-right:10px;"></i>
                     </div>
-                    <div class="noti-body-ur" lang="ur" style="display:none; padding-top:10px; border-top:1px dashed #7873f5; margin-top:5px; white-space:pre-line;">${latest.body_ur}</div>
+                    <div class="noti-body-ur" lang="ur" style="display:none; padding-top:10px; border-top:1px dashed #7873f5; margin-top:5px; white-space:pre-line; position: relative; z-index: 2; font-size: 13px; line-height: 1.6;">${latest.body_ur}</div>
                 `;
                 
+                // RESTORED: Functioning Download Logic
+                const downloadBtn = item.querySelector(".download-btn");
+                downloadBtn.addEventListener("click", async (e) => {
+                    e.stopPropagation();
+                    const body = item.querySelector(".noti-body-ur");
+                    const wasVisible = body.style.display === "block";
+                    
+                    // Temporarily show body and format for capture
+                    body.style.display = "block";
+                    item.style.borderRadius = "10px";
+                    item.style.padding = "20px";
+                    
+                    try {
+                        const canvas = await html2canvas(item, { 
+                            backgroundColor: "#ffffff", 
+                            scale: 2,
+                            useCORS: true 
+                        });
+                        const link = document.createElement("a");
+                        link.download = `KFC-Alert-${latest.date}.png`;
+                        link.href = canvas.toDataURL("image/png");
+                        link.click();
+                    } catch (err) {
+                        console.error("Download failed", err);
+                    } finally {
+                        // Revert visibility if it wasn't expanded
+                        if (!wasVisible) body.style.display = "none";
+                        item.style.padding = ""; // Reset padding
+                    }
+                });
+
+                // Accordion Toggle
                 item.addEventListener("click", () => {
                     const body = item.querySelector(".noti-body-ur");
                     const isVisible = body.style.display === "block";
+                    
+                    // Close other alerts
                     document.querySelectorAll('.noti-body-ur').forEach(el => el.style.display = 'none');
-                    body.style.display = isVisible ? "none" : "block";
+                    document.querySelectorAll('.noti-item').forEach(el => el.classList.remove('expanded'));
+                    
+                    if (!isVisible) {
+                        body.style.display = "block";
+                        item.classList.add("expanded");
+                    }
                 });
+                
                 notiList.appendChild(item);
             });
 
-            // "See All" link for Alerts
-            const seeAllAlerts = document.createElement("div");
-            seeAllAlerts.style.textAlign = "center";
-            seeAllAlerts.style.marginTop = "10px";
-            seeAllAlerts.innerHTML = `<a href="https://livenews.live/KFC/message/alerts.html" style="font-weight:bold; color:#7873f5; text-decoration:underline; font-size:13px;">See all notifications</a>`;
-            notiList.appendChild(seeAllAlerts);
+            // RESTORED: "See All" link at bottom
+            const seeAllContainer = document.createElement("div");
+            seeAllContainer.style.textAlign = "center";
+            seeAllContainer.style.padding = "10px 0";
+            seeAllContainer.innerHTML = `
+                <a href="https://livenews.live/KFC/message/alerts.html" 
+                   style="font-weight:bold; color:#7873f5; text-decoration:none; font-size:13px; border-top: 1px solid #eee; display: block; padding-top: 10px;">
+                   See all notifications <i class="fa-solid fa-arrow-right-long"></i>
+                </a>`;
+            notiList.appendChild(seeAllContainer);
 
         } else {
-            notiList.innerHTML = "<p style='text-align:center;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
+            notiList.innerHTML = "<p style='text-align:center; padding: 20px;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
         }
-    } catch (error) { notiList.innerHTML = "<p style='text-align:center;'>Error loading alerts.</p>"; }
+    } catch (error) { 
+        console.error("Alerts error:", error);
+        notiList.innerHTML = "<p style='text-align:center;'>Error loading alerts.</p>"; 
+    }
 }
 
 async function fetchPersonalMessages() {
