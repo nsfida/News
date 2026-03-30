@@ -282,12 +282,13 @@ async function fetchUrduAlerts() {
                 item.style.direction = "rtl"; 
                 item.style.textAlign = "right";
                 item.style.position = "relative";
-                item.style.backgroundImage = "url('logo.png')";
-                item.style.backgroundRepeat = "no-repeat";
-                item.style.backgroundPosition = "center";
-                item.style.backgroundSize = "contain";
-                item.style.backgroundColor = "rgba(255, 255, 255, 0.95)"; // Keep text readable
-                item.style.backgroundBlendMode = "overlay";
+item.style.backgroundImage = "url('logo.png')";
+item.style.backgroundRepeat = "no-repeat";
+item.style.backgroundPosition = "center";
+item.style.backgroundSize = "60%"; // smaller logo
+item.style.backgroundColor = "rgba(255,255,255,0.98)";
+item.style.backgroundBlendMode = "normal";
+item.style.opacity = "1";
 
                 item.innerHTML = `
                     <div class="noti-top-row" style="display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
@@ -314,10 +315,14 @@ async function fetchUrduAlerts() {
                     
                     try {
                         const canvas = await html2canvas(item, { 
-                            backgroundColor: "#ffffff", 
-                            scale: 2,
-                            useCORS: true 
-                        });
+    backgroundColor: "#ffffff",
+    scale: 4, // 🔥 higher = sharper image
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    width: item.scrollWidth,
+    height: item.scrollHeight
+});
                         const link = document.createElement("a");
                         link.download = `KFC-Alert-${latest.date}.png`;
                         link.href = canvas.toDataURL("image/png");
