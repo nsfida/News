@@ -44,6 +44,15 @@ const msgDropdown = document.getElementById("msgDropdown");
 const msgBadge = document.getElementById("msgBadge");
 const msgList = document.getElementById("msgList");
 
+// Leaders Elements
+const leadersBtn = document.getElementById("leadersBtn");
+const leadersOverlay = document.getElementById("leadersOverlay");
+const closeLeaders = document.getElementById("closeLeaders");
+const leadersList = document.getElementById("leadersList");
+
+// Optional full alerts page button if it exists in HTML
+const seeAllAlertsBtn = document.getElementById("seeAllAlertsBtn");
+
 // --- Core Functions ---
 async function loadUsers() {
     try {
@@ -254,6 +263,64 @@ loginOverlay.addEventListener("click", e => { if (e.target === loginOverlay) log
 loginBtn.addEventListener("click", login);
 document.addEventListener("keydown", e => { if (e.key === "Enter" && loginOverlay.classList.contains("show")) login(); });
 
+// --- Download Helper ---
+async function downloadNotificationAsImage(element, fileName) {
+    if (typeof html2canvas === "undefined") {
+        console.error("html2canvas is missing.");
+        return;
+    }
+
+    const clone = element.cloneNode(true);
+
+    clone.style.position = "absolute";
+    clone.style.left = "-99999px";
+    clone.style.top = "0";
+    clone.style.display = "block";
+    clone.style.visibility = "visible";
+    clone.style.pointerEvents = "none";
+    clone.style.width = `${element.getBoundingClientRect().width}px`;
+    clone.style.maxWidth = "none";
+    clone.style.margin = "0";
+    clone.style.transform = "none";
+
+    const cloneBody = clone.querySelector(".noti-body-ur");
+    if (cloneBody) cloneBody.style.display = "block";
+
+    document.body.appendChild(clone);
+
+    try {
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 80));
+
+        const canvas = await html2canvas(clone, {
+            scale: 5,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: null,
+            scrollX: 0,
+            scrollY: 0,
+            width: clone.scrollWidth,
+            height: clone.scrollHeight,
+            windowWidth: document.documentElement.clientWidth,
+            windowHeight: document.documentElement.clientHeight
+        });
+
+        const link = document.createElement("a");
+        link.download = fileName;
+        link.href = canvas.toDataURL("image/png", 1.0);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.error("Notification download error:", error);
+    } finally {
+        clone.remove();
+    }
+}
+
 // --- Data Systems ---
 async function fetchUrduAlerts() {
     try {
@@ -262,7 +329,7 @@ async function fetchUrduAlerts() {
         
         // Ensure the container itself can expand
         notiList.style.height = "auto";
-        notiList.style.maxHeight = "500px"; // Adjust based on your UI
+        notiList.style.maxHeight = "500px";
         notiList.style.overflowY = "auto";
         notiList.innerHTML = "";
         
@@ -282,7 +349,7 @@ async function fetchUrduAlerts() {
                     border-radius: 8px;
                     margin-bottom: 10px;
                     overflow: hidden;
-                    height: auto; 
+                    height: auto;
                     min-height: 50px;
                     transition: all 0.3s ease;
                 `;
@@ -307,47 +374,32 @@ async function fetchUrduAlerts() {
                     </div>
                 `;
                 
-                // --- Download with Preview ---
+                // --- Download directly as high-quality image ---
                 const downloadBtn = item.querySelector(".download-btn");
-                downloadBtn.addEventListener("click", (e) => {
+                downloadBtn.addEventListener("click", async (e) => {
                     e.stopPropagation();
-                    const body = item.querySelector(".noti-body-ur");
-                    
-                    // Create a hidden clone specifically for high-res capture
-                    const offScreen = item.cloneNode(true);
-                    offScreen.style.width = "450px";
-                    offScreen.querySelector(".noti-body-ur").style.display = "block";
-                    offScreen.style.position = "absolute";
-                    offScreen.style.left = "-9999px";
-                    document.body.appendChild(offScreen);
 
-                    // Show Preview Modal
-                    const modal = document.createElement("div");
-                    modal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;";
-                    
-                    const previewContent = offScreen.cloneNode(true);
-                    previewContent.style.position = "static";
-                    previewContent.style.left = "auto";
-                    previewContent.style.boxShadow = "0 10px 30px rgba(0,0,0,0.5)";
-                    
-                    modal.innerHTML = `<h3 style="color:white; margin-bottom:15px; font-family:sans-serif;">Image Preview</h3>`;
-                    modal.appendChild(previewContent);
-                    modal.innerHTML += `<button id="doDownload" style="margin-top:20px; padding:12px 25px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Save High Quality Image</button>
-                                       <p style="color:#ccc; margin-top:10px; font-size:12px;">Click background to cancel</p>`;
-                    
-                    document.body.appendChild(modal);
-                    document.body.removeChild(offScreen);
+                    const downloadCard = item.cloneNode(true);
+                    downloadCard.style.position = "absolute";
+                    downloadCard.style.left = "-99999px";
+                    downloadCard.style.top = "0";
+                    downloadCard.style.display = "block";
+                    downloadCard.style.visibility = "visible";
+                    downloadCard.style.width = `${item.getBoundingClientRect().width}px`;
 
-                    modal.onclick = (me) => { if(me.target === modal) modal.remove(); };
-                    
-                    document.getElementById("doDownload").onclick = async () => {
-                        const canvas = await html2canvas(previewContent, { scale: 5, useCORS: true });
-                        const link = document.createElement("a");
-                        link.download = `KFC-Alert-${latest.date}.png`;
-                        link.href = canvas.toDataURL("image/png", 1.0);
-                        link.click();
-                        modal.remove();
-                    };
+                    const downloadBody = downloadCard.querySelector(".noti-body-ur");
+                    if (downloadBody) downloadBody.style.display = "block";
+
+                    document.body.appendChild(downloadCard);
+
+                    const cleanDate = String(latest.date || "alert").replace(/[^\w\-]+/g, "_");
+                    await downloadNotificationAsImage(downloadCard, `KFC-Alert-${cleanDate}.png`);
+
+                    setTimeout(() => {
+                        if (downloadCard && downloadCard.parentNode) {
+                            downloadCard.remove();
+                        }
+                    }, 100);
                 });
 
                 // --- Accordion Logic ---
@@ -368,6 +420,41 @@ async function fetchUrduAlerts() {
                 
                 notiList.appendChild(item);
             });
+
+            // --- Click here to see all Alerts button ---
+            const alertsButtonWrap = document.createElement("div");
+            alertsButtonWrap.style.cssText = `
+                margin-top: 12px;
+                text-align: center;
+                padding: 6px 0 2px;
+            `;
+
+            const alertsButton = document.createElement("button");
+            alertsButton.id = "seeAllAlertsBtn";
+            alertsButton.type = "button";
+            alertsButton.innerText = "Click here to see all Alerts";
+            alertsButton.style.cssText = `
+                width: 100%;
+                padding: 10px 14px;
+                border: none;
+                border-radius: 999px;
+                background: linear-gradient(90deg, #ff6ec4, #7873f5);
+                color: #fff;
+                font-weight: bold;
+                cursor: pointer;
+                font-size: 13px;
+                box-shadow: 0 8px 18px rgba(120, 115, 245, 0.18);
+            `;
+
+            alertsButton.addEventListener("click", (e) => {
+                e.stopPropagation();
+                window.location.href = "message/alerts.html";
+            });
+
+            alertsButtonWrap.appendChild(alertsButton);
+            notiList.appendChild(alertsButtonWrap);
+        } else {
+            notiList.innerHTML = `<p style="text-align:center; padding:20px; color:#888;">No alerts found.</p>`;
         }
     } catch (error) { 
         console.error("Alerts error:", error);
@@ -416,8 +503,12 @@ async function fetchPersonalMessages() {
             seeAllMsgs.style.marginTop = "10px";
             seeAllMsgs.innerHTML = `<span style="font-size:12px; color:#999;">End of messages</span>`;
             msgList.appendChild(seeAllMsgs);
-        } else { msgList.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No messages found.</p>"; }
-    } catch (error) { msgList.innerHTML = "<p style='text-align:center;'>Error loading messages.</p>"; }
+        } else {
+            msgList.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No messages found.</p>";
+        }
+    } catch (error) { 
+        msgList.innerHTML = "<p style='text-align:center;'>Error loading messages.</p>";
+    }
 }
 
 (async function() {
