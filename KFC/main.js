@@ -259,6 +259,11 @@ async function fetchUrduAlerts() {
     try {
         const response = await fetch("https://livenews.live/KFC/message/alerts.json");
         const alerts = await response.json();
+        
+        // Ensure the container itself can expand
+        notiList.style.height = "auto";
+        notiList.style.maxHeight = "500px"; // Adjust based on your UI
+        notiList.style.overflowY = "auto";
         notiList.innerHTML = "";
         
         if (alerts.length > 0) {
@@ -267,86 +272,105 @@ async function fetchUrduAlerts() {
                 const item = document.createElement("div");
                 item.className = "noti-item";
                 
-                // Professional Styling for the container
-                item.style.direction = "rtl"; 
-                item.style.textAlign = "right";
-                item.style.position = "relative";
-                item.style.backgroundColor = "#ffffff";
-                item.style.border = "1px solid #e0e0e0";
-                item.style.borderRadius = "8px";
-                item.style.marginBottom = "10px";
-                item.style.overflow = "hidden";
+                // Professional Styling with Auto Height
+                item.style.cssText = `
+                    direction: rtl;
+                    text-align: right;
+                    position: relative;
+                    background-color: #ffffff;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    margin-bottom: 10px;
+                    overflow: hidden;
+                    height: auto; 
+                    min-height: 50px;
+                    transition: all 0.3s ease;
+                `;
 
                 item.innerHTML = `
                     <div style="background-color:#0d3c91; height:6px;"></div>
                     <img src="logo.png" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60%; opacity:0.08; z-index:1; pointer-events:none;">
                     
-                    <div class="noti-top-row" style="padding: 10px 15px; display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
+                    <div class="noti-top-row" style="padding: 12px 15px; display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; cursor: pointer;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91; font-size: 15px;">${latest.title_ur || "اعلان"}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <i class="fa-solid fa-download download-btn" title="Download as Image" style="cursor:pointer; font-size:16px; color:#7873f5;"></i>
+                            <i class="fa-solid fa-download download-btn" title="Download" style="cursor:pointer; font-size:16px; color:#7873f5; z-index: 3;"></i>
                             <span class="noti-date" style="font-size:11px; color:#888;">${latest.date}</span>
                         </div>
                     </div>
                     
-                    <div class="noti-body-ur" lang="ur" style="display:none; padding: 0 15px 15px 15px; border-top:1px dashed #eee; margin-top:5px; white-space:pre-line; position: relative; z-index: 2; font-size: 14px; line-height: 1.8; color: #333; font-weight: 500;">
+                    <div class="noti-body-ur" lang="ur" style="display:none; padding: 15px; border-top:1px dashed #eee; white-space:pre-line; position: relative; z-index: 2; font-size: 14px; line-height: 1.8; color: #333;">
                         ${latest.body_ur}
-                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center;">Khawrai Falahi Committee UAE</div>
+                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center; border-top: 1px solid #f0f0f0; padding-top: 5px;">KFC Official Notification</div>
                     </div>
                 `;
                 
+                // --- Download with Preview ---
                 const downloadBtn = item.querySelector(".download-btn");
-                downloadBtn.addEventListener("click", async (e) => {
+                downloadBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     const body = item.querySelector(".noti-body-ur");
-                    const wasVisible = body.style.display === "block";
-                    body.style.display = "block";
                     
-                    try {
-                        const canvas = await html2canvas(item, { 
-                            backgroundColor: "#ffffff", 
-                            scale: 5, 
-                            useCORS: true,
-                            logging: false
-                        });
+                    // Create a hidden clone specifically for high-res capture
+                    const offScreen = item.cloneNode(true);
+                    offScreen.style.width = "450px";
+                    offScreen.querySelector(".noti-body-ur").style.display = "block";
+                    offScreen.style.position = "absolute";
+                    offScreen.style.left = "-9999px";
+                    document.body.appendChild(offScreen);
+
+                    // Show Preview Modal
+                    const modal = document.createElement("div");
+                    modal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;";
+                    
+                    const previewContent = offScreen.cloneNode(true);
+                    previewContent.style.position = "static";
+                    previewContent.style.left = "auto";
+                    previewContent.style.boxShadow = "0 10px 30px rgba(0,0,0,0.5)";
+                    
+                    modal.innerHTML = `<h3 style="color:white; margin-bottom:15px; font-family:sans-serif;">Image Preview</h3>`;
+                    modal.appendChild(previewContent);
+                    modal.innerHTML += `<button id="doDownload" style="margin-top:20px; padding:12px 25px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Save High Quality Image</button>
+                                       <p style="color:#ccc; margin-top:10px; font-size:12px;">Click background to cancel</p>`;
+                    
+                    document.body.appendChild(modal);
+                    document.body.removeChild(offScreen);
+
+                    modal.onclick = (me) => { if(me.target === modal) modal.remove(); };
+                    
+                    document.getElementById("doDownload").onclick = async () => {
+                        const canvas = await html2canvas(previewContent, { scale: 5, useCORS: true });
                         const link = document.createElement("a");
-                        link.download = `Alert-${latest.date}.png`;
+                        link.download = `KFC-Alert-${latest.date}.png`;
                         link.href = canvas.toDataURL("image/png", 1.0);
                         link.click();
-                    } catch (err) {
-                        console.error("Download failed", err);
-                    } finally {
-                        if (!wasVisible) body.style.display = "none";
-                    }
+                        modal.remove();
+                    };
                 });
 
+                // --- Accordion Logic ---
                 item.addEventListener("click", () => {
                     const body = item.querySelector(".noti-body-ur");
                     const isVisible = body.style.display === "block";
+                    
+                    // Close others
                     document.querySelectorAll('.noti-body-ur').forEach(el => el.style.display = 'none');
-                    if (!isVisible) body.style.display = "block";
+                    
+                    if (!isVisible) {
+                        body.style.display = "block";
+                        item.style.backgroundColor = "#f9f9ff";
+                    } else {
+                        item.style.backgroundColor = "#ffffff";
+                    }
                 });
                 
                 notiList.appendChild(item);
             });
-
-            const seeAllContainer = document.createElement("div");
-            seeAllContainer.style.textAlign = "center";
-            seeAllContainer.style.padding = "10px 0";
-            seeAllContainer.innerHTML = `
-                <a href="https://livenews.live/KFC/message/alerts.html" 
-                   style="font-weight:bold; color:#7873f5; text-decoration:none; font-size:13px; border-top: 1px solid #eee; display: block; padding-top: 10px;">
-                    See all notifications <i class="fa-solid fa-arrow-right-long"></i>
-                </a>`;
-            notiList.appendChild(seeAllContainer);
-        } else {
-            notiList.innerHTML = "<p style='text-align:center; padding: 20px;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
         }
     } catch (error) { 
         console.error("Alerts error:", error);
-        notiList.innerHTML = "<p style='text-align:center;'>Error loading alerts.</p>"; 
     }
 }
 
