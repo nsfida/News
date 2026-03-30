@@ -9,6 +9,7 @@
 </head>
 <body>
 <div class="floating-circles"><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div></div>
+
 <header class="top-header">
   <div class="logo-area">
     <a href="https://livenews.live/KFC"><img src="logo.png" alt="KFC Logo" class="dancing-logo"></a>
@@ -18,40 +19,45 @@
     </div>
   </div>
 
-<!-- Add this right before <div class="user-area" id="userArea"> -->
-
-
   <div class="user-area" id="userArea">
-<div class="notification-wrapper" id="msgBtn">
-  <i class="fa-solid fa-envelope"></i>
-  <span class="notification-badge" id="msgBadge" style="display:none;">!</span>
-  <div class="notification-dropdown glass" id="msgDropdown">
-    <div class="noti-header">Personal Messages</div>
-    <div id="msgList" class="noti-list">
-      <p class="noti-loading">Loading messages...</p>
+    <div class="notification-wrapper" id="msgBtn">
+      <i class="fa-solid fa-envelope"></i>
+      <span class="notification-badge" id="msgBadge" style="display:none;">!</span>
+      <div class="notification-dropdown glass" id="msgDropdown">
+        <div class="noti-header">Personal Messages</div>
+        <div id="msgList" class="noti-list">
+          <p class="noti-loading">Loading messages...</p>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-<div class="notification-wrapper" id="notificationBtn">
-  <i class="fa-solid fa-bell"></i>
-  <span class="notification-badge" id="notiBadge" style="display:none;">!</span>
-  <div class="notification-dropdown glass" id="notiDropdown">
-    <div class="noti-header">Recent Alerts</div>
-    <div id="notiList" class="noti-list">
-      <p class="noti-loading">Loading alerts...</p>
+    
+    <div class="notification-wrapper" id="notificationBtn">
+      <i class="fa-solid fa-bell"></i>
+      <span class="notification-badge" id="notiBadge" style="display:none;">!</span>
+      <div class="notification-dropdown glass" id="notiDropdown">
+        <div class="noti-header">Recent Alerts</div>
+        <div id="notiList" class="noti-list">
+          <p class="noti-loading">Loading alerts...</p>
+        </div>
+      </div>
     </div>
-  </div>
-</div>    <i class="fa-solid fa-user-circle"></i>
+    
+    <div class="header-profile-img-container">
+        <img id="headerProfileImg" src="https://livenews.live/KFC/static/images/photos/default.png" alt="User" class="header-profile-img" style="display:none;">
+        <i class="fa-solid fa-user-circle" id="headerUserIcon"></i>
+    </div>
+    
     <span id="username">Welcome, Guest</span>
     <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
   </div>
 </header>
-<!-- Info Banner: place right after the closing </header> -->
+
 <div id="infoBanner" class="info-banner">
   <div class="marquee">
     📢 Dear members: The Khawrai Falahi Committee can now send personal messages to all members privately. Please log in to your Committee account to view your messages and recent alerts. Stay updated
   </div>
 </div>
+
 <div id="userDropdown" class="user-dropdown glass">
   <div id="guestView">
     <h3>Welcome Guest</h3>
@@ -60,6 +66,10 @@
   </div>
 
   <div id="userView" style="display:none; flex-direction:column; align-items:center; gap:6px;">
+    <div class="dropdown-photo-area">
+        <img id="dropdownProfileImg" src="" alt="Profile Photo" class="dropdown-profile-img">
+    </div>
+    
     <h3 id="userFullName"></h3>
     <div class="user-info">
       <p id="userCard"></p>
@@ -68,10 +78,21 @@
       <p id="userMobile"></p>
     </div>
     <div class="user-buttons" style="display:flex; flex-direction:column; gap:8px; width:100%; align-items:center;">
+      <button id="viewPhotoBtn"><i class="fa-solid fa-image"></i> View Photo</button>
       <a id="viewCardBtn" href="#" target="_blank">View Card</a>
       <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
     </div>
   </div>
+</div>
+
+<div id="photoOverlay" class="overlay">
+    <div class="photo-viewer-box glass">
+        <div class="leaders-header">
+            <h2>Profile Photo</h2>
+            <i class="fa-solid fa-xmark" id="closePhotoOverlay"></i>
+        </div>
+        <img id="fullProfileImg" src="" alt="User Photo" style="width:100%; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+    </div>
 </div>
 
 <div id="loginOverlay" class="login-overlay">
@@ -163,8 +184,8 @@
         <p>Community events & memories</p>
         <a href="https://livenews.live/KFC/message/Gallery/gallery.html">View</a>
       </div>
-<div class="card glass"><i class="fa-solid fa-file-contract"></i><h3>Constitution (Eng)</h3><p>English Version</p><a href="https://livenews.live/KFC/English.pdf">View</a></div>
-<div class="card glass"><i class="fa-solid fa-file-signature"></i><h3>Constitution (Ur)</h3><p lang="ur">اردو ورژن</p><a href="https://livenews.live/KFC/Urdu.pdf">View</a></div>
+      <div class="card glass"><i class="fa-solid fa-file-contract"></i><h3>Constitution (Eng)</h3><p>English Version</p><a href="https://livenews.live/KFC/English.pdf">View</a></div>
+      <div class="card glass"><i class="fa-solid fa-file-signature"></i><h3>Constitution (Ur)</h3><p lang="ur">اردو ورژن</p><a href="https://livenews.live/KFC/Urdu.pdf">View</a></div>
     </section>
 
     <section class="info-section glass">
@@ -173,9 +194,12 @@
       <p class="intro-ur" lang="ur">متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے پُرعزم ہے۔</p>
     </section>
 
-<section class="info-section glass"><h2>✔ Mission</h2><p>People from Khawrai village and its surrounding areas living in the United Arab Emirates may face certain serious situations that are beyond their immediate ability to resolve. At times, unforeseen emergencies arise where financial assistance, timely support from their community, and other essential resources become necessary—arrangements that cannot be managed by an individual or a small group alone.
-With this need in mind, the Khawrai Welfare Committee has been established. The committee incorporates several essential measures aimed at ensuring the care of our community members in the UAE and providing timely solutions to their difficulties.
-The core mission of the committee is centered around three critical areas: in the event of a heart attack of a member, the passing of a member, and cases involving appendicitis of a member. Further information and complete details have been outlined in the committee’s constitution.</p><p lang="ur">متحدہ عرب امارات میں مقیم گاوں خاورئی اور مضافات کے لوگوں کو چند سنجیدہ مسائل ایسے درپیش ہو سکتے جن کو فوری طور پہ حل کرنا ان کے بس میں نہیں ہوتا، یا پھر ایسا سمجھ لیں کہ کوئی ایسی ایمر جنسی ہو سکتی ہے جس میں ان کو مالی امداد، بروقت اپنوں کی پہنچ اور کئی ایسی چیزیں درکار ہو جاتی ہیں جن کا بندوبست کرنا اکیلے بندے یا پھر چند لوگ نہیں کر سکتے، اسی مدعے کو مد نظر رکھتے ہوئے خاورئی فلاحی کمیٹی کو وجود میں لایا گیا ہے اور کمیٹی میں کئی ایسی ضروری چیزیں شامل کی گئی ہیں جن سے متحدہ عرب امارات میں مقیم ہمارے لوگوں کی دیکھ بال اور ان کے مسائل کا بروقت حل نکالا جا سکتا ہے۔ کمیٹی کا اصل منشور تین ضروری پہلووں پہ کام کرنا ہے، جن میں کمیٹی رکن کو دل کا دورہ، کمیٹی رکن کا انتقال اور کمیٹی رکن کے اپینڈکس کا مسلہ شامل ہے۔ مزید معلومات اور مکمل تفصیلات کمیٹی کے دستور میں شائع کی گئی ہیں۔</p></section>
+    <section class="info-section glass">
+      <h2>✔ Mission</h2>
+      <p>People from Khawrai village and its surrounding areas living in the United Arab Emirates may face certain serious situations that are beyond their immediate ability to resolve. At times, unforeseen emergencies arise where financial assistance, timely support from their community, and other essential resources become necessary—arrangements that cannot be managed by an individual or a small group alone. With this need in mind, the Khawrai Welfare Committee has been established. The committee incorporates several essential measures aimed at ensuring the care of our community members in the UAE and providing timely solutions to their difficulties. The core mission of the committee is centered around three critical areas: in the event of a heart attack of a member, the passing of a member, and cases involving appendicitis of a member. Further information and complete details have been outlined in the committee’s constitution.</p>
+      <p lang="ur">متحدہ عرب امارات میں مقیم گاوں خاورئی اور مضافات کے لوگوں کو چند سنجیدہ مسائل ایسے درپیش ہو سکتے جن کو فوری طور پہ حل کرنا ان کے بس میں نہیں ہوتا، یا پھر ایسا سمجھ لیں کہ کوئی ایسی ایمر جنسی ہو سکتی ہے جس میں ان کو مالی امداد، بروقت اپنوں کی پہنچ اور کئی ایسی چیزیں درکار ہو جاتی ہیں جن کا بندوبست کرنا اکیلے بندے یا پھر چند لوگ نہیں کر سکتے، اسی مدعے کو مد نظر رکھتے ہوئے خاورئی فلاحی کمیٹی کو وجود میں لایا گیا ہے اور کمیٹی میں کئی ایسی ضروری چیزیں شامل کی گئی ہیں جن سے متحدہ عرب امارات میں مقیم ہمارے لوگوں کی دیکھ بال اور ان کے مسائل کا بروقت حل نکالا جا سکتا ہے۔ کمیٹی کا اصل منشور تین ضروری پہلووں پہ کام کرنا ہے، جن میں کمیٹی رکن کو دل کا دورہ، کمیٹی رکن کا انتقال اور کمیٹی رکن کے اپینڈکس کا مسلہ شامل ہے۔ مزید معلومات اور مکمل تفصیلات کمیٹی کے دستور میں شائع کی گئی ہیں۔</p>
+    </section>
+
     <section class="info-section glass">
       <h2>⌯⌲ Vision</h2>
       <p>To build a digitally accessible, strong, and self-supporting Khawrai community in UAE.</p>
@@ -196,13 +220,13 @@ The core mission of the committee is centered around three critical areas: in th
       <h2>System Features</h2>
       <p>Fully responsive dashboard, secure username/password login, persistent session across refresh, dynamic stats, and mobile-friendly interface.</p>
     </section>
-
   </main>
 </div>
 
 <footer class="footer">
   <p>© 2026 Khawrai Falahi Committee UAE | All Rights Reserved</p>
 </footer>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="main.js"></script>
 
