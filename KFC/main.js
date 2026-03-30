@@ -132,7 +132,6 @@ function login() {
 
 function applyUser() {
     if (!currentUser) return;
-
     const firstName = currentUser.name.split(" ")[0];
     usernameText.innerText = `Welcome, ${firstName}`;
     guestView.style.display = "none";
@@ -165,7 +164,6 @@ function checkSession() {
         }
         applyUser();
     }
-
     if (!currentUser) {
         msgBtn.style.display = "none";
         notificationBtn.style.display = "none";
@@ -193,7 +191,6 @@ function calculateStats() {
 }
 
 // --- Interaction Handlers ---
-
 userArea.addEventListener("click", e => {
     e.stopPropagation();
     notiDropdown.classList.remove("show");
@@ -206,7 +203,6 @@ notificationBtn.addEventListener("click", (e) => {
     dropdown.classList.remove("show");
     msgDropdown.classList.remove("show");
     notiDropdown.classList.toggle("show");
-
     if (!currentUser) {
         notiList.innerHTML = `<p style="text-align:center; padding:20px;">Please sign-in to view recent alerts</p>`;
         notiBadge.style.display = "none";
@@ -221,7 +217,6 @@ msgBtn.addEventListener("click", (e) => {
     dropdown.classList.remove("show");
     notiDropdown.classList.remove("show");
     msgDropdown.classList.toggle("show");
-
     if (!currentUser) {
         msgList.innerHTML = `<p style="text-align:center; padding:20px;">Please sign-in to view your messages</p>`;
         msgBadge.style.display = "none";
@@ -260,7 +255,6 @@ loginBtn.addEventListener("click", login);
 document.addEventListener("keydown", e => { if (e.key === "Enter" && loginOverlay.classList.contains("show")) login(); });
 
 // --- Data Systems ---
-
 async function fetchUrduAlerts() {
     try {
         const response = await fetch("https://livenews.live/KFC/message/alerts.json");
@@ -269,32 +263,38 @@ async function fetchUrduAlerts() {
         
         if (alerts.length > 0) {
             const sortedAlerts = [...alerts].reverse(); 
-            
             sortedAlerts.slice(0, 3).forEach(latest => {
                 const item = document.createElement("div");
                 item.className = "noti-item";
                 
+                // Professional Styling for the container
                 item.style.direction = "rtl"; 
                 item.style.textAlign = "right";
                 item.style.position = "relative";
-                item.style.backgroundImage = "url('logo.png')";
-                item.style.backgroundRepeat = "no-repeat";
-                item.style.backgroundPosition = "center";
-                item.style.backgroundSize = "70%"; // Adjusted size
-                item.style.backgroundColor = "rgba(255, 255, 255, 0.97)"; 
-                item.style.backgroundBlendMode = "soft-light"; // Fix 3: Lower visibility for logo
+                item.style.backgroundColor = "#ffffff";
+                item.style.border = "1px solid #e0e0e0";
+                item.style.borderRadius = "8px";
+                item.style.marginBottom = "10px";
+                item.style.overflow = "hidden";
 
                 item.innerHTML = `
-                    <div class="noti-top-row" style="display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; flex-direction: row-reverse;">
+                    <div style="background-color:#0d3c91; height:6px;"></div>
+                    <img src="logo.png" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60%; opacity:0.08; z-index:1; pointer-events:none;">
+                    
+                    <div class="noti-top-row" style="padding: 10px 15px; display:flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91; font-size: 14px;">${latest.title_ur || "اعلان"}</span>
+                            <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91; font-size: 15px;">${latest.title_ur || "اعلان"}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <i class="fa-solid fa-download download-btn" title="Download as Image" style="cursor:pointer; font-size:16px; color:#7873f5;"></i>
                             <span class="noti-date" style="font-size:11px; color:#888;">${latest.date}</span>
                         </div>
                     </div>
-                    <div class="noti-body-ur" lang="ur" style="display:none; padding-top:10px; border-top:1px dashed #7873f5; margin-top:5px; white-space:pre-line; position: relative; z-index: 2; font-size: 13px; line-height: 1.6; color: #000; font-weight: 500;">${latest.body_ur}</div>
+                    
+                    <div class="noti-body-ur" lang="ur" style="display:none; padding: 0 15px 15px 15px; border-top:1px dashed #eee; margin-top:5px; white-space:pre-line; position: relative; z-index: 2; font-size: 14px; line-height: 1.8; color: #333; font-weight: 500;">
+                        ${latest.body_ur}
+                        <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center;">KFC Official Notification</div>
+                    </div>
                 `;
                 
                 const downloadBtn = item.querySelector(".download-btn");
@@ -302,16 +302,14 @@ async function fetchUrduAlerts() {
                     e.stopPropagation();
                     const body = item.querySelector(".noti-body-ur");
                     const wasVisible = body.style.display === "block";
-                    
                     body.style.display = "block";
-                    item.style.borderRadius = "10px";
-                    item.style.padding = "20px";
                     
                     try {
                         const canvas = await html2canvas(item, { 
                             backgroundColor: "#ffffff", 
-                            scale: 4, // Fix 2: High quality download
-                            useCORS: true 
+                            scale: 5, 
+                            useCORS: true,
+                            logging: false
                         });
                         const link = document.createElement("a");
                         link.download = `KFC-Alert-${latest.date}.png`;
@@ -321,21 +319,14 @@ async function fetchUrduAlerts() {
                         console.error("Download failed", err);
                     } finally {
                         if (!wasVisible) body.style.display = "none";
-                        item.style.padding = ""; 
                     }
                 });
 
                 item.addEventListener("click", () => {
                     const body = item.querySelector(".noti-body-ur");
                     const isVisible = body.style.display === "block";
-                    
                     document.querySelectorAll('.noti-body-ur').forEach(el => el.style.display = 'none');
-                    document.querySelectorAll('.noti-item').forEach(el => el.classList.remove('expanded'));
-                    
-                    if (!isVisible) {
-                        body.style.display = "block";
-                        item.classList.add("expanded");
-                    }
+                    if (!isVisible) body.style.display = "block";
                 });
                 
                 notiList.appendChild(item);
@@ -350,7 +341,6 @@ async function fetchUrduAlerts() {
                     See all notifications <i class="fa-solid fa-arrow-right-long"></i>
                 </a>`;
             notiList.appendChild(seeAllContainer);
-
         } else {
             notiList.innerHTML = "<p style='text-align:center; padding: 20px;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
         }
@@ -397,13 +387,11 @@ async function fetchPersonalMessages() {
                 });
                 msgList.appendChild(item);
             });
-
             const seeAllMsgs = document.createElement("div");
             seeAllMsgs.style.textAlign = "center";
             seeAllMsgs.style.marginTop = "10px";
             seeAllMsgs.innerHTML = `<span style="font-size:12px; color:#999;">End of messages</span>`;
             msgList.appendChild(seeAllMsgs);
-
         } else { msgList.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No messages found.</p>"; }
     } catch (error) { msgList.innerHTML = "<p style='text-align:center;'>Error loading messages.</p>"; }
 }
