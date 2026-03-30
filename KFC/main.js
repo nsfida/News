@@ -552,6 +552,9 @@ async function fetchUrduAlerts() {
                 font-size: 14px;
                 line-height: 1.8;
                 color: #333;
+                max-height: 260px;
+                overflow-y: auto;
+                overflow-x: hidden;
             `;
 
             body.innerHTML = `
@@ -657,6 +660,12 @@ async function fetchPersonalMessages() {
         if (!msgList) return;
 
         msgList.innerHTML = "";
+        msgList.style.height = "auto";
+        msgList.style.maxHeight = "500px";
+        msgList.style.overflowY = "auto";
+        msgList.style.overflowX = "hidden";
+        msgList.style.paddingRight = "4px";
+        msgList.style.scrollbarGutter = "stable";
 
         if (!currentUser) {
             msgList.innerHTML = buildCenteredInfoMessage("Please sign-in to view your messages");
@@ -748,6 +757,9 @@ async function fetchPersonalMessages() {
                 color:#444;
                 line-height:1.8;
                 white-space:pre-line;
+                max-height: 320px;
+                overflow-y: auto;
+                overflow-x: hidden;
             `;
             body.innerHTML = escapeHTML(msg.body || "");
 
