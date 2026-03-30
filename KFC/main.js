@@ -5,6 +5,7 @@ const API_BASE = "https://livenews.live/KFC";
 const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
 const DEFAULT_PHOTO = `${PHOTOS_BASE}photo.png`;
 const CARD_LOGO = "logo.png";
+const THEME_STORAGE_KEY = "kfcTheme";
 
 let userArea,
     usernameText,
@@ -47,7 +48,9 @@ let userArea,
     leadersOverlay,
     closeLeaders,
     leadersList,
-    seeAllAlertsBtn;
+    seeAllAlertsBtn,
+    themeToggleBtn,
+    themeToggleIcon;
 
 function cacheElements() {
     userArea = document.getElementById("userArea");
@@ -96,6 +99,9 @@ function cacheElements() {
     leadersList = document.getElementById("leadersList");
 
     seeAllAlertsBtn = document.getElementById("seeAllAlertsBtn");
+
+    themeToggleBtn = document.getElementById("themeToggleBtn");
+    themeToggleIcon = document.getElementById("themeToggleIcon");
 }
 
 function isCancelledStatus(status) {
@@ -295,6 +301,31 @@ function createCardTopStripe() {
 
 function buildCenteredInfoMessage(text) {
     return `<p style="text-align:center; padding:20px; color:#888;">${escapeHTML(text)}</p>`;
+}
+
+function applyTheme(mode) {
+    const dark = mode === "dark";
+    document.body.classList.toggle("dark-mode", dark);
+    localStorage.setItem(THEME_STORAGE_KEY, dark ? "dark" : "light");
+    if (themeToggleIcon) {
+        themeToggleIcon.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+    }
+}
+
+function initTheme() {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    if (savedTheme === "dark" || savedTheme === "light") {
+        applyTheme(savedTheme);
+        return;
+    }
+
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+}
+
+function toggleTheme() {
+    const isDark = document.body.classList.contains("dark-mode");
+    applyTheme(isDark ? "light" : "dark");
 }
 
 async function loadUsers() {
@@ -811,6 +842,13 @@ function bindEvents() {
         });
     }
 
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", e => {
+            e.stopPropagation();
+            toggleTheme();
+        });
+    }
+
     if (notificationBtn) {
         notificationBtn.addEventListener("click", e => {
             e.stopPropagation();
@@ -945,6 +983,7 @@ function bindEvents() {
 
 function init() {
     cacheElements();
+    initTheme();
     bindEvents();
     loadUsers().then(() => {
         checkSession();
