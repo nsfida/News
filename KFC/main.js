@@ -25,6 +25,15 @@ const totalMembers = document.getElementById("totalMembers");
 const activeMembers = document.getElementById("activeMembers");
 const leadersCount = document.getElementById("leadersCount");
 
+// Profile Picture Elements
+const headerProfileImg = document.getElementById("headerProfileImg");
+const headerUserIcon = document.getElementById("headerUserIcon");
+const dropdownProfileImg = document.getElementById("dropdownProfileImg");
+const viewPhotoBtn = document.getElementById("viewPhotoBtn");
+const photoOverlay = document.getElementById("photoOverlay");
+const fullProfileImg = document.getElementById("fullProfileImg");
+const closePhotoOverlay = document.getElementById("closePhotoOverlay");
+
 // Notification & Message Elements
 const notificationBtn = document.getElementById("notificationBtn");
 const notiDropdown = document.getElementById("notiDropdown");
@@ -58,6 +67,41 @@ function generatePassword(card) {
     if (!card) return "";
     let parts = card.split("-");
     return parts[parts.length - 1];
+}
+
+// Fixed Image Fallback Logic
+function applyProfileImage(cardNo) {
+    const basePath = "https://livenews.live/KFC/static/images/photos/";
+    const defaultImg = basePath + "photo.png";
+    const pngPath = basePath + cardNo + ".png";
+    const jpgPath = basePath + cardNo + ".jpg";
+
+    const updateAllSources = (src) => {
+        headerProfileImg.src = src;
+        dropdownProfileImg.src = src;
+        fullProfileImg.src = src;
+    };
+
+    // Reset and try PNG first
+    updateAllSources(pngPath);
+
+    const handleImgError = (imgTag) => {
+        if (imgTag.src === pngPath) {
+            updateAllSources(jpgPath);
+        } else if (imgTag.src === jpgPath) {
+            updateAllSources(defaultImg);
+        } else {
+            // Final fallback: show icon if even default fails
+            headerProfileImg.style.display = "none";
+            headerUserIcon.style.display = "block";
+        }
+    };
+
+    headerProfileImg.onerror = () => handleImgError(headerProfileImg);
+    dropdownProfileImg.onerror = () => handleImgError(dropdownProfileImg);
+    
+    headerProfileImg.style.display = "block";
+    headerUserIcon.style.display = "none";
 }
 
 function login() {
@@ -102,12 +146,13 @@ function applyUser() {
     userBlood.innerText = "Blood Group: " + (currentUser.BG || "Not available");
     userMobile.innerText = "Registered Mobile: " + (currentUser.mobile || "Not available");
 
-const viewCardBtn = document.getElementById("viewCardBtn");
-viewCardBtn.href = "viewcard.html?card=" + btoa(currentUser.CNo);
-viewCardBtn.target = "_blank"; // open in new tab
+    applyProfileImage(currentUser.CNo);
 
-    // **Show notification & message icons immediately**
-    msgBtn.style.display = "flex";           // or "inline-flex"
+    const viewCardBtn = document.getElementById("viewCardBtn");
+    viewCardBtn.href = "viewcard.html?card=" + btoa(currentUser.CNo);
+    viewCardBtn.target = "_blank";
+
+    msgBtn.style.display = "flex";
     notificationBtn.style.display = "flex";
 }
 
@@ -119,22 +164,18 @@ function checkSession() {
         if (status === "cancel" || status === "cancelled") {
             localStorage.removeItem("kfcUser");
             currentUser = null;
-            loginError.innerText = "This username cannot login, this card is already cancelled";
             return;
         }
         applyUser();
     }
 
-    // Show or hide notification and message icons
-    if (currentUser) {
-        msgBtn.style.display = "flex";           // or "inline-flex" if needed
-        notificationBtn.style.display = "flex";
-    } else {
+    if (!currentUser) {
         msgBtn.style.display = "none";
         notificationBtn.style.display = "none";
+        headerProfileImg.style.display = "none";
+        headerUserIcon.style.display = "block";
     }
 }
-loadUsers().then(() => checkSession());
 
 function showWelcome(name) {
     welcomeText.innerText = "Welcome, " + name + " 👋";
@@ -156,7 +197,6 @@ function calculateStats() {
 
 // --- Interaction Handlers ---
 
-// Toggle User Dropdown
 userArea.addEventListener("click", e => {
     e.stopPropagation();
     notiDropdown.classList.remove("show");
@@ -164,7 +204,6 @@ userArea.addEventListener("click", e => {
     dropdown.classList.toggle("show");
 });
 
-// Toggle Notification Dropdown
 notificationBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     dropdown.classList.remove("show");
@@ -180,7 +219,6 @@ notificationBtn.addEventListener("click", (e) => {
     notiBadge.style.display = "none";
 });
 
-// Toggle Message Dropdown
 msgBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     dropdown.classList.remove("show");
@@ -195,14 +233,20 @@ msgBtn.addEventListener("click", (e) => {
     fetchPersonalMessages();
 });
 
-// Global Close
+viewPhotoBtn.addEventListener("click", () => {
+    photoOverlay.classList.add("show");
+    dropdown.classList.remove("show");
+});
+
+closePhotoOverlay.addEventListener("click", () => photoOverlay.classList.remove("show"));
+photoOverlay.addEventListener("click", e => { if (e.target === photoOverlay) photoOverlay.classList.remove("show"); });
+
 document.addEventListener("click", () => {
     dropdown.classList.remove("show");
     notiDropdown.classList.remove("show");
     msgDropdown.classList.remove("show");
 });
 
-// Stop internal clicks from closing boxes
 [dropdown, notiDropdown, msgDropdown].forEach(box => {
     if (box) box.addEventListener("click", e => e.stopPropagation());
 });
@@ -226,50 +270,42 @@ async function fetchUrduAlerts() {
         const alerts = await response.json();
         notiList.innerHTML = "";
         if (alerts.length > 0) {
-            notiBadge.style.display = "block";
-            alerts.reverse().slice(0, 3).forEach(latest => {
+            // Sort to show newest first
+            const sortedAlerts = [...alerts].reverse(); 
+            sortedAlerts.slice(0, 3).forEach(latest => {
                 const item = document.createElement("div");
                 item.className = "noti-item";
+                item.style.direction = "rtl"; 
+                item.style.textAlign = "right";
                 item.innerHTML = `
-                    <div class="noti-top-row" style="position:relative;">
-                        <i class="fa-solid fa-download download-btn" style="position:absolute;left:0;top:0;cursor:pointer;font-size:14px;color:#7873f5;"></i>
-                        <span class="noti-title-ur">${latest.title_ur || "اعلان"}</span>
-                        <span class="noti-date">${latest.date}</span>
+                    <div class="noti-top-row" style="position:relative; display:flex; justify-content: space-between; align-items: center;">
+                        <span class="noti-title-ur" style="font-weight:bold; color:#0d3c91;">${latest.title_ur || "اعلان"}</span>
+                        <span class="noti-date" style="font-size:11px; color:#888;">${latest.date}</span>
+                        <i class="fa-solid fa-download download-btn" style="cursor:pointer;font-size:14px;color:#7873f5; margin-right:10px;"></i>
                     </div>
-                    <div class="noti-body-ur" lang="ur">${latest.body_ur}</div>
+                    <div class="noti-body-ur" lang="ur" style="display:none; padding-top:10px; border-top:1px dashed #7873f5; margin-top:5px; white-space:pre-line;">${latest.body_ur}</div>
                 `;
-                const downloadBtn = item.querySelector(".download-btn");
-                downloadBtn.addEventListener("click", async (e) => {
-                    e.stopPropagation();
-                    item.classList.add("expanded");
-                    setTimeout(async () => {
-                        const canvas = await html2canvas(item, { backgroundColor: null, scale: 2 });
-                        const link = document.createElement("a");
-                        link.download = "notification.png";
-                        link.href = canvas.toDataURL("image/png");
-                        link.click();
-                    }, 50);
-                });
-                item.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (item.classList.contains("expanded")) {
-                        item.classList.remove("expanded");
-                    } else {
-                        document.querySelectorAll('.noti-item').forEach(el => el.classList.remove('expanded'));
-                        item.classList.add("expanded");
-                    }
+                
+                item.addEventListener("click", () => {
+                    const body = item.querySelector(".noti-body-ur");
+                    const isVisible = body.style.display === "block";
+                    document.querySelectorAll('.noti-body-ur').forEach(el => el.style.display = 'none');
+                    body.style.display = isVisible ? "none" : "block";
                 });
                 notiList.appendChild(item);
             });
-            const seeAll = document.createElement("div");
-            seeAll.style.textAlign = "center";
-            seeAll.style.marginTop = "10px";
-            seeAll.innerHTML = `<a href="https://livenews.live/KFC/message/alerts.html" style="font-weight:bold; color:#7873f5; text-decoration:underline;">Click here to see all notifications</a>`;
-            notiList.appendChild(seeAll);
+
+            // "See All" link for Alerts
+            const seeAllAlerts = document.createElement("div");
+            seeAllAlerts.style.textAlign = "center";
+            seeAllAlerts.style.marginTop = "10px";
+            seeAllAlerts.innerHTML = `<a href="https://livenews.live/KFC/message/alerts.html" style="font-weight:bold; color:#7873f5; text-decoration:underline; font-size:13px;">See all notifications</a>`;
+            notiList.appendChild(seeAllAlerts);
+
         } else {
-            notiList.innerHTML = "<p style='text-align:center; font-family:UrduFont;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
+            notiList.innerHTML = "<p style='text-align:center;'>کوئی نیا نوٹیفیکیشن نہیں ہے۔</p>";
         }
-    } catch (error) { notiList.innerHTML = "<p style='text-align:center;'>Error loading notifications.</p>"; }
+    } catch (error) { notiList.innerHTML = "<p style='text-align:center;'>Error loading alerts.</p>"; }
 }
 
 async function fetchPersonalMessages() {
@@ -279,40 +315,47 @@ async function fetchPersonalMessages() {
         msgList.innerHTML = "";
         const myMessages = messages.filter(m => m.cardNumber === currentUser.CNo || m.cardNumber?.toLowerCase() === "all");
         if (myMessages.length > 0) {
-            msgBadge.style.display = "none";
             myMessages.sort((a, b) => new Date(b.date) - new Date(a.date));
             myMessages.forEach(msg => {
                 const item = document.createElement("div");
                 item.className = "noti-item msg-item";
+                item.style.direction = "ltr"; 
+                item.style.textAlign = "left";
                 const isGlobal = msg.cardNumber?.toLowerCase() === "all";
                 const typeLabel = isGlobal ? '<span style="color:#ff6ec4; font-size:10px;">[Public]</span>' : '<span style="color:#7873f5; font-size:10px;">[Private]</span>';
                 item.innerHTML = `
                     <div class="noti-top-row" style="flex-direction: column; align-items: flex-start;">
-                        <span class="msg-date">${msg.date} ${typeLabel}</span>
-                        <strong class="msg-title" style="color:#0d3c91; font-size: 15px;">
-                            <i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-right: 5px;"></i> ${msg.title}
+                        <span class="msg-date" style="font-size:11px; color:#888;">${msg.date} ${typeLabel}</span>
+                        <strong class="msg-title" style="color:#0d3c91; font-size: 15px; display:flex; align-items:center; gap:5px;">
+                            <i class="fa-solid fa-chevron-right icon-rotate" style="font-size: 10px;"></i> ${msg.title}
                         </strong>
                     </div>
-                    <div class="msg-body">${msg.body}</div>
+                    <div class="msg-body" style="display:none; padding-top:10px; font-size:13px; color:#444; border-top:1px dashed #ccc; margin-top:5px;">${msg.body}</div>
                 `;
-                item.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const isExpanded = item.classList.contains("expanded");
-                    document.querySelectorAll('.msg-item').forEach(el => el.classList.remove('expanded'));
-                    if (!isExpanded) {
-                        item.classList.add("expanded");
-                        item.querySelector('i').className = "fa-solid fa-chevron-down";
-                    } else {
-                        item.querySelector('i').className = "fa-solid fa-chevron-right";
+                item.addEventListener("click", () => {
+                    const body = item.querySelector(".msg-body");
+                    const icon = item.querySelector(".icon-rotate");
+                    const isVisible = body.style.display === "block";
+                    document.querySelectorAll('.msg-body').forEach(el => el.style.display = 'none');
+                    document.querySelectorAll('.icon-rotate').forEach(i => i.className = "fa-solid fa-chevron-right icon-rotate");
+                    if (!isVisible) {
+                        body.style.display = "block";
+                        icon.className = "fa-solid fa-chevron-down icon-rotate";
                     }
                 });
                 msgList.appendChild(item);
             });
+
+            // "See All" link for Messages (optional, directs to dashboard/messages if applicable)
+            const seeAllMsgs = document.createElement("div");
+            seeAllMsgs.style.textAlign = "center";
+            seeAllMsgs.style.marginTop = "10px";
+            seeAllMsgs.innerHTML = `<span style="font-size:12px; color:#999;">End of messages</span>`;
+            msgList.appendChild(seeAllMsgs);
+
         } else { msgList.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No messages found.</p>"; }
     } catch (error) { msgList.innerHTML = "<p style='text-align:center;'>Error loading messages.</p>"; }
 }
-
-// --- On Page Load ---
 (async function() {
     await loadUsers();
     checkSession();
@@ -346,12 +389,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 [totalMembers, activeMembers].forEach(el => el.parentElement.onclick = () => window.location.href = "https://livenews.live/KFC/database.html");
 window.addEventListener("load", () => { document.body.classList.add("loaded"); });
-
-document.addEventListener("click", e => {
-    const sidebar = document.querySelector(".sidebar");
-    if (window.innerWidth <= 600 && sidebar.style.display === "flex") {
-        if (!sidebar.contains(e.target) && e.target.id !== "mobileMenuToggle") {
-            sidebar.style.display = "none";
-        }
-    }
-});
