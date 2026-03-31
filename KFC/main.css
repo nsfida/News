@@ -401,7 +401,7 @@ body.dark-mode .sidebar-nav a{
 .welcome-text p{
     font-size:14px;
     margin-top:10px;
-    line-height:1;
+    line-height:1.5;
     color:var(--soft-light);
 }
 
@@ -502,7 +502,7 @@ body.dark-mode .card p{
 .info-section p,
 .info-section ul{
     font-size:12px;
-    line-height:1;
+    line-height:1.7;
     color:var(--soft-light);
 }
 
@@ -582,7 +582,7 @@ body.dark-mode .overlay{
     padding:20px;
     background:rgba(255,255,255,0.1);
     backdrop-filter:blur(10px);
-    border-radius:70px;
+    border-radius:40px;
     border:1px solid rgba(255,255,255,0.6);
     box-shadow:0 10px 35px rgba(0,0,0,0.15);
     max-height:70vh;
