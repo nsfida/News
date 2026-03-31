@@ -3,9 +3,19 @@ let currentUser = null;
 
 const API_BASE = "https://livenews.live/KFC";
 const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
-const DEFAULT_PHOTO = `${PHOTOS_BASE}photo.png`;
+const DEFAULT_PHOTO = `${PHOTOS_BASE}default.png`;
 const CARD_LOGO = "logo.png";
+
 const THEME_STORAGE_KEY = "kfcTheme";
+const TRANSLATION_STORAGE_KEY = "kfcPageLanguage";
+
+const WRONG_URDU_NAME = "خواری فلاحی کمیٹی";
+const CORRECT_URDU_NAME = "خاورئی فلاحی کمیٹی";
+
+let currentPageLanguage = localStorage.getItem(TRANSLATION_STORAGE_KEY) === "ur" ? "ur" : "en";
+let googleTranslateLoadPromise = null;
+let translatePending = null;
+let translationRefreshTimer = null;
 
 let userArea,
     usernameText,
@@ -48,9 +58,11 @@ let userArea,
     leadersOverlay,
     closeLeaders,
     leadersList,
-    seeAllAlertsBtn,
     themeToggleBtn,
-    themeToggleIcon;
+    themeToggleIcon,
+    translateToggleBtn,
+    translateToggleIcon,
+    translateHost;
 
 function cacheElements() {
     userArea = document.getElementById("userArea");
@@ -98,10 +110,11 @@ function cacheElements() {
     closeLeaders = document.getElementById("closeLeaders");
     leadersList = document.getElementById("leadersList");
 
-    seeAllAlertsBtn = document.getElementById("seeAllAlertsBtn");
-
     themeToggleBtn = document.getElementById("themeToggleBtn");
     themeToggleIcon = document.getElementById("themeToggleIcon");
+    translateToggleBtn = document.getElementById("translateToggleBtn");
+    translateToggleIcon = document.getElementById("translateToggleIcon");
+    translateHost = document.getElementById("google_translate_element");
 }
 
 function isCancelledStatus(status) {
@@ -178,6 +191,7 @@ function showWelcome(name) {
     welcomeText.innerText = `Welcome, ${name} 👋`;
     welcomePopup.classList.add("show");
     setTimeout(() => welcomePopup.classList.remove("show"), 2500);
+    refreshTranslatedView();
 }
 
 function calculateStats() {
@@ -217,10 +231,9 @@ function showLoggedOutUI() {
     if (notificationBtn) notificationBtn.style.display = "none";
     if (headerProfileImg) headerProfileImg.style.display = "none";
     if (headerUserIcon) headerUserIcon.style.display = "block";
-
     if (guestView) guestView.style.display = "block";
     if (userView) userView.style.display = "none";
-    if (usernameText) usernameText.innerText = "Welcome";
+    if (usernameText) usernameText.innerText = "Welcome, Guest";
 }
 
 function showLoggedInUI() {
@@ -251,6 +264,7 @@ function renderUserToUI(user) {
     }
 
     showLoggedInUI();
+    refreshTranslatedView();
 }
 
 function saveSession(user) {
@@ -303,6 +317,26 @@ function buildCenteredInfoMessage(text) {
     return `<p style="text-align:center; padding:20px; color:#888;">${escapeHTML(text)}</p>`;
 }
 
+function setDocumentDirection() {
+    const rtl = currentPageLanguage === "ur";
+    document.documentElement.lang = rtl ? "ur" : "en";
+    document.documentElement.dir = rtl ? "rtl" : "ltr";
+    document.body.classList.toggle("page-rtl", rtl);
+
+    if (translateToggleBtn) {
+        translateToggleBtn.classList.toggle("active", rtl);
+        translateToggleBtn.setAttribute(
+            "aria-label",
+            rtl ? "Switch to English" : "Translate page to Urdu"
+        );
+        translateToggleBtn.title = rtl ? "Switch to English" : "Translate page to Urdu";
+    }
+
+    if (translateToggleIcon) {
+        translateToggleIcon.className = "fa-solid fa-language";
+    }
+}
+
 function applyTheme(mode) {
     const dark = mode === "dark";
     document.body.classList.toggle("dark-mode", dark);
@@ -328,6 +362,148 @@ function toggleTheme() {
     applyTheme(isDark ? "light" : "dark");
 }
 
+function setPageLanguage(lang) {
+    currentPageLanguage = lang === "ur" ? "ur" : "en";
+    localStorage.setItem(TRANSLATION_STORAGE_KEY, currentPageLanguage);
+    setDocumentDirection();
+}
+
+function replaceKnownUrduTerms(root = document.body) {
+    if (currentPageLanguage !== "ur" || !root) return;
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    const replacements = [
+        [WRONG_URDU_NAME, CORRECT_URDU_NAME],
+        ["Khawrai Falahi Committee", CORRECT_URDU_NAME],
+        ["Khawrai Welfare Committee", CORRECT_URDU_NAME],
+        ["Khawrai", "خاورئی"]
+    ];
+
+    const nodes = [];
+    while (walker.nextNode()) {
+        nodes.push(walker.currentNode);
+    }
+
+    nodes.forEach(node => {
+        let text = node.nodeValue;
+        if (!text) return;
+
+        let updated = text;
+        replacements.forEach(([from, to]) => {
+            if (updated.includes(from)) {
+                updated = updated.split(from).join(to);
+            }
+        });
+
+        if (updated !== text) {
+            node.nodeValue = updated;
+        }
+    });
+}
+
+function applyGoogleTranslation(lang) {
+    const combo = document.querySelector(".goog-te-combo");
+    if (!combo) return false;
+
+    combo.value = lang;
+    combo.dispatchEvent(new Event("change"));
+    setPageLanguage(lang);
+    return true;
+}
+
+function applyGoogleTranslationWithRetry(lang, attempt = 0) {
+    if (applyGoogleTranslation(lang)) {
+        setTimeout(() => replaceKnownUrduTerms(document.body), 250);
+        return;
+    }
+
+    if (attempt < 20) {
+        setTimeout(() => applyGoogleTranslationWithRetry(lang, attempt + 1), 200);
+    } else {
+        translatePending = lang;
+    }
+}
+
+function ensureGoogleTranslateWidget() {
+    if (googleTranslateLoadPromise) return googleTranslateLoadPromise;
+
+    googleTranslateLoadPromise = new Promise((resolve, reject) => {
+        if (window.google && window.google.translate && document.querySelector(".goog-te-combo")) {
+            resolve();
+            return;
+        }
+
+        window.googleTranslateElementInit = function () {
+            try {
+                if (translateHost) {
+                    translateHost.innerHTML = "";
+                }
+
+                new google.translate.TranslateElement(
+                    {
+                        pageLanguage: "en",
+                        includedLanguages: "ur,en",
+                        autoDisplay: false
+                    },
+                    "google_translate_element"
+                );
+
+                resolve();
+
+                if (translatePending) {
+                    const pending = translatePending;
+                    translatePending = null;
+                    setTimeout(() => applyGoogleTranslationWithRetry(pending), 250);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        const existing = document.getElementById("kfc-google-translate-script");
+        if (existing) return;
+
+        const script = document.createElement("script");
+        script.id = "kfc-google-translate-script";
+        script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+        script.async = true;
+        script.onerror = () => reject(new Error("Translator could not be loaded."));
+        document.head.appendChild(script);
+    });
+
+    return googleTranslateLoadPromise;
+}
+
+async function toggleTranslation() {
+    const targetLang = currentPageLanguage === "ur" ? "en" : "ur";
+    translatePending = targetLang;
+
+    try {
+        await ensureGoogleTranslateWidget();
+        applyGoogleTranslationWithRetry(targetLang);
+    } catch (error) {
+        console.error("Translation error:", error);
+    }
+}
+
+function refreshTranslatedView() {
+    if (currentPageLanguage !== "ur") return;
+
+    clearTimeout(translationRefreshTimer);
+    translationRefreshTimer = setTimeout(() => {
+        applyGoogleTranslationWithRetry("ur");
+        replaceKnownUrduTerms(document.body);
+    }, 120);
+}
+
+function translateTextValue(...values) {
+    for (const value of values) {
+        const text = normalizeText(value);
+        if (text) return text;
+    }
+    return "";
+}
+
 async function loadUsers() {
     try {
         const res = await fetch(`${API_BASE}/cards.json`, { cache: "no-store" });
@@ -345,7 +521,8 @@ function login() {
     const pass = normalizeText(loginPassword?.value);
 
     if (!uname || !pass) {
-        if (loginError) loginError.innerText = "Enter username & password";
+        if (loginError) loginError.innerText = "Enter username and password";
+        refreshTranslatedView();
         return;
     }
 
@@ -357,11 +534,13 @@ function login() {
 
     if (!user) {
         if (loginError) loginError.innerText = "Invalid credentials";
+        refreshTranslatedView();
         return;
     }
 
     if (isCancelledStatus(user.Status)) {
-        if (loginError) loginError.innerText = "This username cannot login, this card is already cancelled";
+        if (loginError) loginError.innerText = "This account cannot log in because the card is cancelled";
+        refreshTranslatedView();
         return;
     }
 
@@ -371,6 +550,7 @@ function login() {
     showWelcome(user.name);
 
     if (loginOverlay) loginOverlay.classList.remove("show");
+    refreshTranslatedView();
 }
 
 function checkSession() {
@@ -421,7 +601,7 @@ async function downloadNotificationAsImage(element, fileName) {
     clone.style.margin = "0";
     clone.style.transform = "none";
 
-    const cloneBody = clone.querySelector(".noti-body-ur, .msg-body");
+    const cloneBody = clone.querySelector(".noti-body, .msg-body");
     if (cloneBody) cloneBody.style.display = "block";
 
     document.body.appendChild(clone);
@@ -459,7 +639,7 @@ async function downloadNotificationAsImage(element, fileName) {
     }
 }
 
-async function fetchUrduAlerts() {
+async function fetchAlerts() {
     try {
         const response = await fetch(`${API_BASE}/message/alerts.json`, { cache: "no-store" });
         const alerts = await response.json();
@@ -473,17 +653,17 @@ async function fetchUrduAlerts() {
 
         if (!Array.isArray(alerts) || alerts.length === 0) {
             notiList.innerHTML = buildCenteredInfoMessage("No alerts found.");
+            refreshTranslatedView();
             return;
         }
 
         const sortedAlerts = [...alerts].reverse();
 
         sortedAlerts.slice(0, 3).forEach(latest => {
+            const rtl = currentPageLanguage === "ur";
             const item = document.createElement("div");
             item.className = "noti-item";
             item.style.cssText = `
-                direction: rtl;
-                text-align: right;
                 position: relative;
                 background-color: #ffffff;
                 border: 1px solid #e0e0e0;
@@ -493,6 +673,8 @@ async function fetchUrduAlerts() {
                 height: auto;
                 min-height: 50px;
                 transition: all 0.3s ease;
+                direction: ${rtl ? "rtl" : "ltr"};
+                text-align: ${rtl ? "right" : "left"};
             `;
 
             item.appendChild(createCardTopStripe());
@@ -505,6 +687,7 @@ async function fetchUrduAlerts() {
                 display:flex;
                 justify-content: space-between;
                 align-items: center;
+                flex-direction: ${rtl ? "row-reverse" : "row"};
                 position: relative;
                 z-index: 2;
                 cursor: pointer;
@@ -514,9 +697,9 @@ async function fetchUrduAlerts() {
             leftWrap.style.cssText = "display:flex; align-items:center; gap:10px;";
 
             const title = document.createElement("span");
-            title.className = "noti-title-ur";
+            title.className = "noti-title";
             title.style.cssText = "font-weight:bold; color:#0d3c91; font-size:15px;";
-            title.textContent = latest.title_ur || "اعلان";
+            title.textContent = translateTextValue(latest.title_en, latest.title, latest.title_ur, "Alert");
 
             leftWrap.appendChild(title);
 
@@ -540,8 +723,8 @@ async function fetchUrduAlerts() {
             topRow.appendChild(rightWrap);
 
             const body = document.createElement("div");
-            body.className = "noti-body-ur";
-            body.setAttribute("lang", "ur");
+            body.className = "noti-body";
+            body.setAttribute("lang", currentPageLanguage === "ur" ? "ur" : "en");
             body.style.cssText = `
                 display:none;
                 padding: 15px;
@@ -552,13 +735,10 @@ async function fetchUrduAlerts() {
                 font-size: 14px;
                 line-height: 1.8;
                 color: #333;
-                max-height: 260px;
-                overflow-y: auto;
-                overflow-x: hidden;
             `;
 
             body.innerHTML = `
-                ${escapeHTML(latest.body_ur || "")}
+                ${escapeHTML(translateTextValue(latest.body_en, latest.body, latest.body_ur))}
                 <div style="margin-top:20px; font-size:10px; color:#aaa; text-align:center; border-top:1px solid #f0f0f0; padding-top:5px;">
                     Khawrai Falahi Committee UAE
                 </div>
@@ -578,7 +758,7 @@ async function fetchUrduAlerts() {
                 downloadCard.style.visibility = "visible";
                 downloadCard.style.width = `${item.getBoundingClientRect().width}px`;
 
-                const downloadBody = downloadCard.querySelector(".noti-body-ur");
+                const downloadBody = downloadCard.querySelector(".noti-body");
                 if (downloadBody) downloadBody.style.display = "block";
 
                 document.body.appendChild(downloadCard);
@@ -596,7 +776,7 @@ async function fetchUrduAlerts() {
             item.addEventListener("click", () => {
                 const isVisible = body.style.display === "block";
 
-                document.querySelectorAll(".noti-body-ur").forEach(el => {
+                document.querySelectorAll(".noti-body").forEach(el => {
                     el.style.display = "none";
                 });
 
@@ -623,7 +803,7 @@ async function fetchUrduAlerts() {
         const alertsButton = document.createElement("button");
         alertsButton.id = "seeAllAlertsBtn";
         alertsButton.type = "button";
-        alertsButton.innerText = "Click here to see all Alerts";
+        alertsButton.innerText = "Click here to see all alerts";
         alertsButton.style.cssText = `
             width: 100%;
             padding: 10px 14px;
@@ -644,6 +824,8 @@ async function fetchUrduAlerts() {
 
         alertsButtonWrap.appendChild(alertsButton);
         notiList.appendChild(alertsButtonWrap);
+
+        refreshTranslatedView();
     } catch (error) {
         console.error("Alerts error:", error);
         if (notiList) {
@@ -660,16 +842,11 @@ async function fetchPersonalMessages() {
         if (!msgList) return;
 
         msgList.innerHTML = "";
-        msgList.style.height = "auto";
-        msgList.style.maxHeight = "500px";
-        msgList.style.overflowY = "auto";
-        msgList.style.overflowX = "hidden";
-        msgList.style.paddingRight = "4px";
-        msgList.style.scrollbarGutter = "stable";
 
         if (!currentUser) {
-            msgList.innerHTML = buildCenteredInfoMessage("Please sign-in to view your messages");
+            msgList.innerHTML = buildCenteredInfoMessage("Please sign in to view your messages");
             if (msgBadge) msgBadge.style.display = "none";
+            refreshTranslatedView();
             return;
         }
 
@@ -680,17 +857,17 @@ async function fetchPersonalMessages() {
 
         if (myMessages.length === 0) {
             msgList.innerHTML = buildCenteredInfoMessage("No messages found.");
+            refreshTranslatedView();
             return;
         }
 
         myMessages.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
         myMessages.forEach(msg => {
+            const rtl = currentPageLanguage === "ur";
             const item = document.createElement("div");
             item.className = "noti-item msg-item";
             item.style.cssText = `
-                direction:ltr;
-                text-align:left;
                 position:relative;
                 background-color:#ffffff;
                 border:1px solid #e0e0e0;
@@ -700,6 +877,8 @@ async function fetchPersonalMessages() {
                 height:auto;
                 min-height:50px;
                 transition:all 0.3s ease;
+                direction:${rtl ? "rtl" : "ltr"};
+                text-align:${rtl ? "right" : "left"};
             `;
 
             item.appendChild(createCardTopStripe());
@@ -716,7 +895,7 @@ async function fetchPersonalMessages() {
                 padding: 12px 15px;
                 display:flex;
                 flex-direction:column;
-                align-items:flex-start;
+                align-items:${rtl ? "flex-end" : "flex-start"};
                 gap:4px;
                 position:relative;
                 z-index:2;
@@ -737,7 +916,7 @@ async function fetchPersonalMessages() {
             icon.style.cssText = "font-size:10px;";
 
             const titleText = document.createElement("span");
-            titleText.textContent = msg.title || "Message";
+            titleText.textContent = translateTextValue(msg.title_en, msg.title, msg.title_ur, "Message");
 
             title.appendChild(icon);
             title.appendChild(titleText);
@@ -747,6 +926,7 @@ async function fetchPersonalMessages() {
 
             const body = document.createElement("div");
             body.className = "msg-body";
+            body.setAttribute("lang", currentPageLanguage === "ur" ? "ur" : "en");
             body.style.cssText = `
                 display:none;
                 padding:15px;
@@ -757,11 +937,8 @@ async function fetchPersonalMessages() {
                 color:#444;
                 line-height:1.8;
                 white-space:pre-line;
-                max-height: 320px;
-                overflow-y: auto;
-                overflow-x: hidden;
             `;
-            body.innerHTML = escapeHTML(msg.body || "");
+            body.innerHTML = escapeHTML(translateTextValue(msg.body_en, msg.body, msg.body_ur));
 
             item.appendChild(topRow);
             item.appendChild(body);
@@ -795,6 +972,8 @@ async function fetchPersonalMessages() {
         seeAllMsgs.style.cssText = "text-align:center; margin-top:10px;";
         seeAllMsgs.innerHTML = `<span style="font-size:12px; color:#999;">End of messages</span>`;
         msgList.appendChild(seeAllMsgs);
+
+        refreshTranslatedView();
     } catch (error) {
         console.error("Messages error:", error);
         if (msgList) {
@@ -829,6 +1008,7 @@ function showLeaders() {
 
     if (leaders.length === 0) {
         leadersList.innerHTML = `<p style="text-align:center; color:#888; padding:15px;">No leaders found.</p>`;
+        refreshTranslatedView();
         return;
     }
 
@@ -842,6 +1022,8 @@ function showLeaders() {
         `;
         leadersList.appendChild(div);
     });
+
+    refreshTranslatedView();
 }
 
 function bindEvents() {
@@ -861,6 +1043,13 @@ function bindEvents() {
         });
     }
 
+    if (translateToggleBtn) {
+        translateToggleBtn.addEventListener("click", e => {
+            e.stopPropagation();
+            toggleTranslation();
+        });
+    }
+
     if (notificationBtn) {
         notificationBtn.addEventListener("click", e => {
             e.stopPropagation();
@@ -869,12 +1058,13 @@ function bindEvents() {
             if (notiDropdown) notiDropdown.classList.toggle("show");
 
             if (!currentUser) {
-                if (notiList) notiList.innerHTML = buildCenteredInfoMessage("Please sign-in to view recent alerts");
+                if (notiList) notiList.innerHTML = buildCenteredInfoMessage("Please sign in to view recent alerts");
                 if (notiBadge) notiBadge.style.display = "none";
+                refreshTranslatedView();
                 return;
             }
 
-            fetchUrduAlerts();
+            fetchAlerts();
             if (notiBadge) notiBadge.style.display = "none";
         });
     }
@@ -887,8 +1077,9 @@ function bindEvents() {
             if (msgDropdown) msgDropdown.classList.toggle("show");
 
             if (!currentUser) {
-                if (msgList) msgList.innerHTML = buildCenteredInfoMessage("Please sign-in to view your messages");
+                if (msgList) msgList.innerHTML = buildCenteredInfoMessage("Please sign in to view your messages");
                 if (msgBadge) msgBadge.style.display = "none";
+                refreshTranslatedView();
                 return;
             }
 
@@ -996,7 +1187,17 @@ function bindEvents() {
 function init() {
     cacheElements();
     initTheme();
+    setDocumentDirection();
     bindEvents();
+
+    if (currentPageLanguage === "ur") {
+        ensureGoogleTranslateWidget().then(() => {
+            applyGoogleTranslationWithRetry("ur");
+        }).catch(error => {
+            console.error("Translator init error:", error);
+        });
+    }
+
     loadUsers().then(() => {
         checkSession();
     });
