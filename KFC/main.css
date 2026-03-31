@@ -110,7 +110,7 @@ body.dark-mode .logo-text p{
 .user-area{
     display:flex;
     align-items:center;
-    gap:6px;
+    gap:10px;
     cursor:pointer;
     font-weight:bold;
     position:relative;
@@ -122,7 +122,7 @@ body.dark-mode .logo-text p{
 }
 
 .dropdown-arrow{
-    font-size:14px;
+    font-size:10px;
 }
 
 .header-profile-img-container{
@@ -133,8 +133,6 @@ body.dark-mode .logo-text p{
     display:flex;
     justify-content:center;
     align-items:center;
-    border:2px solid var(--accent);
-    background:#fff;
 }
 
 .header-profile-img{
@@ -144,12 +142,11 @@ body.dark-mode .logo-text p{
 }
 
 .dropdown-photo-area{
-    width:80px;
-    height:80px;
-    border-radius:50%;
+    width:100px;
+    height:100px;
+    border-radius:40%;
     overflow:hidden;
     margin-bottom:10px;
-    border:3px solid var(--accent);
     box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
@@ -160,18 +157,18 @@ body.dark-mode .logo-text p{
 }
 
 .photo-viewer-box{
-    width:90%;
+    width:50%;
     max-width:400px;
-    padding:20px;
+    padding:40px;
     text-align:center;
 }
 
 #viewPhotoBtn{
     margin-top:5px;
-    width:100%;
+    width:60%;
     padding:8px 0;
     border:1px solid var(--accent);
-    border-radius:50px;
+    border-radius:40px;
     background:transparent;
     color:var(--accent);
     font-weight:bold;
@@ -208,13 +205,14 @@ body.dark-mode .logo-text p{
 }
 
 .user-dropdown p{
-    font-size:13px;
-    text-align:center;
+    font-size:10px;
+    text-align:flex;
     margin:2px 0;
 }
 
 .user-dropdown .user-info{
-    display:flex;
+    display:right;
+    font-weight:bold;
     flex-direction:column;
     gap:4px;
     align-items:center;
@@ -222,9 +220,9 @@ body.dark-mode .logo-text p{
 
 .user-dropdown button#logoutBtn,
 .user-dropdown a#viewCardBtn{
-    margin-top:5px;
+    margin-top:2px;
     align-self:center;
-    width:100%;
+    width:70%;
     padding:10px 0;
     border:none;
     border-radius:50px;
@@ -377,7 +375,7 @@ body.dark-mode .sidebar{
 }
 
 body.dark-mode .sidebar-nav a{
-    color:#eef4ff;
+    color:#FFFFFF;
 }
 
 .sidebar-nav a:hover{
@@ -403,7 +401,7 @@ body.dark-mode .sidebar-nav a{
 .welcome-text p{
     font-size:14px;
     margin-top:10px;
-    line-height:1.6;
+    line-height:1;
     color:var(--soft-light);
 }
 
@@ -412,7 +410,7 @@ body.dark-mode .welcome-text p{
 }
 
 .welcome-image img{
-    width:120px;
+    width:100px;
     margin-top:10px;
     animation:float 3s ease-in-out infinite;
 }
@@ -425,18 +423,18 @@ body.dark-mode .welcome-text p{
 .stats-section{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:15px;
+    gap:10px;
     margin-bottom:20px;
 }
 
 .stat{
-    padding:15px;
+    padding:5px;
     text-align:center;
     transition:0.3s;
 }
 
 .stat h3{
-    margin-bottom:8px;
+    margin-bottom:5px;
 }
 
 .stat p{
@@ -448,7 +446,7 @@ body.dark-mode .welcome-text p{
 .cards-section{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:15px;
+    gap:10px;
     margin-bottom:20px;
 }
 
@@ -480,7 +478,7 @@ body.dark-mode .card p{
 .card a{
     display:inline-block;
     margin-top:8px;
-    padding:6px 12px;
+    padding:3px 12px;
     border-radius:20px;
     background:linear-gradient(90deg,#ff6ec4,#7873f5);
     color:#fff;
@@ -498,13 +496,13 @@ body.dark-mode .card p{
 }
 
 .info-section h2{
-    margin-bottom:10px;
+    margin-bottom:15px;
 }
 
 .info-section p,
 .info-section ul{
-    font-size:13px;
-    line-height:1.5;
+    font-size:12px;
+    line-height:1;
     color:var(--soft-light);
 }
 
@@ -515,10 +513,10 @@ body.dark-mode .info-section ul{
 
 .footer{
     text-align:center;
-    padding:12px;
+    padding:10px;
     background:var(--glass-light);
     margin-top:20px;
-    font-size:12px;
+    font-size:10px;
 }
 
 body.dark-mode .footer{
@@ -582,9 +580,9 @@ body.dark-mode .overlay{
     width:90%;
     max-width:420px;
     padding:20px;
-    background:rgba(255,255,255,0.45);
-    backdrop-filter:blur(20px);
-    border-radius:20px;
+    background:rgba(255,255,255,0.1);
+    backdrop-filter:blur(10px);
+    border-radius:70px;
     border:1px solid rgba(255,255,255,0.6);
     box-shadow:0 10px 35px rgba(0,0,0,0.15);
     max-height:70vh;
