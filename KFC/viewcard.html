@@ -88,6 +88,27 @@ body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
 .save-btn-container{ display:flex; justify-content:center; margin-top:20px; margin-bottom:20px; }
 button{ background-color:#4a90e2; color:white; padding:10px 15px; font-size:12px; border:none; border-radius:30px; cursor:pointer; transition:0.3s; }
 button:hover{ background-color:#357ab7; }
+
+.eye-btn{
+  position:absolute;
+  top:16px;
+  right:16px;
+  width:30px;
+  height:30px;
+  padding:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  z-index:20;
+  background-color:rgba(74,144,226,0.95);
+  box-shadow:0 0 6px rgba(0,0,0,0.25);
+}
+.eye-btn:hover{
+  background-color:#357ab7;
+}
+
 .cancel-banner{
   position:absolute;
   top:60%;
@@ -141,6 +162,8 @@ button:hover{ background-color:#357ab7; }
     <img src="static/images/qrcode.png" class="qr-code">
     
     <img id="signatureImg" src="static/images/signature.png" class="signature">
+
+    <button id="toggleMaskBtn" class="eye-btn" type="button">👁</button>
 
     <div class="text-container">
       <p id="nameText"></p>
@@ -232,6 +255,7 @@ const verifyPhoto = document.getElementById("verifyPhoto");
 const currentDateEl = document.getElementById("currentDate");
 const stampImg = document.getElementById("stampImg");
 const signatureImg = document.getElementById("signatureImg");
+const toggleMaskBtn = document.getElementById("toggleMaskBtn");
 
 const qrTemp = document.createElement("div");
 qrTemp.style.position = "absolute";
@@ -240,6 +264,9 @@ qrTemp.style.top = "0";
 qrTemp.style.width = "200px";
 qrTemp.style.height = "200px";
 document.body.appendChild(qrTemp);
+
+let currentCardData = null;
+let isMasked = false;
 
 function fitCardOnMobile(){
   const isMobile = window.innerWidth <= 768;
@@ -261,6 +288,47 @@ window.addEventListener("resize", fitCardOnMobile);
 window.addEventListener("orientationchange", fitCardOnMobile);
 fitCardOnMobile();
 
+function maskName(name){
+  if(!name) return "";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if(parts.length <= 1) return "***";
+  if(parts.length === 2) return "*** ***";
+  return ["***", ...parts.slice(1, -1), "***"].join(" ");
+}
+
+function maskCardNumber(cardNoValue){
+  if(!cardNoValue) return "";
+  return cardNoValue.replace(/(\d{3})(?!.*\d)/, "***");
+}
+
+function maskMobile(mobileValue){
+  if(!mobileValue) return "";
+  return mobileValue.replace(/(\d{4})(?!.*\d)/, "****");
+}
+
+function renderMaskedState(){
+  if(!currentCardData) return;
+
+  if(isMasked){
+    nameText.textContent = "Name: " + maskName(currentCardData.name);
+    cardNumberText.textContent = "Card No.: " + maskCardNumber(currentCardData.CNo);
+    contactText.textContent = "Contact: " + maskMobile(currentCardData.mobile);
+    verifyName.textContent = maskName(currentCardData.name);
+    toggleMaskBtn.textContent = "🙈";
+  } else {
+    nameText.textContent = "Name: " + currentCardData.name;
+    cardNumberText.textContent = "Card No.: " + currentCardData.CNo;
+    contactText.textContent = "Contact: " + currentCardData.mobile;
+    verifyName.textContent = currentCardData.name;
+    toggleMaskBtn.textContent = "👁";
+  }
+}
+
+toggleMaskBtn.addEventListener("click", function(){
+  isMasked = !isMasked;
+  renderMaskedState();
+});
+
 async function translateToUrdu(text){
   try{
     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`);
@@ -275,6 +343,8 @@ fetch("https://livenews.live/KFC/card2.json")
 
   if(!cardNo){ alert("Invalid access."); window.location.href="index.html"; return; }
   const card = data.find(c => c.CNo === cardNo);
+  currentCardData = card;
+
 // Cancel banner logic
 const cancelBanner = document.getElementById("cancelBanner");
 
@@ -371,6 +441,8 @@ if(card.Status && card.Status.toLowerCase() === "cancel"){
   currentDateEl.textContent = "ISSUE DATE: "+card.Issue;
   
   document.getElementById("validTillDate").textContent = "VALIDITY: " + (card.Validity || "UAE VISA EXPIRY").toUpperCase();
+
+  renderMaskedState();
 })
 .catch(err=>{ window.location.href="index.html"; });
 
