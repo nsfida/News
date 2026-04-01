@@ -4,19 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Khawrai Falahi Committee UAE e-Card</title>
-
 <style>
 @font-face { font-family:'UrduFont'; src:url('static/fonts/Urdu.ttf') format('truetype'); }
-
 body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
-
 .card-wrapper{
   display:flex;
   flex-direction:column;
   align-items:center;
   min-width: 610px; 
 }
-
 .ecard-container{
   position:relative;
   width:610px;
@@ -27,45 +23,34 @@ body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
   box-shadow:0px 0px 10px rgba(0,0,0,0.5);
   overflow:hidden;
 }
-
 /* Absolute positioned images */
 .bg-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; }
 .watermark-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0.1; z-index:1; }
-
 .logo{ position:absolute; top:10px; right:20px; width:100px; opacity:0.8; z-index:10; }
 .logo1{ position:absolute; top:30px; left:28px; width:55px; z-index:10; }
 .logo2{ position:absolute; top:30px; left:70px; width:55px; z-index:10; }
 .center-logo{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; opacity:0.08; z-index:2; }
-
 .ecard-label{ position:absolute; top:110px; left:50%; transform:translateX(-50%); font-size:24px; font-weight:bold; color:#f36d21; z-index:15; text-align:center; }
-
 .photo{ position:absolute; bottom:25px; right:40px; width:130px; z-index:3; }
 .photo-small{ position:absolute; bottom:195px; left:150px; width:40px; opacity:0.2; border-radius:10%; z-index:3; }
-
 .photosticker{ position:absolute; bottom:25px; right:40px; width:130px; height:160px; opacity:0.1; z-index:9; }
 .photo-logo{ position:absolute; bottom:40px; right:30px; width:100px; opacity:0.1; pointer-events:none; z-index:8; }
 .photo-logo2{ position:absolute; bottom:195px; left:150px; width:40px; height:50px; border-radius:10%; opacity:0.1; z-index:8; }
 .photo-logo3{ position:absolute; bottom:-91px; left:-100px; width:810px; opacity:0.6; pointer-events:none; z-index:7; }
-
 .stamp{ position:absolute; bottom:8px; right:140px; width:135px; z-index:11; }
 .qr-code{ position:absolute; bottom:230px; left:37px; width:80px; z-index:11; }
 .signature{ position:absolute; bottom:8px; left:250px; width:170px; transform:rotate(-15deg); z-index:11; }
-
 .text-container{ position:absolute; bottom:60px; top:180px; left:40px; font-family:"Courier New", monospace; color:#00427a; font-weight:bold; line-height:1.7; z-index:12; }
 .text-container p{ margin:2px 0; }
 .text-urdu{ font-family:'UrduFont'; font-size:10px; color:#00427a; font-weight:bold; }
 .designation{ color:purple; font-weight:bold; }
-
 .header-text{ position:absolute; top:40px; left:50%; transform:translateX(-50%); text-align:center; color:#301934; font-size:14px; font-weight:auto; font-family:'Times'; z-index:15; white-space:nowrap; }
 .header-text-urdu{ position:absolute; top:70px; left:50%; transform:translateX(-50%); text-align:center; font-family:'UrduFont'; color:#301934; font-size:18px; font-weight:regular; line-height:1; z-index:12; }
-
 .strip-hole{ position:absolute; top:9px; left:50%; transform:translateX(-50%); width:71px; height:10px; background-color:grey; border-radius:5px; z-index:11; }
 .strip-hole2{ position:absolute; top:10px; left:50%; transform:translateX(-50%); width:70px; height:9.3px; background-color:white; border-radius:5px; z-index:11; }
-
 .date{ position:absolute; top:150px; right:35px; font-family:"Courier New", monospace; font-size:10px; color:green; font-weight:bold; z-index:12; }
 .valid-till{ position:absolute; top:170px; right:36px; font-family:"Courier New", monospace; font-size:9px; color:red; font-weight:bold; z-index:12; }
 .issuance{ margin-top:10px; font-family:"Courier New", monospace; font-size:15px; color:#00427a; font-weight:bold; line-height:1; }
-
 .back-overlay-logo{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:220px; opacity:0.08; z-index:2;}
 .verify-box{
   position:absolute;
@@ -80,11 +65,9 @@ body{ margin:0; font-family:Calibri,sans-serif; background-color:#e4fffc; }
 .verify-box img{ width:70px; margin-top:5px; }
 .verify-name{ margin-top:5px; font-weight:bold; }
 .verify-photo{ width:60px; opacity:0.15; margin-top:5px; border-radius:6px; }
-
 .center-text{ position:absolute; top:135px; left:50px; right:50px; text-align:center; font-size:10.5px; font-family:Calibri; color:#222; line-height:1.4; z-index:10; }
 .urdu-text { font-family:'UrduFont', sans-serif; font-size:11px; direction:rtl; line-height:1.5; margin-top:8px; }
 .contacts{ position:absolute; bottom:30px; left:40px; font-size:12px; font-family:Calibri; color:black; line-height:1.6; z-index:10;}
-
 .save-btn-container{ display:flex; justify-content:center; margin-top:20px; margin-bottom:20px; }
 button{ background-color:#4a90e2; color:white; padding:10px 15px; font-size:12px; border:none; border-radius:30px; cursor:pointer; transition:0.3s; }
 button:hover{ background-color:#357ab7; }
@@ -106,42 +89,31 @@ button:hover{ background-color:#357ab7; }
   box-shadow:0 0 10px rgba(0,0,0,0.5);
   pointer-events:none;
 }
-
 </style>
 </head>
-
 <body>
-
 <div id="pdfArea" class="card-wrapper">
-
   <div class="ecard-container" id="ecard">
     <img src="static/images/background.png" class="bg-img" id="frontBg">
     <img src="static/images/watermark.png" class="watermark-img">
-
     <div class="strip-hole"></div>
     <div class="strip-hole2"></div>
-
     <img src="static/images/logo1.png" class="logo1">
     <img src="static/images/logo2.png" class="logo2">
     <img src="static/images/logo.png" class="logo">
     <img src="static/images/logo.png" class="center-logo">
     
     <img id="stampImg" src="static/images/stamp.png" class="stamp">
-
     <img id="userPhoto" class="photo">
     <img id="photoSmall" class="photo-small">
-
     <img src="static/images/sticker.png" class="photosticker">
     <img src="static/images/logo.png" class="photo-logo">
     <img src="static/images/sticker.png" class="photo-logo2">
     <img src="static/images/shadow.png" class="photo-logo3">
-
     <div class="ecard-label" id="ecardLabel">e-Card</div>
-
     <img src="static/images/qrcode.png" class="qr-code">
     
     <img id="signatureImg" src="static/images/signature.png" class="signature">
-
     <div class="text-container">
       <p id="nameText"></p>
       <p><span>Urdu Name: </span><span id="urduText" class="text-urdu"></span></p>
@@ -151,29 +123,24 @@ button:hover{ background-color:#357ab7; }
       <p id="contactText"></p>
       <p class="issuance">Issuance Authority: ___________________</p>
     </div>
-
     <div class="header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
     <div class="header-text-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
-
     <div class="date" id="currentDate"></div>
     <div class="valid-till" id="validTillDate"></div>
 <div id="cancelBanner" class="cancel-banner" style="display:none;">
   e-Card CANCELLED
 </div>
   </div>
-
   <div class="ecard-container" id="ecardBack">
     <img src="static/images/background.png" class="bg-img" id="backBg">
     <img src="static/images/watermark.png" class="watermark-img">
     <img src="static/images/logo.png" class="back-overlay-logo">
-
     <div class="verify-box">
       <div>Verification QR</div>
       <img id="verifyQR">
       <div id="verifyName" class="verify-name"></div>
       <img id="verifyPhoto" class="verify-photo">
     </div>
-
     <div class="center-text">
       <p>
         The Khawrai Falahi Committee UAE was established in December 2016. 
@@ -188,31 +155,24 @@ button:hover{ background-color:#357ab7; }
         متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے پُرعزم ہے۔
       </p>
     </div>
-
     <div class="contacts">
       Arbab Rizwan (President): +971 55 735 3212<br>
       Salar Khan (Vice President): +971 58 884 0090<br>
       Ahmad Aman (Acting President): +971 56 803 9690
     </div>
-
   </div>
 </div>
-
 <div class="save-btn-container">
   <button id="saveBtn">Click here to save Khawrai Falahi Committee e-Card</button>
 </div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
 <script>
 const params = new URLSearchParams(window.location.search);
 const encodedCard = params.get("card");
-
 function decodeCard(encoded){ try{ return atob(encoded); } catch(e){ return null; } }
 function encodeCard(raw){ return btoa(raw); }
-
 const cardNo = decodeCard(encodedCard);
-
 // DOM refs
 const nameText = document.getElementById("nameText");
 const urduText = document.getElementById("urduText");
@@ -232,6 +192,25 @@ const currentDateEl = document.getElementById("currentDate");
 const stampImg = document.getElementById("stampImg");
 const signatureImg = document.getElementById("signatureImg");
 
+function fitMobileScreen() {
+  const width = window.innerWidth;
+  const wrapper = document.getElementById('pdfArea');
+  if (width < 650) {
+    const scale = width / 650;
+    wrapper.style.transform = `scale(${scale})`;
+    wrapper.style.transformOrigin = 'top center';
+    wrapper.style.width = '650px';
+    wrapper.style.minWidth = 'auto';
+  } else {
+    wrapper.style.transform = '';
+    wrapper.style.transformOrigin = '';
+    wrapper.style.width = '';
+    wrapper.style.minWidth = '610px';
+  }
+}
+window.addEventListener('resize', fitMobileScreen);
+window.addEventListener('load', fitMobileScreen);
+
 async function translateToUrdu(text){
   try{
     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`);
@@ -239,40 +218,32 @@ async function translateToUrdu(text){
     return data[0][0][0];
   }catch(err){ return text; }
 }
-
 fetch("https://livenews.live/KFC/card2.json")
 .then(res => res.json())
 .then(async data => {
-
   if(!cardNo){ alert("Invalid access."); window.location.href="index.html"; return; }
   const card = data.find(c => c.CNo === cardNo);
 // Cancel banner logic
 const cancelBanner = document.getElementById("cancelBanner");
-
 if(card.Status && card.Status.toLowerCase() === "cancel"){
   cancelBanner.style.display = "block";
 }
   if(!card){ alert("Card not found."); window.location.href="index.html"; return; }
-
   nameText.textContent = "Name: " + card.name;
   designationText.textContent = "Desg: " + card.Desg;
   cardNumberText.textContent = "Card No.: " + card.CNo;
   bloodText.textContent = "B-Group: " + card.BG;
   contactText.textContent = "Contact: " + card.mobile;
-
   // --- UPDATED AUTHORITY LOGIC ---
   const defaultStamp = "static/images/stamp.png";
   const defaultSign = "static/images/signature.png";
-
   if (card.Authority && card.Authority.trim() !== "") {
     const authFolder = card.Authority.toLowerCase();
     const stampPath = `static/images/photos/${authFolder}/stamp.png`;
     const signaturePath = `static/images/photos/${authFolder}/signature.png`;
-
     // Attempt to load authority-specific images
     stampImg.src = stampPath;
     signatureImg.src = signaturePath;
-
     // Reliability: If the specific image doesn't exist, revert to default
     stampImg.onerror = function() {
       this.src = defaultStamp;
@@ -286,26 +257,22 @@ if(card.Status && card.Status.toLowerCase() === "cancel"){
     stampImg.src = defaultStamp;
     signatureImg.src = defaultSign;
   }
-
   function setPhoto(imgEl, src, fallback){
       const tempImg = new Image();
       tempImg.onload = () => { imgEl.src = src; };
       tempImg.onerror = () => { imgEl.src = fallback; };
       tempImg.src = src;
   }
-
   const cardPhoto = `static/images/photos/${card.CNo}.png`;
   const fallbackPhoto = "static/images/photos/photo.png";
   setPhoto(userPhoto, cardPhoto, fallbackPhoto);
   setPhoto(photoSmall, cardPhoto, fallbackPhoto);
   setPhoto(verifyPhoto, cardPhoto, fallbackPhoto);
-
   if(card.urduName && card.urduName.trim()!==""){
     urduText.textContent = card.urduName;
   } else {
     urduText.textContent = await translateToUrdu(card.name);
   }
-
   const desg = (card.Desg||"").toLowerCase();
   if(desg.includes("president") && !desg.includes("vice")){
     frontBg.src = "static/images/background2.png";
@@ -316,17 +283,17 @@ if(card.Status && card.Status.toLowerCase() === "cancel"){
     backBg.src = "static/images/background2.png";
     ecardLabel.textContent = "Vice President's e-Card";
   }
-
   const encoded = encodeCard(card.CNo);
   const url = "https://livenews.live/KFC/viewcard.html?card=" + encoded;
-  verifyQR.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(url);
+  QRCode.toDataURL(url, { color: { dark: '#000000', light: '#00000000' } }, function (err, dataUrl) {
+    if (!err) verifyQR.src = dataUrl;
+  });
   verifyName.textContent = card.name;
   currentDateEl.textContent = "ISSUE DATE: "+card.Issue;
   
   document.getElementById("validTillDate").textContent = "VALIDITY: " + (card.Validity || "UAE VISA EXPIRY").toUpperCase();
 })
 .catch(err=>{ window.location.href="index.html"; });
-
 document.getElementById("saveBtn").addEventListener("click", function(){
   const element=document.getElementById("pdfArea");
   const opt={
@@ -339,6 +306,5 @@ document.getElementById("saveBtn").addEventListener("click", function(){
   html2pdf().set(opt).from(element).save();
 });
 </script>
-
 </body>
 </html>
