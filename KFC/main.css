@@ -936,6 +936,9 @@ body *{
 
 body.page-rtl{
     direction:rtl;
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
 }
 
 body.page-rtl .top-header,
@@ -1114,6 +1117,31 @@ body{
 
     .welcome-image img{
         width:100px;
+    }
+}
+
+@media(max-device-width:1024px){
+    body.page-rtl .dashboard-container{
+        flex-direction:column;
+        width:100%;
+        max-width:100%;
+    }
+
+    body.page-rtl .sidebar{
+        width:100%;
+    }
+
+    body.page-rtl .main-content{
+        width:100%;
+        min-width:0;
+    }
+
+    body.page-rtl .welcome-section,
+    body.page-rtl .stats-section,
+    body.page-rtl .cards-section,
+    body.page-rtl .info-section{
+        width:100%;
+        max-width:100%;
     }
 }
 
