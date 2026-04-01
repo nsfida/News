@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NSF's Free Background Remover</title>
+<style>
+    :root{
+        --bg1:#0f172a;
+        --bg2:#111827;
+        --card:#0b1220cc;
+        --card2:#0f172acc;
+        --line:#22314d;
+        --text:#e5eefc;
+        --muted:#9fb2d0;
+        --accent:#7c3aed;
+        --accent2:#06b6d4;
+        --accent3:#22c55e;
+        --danger:#ef4444;
+        --shadow:0 24px 80px rgba(0,0,0,.35);
+        --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+        margin:0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color:var(--text);
+        background:
+            radial-gradient(circle at top left, rgba(124,58,237,.28), transparent 28%),
+            radial-gradient(circle at top right, rgba(6,182,212,.22), transparent 30%),
+            radial-gradient(circle at bottom, rgba(34,197,94,.12), transparent 30%),
+            linear-gradient(135deg, var(--bg1), var(--bg2));
+        overflow-x:hidden;
+    }
+
+    .bg-grid{
+        position:fixed;
+        inset:0;
+        pointer-events:none;
+        opacity:.18;
+        background-image:
+            linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+        background-size:34px 34px;
+        mask-image: radial-gradient(circle at center, black 35%, transparent 75%);
+    }
+
+    .wrap{
+        min-height:100%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:28px;
+    }
+
+    .shell{
+        width:min(1120px, 100%);
+        display:grid;
+        grid-template-columns: 1.08fr .92fr;
+        gap:24px;
+        align-items:stretch;
+    }
+
+    .hero, .panel{
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border:1px solid rgba(255,255,255,.09);
+        border-radius:var(--radius);
+        box-shadow:var(--shadow);
+        overflow:hidden;
+    }
+
+    .hero{
+        background:linear-gradient(180deg, rgba(15,23,42,.86), rgba(15,23,42,.72));
+        padding:34px;
+        position:relative;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        min-height:680px;
+    }
+
+    .brand{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:16px;
+        flex-wrap:wrap;
+        margin-bottom:28px;
+    }
+
+    .logo{
+        display:flex;
+        align-items:center;
+        gap:12px;
+    }
+
+    .badge{
+        width:48px;
+        height:48px;
+        border-radius:16px;
+        display:grid;
+        place-items:center;
+        background:linear-gradient(135deg, rgba(124,58,237,.95), rgba(6,182,212,.95));
+        box-shadow:0 12px 30px rgba(124,58,237,.25);
+        font-size:24px;
+    }
+
+    .brand h1{
+        margin:0;
+        font-size:clamp(28px, 4vw, 46px);
+        line-height:1.05;
+        letter-spacing:-.03em;
+    }
+
+    .brand p{
+        margin:6px 0 0;
+        color:var(--muted);
+        font-size:14px;
+    }
+
+    .tag-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin:10px 0 28px;
+    }
+
+    .tag{
+        padding:10px 14px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.1);
+        background:rgba(255,255,255,.05);
+        color:#dbeafe;
+        font-size:13px;
+        white-space:nowrap;
+    }
+
+    .hero-copy{
+        display:grid;
+        gap:16px;
+        max-width:620px;
+    }
+
+    .hero-copy h2{
+        margin:0;
+        font-size:clamp(30px, 4.3vw, 58px);
+        line-height:1;
+        letter-spacing:-.04em;
+    }
+
+    .hero-copy p{
+        margin:0;
+        color:var(--muted);
+        font-size:16px;
+        line-height:1.7;
+        max-width:56ch;
+    }
+
+    .feature-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0,1fr));
+        gap:14px;
+        margin-top:auto;
+    }
+
+    .feature{
+        background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+        border:1px solid rgba(255,255,255,.08);
+        border-radius:20px;
+        padding:18px;
+        min-height:110px;
+    }
+
+    .feature .icon{
+        font-size:20px;
+        margin-bottom:8px;
+    }
+
+    .feature strong{
+        display:block;
+        margin-bottom:6px;
+        font-size:15px;
+    }
+
+    .feature span{
+        color:var(--muted);
+        font-size:13px;
+        line-height:1.55;
+    }
+
+    .panel{
+        background:linear-gradient(180deg, rgba(15,23,42,.92), rgba(11,18,32,.9));
+        padding:24px;
+    }
+
+    .panel-top{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:16px;
+        margin-bottom:20px;
+    }
+
+    .panel-top h3{
+        margin:0;
+        font-size:22px;
+        letter-spacing:-.02em;
+    }
+
+    .panel-top p{
+        margin:8px 0 0;
+        color:var(--muted);
+        font-size:14px;
+        line-height:1.6;
+    }
+
+    .stat{
+        padding:12px 14px;
+        border-radius:18px;
+        border:1px solid rgba(255,255,255,.09);
+        background:rgba(255,255,255,.04);
+        color:#dbeafe;
+        min-width:120px;
+        text-align:right;
+    }
+
+    .stat b{
+        display:block;
+        font-size:20px;
+        margin-bottom:2px;
+    }
+
+    .upload{
+        border:1.5px dashed rgba(255,255,255,.14);
+        border-radius:22px;
+        background:rgba(255,255,255,.03);
+        padding:20px;
+        transition:.2s ease;
+    }
+
+    .upload.dragover{
+        border-color:rgba(6,182,212,.75);
+        background:rgba(6,182,212,.08);
+        transform:translateY(-1px);
+    }
+
+    .upload-inner{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        text-align:center;
+        gap:12px;
+        padding:20px 14px;
+    }
+
+    .upload-icon{
+        width:68px;
+        height:68px;
+        border-radius:24px;
+        display:grid;
+        place-items:center;
+        background:linear-gradient(135deg, rgba(124,58,237,.22), rgba(6,182,212,.2));
+        border:1px solid rgba(255,255,255,.1);
+        font-size:30px;
+    }
+
+    .upload h4{
+        margin:0;
+        font-size:18px;
+    }
+
+    .upload p{
+        margin:0;
+        color:var(--muted);
+        font-size:14px;
+        line-height:1.6;
+    }
+
+    .upload-actions{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:10px;
+        margin-top:4px;
+    }
+
+    input[type="file"]{
+        display:none;
+    }
+
+    .btn{
+        appearance:none;
+        border:none;
+        cursor:pointer;
+        border-radius:16px;
+        padding:13px 18px;
+        font-weight:700;
+        font-size:14px;
+        transition:.2s ease;
+        color:#fff;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        text-decoration:none;
+    }
+
+    .btn:disabled{
+        opacity:.5;
+        cursor:not-allowed;
+    }
+
+    .btn-primary{
+        background:linear-gradient(135deg, var(--accent), var(--accent2));
+        box-shadow:0 12px 30px rgba(124,58,237,.25);
+    }
+
+    .btn-primary:hover{transform:translateY(-1px)}
+    .btn-ghost{
+        background:rgba(255,255,255,.05);
+        border:1px solid rgba(255,255,255,.09);
+        color:#e5eefc;
+    }
+
+    .btn-ghost:hover{background:rgba(255,255,255,.08)}
+
+    .file-list{
+        margin-top:18px;
+        display:grid;
+        gap:12px;
+        max-height:250px;
+        overflow:auto;
+        padding-right:4px;
+    }
+
+    .file-item{
+        display:grid;
+        grid-template-columns:56px 1fr auto;
+        gap:12px;
+        align-items:center;
+        padding:12px;
+        border-radius:18px;
+        background:rgba(255,255,255,.04);
+        border:1px solid rgba(255,255,255,.07);
+    }
+
+    .thumb{
+        width:56px;
+        height:56px;
+        border-radius:14px;
+        object-fit:cover;
+        background:#0f172a;
+        border:1px solid rgba(255,255,255,.08);
+    }
+
+    .file-name{
+        font-size:14px;
+        font-weight:600;
+        margin:0 0 4px;
+        word-break:break-word;
+    }
+
+    .file-meta{
+        color:var(--muted);
+        font-size:12px;
+    }
+
+    .chip{
+        padding:7px 10px;
+        border-radius:999px;
+        font-size:12px;
+        font-weight:700;
+        border:1px solid rgba(255,255,255,.08);
+        background:rgba(255,255,255,.05);
+        color:#dbeafe;
+        white-space:nowrap;
+    }
+
+    .controls{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-top:18px;
+    }
+
+    .progress-wrap{
+        margin-top:18px;
+        padding:14px;
+        border-radius:20px;
+        background:rgba(255,255,255,.04);
+        border:1px solid rgba(255,255,255,.07);
+    }
+
+    .progress-head{
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        align-items:center;
+        margin-bottom:10px;
+        font-size:13px;
+        color:var(--muted);
+    }
+
+    .progress-bar{
+        width:100%;
+        height:12px;
+        border-radius:999px;
+        background:rgba(255,255,255,.08);
+        overflow:hidden;
+    }
+
+    .progress-bar > div{
+        height:100%;
+        width:0%;
+        border-radius:999px;
+        background:linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+        transition:width .22s ease;
+    }
+
+    .status{
+        margin-top:16px;
+        padding:16px;
+        border-radius:18px;
+        background:rgba(255,255,255,.04);
+        border:1px solid rgba(255,255,255,.07);
+        color:#dbeafe;
+        line-height:1.6;
+        min-height:56px;
+        font-size:14px;
+        white-space:pre-line;
+    }
+
+    .footer{
+        margin-top:18px;
+        text-align:center;
+        color:var(--muted);
+        font-size:13px;
+        line-height:1.7;
+    }
+
+    .footer a{
+        color:#93c5fd;
+        text-decoration:none;
+        font-weight:700;
+    }
+
+    .footer a:hover{text-decoration:underline}
+
+    @media (max-width: 980px){
+        .shell{grid-template-columns:1fr}
+        .hero{min-height:auto}
+    }
+
+    @media (max-width: 640px){
+        .wrap{padding:14px}
+        .hero,.panel{border-radius:20px}
+        .hero,.panel{padding:18px}
+        .feature-grid{grid-template-columns:1fr}
+        .panel-top{flex-direction:column}
+        .stat{text-align:left}
+        .file-item{grid-template-columns:48px 1fr}
+        .chip{grid-column:2}
+    }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<div class="wrap">
+    <div class="shell">
+        <section class="hero">
+            <div>
+                <div class="brand">
+                    <div class="logo">
+                        <div class="badge">✨</div>
+                        <div>
+                            <h1>NSF's Free Background Remover</h1>
+                            <p>Premium batch background removal powered by Picsart</p>
+                        </div>
+                    </div>
+                    <div class="tag-row">
+                        <div class="tag">Batch processing</div>
+                        <div class="tag">PNG transparent output</div>
+                        <div class="tag">Modern UI</div>
+                    </div>
+                </div>
+
+                <div class="hero-copy">
+                    <h2>Clean cutouts with a sleek, professional experience.</h2>
+                    <p>
+                        Upload one or more images, remove backgrounds using Picsart, and download the finished results.
+                        The interface is built to feel fast, polished, and easy to use on both desktop and mobile.
+                    </p>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="icon">⚡</div>
+                    <strong>Fast workflow</strong>
+                    <span>Pick files, process them in order, and download each result automatically.</span>
+                </div>
+                <div class="feature">
+                    <div class="icon">🪄</div>
+                    <strong>Premium look</strong>
+                    <span>Glass panels, gradients, soft shadows, and clean spacing for a modern feel.</span>
+                </div>
+                <div class="feature">
+                    <div class="icon">🖼️</div>
+                    <strong>Local file upload</strong>
+                    <span>Uses your computer files directly and sends them to Picsart as binary uploads.</span>
+                </div>
+                <div class="feature">
+                    <div class="icon">🔒</div>
+                    <strong>Easy to update</strong>
+                    <span>Paste your Picsart API key into one constant near the top of the script.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-top">
+                <div>
+                    <h3>Remove backgrounds in one click</h3>
+                    <p>Select images below, then start the batch. Each processed file will download with the same base name.</p>
+                </div>
+                <div class="stat">
+                    <b id="fileCount">0</b>
+                    <span>selected files</span>
+                </div>
+            </div>
+
+            <div id="dropZone" class="upload">
+                <div class="upload-inner">
+                    <div class="upload-icon">⬆️</div>
+                    <h4>Drop images here</h4>
+                    <p>Or browse your device. JPG, PNG, WEBP, and other common image formats are fine.</p>
+                    <div class="upload-actions">
+                        <label class="btn btn-primary" for="images">Choose Images</label>
+                        <button class="btn btn-ghost" type="button" id="clearBtn">Clear</button>
+                    </div>
+                    <input type="file" id="images" multiple accept="image/*" />
+                </div>
+            </div>
+
+            <div id="fileList" class="file-list" aria-live="polite"></div>
+
+            <div class="controls">
+                <button class="btn btn-primary" type="button" id="processBtn" onclick="processImages()">Remove Backgrounds</button>
+                <button class="btn btn-ghost" type="button" id="removeSelectedBtn">Reset Selection</button>
+            </div>
+
+            <div class="progress-wrap">
+                <div class="progress-head">
+                    <span id="progressLabel">Ready</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar"><div id="progressBar"></div></div>
+            </div>
+
+            <div id="status" class="status">No files selected yet.</div>
+
+            <div class="footer">
+                Powered by
+                <a href="https://www.facebook.com/nadeemshahzadfida/" target="_blank" rel="noopener noreferrer">
+                    Nadeem Shahzad Fida
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    // Paste your Picsart API key here.
+    // The Picsart docs use the /tools/1.0/removebg endpoint with the X-Picsart-API-Key header.
+    const API_KEY = "paat-oadsYUGvlPV6UTy8clMm7NCaleu";
+
+    const fileInput = document.getElementById('images');
+    const fileList = document.getElementById('fileList');
+    const statusBox = document.getElementById('status');
+    const fileCount = document.getElementById('fileCount');
+    const progressBar = document.getElementById('progressBar');
+    const progressLabel = document.getElementById('progressLabel');
+    const progressPercent = document.getElementById('progressPercent');
+    const processBtn = document.getElementById('processBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const removeSelectedBtn = document.getElementById('removeSelectedBtn');
+    const dropZone = document.getElementById('dropZone');
+
+    let selectedFiles = [];
+
+    function formatBytes(bytes) {
+        if (!bytes) return "0 KB";
+        const units = ["B", "KB", "MB", "GB"];
+        let value = bytes;
+        let unitIndex = 0;
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024;
+            unitIndex++;
+        }
+        return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+    }
+
+    function setProgress(current, total) {
+        const percent = total ? Math.round((current / total) * 100) : 0;
+        progressBar.style.width = `${percent}%`;
+        progressPercent.textContent = `${percent}%`;
+        progressLabel.textContent = total
+            ? `Processing ${current} of ${total}`
+            : "Ready";
+    }
+
+    function setStatus(message, isError = false) {
+        statusBox.style.borderColor = isError ? "rgba(239,68,68,.35)" : "rgba(255,255,255,.07)";
+        statusBox.style.color = isError ? "#fecaca" : "#dbeafe";
+        statusBox.textContent = message;
+    }
+
+    function renderSelectedFiles() {
+        fileCount.textContent = String(selectedFiles.length);
+        fileList.innerHTML = "";
+
+        if (!selectedFiles.length) {
+            fileList.innerHTML = `
+                <div class="file-item">
+                    <div class="thumb" style="display:grid;place-items:center;color:#9fb2d0;font-size:18px;">⟡</div>
+                    <div>
+                        <div class="file-name">No images selected</div>
+                        <div class="file-meta">Choose files to see previews here.</div>
+                    </div>
+                    <div class="chip">Idle</div>
+                </div>
+            `;
+            return;
+        }
+
+        selectedFiles.forEach(file => {
+            const item = document.createElement('div');
+            item.className = 'file-item';
+
+            const thumb = document.createElement('img');
+            thumb.className = 'thumb';
+            thumb.alt = file.name;
+            thumb.src = URL.createObjectURL(file);
+
+            const info = document.createElement('div');
+            info.innerHTML = `
+                <div class="file-name">${file.name}</div>
+                <div class="file-meta">${formatBytes(file.size)} · ${file.type || 'image'}</div>
+            `;
+
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.textContent = 'Selected';
+
+            item.appendChild(thumb);
+            item.appendChild(info);
+            item.appendChild(chip);
+            fileList.appendChild(item);
+        });
+    }
+
+    function updateFiles(files) {
+        selectedFiles = Array.from(files || []);
+        renderSelectedFiles();
+        setProgress(0, selectedFiles.length);
+        setStatus(selectedFiles.length
+            ? `${selectedFiles.length} image(s) ready for processing.`
+            : "No files selected yet."
+        );
+    }
+
+    fileInput.addEventListener('change', () => updateFiles(fileInput.files));
+
+    clearBtn.addEventListener('click', () => {
+        fileInput.value = "";
+        updateFiles([]);
+    });
+
+    removeSelectedBtn.addEventListener('click', () => {
+        fileInput.value = "";
+        updateFiles([]);
+    });
+
+    ;['dragenter', 'dragover'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('dragover');
+        });
+    });
+
+    ;['dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+        });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files && files.length) {
+            fileInput.files = files;
+            updateFiles(files);
+        }
+    });
+
+    async function downloadFromUrl(url, filename) {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error(`Failed to download processed file: ${response.status}`);
+        }
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    }
+
+    async function processOneFile(file, index, total) {
+        const formData = new FormData();
+
+        // Picsart's removebg migration docs show the binary image field as "image".
+        formData.append('image', file, file.name);
+        formData.append('output_type', 'cutout');
+        formData.append('format', 'PNG');
+
+        const response = await fetch('https://api.picsart.io/tools/1.0/removebg', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'X-Picsart-API-Key': API_KEY
+            },
+            body: formData
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        let data = null;
+
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            throw new Error(text || 'Unexpected API response');
+        }
+
+        if (!response.ok) {
+            const message = data?.message || data?.error || data?.status || 'API request failed';
+            throw new Error(message);
+        }
+
+        const outputUrl = data?.data?.url || data?.url;
+        if (!outputUrl) {
+            throw new Error('Picsart did not return a downloadable URL.');
+        }
+
+        const baseName = file.name.replace(/\.[^.]+$/, '');
+        const downloadName = `${baseName}.png`;
+
+        await downloadFromUrl(outputUrl, downloadName);
+
+        setProgress(index + 1, total);
+        setStatus(`Processed ${index + 1} of ${total}: ${file.name}`);
+    }
+
+    async function processImages() {
+        if (!selectedFiles.length) {
+            alert("Please select images first.");
+            return;
+        }
+
+        if (!API_KEY || API_KEY === "PASTE_YOUR_PICSART_API_KEY_HERE") {
+            alert("Please paste your Picsart API key into the script first.");
+            return;
+        }
+
+        processBtn.disabled = true;
+        clearBtn.disabled = true;
+        removeSelectedBtn.disabled = true;
+        fileInput.disabled = true;
+
+        try {
+            setStatus("Starting background removal...");
+            setProgress(0, selectedFiles.length);
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                await processOneFile(selectedFiles[i], i, selectedFiles.length);
+            }
+
+            setProgress(selectedFiles.length, selectedFiles.length);
+            setStatus(`All done! ${selectedFiles.length} image(s) processed successfully.`);
+        } catch (error) {
+            console.error(error);
+            setStatus(`Error: ${error.message}`, true);
+        } finally {
+            processBtn.disabled = false;
+            clearBtn.disabled = false;
+            removeSelectedBtn.disabled = false;
+            fileInput.disabled = false;
+        }
+    }
+
+    renderSelectedFiles();
+</script>
+</body>
+</html>
