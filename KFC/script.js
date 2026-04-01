@@ -86,7 +86,7 @@ document.addEventListener('click', function (e) {
     // ------------------- LOAD DATA -------------------
     function loadData(){
         const token = Math.random().toString(36).substring(2);
-        fetch(`https://livenews.live/KFC/card2.json?t=${token}`)
+        fetch(`https://livenews.live/KFC/cards.json?t=${token}`)
             .then(response => response.json())
             .then(json => data = json)
             .catch(err => {
