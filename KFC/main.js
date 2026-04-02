@@ -12,10 +12,21 @@ const TRANSLATION_STORAGE_KEY = "kfcPageLanguage";
 const WRONG_URDU_NAME = "خواری فلاحی کمیٹی";
 const CORRECT_URDU_NAME = "خاورئی فلاحی کمیٹی";
 
+const WRONG_ENGLISH_NAME = "Khawarai Welfare Committee";
+const CORRECT_ENGLISH_NAME = "Khawrai Falahi Committee";
+
+const WRONG_ENGLISH_CONSTITUTION = "Recipe (English)";
+const CORRECT_ENGLISH_CONSTITUTION = "Constitution (English)";
+
+const WRONG_ENGLISH_TRANSLATED = "Order (Translated)";
+const CORRECT_ENGLISH_TRANSLATED = "Constitution (Translated)";
+
 let currentPageLanguage = localStorage.getItem(TRANSLATION_STORAGE_KEY) === "ur" ? "ur" : "en";
 let googleTranslateLoadPromise = null;
 let translatePending = null;
 let translationRefreshTimer = null;
+let translationMutationObserver = null;
+let translationFixRunning = false;
 
 let userArea,
     usernameText,
@@ -366,6 +377,7 @@ function setPageLanguage(lang) {
     currentPageLanguage = lang === "ur" ? "ur" : "en";
     localStorage.setItem(TRANSLATION_STORAGE_KEY, currentPageLanguage);
     setDocumentDirection();
+    scheduleTranslationNormalization();
 }
 
 function replaceKnownUrduTerms(root = document.body) {
@@ -375,8 +387,9 @@ function replaceKnownUrduTerms(root = document.body) {
     const replacements = [
         [WRONG_URDU_NAME, CORRECT_URDU_NAME],
         ["Khawrai Falahi Committee", CORRECT_URDU_NAME],
-        ["Khawrai Welfare Committee", CORRECT_URDU_NAME],
-        ["Khawrai", "خاورئی"]
+        ["Khawarai Welfare Committee", CORRECT_URDU_NAME],
+        ["Khawrai", "خاورئی"],
+        ["Constitution", "دستور"]
     ];
 
     const nodes = [];
@@ -401,6 +414,80 @@ function replaceKnownUrduTerms(root = document.body) {
     });
 }
 
+function replaceKnownEnglishTerms(root = document.body) {
+    if (currentPageLanguage !== "en" || !root) return;
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    const replacements = [
+        [WRONG_ENGLISH_NAME, CORRECT_ENGLISH_NAME],
+        ["Khawarai Welfare Committee UAE", "Khawrai Falahi Committee UAE"],
+        ["Khawarai Welfare Committee", CORRECT_ENGLISH_NAME],
+        [WRONG_ENGLISH_CONSTITUTION, CORRECT_ENGLISH_CONSTITUTION],
+        [WRONG_ENGLISH_TRANSLATED, CORRECT_ENGLISH_TRANSLATED]
+    ];
+
+    const nodes = [];
+    while (walker.nextNode()) {
+        nodes.push(walker.currentNode);
+    }
+
+    nodes.forEach(node => {
+        let text = node.nodeValue;
+        if (!text) return;
+
+        let updated = text;
+        replacements.forEach(([from, to]) => {
+            if (updated.includes(from)) {
+                updated = updated.split(from).join(to);
+            }
+        });
+
+        if (updated !== text) {
+            node.nodeValue = updated;
+        }
+    });
+}
+
+function applyTranslationFixes(root = document.body) {
+    if (!root) return;
+    if (translationFixRunning) return;
+
+    translationFixRunning = true;
+    try {
+        if (currentPageLanguage === "ur") {
+            replaceKnownUrduTerms(root);
+        } else {
+            replaceKnownEnglishTerms(root);
+        }
+    } finally {
+        setTimeout(() => {
+            translationFixRunning = false;
+        }, 0);
+    }
+}
+
+function scheduleTranslationNormalization() {
+    clearTimeout(translationRefreshTimer);
+    translationRefreshTimer = setTimeout(() => {
+        applyTranslationFixes(document.body);
+    }, 120);
+}
+
+function startTranslationObserver() {
+    if (translationMutationObserver || !window.MutationObserver || !document.body) return;
+
+    translationMutationObserver = new MutationObserver(() => {
+        if (translationFixRunning) return;
+        scheduleTranslationNormalization();
+    });
+
+    translationMutationObserver.observe(document.body, {
+        subtree: true,
+        childList: true,
+        characterData: true
+    });
+}
+
 function applyGoogleTranslation(lang) {
     const combo = document.querySelector(".goog-te-combo");
     if (!combo) return false;
@@ -413,7 +500,7 @@ function applyGoogleTranslation(lang) {
 
 function applyGoogleTranslationWithRetry(lang, attempt = 0) {
     if (applyGoogleTranslation(lang)) {
-        setTimeout(() => replaceKnownUrduTerms(document.body), 250);
+        setTimeout(() => applyTranslationFixes(document.body), 250);
         return;
     }
 
@@ -487,12 +574,9 @@ async function toggleTranslation() {
 }
 
 function refreshTranslatedView() {
-    if (currentPageLanguage !== "ur") return;
-
     clearTimeout(translationRefreshTimer);
     translationRefreshTimer = setTimeout(() => {
-        applyGoogleTranslationWithRetry("ur");
-        replaceKnownUrduTerms(document.body);
+        applyTranslationFixes(document.body);
     }, 120);
 }
 
@@ -1189,6 +1273,7 @@ function init() {
     initTheme();
     setDocumentDirection();
     bindEvents();
+    startTranslationObserver();
 
     if (currentPageLanguage === "ur") {
         ensureGoogleTranslateWidget().then(() => {
@@ -1200,6 +1285,7 @@ function init() {
 
     loadUsers().then(() => {
         checkSession();
+        scheduleTranslationNormalization();
     });
 }
 
