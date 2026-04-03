@@ -1,0 +1,41 @@
+[
+  {
+    "id": "led-1001",
+    "date": "2026-04-01",
+    "time": "12:10",
+    "customerId": "cus-001",
+    "contractId": "con-1001",
+    "refType": "Receipt",
+    "reference": "RCP-2026-0001",
+    "debit": 0,
+    "credit": 1200,
+    "balance": 3014.7,
+    "narration": "Advance payment received."
+  },
+  {
+    "id": "led-1002",
+    "date": "2026-04-01",
+    "time": "12:20",
+    "customerId": "cus-001",
+    "contractId": "con-1001",
+    "refType": "Invoice",
+    "reference": "INV-2026-0001",
+    "debit": 4214.7,
+    "credit": 0,
+    "balance": 4214.7,
+    "narration": "Rental invoice issued."
+  },
+  {
+    "id": "led-1003",
+    "date": "2026-04-02",
+    "time": "09:15",
+    "customerId": "cus-002",
+    "contractId": "con-1002",
+    "refType": "Receipt",
+    "reference": "RCP-2026-0002",
+    "debit": 0,
+    "credit": 500,
+    "balance": 990.21,
+    "narration": "Booking deposit received."
+  }
+]

@@ -1,0 +1,93 @@
+[
+  {
+    "id": "cus-001",
+    "fullName": "Ahmed Al Mansoori",
+    "passportNumber": "P1234567",
+    "passportExpiry": "2027-02-10",
+    "emiratesId": "784-1990-1234567-8",
+    "emiratesIdExpiry": "2027-02-10",
+    "licenseNumber": "D12345678",
+    "licenseExpiry": "2027-05-21",
+    "issuingCountry": "UAE",
+    "nationality": "Emirati",
+    "dob": "1990-08-12",
+    "mobile": "+971501112233",
+    "email": "ahmed@almansoori.ae",
+    "address": "Dubai Marina, Dubai, UAE",
+    "companyName": "Al Mansoori Trading LLC",
+    "tradeLicenseNumber": "123456",
+    "emergencyContact": "+971509998877",
+    "notes": "Corporate account with monthly billing.",
+    "documents": [
+      {
+        "type": "passport",
+        "status": "verified"
+      }
+    ],
+    "activeContractStatus": "Active",
+    "outstandingBalance": 1425.5,
+    "linkedContracts": [
+      "con-1001"
+    ]
+  },
+  {
+    "id": "cus-002",
+    "fullName": "Sarah Johnson",
+    "passportNumber": "K9876543",
+    "passportExpiry": "2028-04-18",
+    "emiratesId": "784-1988-7654321-1",
+    "emiratesIdExpiry": "2028-04-18",
+    "licenseNumber": "AE33445566",
+    "licenseExpiry": "2027-12-10",
+    "issuingCountry": "UK",
+    "nationality": "British",
+    "dob": "1988-03-02",
+    "mobile": "+971502224466",
+    "email": "sarah.j@example.com",
+    "address": "Jumeirah Beach Residence, Dubai, UAE",
+    "companyName": "",
+    "tradeLicenseNumber": "",
+    "emergencyContact": "+971501234567",
+    "notes": "Short-term rental customer.",
+    "documents": [
+      {
+        "type": "passport",
+        "status": "verified"
+      }
+    ],
+    "activeContractStatus": "Active",
+    "outstandingBalance": 620.0,
+    "linkedContracts": [
+      "con-1002"
+    ]
+  },
+  {
+    "id": "cus-003",
+    "fullName": "Omar Hassan",
+    "passportNumber": "M1112223",
+    "passportExpiry": "2026-10-02",
+    "emiratesId": "784-1985-3334445-6",
+    "emiratesIdExpiry": "2026-10-02",
+    "licenseNumber": "D99887766",
+    "licenseExpiry": "2026-12-01",
+    "issuingCountry": "UAE",
+    "nationality": "Egyptian",
+    "dob": "1985-07-19",
+    "mobile": "+971507778899",
+    "email": "omar.hassan@company.ae",
+    "address": "Business Bay, Dubai, UAE",
+    "companyName": "Hassan Logistics FZE",
+    "tradeLicenseNumber": "789012",
+    "emergencyContact": "+971505555333",
+    "notes": "Fleet partner; monthly renewals likely.",
+    "documents": [
+      {
+        "type": "license",
+        "status": "verified"
+      }
+    ],
+    "activeContractStatus": "Inactive",
+    "outstandingBalance": 0,
+    "linkedContracts": []
+  }
+]

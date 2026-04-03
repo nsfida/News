@@ -1,0 +1,114 @@
+[
+  {
+    "id": "veh-001",
+    "vehicleNumber": "PCR-001",
+    "plateNumber": "A 12345",
+    "make": "Toyota",
+    "model": "Camry SE",
+    "year": 2024,
+    "color": "Pearl White",
+    "category": "Sedan",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "vin": "JTNKH4FB0R1234501",
+    "status": "Rented",
+    "availability": "Unavailable",
+    "dailyRate": 180,
+    "weeklyRate": 1100,
+    "monthlyRate": 3800,
+    "deposit": 1000,
+    "depositWaiver": 0,
+    "cdwService": "Included",
+    "pickupService": "Available",
+    "deliveryService": "Available",
+    "insuranceExpiry": "2026-09-15",
+    "registrationExpiry": "2026-08-20",
+    "serviceDueDate": "2026-06-10",
+    "odometer": 18420,
+    "notes": "Allocated to corporate rental. Full service history up to date.",
+    "maintenanceHistory": [
+      {
+        "date": "2026-02-10",
+        "type": "Oil service",
+        "cost": 390
+      }
+    ],
+    "rentalHistory": [
+      "con-1001"
+    ]
+  },
+  {
+    "id": "veh-002",
+    "vehicleNumber": "PCR-002",
+    "plateNumber": "B 45678",
+    "make": "Nissan",
+    "model": "X-Trail",
+    "year": 2023,
+    "color": "Graphite Grey",
+    "category": "SUV",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "vin": "JN8BT3CA8PW567892",
+    "status": "Available",
+    "availability": "Available",
+    "dailyRate": 220,
+    "weeklyRate": 1380,
+    "monthlyRate": 4650,
+    "deposit": 1200,
+    "depositWaiver": 0,
+    "cdwService": "Optional",
+    "pickupService": "Available",
+    "deliveryService": "Available",
+    "insuranceExpiry": "2026-11-01",
+    "registrationExpiry": "2026-10-05",
+    "serviceDueDate": "2026-05-22",
+    "odometer": 22350,
+    "notes": "Ready for delivery and airport pickups.",
+    "maintenanceHistory": [
+      {
+        "date": "2025-12-14",
+        "type": "Brake pads",
+        "cost": 650
+      }
+    ],
+    "rentalHistory": []
+  },
+  {
+    "id": "veh-003",
+    "vehicleNumber": "PCR-003",
+    "plateNumber": "C 90011",
+    "make": "Kia",
+    "model": "Sportage",
+    "year": 2025,
+    "color": "Deep Blue",
+    "category": "SUV",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "vin": "KNDPXC7A3S1000112",
+    "status": "Maintenance",
+    "availability": "Unavailable",
+    "dailyRate": 210,
+    "weeklyRate": 1300,
+    "monthlyRate": 4400,
+    "deposit": 1000,
+    "depositWaiver": 0,
+    "cdwService": "Included",
+    "pickupService": "Available",
+    "deliveryService": "Available",
+    "insuranceExpiry": "2026-12-31",
+    "registrationExpiry": "2026-12-30",
+    "serviceDueDate": "2026-04-18",
+    "odometer": 8710,
+    "notes": "Scheduled for body inspection after minor scratch.",
+    "maintenanceHistory": [
+      {
+        "date": "2026-03-28",
+        "type": "Body inspection",
+        "cost": 0
+      }
+    ],
+    "rentalHistory": [
+      "con-0998"
+    ]
+  }
+]
