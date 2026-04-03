@@ -1,0 +1,10 @@
+{
+  "assets": [
+    "NVDA",
+    "BTC",
+    "ETH",
+    "AAPL",
+    "TSLA"
+  ],
+  "notes": "Default high-interest names for demo analysis."
+}

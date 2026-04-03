@@ -1,0 +1,220 @@
+{
+  "items": [
+    {
+      "id": "AAPL-N1",
+      "assetIds": [
+        "AAPL"
+      ],
+      "title": "Apple services revenue remains resilient",
+      "summary": "Analysts pointed to stable recurring revenue and improved margin mix.",
+      "source": "Reuters",
+      "url": "",
+      "publishedAt": "2026-04-03T10:00:00Z",
+      "sentiment": "positive",
+      "impact": "medium",
+      "urgent": false,
+      "tags": [
+        "stock",
+        "Technology"
+      ]
+    },
+    {
+      "id": "AAPL-N2",
+      "assetIds": [
+        "AAPL"
+      ],
+      "title": "iPhone channel checks mixed ahead of launch cycle",
+      "summary": "Supply chain commentary was balanced with modest demand concerns.",
+      "source": "Bloomberg",
+      "url": "",
+      "publishedAt": "2026-04-03T07:00:00Z",
+      "sentiment": "neutral",
+      "impact": "low",
+      "urgent": false,
+      "tags": [
+        "stock",
+        "Technology"
+      ]
+    },
+    {
+      "id": "NVDA-N1",
+      "assetIds": [
+        "NVDA"
+      ],
+      "title": "Data center demand keeps NVIDIA in focus",
+      "summary": "AI infrastructure spending stayed elevated across cloud customers.",
+      "source": "Bloomberg",
+      "url": "",
+      "publishedAt": "2026-04-03T06:00:00Z",
+      "sentiment": "positive",
+      "impact": "high",
+      "urgent": false,
+      "tags": [
+        "stock",
+        "Technology"
+      ]
+    },
+    {
+      "id": "NVDA-N2",
+      "assetIds": [
+        "NVDA"
+      ],
+      "title": "Semiconductor valuations remain stretched after run-up",
+      "summary": "Some desks flagged valuation risk despite strong fundamentals.",
+      "source": "CoinDesk",
+      "url": "",
+      "publishedAt": "2026-04-03T03:00:00Z",
+      "sentiment": "negative",
+      "impact": "medium",
+      "urgent": false,
+      "tags": [
+        "stock",
+        "Technology"
+      ]
+    },
+    {
+      "id": "TSLA-N1",
+      "assetIds": [
+        "TSLA"
+      ],
+      "title": "Tesla delivery chatter fuels volatility",
+      "summary": "Traders are watching production trends and margin commentary.",
+      "source": "CoinDesk",
+      "url": "",
+      "publishedAt": "2026-04-03T02:00:00Z",
+      "sentiment": "neutral",
+      "impact": "high",
+      "urgent": false,
+      "tags": [
+        "stock",
+        "Consumer Discretionary"
+      ]
+    },
+    {
+      "id": "TSLA-N2",
+      "assetIds": [
+        "TSLA"
+      ],
+      "title": "Price cuts revive competition concerns",
+      "summary": "Market participants debated the impact on earnings quality.",
+      "source": "Company IR",
+      "url": "",
+      "publishedAt": "2026-04-02T23:00:00Z",
+      "sentiment": "negative",
+      "impact": "high",
+      "urgent": true,
+      "tags": [
+        "stock",
+        "Consumer Discretionary"
+      ]
+    },
+    {
+      "id": "BTC-N1",
+      "assetIds": [
+        "BTC"
+      ],
+      "title": "Bitcoin ETFs see steady inflows",
+      "summary": "Institutional demand remains an important support for price structure.",
+      "source": "Company IR",
+      "url": "",
+      "publishedAt": "2026-04-02T22:00:00Z",
+      "sentiment": "positive",
+      "impact": "high",
+      "urgent": false,
+      "tags": [
+        "crypto",
+        "Digital Assets"
+      ]
+    },
+    {
+      "id": "BTC-N2",
+      "assetIds": [
+        "BTC"
+      ],
+      "title": "Macro risk appetite improves after rate expectations shift",
+      "summary": "Risk assets benefited from a softer rate outlook.",
+      "source": "MarketWatch",
+      "url": "",
+      "publishedAt": "2026-04-02T19:00:00Z",
+      "sentiment": "positive",
+      "impact": "medium",
+      "urgent": false,
+      "tags": [
+        "crypto",
+        "Digital Assets"
+      ]
+    },
+    {
+      "id": "ETH-N1",
+      "assetIds": [
+        "ETH"
+      ],
+      "title": "Ethereum staking activity stays elevated",
+      "summary": "Network participation remains robust with active on-chain usage.",
+      "source": "MarketWatch",
+      "url": "",
+      "publishedAt": "2026-04-02T18:00:00Z",
+      "sentiment": "positive",
+      "impact": "medium",
+      "urgent": false,
+      "tags": [
+        "crypto",
+        "Digital Assets"
+      ]
+    },
+    {
+      "id": "ETH-N2",
+      "assetIds": [
+        "ETH"
+      ],
+      "title": "Layer-2 activity supports transaction growth",
+      "summary": "Developers highlighted scaling momentum and fee efficiency.",
+      "source": "Reuters",
+      "url": "",
+      "publishedAt": "2026-04-02T15:00:00Z",
+      "sentiment": "positive",
+      "impact": "low",
+      "urgent": false,
+      "tags": [
+        "crypto",
+        "Digital Assets"
+      ]
+    },
+    {
+      "id": "SOL-N1",
+      "assetIds": [
+        "SOL"
+      ],
+      "title": "Solana ecosystem activity remains strong",
+      "summary": "Developer activity and retail usage are keeping attention elevated.",
+      "source": "Reuters",
+      "url": "",
+      "publishedAt": "2026-04-02T14:00:00Z",
+      "sentiment": "positive",
+      "impact": "high",
+      "urgent": false,
+      "tags": [
+        "crypto",
+        "Digital Assets"
+      ]
+    },
+    {
+      "id": "SOL-N2",
+      "assetIds": [
+        "SOL"
+      ],
+      "title": "Network reliability discussion returns",
+      "summary": "A few headlines raised questions about uptime and congestion risk.",
+      "source": "Bloomberg",
+      "url": "",
+      "publishedAt": "2026-04-02T11:00:00Z",
+      "sentiment": "negative",
+      "impact": "medium",
+      "urgent": false,
+      "tags": [
+        "crypto",
+        "Digital Assets"
+      ]
+    }
+  ]
+}

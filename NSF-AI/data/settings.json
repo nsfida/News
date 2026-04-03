@@ -1,0 +1,26 @@
+{
+  "theme": "dark",
+  "mode": "live",
+  "autoRefreshMinutes": 5,
+  "defaultTimeframe": "1D",
+  "showStaleData": true,
+  "priceMovementWindowDays": 7,
+  "newsWindowHours": 72,
+  "confidenceThreshold": 60,
+  "refreshOnLoad": true,
+  "remoteEndpoints": {
+    "assets": "",
+    "prices": "",
+    "news": "",
+    "indicators": "",
+    "predictions": "",
+    "watchlist": "",
+    "history": "",
+    "alerts": ""
+  },
+  "session": {
+    "selectedAssetId": "NVDA",
+    "activeSection": "dashboard",
+    "lastViewedAt": "2026-04-03T12:00:00Z"
+  }
+}

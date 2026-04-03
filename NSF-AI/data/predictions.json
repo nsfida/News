@@ -1,0 +1,182 @@
+{
+  "AAPL": {
+    "assetId": "AAPL",
+    "bias": "bullish",
+    "signal": "buy",
+    "confidence": 66,
+    "score": 30.1,
+    "entryZone": [
+      221.47,
+      226.38
+    ],
+    "targetZone": [
+      234.18,
+      244.22
+    ],
+    "stopLoss": 216.34,
+    "riskReward": 1.67,
+    "probabilityBands": {
+      "up": 0.67,
+      "flat": 0.18,
+      "down": 0.43
+    },
+    "reasons": [
+      "Price relative to short/medium moving averages",
+      "MACD momentum and RSI regime",
+      "News sentiment and freshness",
+      "Volume behavior versus recent average"
+    ],
+    "warningFlags": [],
+    "updatedAt": "2026-03-31T16:00:00Z"
+  },
+  "NVDA": {
+    "assetId": "NVDA",
+    "bias": "bullish",
+    "signal": "buy",
+    "confidence": 73,
+    "score": 48.3,
+    "entryZone": [
+      744.79,
+      761.29
+    ],
+    "targetZone": [
+      787.54,
+      821.29
+    ],
+    "stopLoss": 727.54,
+    "riskReward": 1.67,
+    "probabilityBands": {
+      "up": 0.74,
+      "flat": 0.12,
+      "down": 0.36
+    },
+    "reasons": [
+      "Price relative to short/medium moving averages",
+      "MACD momentum and RSI regime",
+      "News sentiment and freshness",
+      "Volume behavior versus recent average"
+    ],
+    "warningFlags": [],
+    "updatedAt": "2026-03-31T16:00:00Z"
+  },
+  "TSLA": {
+    "assetId": "TSLA",
+    "bias": "bullish",
+    "signal": "buy",
+    "confidence": 71,
+    "score": 44.1,
+    "entryZone": [
+      224.86,
+      229.85
+    ],
+    "targetZone": [
+      237.77,
+      247.96
+    ],
+    "stopLoss": 219.66,
+    "riskReward": 1.67,
+    "probabilityBands": {
+      "up": 0.73,
+      "flat": 0.13,
+      "down": 0.37
+    },
+    "reasons": [
+      "Price relative to short/medium moving averages",
+      "MACD momentum and RSI regime",
+      "News sentiment and freshness",
+      "Volume behavior versus recent average"
+    ],
+    "warningFlags": [],
+    "updatedAt": "2026-03-31T16:00:00Z"
+  },
+  "BTC": {
+    "assetId": "BTC",
+    "bias": "bullish",
+    "signal": "buy",
+    "confidence": 70,
+    "score": 41.1,
+    "entryZone": [
+      95627.75,
+      97746.39
+    ],
+    "targetZone": [
+      101116.95,
+      105450.54
+    ],
+    "stopLoss": 93412.8,
+    "riskReward": 1.67,
+    "probabilityBands": {
+      "up": 0.71,
+      "flat": 0.14,
+      "down": 0.39
+    },
+    "reasons": [
+      "Price relative to short/medium moving averages",
+      "MACD momentum and RSI regime",
+      "News sentiment and freshness",
+      "Volume behavior versus recent average"
+    ],
+    "warningFlags": [],
+    "updatedAt": "2026-03-31T16:00:00Z"
+  },
+  "ETH": {
+    "assetId": "ETH",
+    "bias": "bullish",
+    "signal": "buy",
+    "confidence": 75,
+    "score": 52.1,
+    "entryZone": [
+      5379.77,
+      5498.96
+    ],
+    "targetZone": [
+      5688.57,
+      5932.37
+    ],
+    "stopLoss": 5255.16,
+    "riskReward": 1.67,
+    "probabilityBands": {
+      "up": 0.76,
+      "flat": 0.12,
+      "down": 0.34
+    },
+    "reasons": [
+      "Price relative to short/medium moving averages",
+      "MACD momentum and RSI regime",
+      "News sentiment and freshness",
+      "Volume behavior versus recent average"
+    ],
+    "warningFlags": [],
+    "updatedAt": "2026-03-31T16:00:00Z"
+  },
+  "SOL": {
+    "assetId": "SOL",
+    "bias": "bullish",
+    "signal": "buy",
+    "confidence": 69,
+    "score": 39.6,
+    "entryZone": [
+      190.99,
+      195.23
+    ],
+    "targetZone": [
+      201.96,
+      210.61
+    ],
+    "stopLoss": 186.57,
+    "riskReward": 1.67,
+    "probabilityBands": {
+      "up": 0.71,
+      "flat": 0.15,
+      "down": 0.39
+    },
+    "reasons": [
+      "Price relative to short/medium moving averages",
+      "MACD momentum and RSI regime",
+      "News sentiment and freshness",
+      "Volume behavior versus recent average"
+    ],
+    "warningFlags": [],
+    "updatedAt": "2026-03-31T16:00:00Z"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "updates": [
+    {
+      "assetId": "AAPL",
+      "timestamp": "2026-03-31T16:00:00Z",
+      "previousSignal": "hold",
+      "currentSignal": "buy",
+      "changeNote": "Initial sample dataset seeded into the dashboard."
+    },
+    {
+      "assetId": "NVDA",
+      "timestamp": "2026-03-31T16:00:00Z",
+      "previousSignal": "hold",
+      "currentSignal": "buy",
+      "changeNote": "Initial sample dataset seeded into the dashboard."
+    },
+    {
+      "assetId": "TSLA",
+      "timestamp": "2026-03-31T16:00:00Z",
+      "previousSignal": "hold",
+      "currentSignal": "buy",
+      "changeNote": "Initial sample dataset seeded into the dashboard."
+    },
+    {
+      "assetId": "BTC",
+      "timestamp": "2026-03-31T16:00:00Z",
+      "previousSignal": "hold",
+      "currentSignal": "buy",
+      "changeNote": "Initial sample dataset seeded into the dashboard."
+    },
+    {
+      "assetId": "ETH",
+      "timestamp": "2026-03-31T16:00:00Z",
+      "previousSignal": "hold",
+      "currentSignal": "buy",
+      "changeNote": "Initial sample dataset seeded into the dashboard."
+    },
+    {
+      "assetId": "SOL",
+      "timestamp": "2026-03-31T16:00:00Z",
+      "previousSignal": "hold",
+      "currentSignal": "buy",
+      "changeNote": "Initial sample dataset seeded into the dashboard."
+    }
+  ],
+  "selectedAssetId": "NVDA"
+}

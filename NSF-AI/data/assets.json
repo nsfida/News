@@ -1,0 +1,80 @@
+[
+  {
+    "id": "AAPL",
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "type": "stock",
+    "exchange": "NASDAQ",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "currency": "USD",
+    "country": "US",
+    "watchEligible": true,
+    "description": "Large-cap consumer technology company with hardware, services, and ecosystem revenue."
+  },
+  {
+    "id": "NVDA",
+    "symbol": "NVDA",
+    "name": "NVIDIA Corporation",
+    "type": "stock",
+    "exchange": "NASDAQ",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "currency": "USD",
+    "country": "US",
+    "watchEligible": true,
+    "description": "GPU and accelerated computing leader with strong AI infrastructure exposure."
+  },
+  {
+    "id": "TSLA",
+    "symbol": "TSLA",
+    "name": "Tesla, Inc.",
+    "type": "stock",
+    "exchange": "NASDAQ",
+    "sector": "Consumer Discretionary",
+    "industry": "Automobiles",
+    "currency": "USD",
+    "country": "US",
+    "watchEligible": true,
+    "description": "Electric vehicle and energy company with high volatility and event-driven trading."
+  },
+  {
+    "id": "BTC",
+    "symbol": "BTC",
+    "name": "Bitcoin",
+    "type": "crypto",
+    "exchange": "Multiple",
+    "sector": "Digital Assets",
+    "industry": "Store of Value",
+    "currency": "USD",
+    "country": "Global",
+    "watchEligible": true,
+    "description": "Largest crypto asset by market cap; benchmark for digital asset risk appetite."
+  },
+  {
+    "id": "ETH",
+    "symbol": "ETH",
+    "name": "Ethereum",
+    "type": "crypto",
+    "exchange": "Multiple",
+    "sector": "Digital Assets",
+    "industry": "Smart Contracts",
+    "currency": "USD",
+    "country": "Global",
+    "watchEligible": true,
+    "description": "Leading smart-contract network with broad DeFi and tokenization exposure."
+  },
+  {
+    "id": "SOL",
+    "symbol": "SOL",
+    "name": "Solana",
+    "type": "crypto",
+    "exchange": "Multiple",
+    "sector": "Digital Assets",
+    "industry": "Layer 1 Blockchain",
+    "currency": "USD",
+    "country": "Global",
+    "watchEligible": true,
+    "description": "High-throughput blockchain ecosystem with active retail and developer activity."
+  }
+]
