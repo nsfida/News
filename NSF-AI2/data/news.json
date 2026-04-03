@@ -1,0 +1,79 @@
+[
+  {
+    "id": "n1",
+    "ticker": "BTC-USD",
+    "title": "Bitcoin holds above key support as spot demand remains firm",
+    "summary": "Market participants continue to watch ETF-led inflows and exchange balances for signs of sustained accumulation.",
+    "sentiment": 0.72,
+    "impact": 0.81,
+    "isBreaking": false,
+    "updatedAt": "2026-04-03T12:00:55Z",
+    "source": "Local Market Desk"
+  },
+  {
+    "id": "n2",
+    "ticker": "ETH-USD",
+    "title": "Ethereum activity steady as traders position around network upgrades",
+    "summary": "Derivative positioning and staking activity remain supportive, though momentum is less explosive than BTC.",
+    "sentiment": 0.56,
+    "impact": 0.54,
+    "isBreaking": false,
+    "updatedAt": "2026-04-03T11:48:55Z",
+    "source": "Local Market Desk"
+  },
+  {
+    "id": "n3",
+    "ticker": "SOL-USD",
+    "title": "Solana extends momentum on strong volume expansion",
+    "summary": "High-beta buying interest remains visible; traders are watching resistance levels for continuation or rejection.",
+    "sentiment": 0.81,
+    "impact": 0.87,
+    "isBreaking": true,
+    "updatedAt": "2026-04-03T12:05:55Z",
+    "source": "Local Market Desk"
+  },
+  {
+    "id": "n4",
+    "ticker": "AAPL",
+    "title": "Apple supported by defensive rotation and stable earnings expectations",
+    "summary": "Large-cap flows remain constructive while volatility stays contained near recent ranges.",
+    "sentiment": 0.49,
+    "impact": 0.4,
+    "isBreaking": false,
+    "updatedAt": "2026-04-03T11:04:55Z",
+    "source": "Local Market Desk"
+  },
+  {
+    "id": "n5",
+    "ticker": "NVDA",
+    "title": "NVIDIA remains trend leader with sustained institutional demand",
+    "summary": "Momentum remains elevated, though traders are monitoring whether volume can keep confirming new highs.",
+    "sentiment": 0.74,
+    "impact": 0.78,
+    "isBreaking": false,
+    "updatedAt": "2026-04-03T11:52:55Z",
+    "source": "Local Market Desk"
+  },
+  {
+    "id": "n6",
+    "ticker": "TSLA",
+    "title": "Tesla faces mixed sentiment after volatility spike and cautious commentary",
+    "summary": "The signal mix is weaker now as price action fights overhead resistance and risk appetite cools.",
+    "sentiment": -0.28,
+    "impact": 0.66,
+    "isBreaking": true,
+    "updatedAt": "2026-04-03T12:03:55Z",
+    "source": "Local Market Desk"
+  },
+  {
+    "id": "n7",
+    "ticker": "AMD",
+    "title": "AMD sees improving sentiment as semiconductor trade firms up",
+    "summary": "Momentum is improving but remains dependent on broader market confirmation and volume continuation.",
+    "sentiment": 0.42,
+    "impact": 0.55,
+    "isBreaking": false,
+    "updatedAt": "2026-04-03T11:36:55Z",
+    "source": "Local Market Desk"
+  }
+]

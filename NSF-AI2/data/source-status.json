@@ -1,0 +1,45 @@
+{
+  "lastSuccessfulFetch": "2026-04-03T12:09:55Z",
+  "lastAttempt": "2026-04-03T12:09:55Z",
+  "failedRequests": 0,
+  "activeSource": "local JSON snapshot",
+  "fallbackMode": true,
+  "datasets": {
+    "assets.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "watchlist.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "prices.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "candles.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "news.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "indicators.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "signals.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "settings.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    },
+    "history.json": {
+      "status": "fresh",
+      "updatedAt": "2026-04-03T12:09:55Z"
+    }
+  }
+}

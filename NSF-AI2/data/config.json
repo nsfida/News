@@ -1,0 +1,92 @@
+{
+  "appName": "Real-Time Market Signal Dashboard",
+  "version": "1.0.0",
+  "description": "Static-first market intelligence terminal with optional public data feeds.",
+  "dataMode": "hybrid",
+  "defaultRefreshIntervalSeconds": 5,
+  "allowedRefreshIntervals": [
+    1,
+    5,
+    10,
+    30,
+    0
+  ],
+  "freshnessThresholdsSeconds": {
+    "fresh": 15,
+    "recent": 60,
+    "delayed": 300,
+    "stale": 300
+  },
+  "scoring": {
+    "weights": {
+      "trend": 0.2,
+      "momentum": 0.15,
+      "volume": 0.1,
+      "volatility": 0.08,
+      "sentiment": 0.1,
+      "news": 0.08,
+      "marketContext": 0.09,
+      "freshness": 0.1,
+      "liquidity": 0.05,
+      "risk": 0.05
+    },
+    "bands": [
+      {
+        "min": 0,
+        "max": 20,
+        "label": "strong sell"
+      },
+      {
+        "min": 21,
+        "max": 35,
+        "label": "sell"
+      },
+      {
+        "min": 36,
+        "max": 50,
+        "label": "caution"
+      },
+      {
+        "min": 51,
+        "max": 65,
+        "label": "hold"
+      },
+      {
+        "min": 66,
+        "max": 80,
+        "label": "buy"
+      },
+      {
+        "min": 81,
+        "max": 100,
+        "label": "strong buy"
+      }
+    ]
+  },
+  "liveEndpoints": {
+    "crypto": {
+      "enabled": false,
+      "name": "CoinGecko",
+      "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true",
+      "notes": "Optional. Public endpoints can be enabled in settings if they support CORS in the user's environment."
+    },
+    "stocks": {
+      "enabled": false,
+      "name": "Custom CORS-enabled stock feed",
+      "url": "",
+      "notes": "Static-only apps should use a CORS-enabled API or imported JSON for stocks."
+    }
+  },
+  "pathMap": {
+    "assets": "./data/assets.json",
+    "watchlist": "./data/watchlist.json",
+    "prices": "./data/prices.json",
+    "candles": "./data/candles.json",
+    "news": "./data/news.json",
+    "indicators": "./data/indicators.json",
+    "signals": "./data/signals.json",
+    "settings": "./data/settings.json",
+    "history": "./data/history.json",
+    "sourceStatus": "./data/source-status.json"
+  }
+}

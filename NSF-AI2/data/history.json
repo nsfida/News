@@ -1,0 +1,32 @@
+[
+  {
+    "t": "2026-04-03T10:09:55Z",
+    "assetId": "BTC-USD",
+    "price": 65980.2,
+    "signal": "buy"
+  },
+  {
+    "t": "2026-04-03T10:34:55Z",
+    "assetId": "SOL-USD",
+    "price": 144.5,
+    "signal": "hold"
+  },
+  {
+    "t": "2026-04-03T10:59:55Z",
+    "assetId": "NVDA",
+    "price": 904.3,
+    "signal": "strong buy"
+  },
+  {
+    "t": "2026-04-03T11:29:55Z",
+    "assetId": "TSLA",
+    "price": 191.7,
+    "signal": "sell"
+  },
+  {
+    "t": "2026-04-03T11:54:55Z",
+    "assetId": "AMD",
+    "price": 170.8,
+    "signal": "buy"
+  }
+]

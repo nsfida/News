@@ -1,0 +1,21 @@
+{
+  "theme": "dark",
+  "refreshIntervalSeconds": 5,
+  "confidenceThreshold": 65,
+  "staleThresholdSeconds": 300,
+  "chartStyle": "candles",
+  "defaultAssetType": "all",
+  "alertThreshold": 75,
+  "selectedAssetId": "BTC-USD",
+  "filters": {
+    "query": "",
+    "assetType": "all",
+    "signal": "all",
+    "volatility": "all",
+    "sentiment": "all",
+    "freshness": "all",
+    "priceMin": "",
+    "priceMax": "",
+    "exchange": "all"
+  }
+}

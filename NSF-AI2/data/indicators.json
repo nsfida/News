@@ -1,0 +1,79 @@
+{
+  "BTC-USD": {
+    "trendBias": 0.74,
+    "momentumBias": 0.68,
+    "volumeBias": 0.63,
+    "volatility": 0.48,
+    "liquidity": 0.96,
+    "marketContext": 0.82,
+    "support": 67150,
+    "resistance": 70650,
+    "atrPct": 2.5
+  },
+  "ETH-USD": {
+    "trendBias": 0.61,
+    "momentumBias": 0.57,
+    "volumeBias": 0.55,
+    "volatility": 0.5,
+    "liquidity": 0.92,
+    "marketContext": 0.71,
+    "support": 3240,
+    "resistance": 3580,
+    "atrPct": 2.9
+  },
+  "SOL-USD": {
+    "trendBias": 0.83,
+    "momentumBias": 0.81,
+    "volumeBias": 0.79,
+    "volatility": 0.72,
+    "liquidity": 0.84,
+    "marketContext": 0.77,
+    "support": 151,
+    "resistance": 169,
+    "atrPct": 4.8
+  },
+  "AAPL": {
+    "trendBias": 0.58,
+    "momentumBias": 0.52,
+    "volumeBias": 0.49,
+    "volatility": 0.29,
+    "liquidity": 0.95,
+    "marketContext": 0.62,
+    "support": 205,
+    "resistance": 219,
+    "atrPct": 1.8
+  },
+  "NVDA": {
+    "trendBias": 0.85,
+    "momentumBias": 0.78,
+    "volumeBias": 0.71,
+    "volatility": 0.56,
+    "liquidity": 0.98,
+    "marketContext": 0.84,
+    "support": 892,
+    "resistance": 960,
+    "atrPct": 3.0
+  },
+  "TSLA": {
+    "trendBias": 0.34,
+    "momentumBias": 0.29,
+    "volumeBias": 0.76,
+    "volatility": 0.88,
+    "liquidity": 0.93,
+    "marketContext": 0.41,
+    "support": 168,
+    "resistance": 189,
+    "atrPct": 6.1
+  },
+  "AMD": {
+    "trendBias": 0.69,
+    "momentumBias": 0.62,
+    "volumeBias": 0.58,
+    "volatility": 0.44,
+    "liquidity": 0.91,
+    "marketContext": 0.66,
+    "support": 170,
+    "resistance": 184,
+    "atrPct": 3.3
+  }
+}

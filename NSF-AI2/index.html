@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Market Signal Dashboard</title>
+  <meta name="description" content="Static-first market intelligence dashboard for stocks and crypto with probability-based trading signals." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-theme="dark">
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark">RMSD</div>
+        <div>
+          <h1>Real-Time Market Signal Dashboard</h1>
+          <p>Probability-based market intelligence for stocks and crypto. Static-first, refresh-aware, and risk-focused.</p>
+        </div>
+      </div>
+
+      <div class="status-cluster">
+        <div class="status-pill live" id="livePulse"><span class="dot"></span><span id="livePulseText">Monitoring live inputs</span></div>
+        <div class="status-pill neutral">Last update: <strong id="lastUpdated">—</strong></div>
+        <div class="status-pill neutral">Next tick: <strong id="countdown">—</strong></div>
+        <div class="status-pill neutral">Mode: <strong id="refreshMode">—</strong></div>
+      </div>
+
+      <div class="action-cluster">
+        <button data-action="refresh-now">Refresh now</button>
+        <button data-action="save-session">Save session</button>
+        <button data-action="restore-session">Restore session</button>
+        <button data-action="clear-cache">Clear cache</button>
+        <button data-action="export-json">Export JSON</button>
+        <button data-action="toggle-theme" id="themeSwitch">Dark</button>
+      </div>
+    </header>
+
+    <section class="stats-grid">
+      <article class="stat-card"><span>Total assets</span><strong id="metricTotal">0</strong></article>
+      <article class="stat-card"><span>Buy/Strong buy</span><strong id="metricBuys">0</strong></article>
+      <article class="stat-card"><span>Sell/Strong sell</span><strong id="metricSells">0</strong></article>
+      <article class="stat-card"><span>Stale assets</span><strong id="metricStale">0</strong></article>
+      <article class="stat-card"><span>Avg confidence</span><strong id="metricConfidence">0%</strong></article>
+    </section>
+
+    <section class="hero-grid">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Top bullish candidates</h2>
+          <span class="panel-sub">Highest scoring buy-side setups</span>
+        </div>
+        <div class="stack" id="topBull"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Top bearish candidates</h2>
+          <span class="panel-sub">Weakest or most risky setups</span>
+        </div>
+        <div class="stack" id="topBear"></div>
+      </div>
+    </section>
+
+    <section class="panel filters-panel">
+      <div class="panel-head">
+        <h2>Filters & controls</h2>
+        <span class="panel-sub">Search, segment, and tuning options</span>
+      </div>
+      <div class="filters-grid">
+        <input id="filterQuery" placeholder="Search symbol, name, market, sector" />
+        <select id="filterType">
+          <option value="all">All types</option>
+          <option value="stock">Stocks</option>
+          <option value="crypto">Crypto</option>
+        </select>
+        <select id="filterSignal">
+          <option value="all">All signals</option>
+          <option value="strong buy">Strong buy</option>
+          <option value="buy">Buy</option>
+          <option value="hold">Hold</option>
+          <option value="caution">Caution</option>
+          <option value="sell">Sell</option>
+          <option value="strong sell">Strong sell</option>
+        </select>
+        <select id="filterFreshness">
+          <option value="all">All freshness</option>
+          <option value="fresh">Fresh</option>
+          <option value="recent">Recent</option>
+          <option value="delayed">Delayed</option>
+          <option value="stale">Stale</option>
+        </select>
+        <select id="filterVolatility">
+          <option value="all">All volatility</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+        <select id="filterSentiment">
+          <option value="all">All sentiment</option>
+          <option value="positive">Positive</option>
+          <option value="neutral">Neutral</option>
+          <option value="negative">Negative</option>
+        </select>
+        <select id="filterExchange">
+          <option value="all">All markets</option>
+          <option value="NASDAQ">NASDAQ</option>
+          <option value="CoinGecko / Spot">CoinGecko / Spot</option>
+        </select>
+        <input id="filterPriceMin" type="number" placeholder="Min price" />
+        <input id="filterPriceMax" type="number" placeholder="Max price" />
+      </div>
+
+      <div class="filters-grid secondary">
+        <label><span>Confidence threshold</span><input id="confThreshold" type="range" min="0" max="100" step="1" /></label>
+        <label><span>Refresh interval</span>
+          <select id="refreshInterval">
+            <option value="1">1 second</option>
+            <option value="5">5 seconds</option>
+            <option value="10">10 seconds</option>
+            <option value="30">30 seconds</option>
+            <option value="0">Manual only</option>
+          </select>
+        </label>
+        <label><span>Stale threshold (sec)</span><input id="staleThreshold" type="number" min="15" step="1" /></label>
+        <label><span>Chart style</span>
+          <select id="chartStyle">
+            <option value="candles">Candles</option>
+            <option value="line">Line</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <main class="dashboard-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Market overview</h2>
+          <span class="panel-sub" id="assetCount">0 assets</span>
+        </div>
+        <div id="assetGrid" class="asset-grid"></div>
+      </section>
+
+      <section class="panel detail-panel">
+        <div class="panel-head">
+          <div>
+            <h2 id="detailTitle">Asset detail</h2>
+            <span class="panel-sub" id="detailSubtitle">Select an asset to inspect</span>
+          </div>
+        </div>
+        <div id="detailPanel" class="detail-body"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>News feed</h2>
+          <span class="panel-sub">Latest headlines mapped to assets</span>
+        </div>
+        <div id="newsFeed" class="news-feed"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Analysis breakdown</h2>
+          <span class="panel-sub">Weighted score components and probability band</span>
+        </div>
+        <div id="analysisBody" class="analysis-body"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Data control & import/export</h2>
+          <span class="panel-sub">Static JSON workflow and browser persistence</span>
+        </div>
+        <div class="control-grid">
+          <label class="file-box">
+            <span>Import separate JSON files</span>
+            <input id="importFiles" type="file" multiple accept=".json,application/json" />
+          </label>
+          <label class="file-box">
+            <span>Import combined snapshot</span>
+            <input id="importCombined" type="file" accept=".json,application/json" />
+          </label>
+        </div>
+        <div class="button-row">
+          <button data-action="export-watchlist">Export watchlist</button>
+          <button data-action="export-signals">Export signal report</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Settings</h2>
+          <span class="panel-sub">Stored in browser session and local cache</span>
+        </div>
+        <div class="settings-summary">
+          <div><span>Theme</span><strong id="themeSwitch">Dark</strong></div>
+          <div><span>Refresh mode</span><strong id="refreshMode">—</strong></div>
+          <div><span>Selected source</span><strong id="sourceStatus">Loading…</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Source status</h2>
+          <span class="panel-sub">Health of current datasets and fallback mode</span>
+        </div>
+        <div id="sourceSummary" class="source-summary"></div>
+        <div id="datasetStatuses" class="dataset-statuses"></div>
+      </section>
+
+      <section class="panel disclaimer-panel">
+        <div class="panel-head">
+          <h2>Methodology & disclaimer</h2>
+          <span class="panel-sub">Decision support only</span>
+        </div>
+        <div class="disclaimer-text">
+          This dashboard is designed for analysis and decision support, not guaranteed prediction. Scores are probabilistic, based on price action, volume, volatility, freshness, sentiment, and configured weights. Stale or incomplete data automatically reduces confidence and can suppress aggressive labels. Always verify with your own research before trading.
+        </div>
+      </section>
+    </main>
+
+    <div id="toastHost" class="toast-host"></div>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
