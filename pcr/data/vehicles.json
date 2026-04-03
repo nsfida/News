@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "id": "veh_1001",
+      "vehicleId": "V-1001",
+      "vehicleNumber": "PCR-001",
+      "plateNumber": "12345",
+      "make": "Lexus",
+      "model": "ES 350",
+      "year": 2024,
+      "color": "Pearl White",
+      "category": "Sedan",
+      "transmission": "Automatic",
+      "fuelType": "Petrol",
+      "chassisVin": "JTJBFMCA1R1234567",
+      "status": "Rented",
+      "availability": "Unavailable",
+      "dailyRate": 280,
+      "weeklyRate": 1650,
+      "monthlyRate": 5400,
+      "deposit": 1500,
+      "depositWaiver": false,
+      "cdwService": true,
+      "pickupService": true,
+      "deliveryService": true,
+      "insuranceExpiry": "2026-12-31",
+      "registrationExpiry": "2026-10-15",
+      "serviceDueDate": "2026-06-10",
+      "odometer": 18420,
+      "notes": "Premium executive sedan.",
+      "maintenanceHistory": [
+        "mtn_1002"
+      ],
+      "rentalHistory": [
+        "con_1001"
+      ]
+    },
+    {
+      "id": "veh_1002",
+      "vehicleId": "V-1002",
+      "vehicleNumber": "PCR-014",
+      "plateNumber": "98765",
+      "make": "Nissan",
+      "model": "Patrol",
+      "year": 2023,
+      "color": "Black",
+      "category": "SUV",
+      "transmission": "Automatic",
+      "fuelType": "Petrol",
+      "chassisVin": "JN8BR1NW9PW123456",
+      "status": "Available",
+      "availability": "Available",
+      "dailyRate": 450,
+      "weeklyRate": 2600,
+      "monthlyRate": 8500,
+      "deposit": 2500,
+      "depositWaiver": false,
+      "cdwService": true,
+      "pickupService": false,
+      "deliveryService": true,
+      "insuranceExpiry": "2026-11-20",
+      "registrationExpiry": "2026-08-01",
+      "serviceDueDate": "2026-05-15",
+      "odometer": 25105,
+      "notes": "Family SUV; ready for long-term rental.",
+      "maintenanceHistory": [
+        "mtn_1001"
+      ],
+      "rentalHistory": []
+    }
+  ]
+}

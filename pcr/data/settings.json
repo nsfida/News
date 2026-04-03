@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "settings": {
+    "companyName": "Premium Car Rental UAE",
+    "brandTagline": "Luxury mobility, precise operations.",
+    "phone": "+971 4 360 9991",
+    "emailPrimary": "contact@pcr.ae",
+    "emailAccounts": "accounts@pcr.ae",
+    "emailOperations": "mo@pcr.ae",
+    "currency": "AED",
+    "currencySymbol": "AED",
+    "dateFormat": "YYYY-MM-DD",
+    "theme": "pink-premium",
+    "defaultDailyRate": 250,
+    "defaultWeeklyRate": 1500,
+    "defaultMonthlyRate": 4800,
+    "defaultDeposit": 1000,
+    "notes": "All data is managed locally in the browser.",
+    "sessionStatus": "Saved locally"
+  }
+}

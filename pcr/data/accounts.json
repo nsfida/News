@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "id": "acc_1001",
+      "accountNumber": "ACC-1001",
+      "customerId": "cus_1001",
+      "openingBalance": 0,
+      "currentBalance": 1260,
+      "lastTransactionDate": "2026-04-02",
+      "status": "Open",
+      "notes": "Automatically synced from ledger."
+    },
+    {
+      "id": "acc_1002",
+      "accountNumber": "ACC-1002",
+      "customerId": "cus_1002",
+      "openingBalance": 0,
+      "currentBalance": 0,
+      "lastTransactionDate": "2026-03-20",
+      "status": "Open",
+      "notes": "No outstanding items."
+    }
+  ]
+}

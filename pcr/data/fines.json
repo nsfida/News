@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "id": "fin_1001",
+      "fineNumber": "FIN-0001",
+      "customerId": "cus_1001",
+      "vehicleId": "veh_1001",
+      "contractId": "con_1001",
+      "issueDate": "2026-04-03",
+      "authority": "Dubai Police",
+      "fineType": "Traffic fine",
+      "amount": 300,
+      "status": "Open",
+      "dueDate": "2026-04-20",
+      "notes": "Speeding violation."
+    }
+  ]
+}

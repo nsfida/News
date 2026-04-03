@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "id": "cus_1001",
+      "customerId": "C-1001",
+      "fullName": "Ayesha Khan",
+      "passportNumber": "P1234567",
+      "passportExpiry": "2027-03-22",
+      "emiratesId": "784-1990-1234567-1",
+      "emiratesIdExpiry": "2027-10-30",
+      "licenseNumber": "D-8899001",
+      "licenseExpiry": "2027-05-18",
+      "issuanceCountry": "Pakistan",
+      "nationality": "Pakistani",
+      "dateOfBirth": "1990-08-14",
+      "mobileNumber": "+971501112233",
+      "email": "ayesha@example.com",
+      "address": "Dubai Marina, Dubai, UAE",
+      "companyName": "Blue Horizon Trading LLC",
+      "tradeLicenseNumber": "TL-771122",
+      "emergencyContact": "+971552223344",
+      "notes": "Corporate customer.",
+      "documentsMetadata": "Passport, EID, License uploaded",
+      "activeContractStatus": "Active",
+      "outstandingBalance": 1260
+    },
+    {
+      "id": "cus_1002",
+      "customerId": "C-1002",
+      "fullName": "Mohamed Hassan",
+      "passportNumber": "P7654321",
+      "passportExpiry": "2028-01-11",
+      "emiratesId": "784-1988-7654321-3",
+      "emiratesIdExpiry": "2027-09-14",
+      "licenseNumber": "D-2233445",
+      "licenseExpiry": "2027-07-30",
+      "issuanceCountry": "UAE",
+      "nationality": "Emirati",
+      "dateOfBirth": "1988-02-03",
+      "mobileNumber": "+971509998877",
+      "email": "mohamed@example.com",
+      "address": "Al Barsha, Dubai, UAE",
+      "companyName": "",
+      "tradeLicenseNumber": "",
+      "emergencyContact": "+971505556666",
+      "notes": "Walk-in retail customer.",
+      "documentsMetadata": "Passport and EID verified",
+      "activeContractStatus": "Inactive",
+      "outstandingBalance": 0
+    }
+  ]
+}

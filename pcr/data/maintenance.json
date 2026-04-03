@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "id": "mtn_1001",
+      "maintenanceId": "MNT-0001",
+      "vehicleId": "veh_1002",
+      "serviceDate": "2026-03-18",
+      "serviceType": "Oil service",
+      "garage": "Al Futtaim Workshop",
+      "odometerReading": 25090,
+      "cost": 620,
+      "partsReplaced": "Oil filter, engine oil",
+      "nextServiceDue": "2026-06-18",
+      "notes": "Routine service completed.",
+      "receiptReference": "RF-2211",
+      "status": "Closed"
+    },
+    {
+      "id": "mtn_1002",
+      "maintenanceId": "MNT-0002",
+      "vehicleId": "veh_1001",
+      "serviceDate": "2026-04-01",
+      "serviceType": "Inspection",
+      "garage": "Internal Bay",
+      "odometerReading": 18410,
+      "cost": 140,
+      "partsReplaced": "",
+      "nextServiceDue": "2026-05-01",
+      "notes": "Pre-rental inspection.",
+      "receiptReference": "INT-0033",
+      "status": "Closed"
+    }
+  ]
+}
