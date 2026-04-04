@@ -875,10 +875,21 @@ function maskPhone(v) {
 
 function scaleMobileCard() {
   const isMobile = window.innerWidth <= 680;
-  const scale = isMobile ? Math.min((window.innerWidth - 40) / 610, 1) : 1;
+  const overlayWidth = ecardOverlayBox ? ecardOverlayBox.clientWidth : window.innerWidth;
+  const scale = isMobile ? Math.min((overlayWidth - 32) / 610, 1) : 1;
+
+  if (ecardOverlayBox) {
+    ecardOverlayBox.style.justifyContent = "center";
+    ecardOverlayBox.style.alignItems = "center";
+  }
+
+  if (ecardInner) {
+    ecardInner.style.width = "100%";
+    ecardInner.style.alignItems = "center";
+  }
 
   document.querySelectorAll("#ecardInner .ecard-container").forEach(el => {
-    el.style.transformOrigin = "top center";
+    el.style.transformOrigin = "center top";
     el.style.transform = isMobile ? `scale(${scale})` : "";
     el.style.marginBottom = isMobile ? `${-(400 * (1 - scale))}px` : "";
   });
