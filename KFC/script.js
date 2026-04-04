@@ -499,83 +499,77 @@ async function saveCardAsPdf(card, frontNode, backNode) {
 
   if (!frontNode || !backNode) return;
 
-  /* wait for images */
   await Promise.all([
     waitForImages(frontNode),
     waitForImages(backNode)
   ]);
 
-  await sleep(300);
+  await sleep(350);
   await nextPaint();
 
   const PdfCtor = window.jspdf && window.jspdf.jsPDF;
-  if (typeof html2canvas === "undefined" || !PdfCtor) return;
 
-  /* ─── capture both sides ─── */
-  const frontCanvas = await html2canvas(frontNode, {
-    scale: 3,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    scrollX: 0,
-    scrollY: 0
-  });
+  if (typeof html2canvas === "undefined" || !PdfCtor) {
+    const wrapper = frontNode.parentElement;
 
-  const backCanvas = await html2canvas(backNode, {
-    scale: 3,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    scrollX: 0,
-    scrollY: 0
-  });
+    if (typeof html2pdf !== "undefined" && wrapper) {
+      await html2pdf().set({
+        margin: 0,
+        filename: fileName,
+        image: { type: "jpeg", quality: 1 },
+        html2canvas: {
+          scale: 4,
+          useCORS: true,
+          backgroundColor: "#ffffff"
+        },
+        jsPDF: {
+          unit: "mm",
+          format: [180, 118],
+          orientation: "portrait"
+        }
+      }).from(wrapper).save();
+    }
 
-  /* ─── merge into ONE canvas (vertical stack) ─── */
-  const combinedCanvas = document.createElement("canvas");
-  const ctx = combinedCanvas.getContext("2d");
+    return;
+  }
 
-  const width = Math.max(frontCanvas.width, backCanvas.width);
-  const height = frontCanvas.height + backCanvas.height + 40; // small gap
+  const canvases = [];
 
-  combinedCanvas.width = width;
-  combinedCanvas.height = height;
+  for (const node of [frontNode, backNode]) {
+    const canvas = await html2canvas(node, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: "#ffffff",
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: node.scrollWidth,
+      windowHeight: node.scrollHeight
+    });
+    canvases.push(canvas);
+  }
 
-  /* white background */
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
-
-  /* draw front (top) */
-  ctx.drawImage(frontCanvas, 0, 0);
-
-  /* draw back (below) */
-  ctx.drawImage(backCanvas, 0, frontCanvas.height + 40);
-
-  /* ─── create PDF (single page) ─── */
   const pdf = new PdfCtor({
     orientation: "p",
     unit: "mm",
-    format: "a4",
+    format: [180, 118],
     compress: true
   });
 
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
 
-  /* convert canvas to image */
-  const imgData = combinedCanvas.toDataURL("image/png");
+  canvases.forEach((canvas, index) => {
+    if (index > 0) pdf.addPage([pageW, pageH], "p");
 
-  /* calculate fit (NO cropping, NO zoom overflow) */
-  const ratio = Math.min(
-    pageW / combinedCanvas.width,
-    pageH / combinedCanvas.height
-  );
+    const imgData = canvas.toDataURL("image/png");
+    const drawW = pageW;
+    const drawH = (canvas.height * drawW) / canvas.width;
+    const y = drawH < pageH ? (pageH - drawH) / 2 : 0;
 
-  const drawW = combinedCanvas.width * ratio;
-  const drawH = combinedCanvas.height * ratio;
-
-  /* center perfectly */
-  const x = (pageW - drawW) / 2;
-  const y = (pageH - drawH) / 2;
-
-  pdf.addImage(imgData, "PNG", x, y, drawW, drawH);
+    pdf.addImage(imgData, "PNG", 0, y, drawW, Math.min(drawH, pageH));
+  });
 
   pdf.save(fileName);
 }
