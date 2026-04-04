@@ -269,7 +269,32 @@ body.dark-mode .login-box input { background:#fff; color:#111; }
 }
 
 .db-title-block {
-  display:flex; align-items:center; gap:16px; margin-bottom:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  margin:0 auto 18px;
+  width:100%;
+  text-align:center;
+}
+
+.db-title-block > div {
+  text-align:center;
+}
+
+.db-nav {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:20px;
+  justify-content:center;
+}
+
+.db-btn-row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
 }
 .db-logo {
   width:60px;
