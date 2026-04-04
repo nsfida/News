@@ -1,88 +1,91 @@
 /* ═══════════════════════════════════════════════════════════════════
    Khawrai Falahi Committee UAE — Database Page Script
-   Synced with main page session • Inline card overlay • No floating
-   menu icon • Correct print layout • Matching header/theme
+   Synced with main page session • Inline card overlay • Matching header/theme
+   Fixed PDF export:
+   - captures the full card wrapper as one image
+   - exports on a single PDF page
+   - prevents right-side cut / split pages
 ═══════════════════════════════════════════════════════════════════ */
 
 "use strict";
 
 /* ─── constants ─────────────────────────────────────────────────── */
-const API_BASE   = "https://livenews.live/KFC";
+const API_BASE = "https://livenews.live/KFC";
 const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
 const DEFAULT_PHOTO = `${PHOTOS_BASE}default.png`;
 const CARD_DATA_URL = `${API_BASE}/card2.json`;
-const THEME_KEY   = "kfcTheme";
-const SESSION_KEY = "kfcUser";          // same key as main page
+const THEME_KEY = "kfcTheme";
+const SESSION_KEY = "kfcUser"; // same key as main page
 
 const ALLOWED_FULL_ACCESS = [
-  "746-210-001","746-210-011","746-210-040",
-  "746-210-006","746-210-007","746-210-008","746-210-021"
+  "746-210-001", "746-210-011", "746-210-040",
+  "746-210-006", "746-210-007", "746-210-008", "746-210-021"
 ];
 
 /* ─── state ──────────────────────────────────────────────────────── */
-let allData      = [];
-let currentUser  = null;
-let currentSort  = { column:null, asc:true };
+let allData = [];
+let currentUser = null;
+let currentSort = { column: null, asc: true };
 
 /* ─── DOM refs ───────────────────────────────────────────────────── */
 let userArea, usernameSpan, userDropdown,
-    guestView, userView, openLoginBtn,
-    loginOverlay, loginBtn, loginUsername, loginPassword, loginError,
-    logoutBtn, userFullName, userCard, userDesg, userBlood, userMobile, userAccess,
-    welcomePopup, welcomeText,
-    headerProfileImg, headerUserIcon, dropdownProfileImg,
-    viewPhotoBtn, photoOverlay, fullProfileImg, closePhotoOverlay,
-    viewCardBtn,
-    themeToggleBtn, themeToggleIcon,
-    searchField, searchInput, searchButton, printButton,
-    generateButton, englishConstitution, urduConstitution,
-    resultContainer,
-    ecardOverlay, ecardOverlayBox, ecardCloseBtn, ecardSpinner, ecardInner;
+  guestView, userView, openLoginBtn,
+  loginOverlay, loginBtn, loginUsername, loginPassword, loginError,
+  logoutBtn, userFullName, userCard, userDesg, userBlood, userMobile, userAccess,
+  welcomePopup, welcomeText,
+  headerProfileImg, headerUserIcon, dropdownProfileImg,
+  viewPhotoBtn, photoOverlay, fullProfileImg, closePhotoOverlay,
+  viewCardBtn,
+  themeToggleBtn, themeToggleIcon,
+  searchField, searchInput, searchButton, printButton,
+  generateButton, englishConstitution, urduConstitution,
+  resultContainer,
+  ecardOverlay, ecardOverlayBox, ecardCloseBtn, ecardSpinner, ecardInner;
 
 function cacheDOM() {
-  userArea         = document.getElementById("userArea");
-  usernameSpan     = document.getElementById("username");
-  userDropdown     = document.getElementById("userDropdown");
-  guestView        = document.getElementById("guestView");
-  userView         = document.getElementById("userView");
-  openLoginBtn     = document.getElementById("openLoginBtn");
-  loginOverlay     = document.getElementById("loginOverlay");
-  loginBtn         = document.getElementById("loginBtn");
-  loginUsername    = document.getElementById("loginUsername");
-  loginPassword    = document.getElementById("loginPassword");
-  loginError       = document.getElementById("loginError");
-  logoutBtn        = document.getElementById("logoutBtn");
-  userFullName     = document.getElementById("userFullName");
-  userCard         = document.getElementById("userCard");
-  userDesg         = document.getElementById("userDesg");
-  userBlood        = document.getElementById("userBlood");
-  userMobile       = document.getElementById("userMobile");
-  userAccess       = document.getElementById("userAccess");
-  welcomePopup     = document.getElementById("welcomePopup");
-  welcomeText      = document.getElementById("welcomeText");
+  userArea = document.getElementById("userArea");
+  usernameSpan = document.getElementById("username");
+  userDropdown = document.getElementById("userDropdown");
+  guestView = document.getElementById("guestView");
+  userView = document.getElementById("userView");
+  openLoginBtn = document.getElementById("openLoginBtn");
+  loginOverlay = document.getElementById("loginOverlay");
+  loginBtn = document.getElementById("loginBtn");
+  loginUsername = document.getElementById("loginUsername");
+  loginPassword = document.getElementById("loginPassword");
+  loginError = document.getElementById("loginError");
+  logoutBtn = document.getElementById("logoutBtn");
+  userFullName = document.getElementById("userFullName");
+  userCard = document.getElementById("userCard");
+  userDesg = document.getElementById("userDesg");
+  userBlood = document.getElementById("userBlood");
+  userMobile = document.getElementById("userMobile");
+  userAccess = document.getElementById("userAccess");
+  welcomePopup = document.getElementById("welcomePopup");
+  welcomeText = document.getElementById("welcomeText");
   headerProfileImg = document.getElementById("headerProfileImg");
-  headerUserIcon   = document.getElementById("headerUserIcon");
-  dropdownProfileImg= document.getElementById("dropdownProfileImg");
-  viewPhotoBtn     = document.getElementById("viewPhotoBtn");
-  photoOverlay     = document.getElementById("photoOverlay");
-  fullProfileImg   = document.getElementById("fullProfileImg");
-  closePhotoOverlay= document.getElementById("closePhotoOverlay");
-  viewCardBtn      = document.getElementById("viewCardBtn");
-  themeToggleBtn   = document.getElementById("themeToggleBtn");
-  themeToggleIcon  = document.getElementById("themeToggleIcon");
-  searchField      = document.getElementById("searchField");
-  searchInput      = document.getElementById("searchInput");
-  searchButton     = document.getElementById("searchButton");
-  printButton      = document.getElementById("printButton");
-  generateButton   = document.getElementById("generateButton");
+  headerUserIcon = document.getElementById("headerUserIcon");
+  dropdownProfileImg = document.getElementById("dropdownProfileImg");
+  viewPhotoBtn = document.getElementById("viewPhotoBtn");
+  photoOverlay = document.getElementById("photoOverlay");
+  fullProfileImg = document.getElementById("fullProfileImg");
+  closePhotoOverlay = document.getElementById("closePhotoOverlay");
+  viewCardBtn = document.getElementById("viewCardBtn");
+  themeToggleBtn = document.getElementById("themeToggleBtn");
+  themeToggleIcon = document.getElementById("themeToggleIcon");
+  searchField = document.getElementById("searchField");
+  searchInput = document.getElementById("searchInput");
+  searchButton = document.getElementById("searchButton");
+  printButton = document.getElementById("printButton");
+  generateButton = document.getElementById("generateButton");
   englishConstitution = document.getElementById("englishConstitution");
-  urduConstitution    = document.getElementById("urduConstitution");
-  resultContainer  = document.getElementById("resultContainer");
-  ecardOverlay     = document.getElementById("ecardOverlay");
-  ecardOverlayBox  = document.getElementById("ecardOverlayBox");
-  ecardCloseBtn    = document.getElementById("ecardCloseBtn");
-  ecardSpinner     = document.getElementById("ecardSpinner");
-  ecardInner       = document.getElementById("ecardInner");
+  urduConstitution = document.getElementById("urduConstitution");
+  resultContainer = document.getElementById("resultContainer");
+  ecardOverlay = document.getElementById("ecardOverlay");
+  ecardOverlayBox = document.getElementById("ecardOverlayBox");
+  ecardCloseBtn = document.getElementById("ecardCloseBtn");
+  ecardSpinner = document.getElementById("ecardSpinner");
+  ecardInner = document.getElementById("ecardInner");
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -92,12 +95,17 @@ function applyTheme(mode) {
   const dark = mode === "dark";
   document.body.classList.toggle("dark-mode", dark);
   localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
-  if (themeToggleIcon)
+  if (themeToggleIcon) {
     themeToggleIcon.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+  }
 }
+
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
-  if (saved === "dark" || saved === "light") { applyTheme(saved); return; }
+  if (saved === "dark" || saved === "light") {
+    applyTheme(saved);
+    return;
+  }
   const pref = window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)").matches;
   applyTheme(pref ? "dark" : "light");
 }
@@ -105,38 +113,50 @@ function initTheme() {
 /* ═══════════════════════════════════════════════════════════════════
    HELPERS
 ═══════════════════════════════════════════════════════════════════ */
-function norm(v)    { return (v||"").toString().trim(); }
-function esc(str)   {
-  return String(str||"")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+function norm(v) {
+  return (v || "").toString().trim();
 }
+
+function esc(str) {
+  return String(str || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function genUsername(name) {
   const parts = norm(name).toLowerCase().split(/\s+/).filter(Boolean);
   if (parts.length < 2) return norm(name).toLowerCase();
-  return parts[0] + parts[parts.length-1];
+  return parts[0] + parts[parts.length - 1];
 }
+
 function genPassword(cardNo) {
   if (!cardNo) return "";
   const parts = String(cardNo).split("-");
-  return parts[parts.length-1] || "";
+  return parts[parts.length - 1] || "";
 }
+
 function isCancelled(status) {
   const s = norm(status).toLowerCase();
   return s === "cancel" || s === "cancelled";
 }
+
 function isFullAccess(cardNo) {
   return ALLOWED_FULL_ACCESS.includes(norm(cardNo));
 }
 
 /* Profile image with fallback */
 function getImageSources(cardNo) {
-  const c = encodeURIComponent(String(cardNo||""));
+  const c = encodeURIComponent(String(cardNo || ""));
   return [`${PHOTOS_BASE}${c}.png`, `${PHOTOS_BASE}${c}.jpg`, DEFAULT_PHOTO];
 }
+
 function setImgWithFallback(imgEl, sources, fallbackIconEl) {
   if (!imgEl) return;
   let idx = 0;
+
   const tryNext = () => {
     if (idx >= sources.length) {
       imgEl.style.display = "none";
@@ -145,81 +165,243 @@ function setImgWithFallback(imgEl, sources, fallbackIconEl) {
     }
     imgEl.src = sources[idx++];
   };
+
   imgEl.onerror = tryNext;
-  imgEl.onload  = () => {
+  imgEl.onload = () => {
     imgEl.style.display = "block";
     if (fallbackIconEl) fallbackIconEl.style.display = "none";
   };
+
   tryNext();
 }
+
 function applyProfileImages(cardNo) {
   const srcs = getImageSources(cardNo);
-  setImgWithFallback(headerProfileImg,   srcs, headerUserIcon);
+  setImgWithFallback(headerProfileImg, srcs, headerUserIcon);
   setImgWithFallback(dropdownProfileImg, srcs, null);
-  setImgWithFallback(fullProfileImg,     srcs, null);
+  setImgWithFallback(fullProfileImg, srcs, null);
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function nextPaint() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+function sanitizeFileName(name) {
+  return String(name || "card")
+    .replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function waitForImageLoad(img) {
+  return new Promise(resolve => {
+    if (!img) return resolve();
+    if (img.complete && img.naturalWidth !== 0) return resolve();
+    img.addEventListener("load", () => resolve(), { once: true });
+    img.addEventListener("error", () => resolve(), { once: true });
+  });
+}
+
+async function waitForImages(root) {
+  if (!root) return;
+  const imgs = [...root.querySelectorAll("img")];
+  await Promise.all(imgs.map(waitForImageLoad));
+}
+
+async function saveCardAsPdf(card, wrapperNode) {
+  const fileName = `${sanitizeFileName(norm(card.name) || "e-Card")} e-Card.pdf`;
+
+  if (!wrapperNode) return;
+
+  await waitForImages(wrapperNode);
+
+  if (document.fonts && document.fonts.ready) {
+    try {
+      await document.fonts.ready;
+    } catch (_) {}
+  }
+
+  await sleep(400);
+  await nextPaint();
+
+  const PdfCtor = window.jspdf && window.jspdf.jsPDF;
+
+  if (typeof html2canvas === "undefined" || !PdfCtor) {
+    if (typeof html2pdf !== "undefined") {
+      const canvas = await html2canvas(wrapperNode, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#ffffff",
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: wrapperNode.scrollWidth,
+        windowHeight: wrapperNode.scrollHeight,
+        onclone: (clonedDoc) => {
+          const cloned = clonedDoc.getElementById(wrapperNode.id);
+          if (cloned) {
+            cloned.style.transform = "none";
+            cloned.style.margin = "0";
+            cloned.style.padding = "0";
+            cloned.style.maxWidth = "none";
+            cloned.style.width = `${wrapperNode.scrollWidth}px`;
+            cloned.style.background = "#ffffff";
+          }
+          clonedDoc.querySelectorAll(".ecard-container").forEach(el => {
+            el.style.transform = "none";
+            el.style.marginBottom = "0";
+          });
+        }
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pageW = 210;
+      const pageH = (canvas.height * pageW) / canvas.width;
+
+      const pdf = new PdfCtor({
+        orientation: "p",
+        unit: "mm",
+        format: [pageW, pageH],
+        compress: true
+      });
+
+      pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH);
+      pdf.save(fileName);
+    }
+    return;
+  }
+
+  const canvas = await html2canvas(wrapperNode, {
+    scale: 3,
+    useCORS: true,
+    allowTaint: false,
+    backgroundColor: "#ffffff",
+    logging: false,
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: wrapperNode.scrollWidth,
+    windowHeight: wrapperNode.scrollHeight,
+    onclone: (clonedDoc) => {
+      const cloned = clonedDoc.getElementById(wrapperNode.id);
+      if (cloned) {
+        cloned.style.transform = "none";
+        cloned.style.margin = "0";
+        cloned.style.padding = "0";
+        cloned.style.maxWidth = "none";
+        cloned.style.width = `${wrapperNode.scrollWidth}px`;
+        cloned.style.background = "#ffffff";
+      }
+
+      clonedDoc.querySelectorAll(".ecard-container").forEach(el => {
+        el.style.transform = "none";
+        el.style.marginBottom = "0";
+      });
+    }
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+  const pageW = 210;
+  const pageH = (canvas.height * pageW) / canvas.width;
+
+  const pdf = new PdfCtor({
+    orientation: "p",
+    unit: "mm",
+    format: [pageW, pageH],
+    compress: true
+  });
+
+  pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH);
+  pdf.save(fileName);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    SESSION  (shared with main page via localStorage key "kfcUser")
 ═══════════════════════════════════════════════════════════════════ */
-function saveSession(user)  { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); }
-function clearSession()     { localStorage.removeItem(SESSION_KEY); }
+function saveSession(user) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
 
 function showGuestUI() {
   if (headerProfileImg) headerProfileImg.style.display = "none";
-  if (headerUserIcon)   headerUserIcon.style.display   = "block";
-  if (guestView)        guestView.style.display        = "block";
-  if (userView)         userView.style.display         = "none";
-  if (usernameSpan)     usernameSpan.innerText         = "Welcome, Guest";
+  if (headerUserIcon) headerUserIcon.style.display = "block";
+  if (guestView) guestView.style.display = "block";
+  if (userView) userView.style.display = "none";
+  if (usernameSpan) usernameSpan.innerText = "Welcome, Guest";
   updateButtonAccess();
 }
+
 function showLoggedInUI() {
   if (guestView) guestView.style.display = "none";
-  if (userView)  userView.style.display  = "flex";
+  if (userView) userView.style.display = "flex";
 }
 
 function renderUser(user) {
   if (!user) return;
+
   const firstName = norm(user.name).split(" ")[0] || "User";
-  if (usernameSpan)   usernameSpan.innerText   = `Welcome, ${firstName}`;
-  if (userFullName)   userFullName.innerText   = `Welcome, ${user.name}`;
-  if (userCard)       userCard.innerText       = `Card Number: ${user.CNo}`;
-  if (userDesg)       userDesg.innerText       = `Designation: ${user.Desg}`;
-  if (userBlood)      userBlood.innerText      = `Blood Group: ${user.BG||"Not available"}`;
-  if (userMobile)     userMobile.innerText     = `Registered Mobile: ${user.mobile||"Not available"}`;
-  if (userAccess)     userAccess.innerText     = isFullAccess(user.CNo) ? "✦ Full Access" : "◈ Limited Access";
+  if (usernameSpan) usernameSpan.innerText = `Welcome, ${firstName}`;
+  if (userFullName) userFullName.innerText = `Welcome, ${user.name}`;
+  if (userCard) userCard.innerText = `Card Number: ${user.CNo}`;
+  if (userDesg) userDesg.innerText = `Designation: ${user.Desg}`;
+  if (userBlood) userBlood.innerText = `Blood Group: ${user.BG || "Not available"}`;
+  if (userMobile) userMobile.innerText = `Registered Mobile: ${user.mobile || "Not available"}`;
+  if (userAccess) userAccess.innerText = isFullAccess(user.CNo) ? "✦ Full Access" : "◈ Limited Access";
+
   applyProfileImages(user.CNo);
-  if (viewCardBtn)    viewCardBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`;
+
+  if (viewCardBtn) {
+    viewCardBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`;
+  }
+
   showLoggedInUI();
   updateButtonAccess();
 }
 
 function checkSession() {
   const raw = localStorage.getItem(SESSION_KEY);
-  if (!raw) { currentUser = null; showGuestUI(); return; }
+  if (!raw) {
+    currentUser = null;
+    showGuestUI();
+    return;
+  }
+
   try {
     const parsed = JSON.parse(raw);
     if (parsed && !isCancelled(parsed.Status)) {
       currentUser = parsed;
       renderUser(parsed);
     } else {
-      clearSession(); currentUser = null; showGuestUI();
+      clearSession();
+      currentUser = null;
+      showGuestUI();
     }
-  } catch(e) {
-    clearSession(); currentUser = null; showGuestUI();
+  } catch (e) {
+    clearSession();
+    currentUser = null;
+    showGuestUI();
   }
 }
 
 /* ─── button access ─────────────────────────────────────────────── */
 function updateButtonAccess() {
-  const loggedIn  = !!currentUser;
-  const fullAcc   = loggedIn && isFullAccess(currentUser.CNo);
+  const loggedIn = !!currentUser;
+  const fullAcc = loggedIn && isFullAccess(currentUser.CNo);
 
-  if (searchButton)       searchButton.disabled       = !loggedIn || norm(searchInput?.value) === "";
-  if (printButton)        printButton.disabled        = true; // enabled when results rendered
+  if (searchButton) searchButton.disabled = !loggedIn || norm(searchInput?.value) === "";
+  if (printButton) printButton.disabled = true; // enabled when results rendered
+
   if (generateButton) {
-    generateButton.disabled     = !fullAcc;
-    generateButton.title        = fullAcc ? "" : "Full Access members only";
+    generateButton.disabled = !fullAcc;
+    generateButton.title = fullAcc ? "" : "Full Access members only";
     generateButton.style.cursor = fullAcc ? "pointer" : "not-allowed";
   }
 }
@@ -237,8 +419,9 @@ function showWelcome(name) {
 ═══════════════════════════════════════════════════════════════════ */
 function doLogin() {
   if (loginError) loginError.innerText = "";
+
   const uname = norm(loginUsername?.value).toLowerCase();
-  const pass  = norm(loginPassword?.value);
+  const pass = norm(loginPassword?.value);
 
   if (!uname || !pass) {
     if (loginError) loginError.innerText = "Enter username and password";
@@ -253,6 +436,7 @@ function doLogin() {
     if (loginError) loginError.innerText = "Invalid credentials";
     return;
   }
+
   if (isCancelled(user.Status)) {
     if (loginError) loginError.innerText = "This account cannot log in — card is cancelled";
     return;
@@ -270,12 +454,13 @@ function doLogin() {
 ═══════════════════════════════════════════════════════════════════ */
 async function loadData() {
   try {
-    const res  = await fetch(`${CARD_DATA_URL}?t=${Math.random().toString(36).slice(2)}`);
-    allData    = await res.json();
-  } catch(e) {
+    const res = await fetch(`${CARD_DATA_URL}?t=${Math.random().toString(36).slice(2)}`);
+    allData = await res.json();
+  } catch (e) {
     console.error("Failed to load card data:", e);
-    if (resultContainer)
+    if (resultContainer) {
       resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
+    }
   }
 }
 
@@ -286,11 +471,13 @@ function handleSearch() {
   if (!currentUser) {
     resultContainer.innerHTML = "<p class='no-data'>⚠ Please sign in before searching.</p>";
     if (searchButton) searchButton.disabled = true;
-    if (printButton)  printButton.disabled  = true;
+    if (printButton) printButton.disabled = true;
     return;
   }
+
   const term = norm(searchInput?.value);
   if (searchButton) searchButton.disabled = term === "";
+
   if (term !== "") renderTable();
   else {
     resultContainer.innerHTML = "";
@@ -305,7 +492,7 @@ function renderTable() {
     return;
   }
 
-  const term  = norm(searchInput?.value).toLowerCase();
+  const term = norm(searchInput?.value).toLowerCase();
   const field = searchField?.value || "name";
 
   if (!allData.length || term === "") {
@@ -325,11 +512,11 @@ function renderTable() {
   }
 
   if (currentSort.column) {
-    results.sort((a,b) => {
-      const va = (a[currentSort.column]||"").toString().toLowerCase();
-      const vb = (b[currentSort.column]||"").toString().toLowerCase();
+    results.sort((a, b) => {
+      const va = (a[currentSort.column] || "").toString().toLowerCase();
+      const vb = (b[currentSort.column] || "").toString().toLowerCase();
       if (va < vb) return currentSort.asc ? -1 : 1;
-      if (va > vb) return currentSort.asc ?  1 : -1;
+      if (va > vb) return currentSort.asc ? 1 : -1;
       return 0;
     });
   }
@@ -337,7 +524,6 @@ function renderTable() {
   const fullAcc = isFullAccess(currentUser.CNo);
   const loggedUsername = genUsername(currentUser.name);
 
-  /* print header (hidden on screen, visible on print) */
   let html = `
     <div class="print-header-bar no-screen">
       <img src="logo.png" alt="KFC">
@@ -351,31 +537,30 @@ function renderTable() {
 
   const keys = Object.keys(results[0]);
   keys.forEach(k => {
-    html += `<th onclick="window.sortTable('${k}')">${k==="Room"?"ROOM/ADDRESS":k}</th>`;
+    html += `<th onclick="window.sortTable('${k}')">${k === "Room" ? "ROOM/ADDRESS" : k}</th>`;
   });
   html += `<th class="no-print">VIEW CARD</th></tr></thead><tbody>`;
 
   results.forEach((item, idx) => {
     const rowUsername = genUsername(item.name);
-    const isOwnRow   = loggedUsername === rowUsername;
+    const isOwnRow = loggedUsername === rowUsername;
 
     html += "<tr>";
-    html += `<td data-label="S.No.">${idx+1}</td>`;
+    html += `<td data-label="S.No.">${idx + 1}</td>`;
 
     keys.forEach(k => {
       let val = esc(item[k]);
 
-      /* privacy masking for limited-access users */
       if (!fullAcc && !isOwnRow) {
         if (k === "name") {
           const parts = norm(item.name).split(/\s+/);
           val = parts.length > 2
-            ? esc("*** " + parts.slice(1,-1).join(" ") + " ***")
+            ? esc("*** " + parts.slice(1, -1).join(" ") + " ***")
             : "*** ***";
         }
         if (k === "CNo") {
           const parts = norm(item.CNo).split("-");
-          val = esc(parts.slice(0,-1).join("-") + "-***");
+          val = esc(parts.slice(0, -1).join("-") + "-***");
         }
       }
 
@@ -385,10 +570,10 @@ function renderTable() {
         if (s === "active") cls = "class='active'";
         if (s === "cancel" || s === "cancelled") cls = "class='cancel'";
       }
+
       html += `<td data-label="${esc(k)}" ${cls}>${val}</td>`;
     });
 
-    /* View Card button — opens overlay */
     const canView = fullAcc || (norm(item.CNo) === norm(currentUser.CNo));
     html += `<td data-label="VIEW CARD" class="no-print">
       <button class="view-card-inline-btn"
@@ -400,91 +585,99 @@ function renderTable() {
 
   html += "</tbody></table>";
   resultContainer.innerHTML = html;
+
   if (printButton) printButton.disabled = false;
 }
 
-window.sortTable = function(col) {
+window.sortTable = function (col) {
   if (currentSort.column === col) currentSort.asc = !currentSort.asc;
-  else { currentSort.column = col; currentSort.asc = true; }
+  else {
+    currentSort.column = col;
+    currentSort.asc = true;
+  }
   renderTable();
 };
 
 /* ═══════════════════════════════════════════════════════════════════
    e-CARD OVERLAY
-   Renders an exact replica of viewcard.html inline in the overlay.
+   Renders the card inline in the overlay.
 ═══════════════════════════════════════════════════════════════════ */
-window.openCardOverlay = async function(encodedCard) {
-  /* show overlay + spinner */
+window.openCardOverlay = async function (encodedCard) {
   if (!ecardOverlay) return;
   ecardOverlay.classList.add("show");
-  ecardOverlay.setAttribute("aria-hidden","false");
+  ecardOverlay.setAttribute("aria-hidden", "false");
   ecardSpinner.style.display = "flex";
-  ecardInner.style.display   = "none";
-  ecardInner.innerHTML       = "";
+  ecardInner.style.display = "none";
+  ecardInner.innerHTML = "";
 
   let cardNo;
-  try { cardNo = atob(encodedCard); } catch(e) { cardNo = null; }
-  if (!cardNo) { ecardSpinner.style.display="none"; return; }
+  try {
+    cardNo = atob(encodedCard);
+  } catch (e) {
+    cardNo = null;
+  }
 
-  /* fetch data if not already loaded */
+  if (!cardNo) {
+    ecardSpinner.style.display = "none";
+    return;
+  }
+
   if (!allData.length) await loadData();
   const card = allData.find(c => norm(c.CNo) === norm(cardNo));
-  if (!card) { ecardSpinner.style.display="none"; return; }
+  if (!card) {
+    ecardSpinner.style.display = "none";
+    return;
+  }
 
-  /* ─── Build the card HTML (mirrors viewcard.html exactly) ─── */
   const BASE = API_BASE + "/static/images/";
 
-  /* determine background based on designation */
   const desg = norm(card.Desg).toLowerCase();
   const bgSrc = (desg.includes("president") && !desg.includes("vice"))
     ? `${BASE}background2.png`
     : `${BASE}background.png`;
+
   const labelText = desg.includes("president") && !desg.includes("vice")
     ? "President's e-Card"
     : desg.includes("vice president") ? "Vice President's e-Card" : "e-Card";
 
-  /* Photo */
   const photoCNo = encodeURIComponent(norm(card.CNo));
-  const photoSrc  = `${PHOTOS_BASE}${photoCNo}.png`;
+  const photoSrc = `${PHOTOS_BASE}${photoCNo}.png`;
   const photoFallback = `${PHOTOS_BASE}photo.png`;
 
-  /* Stamp / signature by authority */
   const defaultStamp = `${BASE}stamp.png`;
-  const defaultSign  = `${BASE}signature.png`;
-  const authFolder   = (card.Authority||"").trim().toLowerCase();
-  const stampSrc     = authFolder ? `${PHOTOS_BASE}${authFolder}/stamp.png`     : defaultStamp;
-  const signSrc      = authFolder ? `${PHOTOS_BASE}${authFolder}/signature.png` : defaultSign;
+  const defaultSign = `${BASE}signature.png`;
+  const authFolder = (card.Authority || "").trim().toLowerCase();
+  const stampSrc = authFolder ? `${PHOTOS_BASE}${authFolder}/stamp.png` : defaultStamp;
+  const signSrc = authFolder ? `${PHOTOS_BASE}${authFolder}/signature.png` : defaultSign;
 
-  /* Cancel banner */
   const cancelled = isCancelled(card.Status);
 
-  /* Unique id prefix to avoid id collisions */
-  const uid = "ov_" + Math.random().toString(36).slice(2,8);
+  const uid = "ov_" + Math.random().toString(36).slice(2, 8);
 
   const frontHTML = `
     <div class="ecard-container" id="${uid}_front">
-      <img src="${bgSrc}"          class="card-bg-img">
+      <img src="${bgSrc}" class="card-bg-img">
       <img src="${BASE}watermark.png" class="card-watermark">
       <div class="card-strip-hole"></div>
       <div class="card-strip-hole2"></div>
-      <img src="${BASE}logo1.png"  class="card-logo1">
-      <img src="${BASE}logo2.png"  class="card-logo2">
-      <img src="${BASE}logo.png"   class="card-logo">
-      <img src="${BASE}logo.png"   class="card-center-logo">
-      <img id="${uid}_stamp"   src="${stampSrc}"  class="card-stamp">
-      <img id="${uid}_photo"   class="card-photo">
+      <img src="${BASE}logo1.png" class="card-logo1">
+      <img src="${BASE}logo2.png" class="card-logo2">
+      <img src="${BASE}logo.png" class="card-logo">
+      <img src="${BASE}logo.png" class="card-center-logo">
+      <img id="${uid}_stamp" src="${stampSrc}" class="card-stamp">
+      <img id="${uid}_photo" class="card-photo">
       <img id="${uid}_photoSm" class="card-photo-small">
       <img src="${BASE}sticker.png" class="card-photosticker">
-      <img src="${BASE}logo.png"    class="card-photo-logo">
+      <img src="${BASE}logo.png" class="card-photo-logo">
       <img src="${BASE}sticker.png" class="card-photo-logo2">
-      <img src="${BASE}shadow.png"  class="card-photo-logo3">
+      <img src="${BASE}shadow.png" class="card-photo-logo3">
       <div class="card-ecard-label">${esc(labelText)}</div>
-      <img src="${BASE}qrcode.png"  class="card-qr">
-      <img id="${uid}_sign"    src="${signSrc}"   class="card-signature">
+      <img src="${BASE}qrcode.png" class="card-qr">
+      <img id="${uid}_sign" src="${signSrc}" class="card-signature">
       <div class="card-text-container">
         <p id="${uid}_name"></p>
         <p><span>Urdu Name: </span><span id="${uid}_urdu" class="card-text-urdu"></span></p>
-        <p id="${uid}_desg" class="card-designation">${esc("Desg: "+norm(card.Desg))}</p>
+        <p id="${uid}_desg" class="card-designation">${esc("Desg: " + norm(card.Desg))}</p>
         <p id="${uid}_cno"></p>
         <p>${esc("B-Group: " + norm(card.BG))}</p>
         <p id="${uid}_mobile"></p>
@@ -493,15 +686,15 @@ window.openCardOverlay = async function(encodedCard) {
       <div class="card-header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
       <div class="card-header-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
       <div class="card-date">ISSUE DATE: ${esc(norm(card.Issue))}</div>
-      <div class="card-valid-till">VALIDITY: ${esc(norm(card.Validity||"UAE VISA EXPIRY").toUpperCase())}</div>
+      <div class="card-valid-till">VALIDITY: ${esc(norm(card.Validity || "UAE VISA EXPIRY").toUpperCase())}</div>
       ${cancelled ? '<div class="card-cancel-banner">e-Card CANCELLED</div>' : ""}
     </div>`;
 
   const backHTML = `
     <div class="ecard-container" id="${uid}_back">
-      <img src="${bgSrc}"          class="card-bg-img">
+      <img src="${bgSrc}" class="card-bg-img">
       <img src="${BASE}watermark.png" class="card-watermark">
-      <img src="${BASE}logo.png"   class="card-back-overlay-logo">
+      <img src="${BASE}logo.png" class="card-back-overlay-logo">
       <div class="card-verify-box">
         <div>Verification QR</div>
         <div class="card-verify-qr-wrap">
@@ -530,7 +723,6 @@ window.openCardOverlay = async function(encodedCard) {
       </div>
     </div>`;
 
-  /* ─── Action buttons (mask toggle + save PDF) ─── */
   const actionsHTML = `
     <div class="card-action-buttons">
       <button id="${uid}_maskBtn" title="Toggle privacy mask">👁</button>
@@ -539,107 +731,119 @@ window.openCardOverlay = async function(encodedCard) {
 
   ecardInner.innerHTML = `<div class="card-wrapper" id="${uid}_wrapper">${frontHTML}${backHTML}</div>${actionsHTML}`;
 
-  /* ─── Inject into DOM, then wire up images & QR ─── */
   ecardSpinner.style.display = "none";
-  ecardInner.style.display   = "flex";
+  ecardInner.style.display = "flex";
 
-  /* Helper: img with fallback */
   const loadImg = (id, primary, fallback) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const tryFallback = () => { el.onerror=null; el.src=fallback; };
+    const tryFallback = () => {
+      el.onerror = null;
+      el.src = fallback;
+    };
     el.onerror = tryFallback;
     el.src = primary;
   };
 
-  loadImg(`${uid}_photo`,   photoSrc, photoFallback);
+  loadImg(`${uid}_photo`, photoSrc, photoFallback);
   loadImg(`${uid}_photoSm`, photoSrc, photoFallback);
-  loadImg(`${uid}_vphoto`,  photoSrc, photoFallback);
-  loadImg(`${uid}_stamp`,   stampSrc,  defaultStamp);
-  loadImg(`${uid}_sign`,    signSrc,   defaultSign);
+  loadImg(`${uid}_vphoto`, photoSrc, photoFallback);
+  loadImg(`${uid}_stamp`, stampSrc, defaultStamp);
+  loadImg(`${uid}_sign`, signSrc, defaultSign);
 
-  /* Stamp / sign error fallback (already set via onerror above) */
-
-  /* QR code */
   const qrTemp = document.createElement("div");
   qrTemp.style.cssText = "position:absolute;left:-9999px;top:0;width:200px;height:200px;";
   document.body.appendChild(qrTemp);
+
   const verifyURL = `${API_BASE}/viewcard.html?card=${btoa(String(card.CNo))}`;
   try {
     new QRCode(qrTemp, {
-      text: verifyURL, width:200, height:200,
-      colorDark:"#000000", colorLight:"#0000",
+      text: verifyURL,
+      width: 200,
+      height: 200,
+      colorDark: "#000000",
+      colorLight: "#0000",
       correctLevel: QRCode.CorrectLevel.H
     });
+
     setTimeout(() => {
       const qrCanvas = qrTemp.querySelector("canvas");
       const qrEl = document.getElementById(`${uid}_qr`);
       if (qrEl && qrCanvas) qrEl.src = qrCanvas.toDataURL("image/png");
       qrTemp.remove();
     }, 300);
-  } catch(e) { qrTemp.remove(); }
+  } catch (e) {
+    qrTemp.remove();
+  }
 
-  /* Verify name */
   const vnameEl = document.getElementById(`${uid}_vname`);
   if (vnameEl) vnameEl.textContent = norm(card.name);
 
-  /* Urdu name */
-  let urduName = norm(card.urduName||"");
+  let urduName = norm(card.urduName || "");
   const urduEl = document.getElementById(`${uid}_urdu`);
   const setUrdu = (n) => { if (urduEl) urduEl.textContent = n; };
-  if (urduName) { setUrdu(urduName); }
-  else {
+
+  if (urduName) {
+    setUrdu(urduName);
+  } else {
     setUrdu("…");
     fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(norm(card.name))}`)
-      .then(r=>r.json())
-      .then(d=>{ urduName=d[0][0][0]; setUrdu(urduName); })
-      .catch(()=>{ setUrdu(norm(card.name)); });
+      .then(r => r.json())
+      .then(d => {
+        urduName = d[0][0][0];
+        setUrdu(urduName);
+      })
+      .catch(() => {
+        setUrdu(norm(card.name));
+      });
   }
 
-  /* ─── Masking logic ─── */
   let masked = false;
-  const nameEl   = document.getElementById(`${uid}_name`);
-  const cnoEl    = document.getElementById(`${uid}_cno`);
+  const nameEl = document.getElementById(`${uid}_name`);
+  const cnoEl = document.getElementById(`${uid}_cno`);
   const mobileEl = document.getElementById(`${uid}_mobile`);
-  const qrMask   = document.getElementById(`${uid}_qrmask`);
-  const maskBtn  = document.getElementById(`${uid}_maskBtn`);
+  const qrMask = document.getElementById(`${uid}_qrmask`);
+  const maskBtn = document.getElementById(`${uid}_maskBtn`);
 
   const renderMask = () => {
     const m = masked;
-    if (nameEl)   nameEl.textContent   = "Name: "    + (m ? maskName(norm(card.name))   : norm(card.name));
-    if (cnoEl)    cnoEl.textContent    = "Card No.: " + (m ? maskCardNo(norm(card.CNo)) : norm(card.CNo));
-    if (mobileEl) mobileEl.textContent = "Contact: "  + (m ? maskPhone(norm(card.mobile||"")) : norm(card.mobile||""));
-    if (urduEl)   urduEl.textContent   = m ? maskName(urduName||norm(card.name)) : (urduName||norm(card.name));
-    if (vnameEl)  vnameEl.textContent  = m ? maskName(norm(card.name)) : norm(card.name);
-    if (qrMask)   qrMask.style.display = m ? "flex" : "none";
-    if (maskBtn)  maskBtn.textContent  = m ? "🙈" : "👁";
+    if (nameEl) nameEl.textContent = "Name: " + (m ? maskName(norm(card.name)) : norm(card.name));
+    if (cnoEl) cnoEl.textContent = "Card No.: " + (m ? maskCardNo(norm(card.CNo)) : norm(card.CNo));
+    if (mobileEl) mobileEl.textContent = "Contact: " + (m ? maskPhone(norm(card.mobile || "")) : norm(card.mobile || ""));
+    if (urduEl) urduEl.textContent = m ? maskName(urduName || norm(card.name)) : (urduName || norm(card.name));
+    if (vnameEl) vnameEl.textContent = m ? maskName(norm(card.name)) : norm(card.name);
+    if (qrMask) qrMask.style.display = m ? "flex" : "none";
+    if (maskBtn) maskBtn.textContent = m ? "🙈" : "👁";
   };
+
   renderMask();
 
-  if (maskBtn) maskBtn.addEventListener("click", () => { masked = !masked; renderMask(); });
-
-  /* ─── Save PDF ─── */
-  const saveBtn = document.getElementById(`${uid}_saveBtn`);
-  if (saveBtn && typeof html2pdf !== "undefined") {
-    saveBtn.addEventListener("click", () => {
-      const wrapper = document.getElementById(`${uid}_wrapper`);
-      if (!wrapper) return;
-      const opt = {
-        margin:0,
-        filename:`${norm(card.name)} e-Card.pdf`,
-        image:{type:"jpeg", quality:1},
-        html2canvas:{
-          scale:5, useCORS:true,
-          windowWidth: wrapper.scrollWidth,
-          windowHeight: wrapper.scrollHeight
-        },
-        jsPDF:{unit:"mm", format:[180,270], orientation:"portrait"}
-      };
-      html2pdf().set(opt).from(wrapper).save();
+  if (maskBtn) {
+    maskBtn.addEventListener("click", () => {
+      masked = !masked;
+      renderMask();
     });
   }
 
-  /* ─── Mobile scale ─── */
+  const saveBtn = document.getElementById(`${uid}_saveBtn`);
+  if (saveBtn) {
+    saveBtn.addEventListener("click", async () => {
+      const oldText = saveBtn.textContent;
+      saveBtn.disabled = true;
+      saveBtn.textContent = "⏳";
+
+      try {
+        const wrapper = document.getElementById(`${uid}_wrapper`);
+        await saveCardAsPdf(card, wrapper);
+      } catch (e) {
+        console.error("Failed to generate PDF:", e);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = oldText;
+      }
+    });
+  }
+
   scaleMobileCard();
 };
 
@@ -648,11 +852,13 @@ function maskName(n) {
   const p = n.trim().split(/\s+/);
   if (p.length <= 1) return "***";
   if (p.length === 2) return "*** ***";
-  return ["***", ...p.slice(1,-1), "***"].join(" ");
+  return ["***", ...p.slice(1, -1), "***"].join(" ");
 }
+
 function maskCardNo(v) {
   return v ? v.replace(/(\d{3})(?!.*\d)/, "***") : "";
 }
+
 function maskPhone(v) {
   return v ? v.replace(/(\d{4})(?!.*\d)/, "****") : "";
 }
@@ -660,17 +866,18 @@ function maskPhone(v) {
 function scaleMobileCard() {
   const isMobile = window.innerWidth <= 680;
   const scale = isMobile ? Math.min((window.innerWidth - 40) / 610, 1) : 1;
+
   document.querySelectorAll("#ecardInner .ecard-container").forEach(el => {
     el.style.transformOrigin = "top center";
     el.style.transform = isMobile ? `scale(${scale})` : "";
-    el.style.marginBottom = isMobile ? `${-(400*(1-scale))}px` : "";
+    el.style.marginBottom = isMobile ? `${-(400 * (1 - scale))}px` : "";
   });
 }
 
 function closeCardOverlay() {
   if (!ecardOverlay) return;
   ecardOverlay.classList.remove("show");
-  ecardOverlay.setAttribute("aria-hidden","true");
+  ecardOverlay.setAttribute("aria-hidden", "true");
   ecardInner.innerHTML = "";
   ecardInner.style.display = "none";
   ecardSpinner.style.display = "flex";
@@ -680,7 +887,6 @@ function closeCardOverlay() {
    PRINT
 ═══════════════════════════════════════════════════════════════════ */
 function doPrint() {
-  /* Make sure overlay is closed so it doesn't appear in print */
   closeCardOverlay();
   window.print();
 }
@@ -689,73 +895,94 @@ function doPrint() {
    EVENTS
 ═══════════════════════════════════════════════════════════════════ */
 function bindEvents() {
-  /* theme */
-  if (themeToggleBtn)
+  if (themeToggleBtn) {
     themeToggleBtn.addEventListener("click", e => {
       e.stopPropagation();
       const isDark = document.body.classList.contains("dark-mode");
       applyTheme(isDark ? "light" : "dark");
     });
+  }
 
-  /* user area dropdown */
-  if (userArea)
+  if (userArea) {
     userArea.addEventListener("click", e => {
       e.stopPropagation();
       userDropdown?.classList.toggle("show");
     });
+  }
 
-  /* close dropdown on outside click */
-  document.addEventListener("click", () => { userDropdown?.classList.remove("show"); });
+  document.addEventListener("click", () => {
+    userDropdown?.classList.remove("show");
+  });
   if (userDropdown) userDropdown.addEventListener("click", e => e.stopPropagation());
 
-  /* login */
-  if (openLoginBtn)
+  if (openLoginBtn) {
     openLoginBtn.addEventListener("click", () => loginOverlay?.classList.add("show"));
-  if (loginOverlay)
+  }
+  if (loginOverlay) {
     loginOverlay.addEventListener("click", e => {
       if (e.target === loginOverlay) loginOverlay.classList.remove("show");
     });
-  if (loginBtn)  loginBtn.addEventListener("click", doLogin);
+  }
+  if (loginBtn) loginBtn.addEventListener("click", doLogin);
+
   document.addEventListener("keydown", e => {
     if (e.key === "Enter" && loginOverlay?.classList.contains("show")) doLogin();
   });
 
-  /* logout */
-  if (logoutBtn)
-    logoutBtn.addEventListener("click", () => { clearSession(); currentUser=null; location.reload(); });
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      clearSession();
+      currentUser = null;
+      location.reload();
+    });
+  }
 
-  /* view photo */
-  if (viewPhotoBtn)
+  if (viewPhotoBtn) {
     viewPhotoBtn.addEventListener("click", () => {
       photoOverlay?.classList.add("show");
       userDropdown?.classList.remove("show");
     });
-  if (closePhotoOverlay)
+  }
+  if (closePhotoOverlay) {
     closePhotoOverlay.addEventListener("click", () => photoOverlay?.classList.remove("show"));
-  if (photoOverlay)
-    photoOverlay.addEventListener("click", e => { if (e.target===photoOverlay) photoOverlay.classList.remove("show"); });
+  }
+  if (photoOverlay) {
+    photoOverlay.addEventListener("click", e => {
+      if (e.target === photoOverlay) photoOverlay.classList.remove("show");
+    });
+  }
 
-  /* search */
-  if (searchInput)  searchInput.addEventListener("input",  handleSearch);
-  if (searchField)  searchField.addEventListener("change", handleSearch);
-  if (searchButton) searchButton.addEventListener("click",  handleSearch);
+  if (searchInput) searchInput.addEventListener("input", handleSearch);
+  if (searchField) searchField.addEventListener("change", handleSearch);
+  if (searchButton) searchButton.addEventListener("click", handleSearch);
 
-  /* print */
   if (printButton) printButton.addEventListener("click", doPrint);
 
-  /* buttons */
-  if (generateButton)      generateButton.addEventListener("click", () => { if (!generateButton.disabled) window.location.href = "NewCard/login.html"; });
-  if (englishConstitution) englishConstitution.addEventListener("click", () => window.open(`${API_BASE}/English.pdf`,"_blank"));
-  if (urduConstitution)    urduConstitution.addEventListener("click",    () => window.open(`${API_BASE}/Urdu.pdf`,"_blank"));
+  if (generateButton) {
+    generateButton.addEventListener("click", () => {
+      if (!generateButton.disabled) window.location.href = "NewCard/login.html";
+    });
+  }
+  if (englishConstitution) {
+    englishConstitution.addEventListener("click", () => window.open(`${API_BASE}/English.pdf`, "_blank"));
+  }
+  if (urduConstitution) {
+    urduConstitution.addEventListener("click", () => window.open(`${API_BASE}/Urdu.pdf`, "_blank"));
+  }
 
-  /* e-card overlay close */
-  if (ecardCloseBtn)
+  if (ecardCloseBtn) {
     ecardCloseBtn.addEventListener("click", closeCardOverlay);
-  if (ecardOverlay)
-    ecardOverlay.addEventListener("click", e => { if (e.target===ecardOverlay) closeCardOverlay(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") closeCardOverlay(); });
+  }
+  if (ecardOverlay) {
+    ecardOverlay.addEventListener("click", e => {
+      if (e.target === ecardOverlay) closeCardOverlay();
+    });
+  }
 
-  /* mobile card scale on resize */
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeCardOverlay();
+  });
+
   window.addEventListener("resize", scaleMobileCard);
   window.addEventListener("orientationchange", scaleMobileCard);
 }
@@ -771,7 +998,8 @@ async function init() {
   checkSession();
 }
 
-if (document.readyState === "loading")
+if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
-else
+} else {
   init();
+}
