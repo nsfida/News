@@ -10,7 +10,7 @@
 const API_BASE = "https://livenews.live/KFC";
 const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
 const DEFAULT_PHOTO = `${PHOTOS_BASE}default.png`;
-const CARD_DATA_URL = `${API_BASE}/card2.json`;
+const CARD_DATA_URL = `${API_BASE}/cards.json`;
 const THEME_KEY = "kfcTheme";
 const SESSION_KEY = "kfcUser"; // same key as main page
 
@@ -499,22 +499,19 @@ async function saveCardAsPdf(card, frontNode, backNode) {
 
   if (!frontNode || !backNode) return;
 
-  await Promise.all([
-    waitForImages(frontNode),
-    waitForImages(backNode)
-  ]);
+  // We grab the parent container holding both cards
+  const wrapperNode = frontNode.parentElement;
 
+  await waitForImages(wrapperNode);
   await sleep(350);
   await nextPaint();
 
   const PdfCtor = window.jspdf && window.jspdf.jsPDF;
 
   if (typeof html2canvas === "undefined" || !PdfCtor) {
-    const wrapper = frontNode.parentElement;
-
-    if (typeof html2pdf !== "undefined" && wrapper) {
+    if (typeof html2pdf !== "undefined" && wrapperNode) {
       await html2pdf().set({
-        margin: 0,
+        margin: 10,
         filename: fileName,
         image: { type: "jpeg", quality: 1 },
         html2canvas: {
@@ -524,53 +521,73 @@ async function saveCardAsPdf(card, frontNode, backNode) {
         },
         jsPDF: {
           unit: "mm",
-          format: [180, 118],
+          format: "a4",
           orientation: "portrait"
         }
-      }).from(wrapper).save();
+      }).from(wrapperNode).save();
     }
-
     return;
   }
 
-  const canvases = [];
+  // Use onclone to perfectly un-distort and un-crop standard mobile views
+  const canvas = await html2canvas(wrapperNode, {
+    scale: 3,
+    useCORS: true,
+    allowTaint: false,
+    backgroundColor: "#ffffff",
+    logging: false,
+    onclone: (clonedDoc) => {
+      const clonedWrapper = clonedDoc.getElementById(wrapperNode.id);
+      if (clonedWrapper) {
+        // Reset scale and layout distortions mapped by mobile scripts
+        clonedWrapper.style.transform = "none";
+        clonedWrapper.style.display = "flex";
+        clonedWrapper.style.flexDirection = "column";
+        clonedWrapper.style.alignItems = "center";
+        clonedWrapper.style.gap = "20px";
+        clonedWrapper.style.padding = "20px";
+        clonedWrapper.style.width = "auto";
+        clonedWrapper.style.height = "auto";
 
-  for (const node of [frontNode, backNode]) {
-    const canvas = await html2canvas(node, {
-      scale: 3,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: "#ffffff",
-      logging: false,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: node.scrollWidth,
-      windowHeight: node.scrollHeight
-    });
-    canvases.push(canvas);
-  }
+        const containers = clonedWrapper.querySelectorAll(".ecard-container");
+        containers.forEach(el => {
+          el.style.transform = "none";
+          el.style.margin = "0";
+          el.style.position = "relative";
+        });
+      }
+    }
+  });
 
   const pdf = new PdfCtor({
     orientation: "p",
     unit: "mm",
-    format: [180, 118],
+    format: "a4",
     compress: true
   });
 
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
 
-  canvases.forEach((canvas, index) => {
-    if (index > 0) pdf.addPage([pageW, pageH], "p");
+  const imgData = canvas.toDataURL("image/png");
 
-    const imgData = canvas.toDataURL("image/png");
-    const drawW = pageW;
-    const drawH = (canvas.height * drawW) / canvas.width;
-    const y = drawH < pageH ? (pageH - drawH) / 2 : 0;
+  // Fit the layout proportionally inside a safe A4 border
+  const margin = 15;
+  const maxW = pageW - (margin * 2);
+  const maxH = pageH - (margin * 2);
 
-    pdf.addImage(imgData, "PNG", 0, y, drawW, Math.min(drawH, pageH));
-  });
+  let drawW = maxW;
+  let drawH = (canvas.height * drawW) / canvas.width;
 
+  if (drawH > maxH) {
+    drawH = maxH;
+    drawW = (canvas.width * drawH) / canvas.height;
+  }
+
+  const x = (pageW - drawW) / 2;
+  const y = (pageH - drawH) / 2;
+
+  pdf.addImage(imgData, "PNG", x, y, drawW, drawH);
   pdf.save(fileName);
 }
 
