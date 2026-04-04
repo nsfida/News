@@ -1,10 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    Khawrai Falahi Committee UAE — Database Page Script
-   Synced with main page session • Inline card overlay • Matching header/theme
-   Fixed PDF export:
-   - captures the full card wrapper as one image
-   - exports on a single PDF page
-   - prevents right-side cut / split pages
+   Synced with main page session • Inline card overlay • No floating
+   menu icon • Correct print layout • Matching header/theme
 ═══════════════════════════════════════════════════════════════════ */
 
 "use strict";
@@ -180,143 +177,6 @@ function applyProfileImages(cardNo) {
   setImgWithFallback(headerProfileImg, srcs, headerUserIcon);
   setImgWithFallback(dropdownProfileImg, srcs, null);
   setImgWithFallback(fullProfileImg, srcs, null);
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function nextPaint() {
-  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-}
-
-function sanitizeFileName(name) {
-  return String(name || "card")
-    .replace(/[\\/:*?"<>|]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function waitForImageLoad(img) {
-  return new Promise(resolve => {
-    if (!img) return resolve();
-    if (img.complete && img.naturalWidth !== 0) return resolve();
-    img.addEventListener("load", () => resolve(), { once: true });
-    img.addEventListener("error", () => resolve(), { once: true });
-  });
-}
-
-async function waitForImages(root) {
-  if (!root) return;
-  const imgs = [...root.querySelectorAll("img")];
-  await Promise.all(imgs.map(waitForImageLoad));
-}
-
-async function saveCardAsPdf(card, wrapperNode) {
-  const fileName = `${sanitizeFileName(norm(card.name) || "e-Card")} e-Card.pdf`;
-
-  if (!wrapperNode) return;
-
-  await waitForImages(wrapperNode);
-
-  if (document.fonts && document.fonts.ready) {
-    try {
-      await document.fonts.ready;
-    } catch (_) {}
-  }
-
-  await sleep(400);
-  await nextPaint();
-
-  const PdfCtor = window.jspdf && window.jspdf.jsPDF;
-
-  if (typeof html2canvas === "undefined" || !PdfCtor) {
-    if (typeof html2pdf !== "undefined") {
-      const canvas = await html2canvas(wrapperNode, {
-        scale: 3,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: "#ffffff",
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: wrapperNode.scrollWidth,
-        windowHeight: wrapperNode.scrollHeight,
-        onclone: (clonedDoc) => {
-          const cloned = clonedDoc.getElementById(wrapperNode.id);
-          if (cloned) {
-            cloned.style.transform = "none";
-            cloned.style.margin = "0";
-            cloned.style.padding = "0";
-            cloned.style.maxWidth = "none";
-            cloned.style.width = `${wrapperNode.scrollWidth}px`;
-            cloned.style.background = "#ffffff";
-          }
-          clonedDoc.querySelectorAll(".ecard-container").forEach(el => {
-            el.style.transform = "none";
-            el.style.marginBottom = "0";
-          });
-        }
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pageW = 210;
-      const pageH = (canvas.height * pageW) / canvas.width;
-
-      const pdf = new PdfCtor({
-        orientation: "p",
-        unit: "mm",
-        format: [pageW, pageH],
-        compress: true
-      });
-
-      pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH);
-      pdf.save(fileName);
-    }
-    return;
-  }
-
-  const canvas = await html2canvas(wrapperNode, {
-    scale: 3,
-    useCORS: true,
-    allowTaint: false,
-    backgroundColor: "#ffffff",
-    logging: false,
-    scrollX: 0,
-    scrollY: 0,
-    windowWidth: wrapperNode.scrollWidth,
-    windowHeight: wrapperNode.scrollHeight,
-    onclone: (clonedDoc) => {
-      const cloned = clonedDoc.getElementById(wrapperNode.id);
-      if (cloned) {
-        cloned.style.transform = "none";
-        cloned.style.margin = "0";
-        cloned.style.padding = "0";
-        cloned.style.maxWidth = "none";
-        cloned.style.width = `${wrapperNode.scrollWidth}px`;
-        cloned.style.background = "#ffffff";
-      }
-
-      clonedDoc.querySelectorAll(".ecard-container").forEach(el => {
-        el.style.transform = "none";
-        el.style.marginBottom = "0";
-      });
-    }
-  });
-
-  const imgData = canvas.toDataURL("image/png");
-  const pageW = 210;
-  const pageH = (canvas.height * pageW) / canvas.width;
-
-  const pdf = new PdfCtor({
-    orientation: "p",
-    unit: "mm",
-    format: [pageW, pageH],
-    compress: true
-  });
-
-  pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH);
-  pdf.save(fileName);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -524,6 +384,7 @@ function renderTable() {
   const fullAcc = isFullAccess(currentUser.CNo);
   const loggedUsername = genUsername(currentUser.name);
 
+  /* print header (hidden on screen, visible on print) */
   let html = `
     <div class="print-header-bar no-screen">
       <img src="logo.png" alt="KFC">
@@ -551,6 +412,7 @@ function renderTable() {
     keys.forEach(k => {
       let val = esc(item[k]);
 
+      /* privacy masking for limited-access users */
       if (!fullAcc && !isOwnRow) {
         if (k === "name") {
           const parts = norm(item.name).split(/\s+/);
@@ -574,6 +436,7 @@ function renderTable() {
       html += `<td data-label="${esc(k)}" ${cls}>${val}</td>`;
     });
 
+    /* View Card button — opens overlay */
     const canView = fullAcc || (norm(item.CNo) === norm(currentUser.CNo));
     html += `<td data-label="VIEW CARD" class="no-print">
       <button class="view-card-inline-btn"
@@ -599,10 +462,130 @@ window.sortTable = function (col) {
 };
 
 /* ═══════════════════════════════════════════════════════════════════
+   PDF / IMAGE HELPERS
+═══════════════════════════════════════════════════════════════════ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function nextPaint() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+function sanitizeFileName(name) {
+  return String(name || "card")
+    .replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function waitForImageLoad(img) {
+  return new Promise(resolve => {
+    if (!img) return resolve();
+    if (img.complete && img.naturalWidth !== 0) return resolve();
+    img.addEventListener("load", () => resolve(), { once: true });
+    img.addEventListener("error", () => resolve(), { once: true });
+  });
+}
+
+async function waitForImages(root) {
+  if (!root) return;
+  const imgs = [...root.querySelectorAll("img")];
+  await Promise.all(imgs.map(waitForImageLoad));
+}
+
+async function saveCardAsPdf(card, frontNode, backNode) {
+  const fileName = `${sanitizeFileName(norm(card.name) || "e-Card")} e-Card.pdf`;
+
+  if (!frontNode || !backNode) return;
+
+  /* wait for images */
+  await Promise.all([
+    waitForImages(frontNode),
+    waitForImages(backNode)
+  ]);
+
+  await sleep(300);
+  await nextPaint();
+
+  const PdfCtor = window.jspdf && window.jspdf.jsPDF;
+  if (typeof html2canvas === "undefined" || !PdfCtor) return;
+
+  /* ─── capture both sides ─── */
+  const frontCanvas = await html2canvas(frontNode, {
+    scale: 3,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+    scrollX: 0,
+    scrollY: 0
+  });
+
+  const backCanvas = await html2canvas(backNode, {
+    scale: 3,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+    scrollX: 0,
+    scrollY: 0
+  });
+
+  /* ─── merge into ONE canvas (vertical stack) ─── */
+  const combinedCanvas = document.createElement("canvas");
+  const ctx = combinedCanvas.getContext("2d");
+
+  const width = Math.max(frontCanvas.width, backCanvas.width);
+  const height = frontCanvas.height + backCanvas.height + 40; // small gap
+
+  combinedCanvas.width = width;
+  combinedCanvas.height = height;
+
+  /* white background */
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  /* draw front (top) */
+  ctx.drawImage(frontCanvas, 0, 0);
+
+  /* draw back (below) */
+  ctx.drawImage(backCanvas, 0, frontCanvas.height + 40);
+
+  /* ─── create PDF (single page) ─── */
+  const pdf = new PdfCtor({
+    orientation: "p",
+    unit: "mm",
+    format: "a4",
+    compress: true
+  });
+
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+
+  /* convert canvas to image */
+  const imgData = combinedCanvas.toDataURL("image/png");
+
+  /* calculate fit (NO cropping, NO zoom overflow) */
+  const ratio = Math.min(
+    pageW / combinedCanvas.width,
+    pageH / combinedCanvas.height
+  );
+
+  const drawW = combinedCanvas.width * ratio;
+  const drawH = combinedCanvas.height * ratio;
+
+  /* center perfectly */
+  const x = (pageW - drawW) / 2;
+  const y = (pageH - drawH) / 2;
+
+  pdf.addImage(imgData, "PNG", x, y, drawW, drawH);
+
+  pdf.save(fileName);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    e-CARD OVERLAY
-   Renders the card inline in the overlay.
+   Renders an exact replica of viewcard.html inline in the overlay.
 ═══════════════════════════════════════════════════════════════════ */
 window.openCardOverlay = async function (encodedCard) {
+  /* show overlay + spinner */
   if (!ecardOverlay) return;
   ecardOverlay.classList.add("show");
   ecardOverlay.setAttribute("aria-hidden", "false");
@@ -622,6 +605,7 @@ window.openCardOverlay = async function (encodedCard) {
     return;
   }
 
+  /* fetch data if not already loaded */
   if (!allData.length) await loadData();
   const card = allData.find(c => norm(c.CNo) === norm(cardNo));
   if (!card) {
@@ -629,29 +613,34 @@ window.openCardOverlay = async function (encodedCard) {
     return;
   }
 
+  /* ─── Build the card HTML (mirrors viewcard.html exactly) ─── */
   const BASE = API_BASE + "/static/images/";
 
+  /* determine background based on designation */
   const desg = norm(card.Desg).toLowerCase();
   const bgSrc = (desg.includes("president") && !desg.includes("vice"))
     ? `${BASE}background2.png`
     : `${BASE}background.png`;
-
   const labelText = desg.includes("president") && !desg.includes("vice")
     ? "President's e-Card"
     : desg.includes("vice president") ? "Vice President's e-Card" : "e-Card";
 
+  /* Photo */
   const photoCNo = encodeURIComponent(norm(card.CNo));
   const photoSrc = `${PHOTOS_BASE}${photoCNo}.png`;
   const photoFallback = `${PHOTOS_BASE}photo.png`;
 
+  /* Stamp / signature by authority */
   const defaultStamp = `${BASE}stamp.png`;
   const defaultSign = `${BASE}signature.png`;
   const authFolder = (card.Authority || "").trim().toLowerCase();
   const stampSrc = authFolder ? `${PHOTOS_BASE}${authFolder}/stamp.png` : defaultStamp;
   const signSrc = authFolder ? `${PHOTOS_BASE}${authFolder}/signature.png` : defaultSign;
 
+  /* Cancel banner */
   const cancelled = isCancelled(card.Status);
 
+  /* Unique id prefix to avoid id collisions */
   const uid = "ov_" + Math.random().toString(36).slice(2, 8);
 
   const frontHTML = `
@@ -723,6 +712,7 @@ window.openCardOverlay = async function (encodedCard) {
       </div>
     </div>`;
 
+  /* ─── Action buttons (mask toggle + save PDF) ─── */
   const actionsHTML = `
     <div class="card-action-buttons">
       <button id="${uid}_maskBtn" title="Toggle privacy mask">👁</button>
@@ -731,9 +721,11 @@ window.openCardOverlay = async function (encodedCard) {
 
   ecardInner.innerHTML = `<div class="card-wrapper" id="${uid}_wrapper">${frontHTML}${backHTML}</div>${actionsHTML}`;
 
+  /* ─── Inject into DOM, then wire up images & QR ─── */
   ecardSpinner.style.display = "none";
   ecardInner.style.display = "flex";
 
+  /* Helper: img with fallback */
   const loadImg = (id, primary, fallback) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -751,6 +743,7 @@ window.openCardOverlay = async function (encodedCard) {
   loadImg(`${uid}_stamp`, stampSrc, defaultStamp);
   loadImg(`${uid}_sign`, signSrc, defaultSign);
 
+  /* QR code */
   const qrTemp = document.createElement("div");
   qrTemp.style.cssText = "position:absolute;left:-9999px;top:0;width:200px;height:200px;";
   document.body.appendChild(qrTemp);
@@ -776,9 +769,11 @@ window.openCardOverlay = async function (encodedCard) {
     qrTemp.remove();
   }
 
+  /* Verify name */
   const vnameEl = document.getElementById(`${uid}_vname`);
   if (vnameEl) vnameEl.textContent = norm(card.name);
 
+  /* Urdu name */
   let urduName = norm(card.urduName || "");
   const urduEl = document.getElementById(`${uid}_urdu`);
   const setUrdu = (n) => { if (urduEl) urduEl.textContent = n; };
@@ -798,6 +793,7 @@ window.openCardOverlay = async function (encodedCard) {
       });
   }
 
+  /* ─── Masking logic ─── */
   let masked = false;
   const nameEl = document.getElementById(`${uid}_name`);
   const cnoEl = document.getElementById(`${uid}_cno`);
@@ -825,6 +821,7 @@ window.openCardOverlay = async function (encodedCard) {
     });
   }
 
+  /* ─── Save PDF ─── */
   const saveBtn = document.getElementById(`${uid}_saveBtn`);
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
@@ -833,8 +830,9 @@ window.openCardOverlay = async function (encodedCard) {
       saveBtn.textContent = "⏳";
 
       try {
-        const wrapper = document.getElementById(`${uid}_wrapper`);
-        await saveCardAsPdf(card, wrapper);
+        const frontNode = document.getElementById(`${uid}_front`);
+        const backNode = document.getElementById(`${uid}_back`);
+        await saveCardAsPdf(card, frontNode, backNode);
       } catch (e) {
         console.error("Failed to generate PDF:", e);
       } finally {
@@ -844,6 +842,7 @@ window.openCardOverlay = async function (encodedCard) {
     });
   }
 
+  /* ─── Mobile scale ─── */
   scaleMobileCard();
 };
 
@@ -887,6 +886,7 @@ function closeCardOverlay() {
    PRINT
 ═══════════════════════════════════════════════════════════════════ */
 function doPrint() {
+  /* Make sure overlay is closed so it doesn't appear in print */
   closeCardOverlay();
   window.print();
 }
@@ -895,6 +895,7 @@ function doPrint() {
    EVENTS
 ═══════════════════════════════════════════════════════════════════ */
 function bindEvents() {
+  /* theme */
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener("click", e => {
       e.stopPropagation();
@@ -903,6 +904,7 @@ function bindEvents() {
     });
   }
 
+  /* user area dropdown */
   if (userArea) {
     userArea.addEventListener("click", e => {
       e.stopPropagation();
@@ -910,11 +912,13 @@ function bindEvents() {
     });
   }
 
+  /* close dropdown on outside click */
   document.addEventListener("click", () => {
     userDropdown?.classList.remove("show");
   });
   if (userDropdown) userDropdown.addEventListener("click", e => e.stopPropagation());
 
+  /* login */
   if (openLoginBtn) {
     openLoginBtn.addEventListener("click", () => loginOverlay?.classList.add("show"));
   }
@@ -929,6 +933,7 @@ function bindEvents() {
     if (e.key === "Enter" && loginOverlay?.classList.contains("show")) doLogin();
   });
 
+  /* logout */
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       clearSession();
@@ -937,6 +942,7 @@ function bindEvents() {
     });
   }
 
+  /* view photo */
   if (viewPhotoBtn) {
     viewPhotoBtn.addEventListener("click", () => {
       photoOverlay?.classList.add("show");
@@ -952,12 +958,15 @@ function bindEvents() {
     });
   }
 
+  /* search */
   if (searchInput) searchInput.addEventListener("input", handleSearch);
   if (searchField) searchField.addEventListener("change", handleSearch);
   if (searchButton) searchButton.addEventListener("click", handleSearch);
 
+  /* print */
   if (printButton) printButton.addEventListener("click", doPrint);
 
+  /* buttons */
   if (generateButton) {
     generateButton.addEventListener("click", () => {
       if (!generateButton.disabled) window.location.href = "NewCard/login.html";
@@ -970,6 +979,7 @@ function bindEvents() {
     urduConstitution.addEventListener("click", () => window.open(`${API_BASE}/Urdu.pdf`, "_blank"));
   }
 
+  /* e-card overlay close */
   if (ecardCloseBtn) {
     ecardCloseBtn.addEventListener("click", closeCardOverlay);
   }
@@ -978,11 +988,11 @@ function bindEvents() {
       if (e.target === ecardOverlay) closeCardOverlay();
     });
   }
-
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") closeCardOverlay();
   });
 
+  /* mobile card scale on resize */
   window.addEventListener("resize", scaleMobileCard);
   window.addEventListener("orientationchange", scaleMobileCard);
 }
