@@ -1,339 +1,1201 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Khawrai Falahi Committee e-Card</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>New e-Card Generator | Khawrai Falahi Committee UAE</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Cropper.js CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
 <style>
-/* RESET */
-*{margin:0;padding:0;box-sizing:border-box;}
-@font-face{font-family:'UrduFont';src:url('static/fonts/Urdu.ttf') format('truetype');}
+/* ══════════════════════════════════════════
+   RESET & ROOT
+══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
 
-/* BODY */
-body{
-font-family:Calibri,sans-serif;
-min-height:100vh;
-display:flex;
-flex-direction:column;
-align-items:center;
-padding:20px;
-overflow-x:hidden;
-background:linear-gradient(270deg,#cfe8ff,#ffffff,#e8f3ff);
-background-size:600% 600%;
-animation:gradientMove 20s ease infinite;
+:root {
+  --bg-light-1:#e0eaff;
+  --bg-light-2:#ffffff;
+  --bg-dark-1:#07111f;
+  --bg-dark-2:#0e1a2d;
+  --text-light:#1a1a1a;
+  --text-dark:#eef4ff;
+  --soft-light:#3c3c3c;
+  --soft-dark:#c9d5ea;
+  --brand:#0d3c91;
+  --accent:#7873f5;
+  --accent-2:#ff6ec4;
+  --glass-light:rgba(255,255,255,0.25);
+  --glass-dark:rgba(10,18,33,0.58);
+  --glass-border-light:rgba(255,255,255,0.3);
+  --glass-border-dark:rgba(255,255,255,0.12);
+  --shadow-light:0 8px 30px rgba(0,0,0,0.1);
+  --shadow-dark:0 18px 45px rgba(0,0,0,0.32);
+  --header-h:60px;
 }
-@keyframes gradientMove{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
 
-/* FLOATING LOGOS BACKGROUND */
-.floating-logos{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:hidden;}
-.floating-logos::before,.floating-logos::after{
-content:"";position:absolute;width:120%;height:120%;background-image:url("static/images/logo.png");background-size:90px;background-repeat:repeat;opacity:0.05;animation:floatLogos 80s linear infinite;}
-.floating-logos::after{animation-direction:reverse;opacity:0.03;}
-@keyframes floatLogos{0%{transform:translateY(0);}50%{transform:translateY(-200px);}100%{transform:translateY(0);}}
+@font-face { font-family:'UrduFont'; src:url('../static/fonts/urdu.ttf') format('truetype'); }
 
-/* HEADER */
-.logo-title{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:15px;}
-.logo-title img{width:80px;margin-bottom:10px;animation:logoFade 3s ease-in-out infinite;}
-@keyframes logoFade{0%{opacity:0.4}50%{opacity:1}100%{opacity:0.4}}
-.logo-title h2{font-size:26px;color:#0d3c91;font-weight:bold;}
-.uae-text{font-family:'UrduFont';direction:rtl;text-align:center;font-size:20px;color:#0d3c91;margin-top:5px;}
+/* ══════════════════════════════════════════
+   BODY
+══════════════════════════════════════════ */
+body {
+  font-family:Calibri, sans-serif;
+  background:linear-gradient(135deg, var(--bg-light-1), var(--bg-light-2));
+  min-height:100vh;
+  color:var(--text-light);
+  overflow-x:hidden;
+  transition:background 0.5s ease, color 0.5s ease;
+}
+body.dark-mode {
+  background:
+    radial-gradient(circle at top left, rgba(80,98,255,0.24), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255,110,196,0.14), transparent 30%),
+    linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+  color:var(--text-dark);
+}
 
-/* FORM + JSON CONTAINER */
-.main-container{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;align-items:flex-start;width:100%;max-width:1050px;}
+/* ══════════════════════════════════════════
+   FLOATING CIRCLES
+══════════════════════════════════════════ */
+.floating-circles {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; overflow:hidden; z-index:0;
+}
+.floating-circles .circle {
+  position:absolute; border-radius:50%;
+  animation:floatMove 20s ease-in-out infinite alternate;
+  box-shadow:inset -10px -10px 20px rgba(0,0,0,0.15), inset 10px 10px 20px rgba(255,255,255,0.6), 0 10px 25px rgba(0,0,0,0.2);
+}
+.circle:nth-child(1){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(255,105,180,0.4));width:180px;height:180px;top:10%;left:15%;filter:blur(3px);}
+.circle:nth-child(2){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(0,191,255,0.4));width:90px;height:90px;top:50%;left:25%;filter:blur(3px);}
+.circle:nth-child(3){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(255,20,147,0.4));width:150px;height:150px;top:30%;left:70%;filter:blur(3px);}
+.circle:nth-child(4){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(30,144,255,0.4));width:100px;height:100px;top:80%;left:40%;filter:blur(3px);}
+.circle:nth-child(5){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(255,182,193,0.4));width:80px;height:80px;top:60%;left:80%;filter:blur(3px);}
+.circle:nth-child(6){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(0,255,200,0.28));width:110px;height:110px;top:18%;left:55%;filter:blur(3px);}
+.circle:nth-child(7){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(255,180,0,0.22));width:70px;height:70px;top:72%;left:12%;filter:blur(2px);}
+.circle:nth-child(8){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(180,110,255,0.24));width:130px;height:130px;top:8%;left:82%;filter:blur(3px);}
+.circle:nth-child(9){background:radial-gradient(circle,rgba(255,255,255,0.8),rgba(255,90,120,0.24));width:95px;height:95px;top:84%;left:68%;filter:blur(3px);}
+@keyframes floatMove {
+  0%   { transform:translate(0,0) scale(1); }
+  33%  { transform:translate(100px,-50px) scale(1.2); }
+  66%  { transform:translate(-80px,120px) scale(0.8); }
+  100% { transform:translate(50px,20px) scale(1.1); }
+}
 
-/* FORM CONTAINER */
-.form-container{background:rgba(255,255,255,0.25);backdrop-filter:blur(20px);border-radius:30px;padding:30px;width:500px;max-width:95%;box-shadow:0 20px 40px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.5);}
+/* ══════════════════════════════════════════
+   GLASS
+══════════════════════════════════════════ */
+.glass {
+  background:var(--glass-light);
+  backdrop-filter:blur(18px);
+  border-radius:20px;
+  border:1px solid var(--glass-border-light);
+  box-shadow:var(--shadow-light);
+  position:relative; overflow:hidden;
+}
+body.dark-mode .glass {
+  background:var(--glass-dark);
+  border:1px solid var(--glass-border-dark);
+  box-shadow:var(--shadow-dark);
+}
 
-/* JSON BOX */
-.json-container{background:rgba(255,255,255,0.25);backdrop-filter:blur(20px);border-radius:25px;padding:15px;width:350px;max-width:90%;height:auto;position:relative;box-shadow:0 15px 30px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.5);font-family:monospace;font-size:13px;white-space:pre-wrap;word-break:break-word;}
-.json-container .top-msg{font-weight:bold;margin-bottom:10px;color:#125fa6;text-align:center;}
-.copy-btn{position:absolute;top:10px;right:10px;padding:4px 8px;background:linear-gradient(135deg,#1976d2,#125fa6);color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;}
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.top-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:15px 20px;
+  background:var(--glass-light);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--glass-border-light);
+  position:sticky; top:0; z-index:100; gap:10px;
+  transition:background 0.5s ease, border-color 0.5s ease;
+}
+body.dark-mode .top-header {
+  background:var(--glass-dark);
+  border-bottom:1px solid var(--glass-border-dark);
+}
+.logo-area { display:flex; align-items:center; gap:10px; }
+.dancing-logo { width:50px; animation:logoZoomFade 3s ease-in-out infinite; cursor:pointer; }
+@keyframes logoZoomFade {
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:0.6;transform:scale(1.2);}
+}
+.header-right { display:flex; align-items:center; gap:10px; }
 
-/* LABELS */
-label{display:block;margin-bottom:5px;color:#555;font-weight:bold;}
-input,select{width:100%;padding:10px;margin-bottom:12px;border-radius:50px;border:1px solid rgba(0,0,0,0.1);font-size:14px;outline:none;transition:0.3s;}
-input:focus,select:focus{border-color:#1976d2;box-shadow:0 0 10px rgba(25,118,210,0.3);}
-button{padding:12px 20px;background:linear-gradient(135deg,#1976d2,#125fa6);color:white;font-size:16px;border:none;border-radius:50px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:0.3s;box-shadow:0 8px 20px rgba(0,0,0,0.15);}
-button:hover{transform:translateY(-3px);}
-button:disabled{background:#ccc;cursor:not-allowed;}
+/* User area in header */
+.user-area {
+  display:flex; align-items:center; gap:10px;
+  cursor:pointer; font-weight:bold; position:relative;
+}
+.user-area i { font-size:22px; color:var(--accent); }
+.header-profile-img-container { width:35px; height:35px; border-radius:50%; overflow:hidden; display:flex; justify-content:center; align-items:center; }
+.header-profile-img { width:100%; height:100%; object-fit:cover; }
 
-/* MODAL FOR CROPPER */
-#cropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center;flex-direction:column;}
-.crop-container{width:90%;max-width:500px;background:#white;border-radius:15px;overflow:hidden;background:#fff;padding:10px;}
-.crop-actions{margin-top:10px;display:flex;gap:10px;}
+.theme-toggle-btn {
+  border:none; outline:none; background:transparent; padding:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; width:36px; height:36px;
+}
+.theme-toggle-btn i { font-size:20px; color:var(--accent); pointer-events:none; }
 
-.translate-link{text-align:right;font-size:12px;margin-bottom:10px;}
-.translate-link a{color:#1976d2;text-decoration:none;font-weight:bold;}
-.contact-banner{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-top:20px;padding:15px 20px;background:rgba(255,255,255,0.25);backdrop-filter:blur(20px);border-radius:25px;box-shadow:0 15px 30px rgba(0,0,0,0.15);}
-.contact-banner a{text-decoration:none;color:#0d3c91;display:flex;align-items:center;gap:6px;font-weight:bold;transition:0.3s;}
-.contact-banner a:hover{transform:translateY(-3px);}
-.role-tag{font-size:12px;color:#125fa6;font-weight:bold;}
-footer{margin-top:15px;font-size:14px;text-align:center;}
+.nav-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 14px; border-radius:25px; font-size:13px; font-weight:bold;
+  text-decoration:none; color:#fff; border:none; cursor:pointer;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  box-shadow:0 4px 12px rgba(0,0,0,0.18); transition:0.3s; font-family:Calibri,sans-serif;
+}
+.nav-btn:hover { transform:translateY(-2px); opacity:0.9; }
 
-@media(max-width:600px){.logo-title h2{font-size:22px;}.uae-text{font-size:17px;}.form-container{padding:25px;}input{font-size:14px;}button{font-size:14px;}.json-container{width:100%;margin-top:20px;}.main-container{flex-direction:column;align-items:center;}}
+/* ══════════════════════════════════════════
+   USER DROPDOWN (matches main page)
+══════════════════════════════════════════ */
+.user-dropdown {
+  position:fixed;
+  top:calc(var(--header-h) + 2px);
+  inset-inline-end:16px;
+  width:min(240px, calc(100vw - 24px));
+  padding:15px;
+  display:none; flex-direction:column;
+  height:auto; max-height:550px; z-index:999;
+}
+.user-dropdown.show { display:flex; }
+.user-dropdown h3 { margin-bottom:5px; text-align:center; }
+.user-dropdown p  { font-size:10px; margin:2px 0; }
+.user-dropdown .user-info { display:flex; flex-direction:column; gap:4px; align-items:center; font-weight:bold; }
+.dropdown-photo-area { width:100px; height:100px; border-radius:40%; overflow:hidden; margin-bottom:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+.dropdown-profile-img { width:100%; height:100%; object-fit:cover; }
+.user-dropdown button#logoutBtn {
+  margin-top:6px; align-self:center; width:70%; padding:10px 0;
+  border:none; border-radius:50px;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  color:#fff; font-weight:bold; cursor:pointer; transition:0.3s; font-size:14px;
+}
+.user-dropdown button#logoutBtn:hover { opacity:0.9; transform:translateY(-2px); }
+body.dark-mode .user-dropdown p, body.dark-mode .user-dropdown h3 { color:#eef4ff; }
+
+h1, h2, h3 {
+  background:linear-gradient(90deg,#0d3c91,#0d3c91);
+  display:inline-block; -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent; width:100%; text-align:center;
+}
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+  background:linear-gradient(90deg,#9bc2ff,#9bc2ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+
+/* ══════════════════════════════════════════
+   INFO BANNER (marquee — identical to main)
+══════════════════════════════════════════ */
+.info-banner {
+  background:rgba(167,199,203,0.15);
+  backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.3);
+  color:#501AB0; font-weight:bold; font-size:20px;
+  padding:5px 20px;
+  display:flex; align-items:center; overflow:hidden;
+  white-space:nowrap; width:100%; position:relative; z-index:50;
+}
+.info-banner .marquee {
+  display:inline-block; padding-left:100%;
+  animation:scrollBanner 25s linear infinite;
+}
+@keyframes scrollBanner {
+  0%  { transform:translateX(0%); }
+  100%{ transform:translateX(-100%); }
+}
+.info-banner:hover .marquee { animation-play-state:paused; }
+body.dark-mode .info-banner { color:#d9c8ff; background:rgba(255,255,255,0.06); }
+
+/* ══════════════════════════════════════════
+   PAGE LAYOUT
+══════════════════════════════════════════ */
+.page-wrapper {
+  max-width:1100px; margin:24px auto;
+  padding:0 16px 60px; position:relative; z-index:1;
+}
+
+/* Title block */
+.title-block {
+  display:flex; align-items:center; justify-content:center;
+  gap:16px; margin-bottom:24px; text-align:center; flex-wrap:wrap;
+}
+.title-logo { width:65px; animation:logoZoomFade 3s ease-in-out infinite; }
+.title-en { font-size:20px; font-weight:bold; color:var(--brand); }
+body.dark-mode .title-en { color:#9bc2ff; }
+.title-ur { font-size:15px; color:var(--brand); direction:rtl; font-family:'UrduFont',serif; }
+body.dark-mode .title-ur { color:#9bc2ff; }
+
+/* Nav */
+.db-nav {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; justify-content:center;
+}
+.db-nav a {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 16px; border-radius:25px; font-size:13px; font-weight:bold;
+  text-decoration:none; color:#fff;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  box-shadow:0 4px 12px rgba(0,0,0,0.18); transition:0.3s;
+}
+.db-nav a:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.28); }
+
+/* Main two-column layout */
+.main-grid {
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:20px;
+  align-items:start;
+}
+@media(max-width:880px) { .main-grid { grid-template-columns:1fr; } }
+
+/* ── Form panel ── */
+.form-panel { padding:28px 30px; }
+
+.form-section-title {
+  font-size:16px; font-weight:bold;
+  color:var(--brand); margin-bottom:16px;
+  display:flex; align-items:center; gap:8px;
+  background:none; -webkit-text-fill-color:var(--brand);
+}
+body.dark-mode .form-section-title { color:#9bc2ff; -webkit-text-fill-color:#9bc2ff; }
+
+label {
+  display:block; font-size:13px; font-weight:bold;
+  margin-bottom:5px; color:var(--brand);
+}
+body.dark-mode label { color:#9bc2ff; }
+
+.input-group { margin-bottom:14px; }
+.input-group input,
+.input-group select,
+.input-group textarea {
+  width:100%; padding:10px 16px; border-radius:40px;
+  border:1px solid rgba(0,0,0,0.12); outline:none;
+  font-size:14px; font-family:Calibri,sans-serif;
+  background:rgba(255,255,255,0.85); color:#111;
+  transition:border 0.3s, box-shadow 0.3s;
+}
+body.dark-mode .input-group input,
+body.dark-mode .input-group select,
+body.dark-mode .input-group textarea {
+  background:rgba(10,18,33,0.7); color:#eef4ff;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.input-group input:focus,
+.input-group select:focus { border-color:var(--accent); box-shadow:0 0 12px rgba(120,115,245,0.35); }
+
+.input-group input[type="file"] {
+  padding:8px 16px; border-radius:15px; cursor:pointer;
+}
+
+.translate-link { text-align:right; font-size:12px; margin-top:-8px; margin-bottom:10px; }
+.translate-link a { color:var(--accent); text-decoration:none; font-weight:bold; }
+.translate-link a:hover { text-decoration:underline; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:500px) { .two-col { grid-template-columns:1fr; } }
+
+/* photo preview */
+.photo-preview-wrap {
+  width:100px; height:100px; border-radius:50%; overflow:hidden;
+  margin:8px auto 14px; border:2px solid var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,0.2);
+}
+.photo-preview-wrap img { width:100%; height:100%; object-fit:cover; display:none; }
+.photo-preview-wrap i { font-size:38px; color:var(--accent); opacity:0.5; }
+
+/* Buttons */
+.btn-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; justify-content:center; }
+.btn-primary {
+  border:none; padding:12px 22px; border-radius:40px; cursor:pointer;
+  font-size:14px; font-family:Calibri,sans-serif; font-weight:bold;
+  display:inline-flex; align-items:center; gap:8px;
+  background:linear-gradient(135deg,#ff6ec4,#7873f5);
+  color:#fff; transition:0.3s;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+.btn-primary:hover:not(:disabled) { transform:translateY(-3px); box-shadow:0 10px 24px rgba(0,0,0,0.28); }
+.btn-primary:disabled { background:#a9c9f5; cursor:not-allowed; opacity:0.7; }
+.btn-secondary {
+  border:none; padding:12px 22px; border-radius:40px; cursor:pointer;
+  font-size:14px; font-family:Calibri,sans-serif; font-weight:bold;
+  display:inline-flex; align-items:center; gap:8px;
+  background:linear-gradient(135deg,#1976d2,#0d3c91);
+  color:#fff; transition:0.3s;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+.btn-secondary:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(0,0,0,0.28); }
+
+/* ── JSON side panel ── */
+.json-panel {
+  padding:20px;
+  position:sticky; top:calc(var(--header-h) + 20px);
+}
+.json-panel-title {
+  font-size:15px; font-weight:bold; text-align:center; margin-bottom:12px;
+  background:linear-gradient(90deg,#0d3c91,#4facfe);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+body.dark-mode .json-panel-title {
+  background:linear-gradient(90deg,#9bc2ff,#9bc2ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.json-box {
+  position:relative;
+  background:rgba(0,0,0,0.04);
+  border:1px solid rgba(0,0,0,0.1);
+  border-radius:12px; padding:14px;
+  font-family:'Courier New',monospace; font-size:12px;
+  white-space:pre-wrap; word-break:break-word;
+  max-height:320px; overflow-y:auto; line-height:1.6;
+  color:var(--text-light);
+}
+body.dark-mode .json-box {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-dark);
+}
+.copy-btn {
+  position:absolute; top:10px; right:10px;
+  padding:5px 10px; border:none; border-radius:10px; cursor:pointer;
+  background:linear-gradient(135deg,#1976d2,#0d3c91);
+  color:#fff; font-size:12px; font-weight:bold; transition:0.3s;
+}
+.copy-btn:hover { transform:scale(1.05); }
+
+.json-note {
+  font-size:12px; line-height:1.6; margin-top:14px; padding:12px;
+  border-radius:12px; background:rgba(120,115,245,0.1);
+  color:var(--soft-light);
+}
+body.dark-mode .json-note { color:var(--soft-dark); background:rgba(120,115,245,0.08); }
+
+/* ── Contact banner ── */
+.contact-banner {
+  display:flex; flex-wrap:wrap; justify-content:center;
+  gap:20px; font-size:13px; padding:15px 20px; margin-top:20px;
+}
+.contact-banner a {
+  display:flex; align-items:center; gap:8px;
+  text-decoration:none; color:var(--brand); font-weight:500; transition:0.3s;
+}
+body.dark-mode .contact-banner a { color:#9bc2ff; }
+.contact-banner a:hover { transform:translateY(-3px); }
+.contact-banner .fab { font-size:20px; color:#25D366; }
+.contact-banner a div { display:flex; flex-direction:column; align-items:flex-start; }
+.role-tag { font-size:10px; background:#e7f0ff; padding:2px 6px; border-radius:8px; margin-top:2px; font-weight:bold; color:#0d3c91; }
+body.dark-mode .role-tag { background:rgba(155,194,255,0.15); color:#9bc2ff; }
+
+/* ══════════════════════════════════════════
+   ACCESS DENIED OVERLAY
+══════════════════════════════════════════ */
+.access-denied-overlay {
+  position:fixed;
+  inset:0;
+  z-index:6000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(10px);
+  padding:16px;
+}
+.access-denied-card {
+  width:min(520px, 100%);
+  padding:28px 24px;
+  text-align:center;
+}
+.access-denied-card i {
+  font-size:42px;
+  color:#ff4d4d;
+  margin-bottom:12px;
+}
+.access-denied-card h2 {
+  font-size:24px;
+  margin-bottom:10px;
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.access-denied-card p {
+  font-size:15px;
+  line-height:1.8;
+  color:var(--text-light);
+  margin-bottom:10px;
+}
+body.dark-mode .access-denied-card p { color:var(--text-dark); }
+.access-denied-card .nav-btn {
+  display:inline-flex;
+  margin-top:10px;
+}
+
+/* ══════════════════════════════════════════
+   CROP MODAL
+══════════════════════════════════════════ */
+.crop-modal {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);
+  z-index:5000; justify-content:center; align-items:center; flex-direction:column;
+  gap:16px;
+}
+.crop-modal.show { display:flex; }
+.crop-container {
+  width:90%; max-width:500px; background:#fff; border-radius:20px; overflow:hidden; padding:12px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+body.dark-mode .crop-container { background:#0e1a2d; }
+.crop-actions { display:flex; gap:12px; }
+
+/* ══════════════════════════════════════════
+   WELCOME POPUP
+══════════════════════════════════════════ */
+.welcome-popup {
+  position:fixed; top:20px; left:50%; transform:translateX(-50%);
+  background:linear-gradient(90deg,#ff6ec4,#7873f5);
+  color:#fff; padding:12px 25px; border-radius:25px;
+  display:none; z-index:3000; font-weight:bold;
+}
+.welcome-popup.show { display:block; }
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+footer {
+  text-align:center; padding:10px;
+  background:var(--glass-light); font-size:11px;
+  position:relative; z-index:1; margin-top:20px;
+}
+body.dark-mode footer { background:var(--glass-dark); }
+footer a { color:var(--brand); text-decoration:none; }
+body.dark-mode footer a { color:#9bc2ff; }
+
+/* ══════════════════════════════════════════
+   LOAD ANIMATION
+══════════════════════════════════════════ */
+body * { opacity:0; transform:translateY(-20px); transition:all 0.7s ease; }
+body.loaded * { opacity:1; transform:translateY(0); }
+.top-header    { transition-delay:0.05s; }
+.info-banner   { transition-delay:0.10s; }
+.page-wrapper  { transition-delay:0.18s; }
+footer         { transition-delay:0.30s; }
+.crop-modal    { transition:none; opacity:1 !important; transform:none !important; }
+
+@media(max-width:600px) {
+  .top-header  { padding:10px 12px; }
+  .form-panel  { padding:18px; }
+  .json-panel  { position:static; }
+  .info-banner { font-size:12px; }
+}
 </style>
 </head>
 <body>
 
-<div class="floating-logos"></div>
-
-<div class="logo-title">
-<img src="static/images/logo.png">
-<h2>Khawrai Falahi Committee UAE</h2>
-<p class="uae-text">خاورئی فلاحی کمیٹی متحدہ عرب امارات</p>
+<div class="floating-circles" aria-hidden="true">
+  <div class="circle"></div><div class="circle"></div><div class="circle"></div>
+  <div class="circle"></div><div class="circle"></div><div class="circle"></div>
+  <div class="circle"></div><div class="circle"></div><div class="circle"></div>
 </div>
 
-<!-- Modal for Cropping -->
-<div id="cropModal">
-    <div class="crop-container">
-        <img id="imageToCrop" style="max-width: 100%;">
+<!-- HEADER -->
+<header class="top-header">
+  <div class="logo-area">
+    <a href="https://livenews.live/KFC" aria-label="Go to KFC home page">
+      <img src="../logo.png" alt="KFC Logo" class="dancing-logo">
+    </a>
+  </div>
+  <div class="header-right">
+    <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle dark mode">
+      <i class="fa-solid fa-moon" id="themeToggleIcon" aria-hidden="true"></i>
+    </button>
+
+    <!-- Logged-in user area -->
+    <div class="user-area" id="userArea">
+      <div class="header-profile-img-container">
+        <img id="headerProfileImg" src="https://livenews.live/KFC/static/images/photos/default.png" alt="User" class="header-profile-img" style="display:none;">
+        <i class="fa-solid fa-user-circle" id="headerUserIcon" aria-hidden="true"></i>
+      </div>
+      <span id="usernameText">Loading…</span>
+      <i class="fa-solid fa-chevron-down" style="font-size:10px;" aria-hidden="true"></i>
     </div>
-    <div class="crop-actions">
-        <button id="cancelCrop" style="background: #666;">Cancel</button>
-        <button id="saveCrop">Crop & Continue</button>
+
+    <a href="https://livenews.live/KFC/index.html" class="nav-btn">
+      <i class="fa-solid fa-house"></i> Home
+    </a>
+  </div>
+</header>
+
+<!-- USER DROPDOWN -->
+<div id="userDropdown" class="user-dropdown glass">
+  <div id="userView" style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+    <div class="dropdown-photo-area">
+      <img id="dropdownProfileImg" src="" alt="Profile Photo" class="dropdown-profile-img">
     </div>
+    <h3 id="userFullName"></h3>
+    <div class="user-info">
+      <p id="userCard"></p>
+      <p id="userDesg"></p>
+    </div>
+    <button id="logoutBtn" type="button">
+      <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Sign Out
+    </button>
+  </div>
 </div>
 
-<div class="main-container">
-<div class="form-container">
-<form id="ecardForm">
-
-<label for="name">Name (English)</label>
-<input type="text" id="name" required>
-
-<label for="urdu_name">Name (Urdu)</label>
-<input type="text" id="urdu_name" required>
-
-<div class="translate-link"><a href="https://www.google.com/search?q=english+to+urdu" target="_blank">Translate to Urdu</a></div>
-
-<label for="designation">Designation</label>
-<select id="designation" required>
-<option value="Committee Member">Committee Member</option>
-<option value="President">President</option>
-<option value="Vice President">Vice President</option>
-<option value="Finance Secretary">Finance Secretary</option>
-<option value="Media Manager">Media Manager</option>
-<option value="Media Secretary">Media Secretary</option>
-<option value="Committee Guardian">Committee Guardian</option>
-<option value="Other">Other</option>
-</select>
-
-<label for="card_number">Card Number</label>
-<input type="text" id="card_number" value="746-210-" required>
-
-<label for="blood_group">Blood Group</label>
-<select id="blood_group" required>
-<option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="O+">O+</option><option value="O-">O-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="N/A">N/A</option>
-</select>
-
-<label for="contact">Contact (Mobile)</label>
-<input type="text" id="contact" placeholder="+971 55 921 6280" required>
-
-<label for="photo">Upload Photo</label>
-<input type="file" id="photo" accept="image/*" required>
-
-<button type="submit" id="submitBtn"><i class="fas fa-plus-circle"></i>Generate e-Card</button>
-</form>
+<!-- INFO BANNER -->
+<div class="info-banner">
+  <div class="marquee">
+    🕭 New e-Card Generator — Authorised members only. Fill the form, copy the JSON, and update the server database. Then click Generate e-Card to preview the card.
+  </div>
 </div>
 
-<div class="json-container">
-<div class="top-msg">Please update this data in JSON file on server</div>
-<button class="copy-btn">Copy</button>
-<pre id="jsonPreview">,{"name":"","Desg":"","CNo":"","BG":"","mobile":"","Status":"Active","Room":"Room - (-)","Issue":"-"}</pre>
-</div>
+<!-- WELCOME POPUP -->
+<div id="welcomePopup" class="welcome-popup" aria-live="polite"></div>
+
+<!-- ACCESS DENIED OVERLAY -->
+<div id="accessDeniedOverlay" class="access-denied-overlay" aria-hidden="true">
+  <div class="access-denied-card glass">
+    <i class="fa-solid fa-ban" aria-hidden="true"></i>
+    <h2>Access Restricted</h2>
+    <p id="accessDeniedText">You are not permitted to generate the new card.</p>
+    <a href="login.html" class="nav-btn">
+      <i class="fa-solid fa-right-to-bracket"></i> Go to Login
+    </a>
+  </div>
 </div>
 
-<div class="contact-banner">
-<a href="https://wa.me/971557353212" target="_blank"><i class="fab fa-whatsapp"></i>Arbab M. Rizwan <span class="role-tag">President</span></a>
-<a href="https://wa.me/971588840090" target="_blank"><i class="fab fa-whatsapp"></i>Salar Khan <span class="role-tag">Vice President</span></a>
-<a href="https://wa.me/971568039690" target="_blank"><i class="fab fa-whatsapp"></i>Ahmad A. Khattak <span class="role-tag">Acting President</span></a>
-<a href="https://wa.me/971529297289" target="_blank"><i class="fab fa-whatsapp"></i>Naveed A. Liaqat <span class="role-tag">Finance Manager</span></a>
+<!-- CROP MODAL -->
+<div id="cropModal" class="crop-modal" role="dialog" aria-modal="true" aria-label="Crop photo">
+  <div class="crop-container">
+    <img id="imageToCrop" style="max-width:100%;" alt="Photo to crop">
+  </div>
+  <div class="crop-actions">
+    <button class="btn-secondary" id="cancelCrop" type="button">
+      <i class="fa-solid fa-xmark"></i> Cancel
+    </button>
+    <button class="btn-primary" id="saveCrop" type="button">
+      <i class="fa-solid fa-crop-simple"></i> Crop & Use
+    </button>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page-wrapper">
+
+  <!-- Title -->
+  <div class="title-block">
+    <img src="../static/images/logo.png" alt="KFC Logo" class="title-logo">
+    <div>
+      <div class="title-en">Khawrai Falahi Committee UAE</div>
+      <div class="title-ur">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="db-nav">
+    <a href="https://livenews.live/KFC/index.html"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <a href="https://livenews.live/KFC/message/president.html"><i class="fa-solid fa-user-tie"></i> President's Message</a>
+    <a href="https://livenews.live/KFC/message/alerts.html"><i class="fa-solid fa-bell"></i> Alerts</a>
+    <a href="https://livenews.live/KFC/database.html"><i class="fa-solid fa-database"></i> Database</a>
+    <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users"></i> Cabinet</a>
+  </nav>
+
+  <!-- Two-column grid -->
+  <div class="main-grid">
+
+    <!-- FORM PANEL -->
+    <div class="form-panel glass">
+      <p class="form-section-title"><i class="fa-solid fa-id-card"></i> New Member e-Card</p>
+
+      <!-- Photo preview -->
+      <div class="photo-preview-wrap" id="photoPreviewWrap">
+        <i class="fa-solid fa-user" id="photoPlaceholderIcon"></i>
+        <img id="photoPreview" src="" alt="Photo preview">
+      </div>
+
+      <!-- Name fields -->
+      <div class="two-col">
+        <div class="input-group">
+          <label for="name"><i class="fa-solid fa-user"></i> Name (English)</label>
+          <input type="text" id="name" placeholder="Full name in English" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label for="urdu_name"><i class="fa-solid fa-language"></i> Name (Urdu)</label>
+          <input type="text" id="urdu_name" placeholder="اردو میں نام">
+        </div>
+      </div>
+      <div class="translate-link">
+        <a href="https://www.google.com/search?q=english+to+urdu+translation" target="_blank" rel="noopener">
+          <i class="fa-solid fa-globe"></i> Translate to Urdu
+        </a>
+      </div>
+
+      <!-- Designation -->
+      <div class="input-group">
+        <label for="designation"><i class="fa-solid fa-briefcase"></i> Designation</label>
+        <select id="designation">
+          <option value="Committee Member">Committee Member</option>
+          <option value="President">President</option>
+          <option value="Acting President">Acting President</option>
+          <option value="Vice President">Vice President</option>
+          <option value="General Secretary">General Secretary</option>
+          <option value="Finance Manager">Finance Manager</option>
+          <option value="Joint Finance Secretary">Joint Finance Secretary</option>
+          <option value="Media Manager">Media Manager</option>
+          <option value="Committee Guardian">Committee Guardian</option>
+          <option value="Finance Secretary">Finance Secretary</option>
+          <option value="Media Secretary">Media Secretary</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <!-- Card No + Blood Group -->
+      <div class="two-col">
+        <div class="input-group">
+          <label for="card_number"><i class="fa-solid fa-id-badge"></i> Card Number</label>
+          <input type="text" id="card_number" value="746-210-" placeholder="746-210-XXX">
+        </div>
+        <div class="input-group">
+          <label for="blood_group"><i class="fa-solid fa-droplet"></i> Blood Group</label>
+          <select id="blood_group">
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>O+</option><option>O-</option>
+            <option>AB+</option><option>AB-</option>
+            <option>N/A</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mobile + Room -->
+      <div class="two-col">
+        <div class="input-group">
+          <label for="contact"><i class="fa-solid fa-phone"></i> Contact (Mobile)</label>
+          <input type="text" id="contact" placeholder="+971 55 000 0000">
+        </div>
+        <div class="input-group">
+          <label for="room"><i class="fa-solid fa-house-chimney"></i> Room / Address</label>
+          <input type="text" id="room" placeholder="Room - (-)">
+        </div>
+      </div>
+
+      <!-- Issue Date + Validity -->
+      <div class="two-col">
+        <div class="input-group">
+          <label for="issue_date"><i class="fa-solid fa-calendar-check"></i> Issue Date</label>
+          <input type="text" id="issue_date" placeholder="e.g. 01-Jan-2026">
+        </div>
+        <div class="input-group">
+          <label for="validity"><i class="fa-solid fa-hourglass-half"></i> Validity</label>
+          <input type="text" id="validity" value="UAE VISA EXPIRY" placeholder="UAE VISA EXPIRY">
+        </div>
+      </div>
+
+      <!-- Authority -->
+      <div class="input-group">
+        <label for="authority"><i class="fa-solid fa-stamp"></i> Issuance Authority Code</label>
+        <input type="text" id="authority" value="001" placeholder="e.g. 001">
+      </div>
+
+      <!-- Photo upload -->
+      <div class="input-group">
+        <label for="photo"><i class="fa-solid fa-image"></i> Upload Photo</label>
+        <input type="file" id="photo" accept="image/*">
+      </div>
+
+      <!-- Remove.bg API key -->
+      <div class="input-group">
+        <label for="removeBgKey"><i class="fa-solid fa-scissors"></i> Remove.bg API Key (optional)</label>
+        <input type="text" id="removeBgKey" placeholder="Leave blank to skip background removal">
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-row">
+        <button class="btn-primary" id="submitBtn" type="button" disabled>
+          <i class="fa-solid fa-plus-circle"></i> Generate e-Card
+        </button>
+        <button class="btn-secondary" id="clearBtn" type="button">
+          <i class="fa-solid fa-rotate-left"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- JSON PANEL -->
+    <div class="json-panel glass">
+      <div class="json-panel-title"><i class="fa-solid fa-code"></i> JSON Record Preview</div>
+      <div style="font-size:12px;text-align:center;margin-bottom:10px;color:var(--soft-light);">
+        Copy this and update <code>cards.json</code> on the server before generating the card.
+      </div>
+
+      <div style="position:relative;">
+        <pre class="json-box" id="jsonPreview">,{
+  "name": "",
+  "Desg": "",
+  "CNo": "",
+  "BG": "",
+  "mobile": "",
+  "Status": "Active",
+  "Room": "Room - (-)",
+  "Issue": "-",
+  "Authority": "001",
+  "Validity": "UAE VISA EXPIRY"
+}</pre>
+        <button class="copy-btn" id="copyBtn" type="button">
+          <i class="fa-solid fa-copy"></i> Copy
+        </button>
+      </div>
+
+      <div class="json-note">
+        <strong>Instructions:</strong><br>
+        1. Fill the form — JSON updates live.<br>
+        2. Copy the JSON above.<br>
+        3. Paste it into <code>cards.json</code> on the server.<br>
+        4. Click <em>Generate e-Card</em> to preview and save the card.
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Banner -->
+  <div class="contact-banner glass">
+    <a href="https://wa.me/971557353212" target="_blank" rel="noopener">
+      <i class="fab fa-whatsapp"></i>
+      <div>Arbab M. Rizwan<span class="role-tag">President</span></div>
+    </a>
+    <a href="https://wa.me/971588840090" target="_blank" rel="noopener">
+      <i class="fab fa-whatsapp"></i>
+      <div>Salar Khan<span class="role-tag">Vice President</span></div>
+    </a>
+    <a href="https://wa.me/971568039690" target="_blank" rel="noopener">
+      <i class="fab fa-whatsapp"></i>
+      <div>Ahmad A. Khattak<span class="role-tag">Acting President</span></div>
+    </a>
+    <a href="https://wa.me/971529297289" target="_blank" rel="noopener">
+      <i class="fab fa-whatsapp"></i>
+      <div>Naveed A. Liaqat<span class="role-tag">Finance Manager</span></div>
+    </a>
+  </div>
 </div>
 
 <footer>
-<p>Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a></p>
+  <p>© 2026 Khawrai Falahi Committee United Arab Emirates | All Rights Reserved</p>
+  <p style="margin-top:4px;font-size:10px;opacity:0.7;">
+    Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a>
+  </p>
 </footer>
 
-<!-- Cropper.js Script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <script>
-let typingTimer;
-const delay=400;
+"use strict";
 
-const nameInput=document.getElementById("name");
-const urduInput=document.getElementById("urdu_name");
-const designationInput=document.getElementById("designation");
-const cardInput=document.getElementById("card_number");
-const bloodInput=document.getElementById("blood_group");
-const contactInput=document.getElementById("contact");
-const jsonPreview=document.getElementById("jsonPreview");
-const copyBtn=document.querySelector(".copy-btn");
-const photoInput = document.getElementById("photo");
-const submitBtn = document.getElementById("submitBtn");
+/* ─── Constants ─── */
+const API_BASE    = "https://livenews.live/KFC";
+const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
+const CARD_URL    = `${API_BASE}/cards.json`;
+const THEME_KEY   = "kfcTheme";
+const SESSION_KEY = "kfcUser";
+const NC_SESSION_KEY = "kfcNcUser";
 
-// Elements for Cropping
-const cropModal = document.getElementById("cropModal");
-const imageToCrop = document.getElementById("imageToCrop");
-const saveCrop = document.getElementById("saveCrop");
-const cancelCrop = document.getElementById("cancelCrop");
+const ALLOWED_FULL_ACCESS = [
+  "746-210-001","746-210-011","746-210-040",
+  "746-210-006","746-210-007","746-210-008","746-210-021"
+];
 
-let cropper;
+/* ─── State ─── */
 let finalPhotoBlob = null;
-const REMOVE_BG_API_KEY = "auT2fSvQYDK9YoGw6SeaENzS"; // Replace with your remove.bg API key
+let cropper = null;
+let currentUser = null;
+let portalLocked = false;
 
-function formatMobile(number){ return number.replace(/\s+/g,''); }
+/* ─── Theme ─── */
+function applyTheme(mode) {
+  const dark = mode === "dark";
+  document.body.classList.toggle("dark-mode", dark);
+  localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+  const icon = document.getElementById("themeToggleIcon");
+  if (icon) icon.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+}
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "dark" || saved === "light") { applyTheme(saved); return; }
+  applyTheme(window.matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
+}
+document.getElementById("themeToggleBtn").addEventListener("click", () => {
+  applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark");
+});
 
-function updateJSON(){
-const data=`,
-{
-"name":"${nameInput.value}",
-"Desg":"${designationInput.value}",
-"CNo":"${cardInput.value}",
-"BG":"${bloodInput.value}",
-"mobile":"${formatMobile(contactInput.value)}",
-"Status":"Active",
-"Room":"Room - (-)",
-"Issue":"-",
-"Authority": "001",
-"Validity": "UAE VISA EXPIRY"
-}`;
-jsonPreview.textContent=data;
+/* ─── Session check ─── */
+function isCancelled(status) {
+  const s = (status || "").toString().trim().toLowerCase();
+  return s === "cancel" || s === "cancelled";
+}
+function isFullAccess(cardNo) {
+  return ALLOWED_FULL_ACCESS.includes((cardNo || "").toString().trim());
 }
 
-// Photo Cropping Logic
-photoInput.addEventListener("change", function(e) {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            imageToCrop.src = event.target.result;
-            cropModal.style.display = "flex";
-            if(cropper) cropper.destroy();
-            cropper = new Cropper(imageToCrop, {
-                aspectRatio: 1, // Square crop for cards
-                viewMode: 1
-            });
-        };
-        reader.readAsDataURL(files[0]);
+function disablePortalControls() {
+  portalLocked = true;
+
+  document.querySelectorAll(".form-panel input, .form-panel select, .form-panel textarea, .form-panel button, .json-panel button").forEach(el => {
+    if (el.id === "themeToggleBtn") return;
+    if (el.id === "logoutBtn") return;
+    el.disabled = true;
+  });
+
+  const submitBtn = document.getElementById("submitBtn");
+  if (submitBtn) submitBtn.disabled = true;
+  const clearBtn = document.getElementById("clearBtn");
+  if (clearBtn) clearBtn.disabled = true;
+  const copyBtn = document.getElementById("copyBtn");
+  if (copyBtn) copyBtn.disabled = true;
+
+  document.getElementById("photo").disabled = true;
+  document.getElementById("removeBgKey").disabled = true;
+  document.getElementById("name").disabled = true;
+  document.getElementById("urdu_name").disabled = true;
+  document.getElementById("designation").disabled = true;
+  document.getElementById("card_number").disabled = true;
+  document.getElementById("blood_group").disabled = true;
+  document.getElementById("contact").disabled = true;
+  document.getElementById("room").disabled = true;
+  document.getElementById("issue_date").disabled = true;
+  document.getElementById("validity").disabled = true;
+  document.getElementById("authority").disabled = true;
+
+  document.querySelector(".page-wrapper").style.filter = "blur(1px)";
+  document.querySelector(".page-wrapper").style.pointerEvents = "none";
+  document.querySelector(".page-wrapper").style.userSelect = "none";
+  document.querySelector(".contact-banner").style.pointerEvents = "none";
+}
+
+function showAccessDenied(message) {
+  const overlay = document.getElementById("accessDeniedOverlay");
+  const text = document.getElementById("accessDeniedText");
+  if (text) text.textContent = message || "You are not permitted to generate the new card.";
+  if (overlay) overlay.style.display = "flex";
+}
+
+function checkSession() {
+  const raw = localStorage.getItem(NC_SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+  if (!raw) {
+    window.location.href = "login.html";
+    return;
+  }
+  try {
+    const user = JSON.parse(raw);
+    if (!user) {
+      localStorage.removeItem(NC_SESSION_KEY);
+      localStorage.removeItem(SESSION_KEY);
+      window.location.href = "login.html";
+      return;
     }
-});
 
-cancelCrop.addEventListener("click", () => {
-    cropModal.style.display = "none";
-    photoInput.value = "";
-});
-
-saveCrop.addEventListener("click", () => {
-    const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
-    canvas.toBlob((blob) => {
-        finalPhotoBlob = blob;
-        cropModal.style.display = "none";
-    });
-});
-
-// Remove Background Function
-async function removeBackground(blob) {
-    if (REMOVE_BG_API_KEY === "YOUR_API_KEY_HERE") {
-        console.warn("Background removal skipped: No API Key provided.");
-        return blob;
+    if (isCancelled(user.Status)) {
+      localStorage.removeItem(NC_SESSION_KEY);
+      localStorage.removeItem(SESSION_KEY);
+      showAccessDenied("This account cannot log in because the card is cancelled.");
+      disablePortalControls();
+      return;
     }
 
-    const formData = new FormData();
-    formData.append("image_file", blob);
-    formData.append("size", "auto");
+    if (!isFullAccess(user.CNo)) {
+      localStorage.removeItem(NC_SESSION_KEY);
+      localStorage.removeItem(SESSION_KEY);
+      showAccessDenied("You are not permitted to generate the new card.");
+      disablePortalControls();
+      return;
+    }
 
+    currentUser = user;
+    renderUserHeader(user);
+    showWelcome(user.name);
+  } catch (e) {
+    localStorage.removeItem(NC_SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    window.location.href = "login.html";
+  }
+}
+
+/* ─── Render user in header ─── */
+function getImageSources(cardNo) {
+  const c = encodeURIComponent(String(cardNo || ""));
+  return [`${PHOTOS_BASE}${c}.png`, `${PHOTOS_BASE}${c}.jpg`, `${PHOTOS_BASE}default.png`];
+}
+function setImgFallback(imgEl, sources) {
+  if (!imgEl) return;
+  let idx = 0;
+  const tryNext = () => { if (idx >= sources.length) { imgEl.style.display = "none"; return; } imgEl.src = sources[idx++]; };
+  imgEl.onerror = tryNext;
+  imgEl.onload = () => { imgEl.style.display = "block"; document.getElementById("headerUserIcon").style.display = "none"; };
+  tryNext();
+}
+
+function renderUserHeader(user) {
+  const firstName = (user.name || "").trim().split(" ")[0] || "User";
+  document.getElementById("usernameText").textContent = `Welcome, ${firstName}`;
+  document.getElementById("userFullName").textContent = `Welcome, ${user.name}`;
+  document.getElementById("userCard").textContent = `Card: ${user.CNo}`;
+  document.getElementById("userDesg").textContent = user.Desg || "";
+  setImgFallback(document.getElementById("headerProfileImg"), getImageSources(user.CNo));
+  setImgFallback(document.getElementById("dropdownProfileImg"), getImageSources(user.CNo));
+  document.getElementById("userView").style.display = "flex";
+}
+
+/* ─── Welcome popup ─── */
+function showWelcome(name) {
+  const popup = document.getElementById("welcomePopup");
+  popup.textContent = `Welcome, ${(name || "").trim().split(" ")[0]} 👋`;
+  popup.classList.add("show");
+  setTimeout(() => popup.classList.remove("show"), 2500);
+}
+
+/* ─── User dropdown ─── */
+const userArea     = document.getElementById("userArea");
+const userDropdown = document.getElementById("userDropdown");
+
+userArea.addEventListener("click", e => {
+  e.stopPropagation();
+  if (portalLocked) return;
+  userDropdown.classList.toggle("show");
+});
+document.addEventListener("click", () => userDropdown.classList.remove("show"));
+userDropdown.addEventListener("click", e => e.stopPropagation());
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem(NC_SESSION_KEY);
+  localStorage.removeItem(SESSION_KEY);
+  window.location.href = "login.html";
+});
+
+/* ─── Auto-fill today's date ─── */
+(function setTodayDate() {
+  const today = new Date();
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const dd = String(today.getDate()).padStart(2,"0");
+  const mm = months[today.getMonth()];
+  const yyyy = today.getFullYear();
+  document.getElementById("issue_date").value = `${dd}-${mm}-${yyyy}`;
+})();
+
+/* ─── Auto-load last card number ─── */
+async function autoCardNumber() {
+  try {
+    const res = await fetch(`${CARD_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    if (!data || !data.length) return;
+    const last = data[data.length - 1];
+    const lastNo = (last.CNo || last.cardNumber || "");
+    if (!lastNo) return;
+    const parts = lastNo.split("-");
+    const next  = (parseInt(parts[2], 10) + 1).toString().padStart(3, "0");
+    document.getElementById("card_number").value = `${parts[0]}-${parts[1]}-${next}`;
+    updateJSON();
+  } catch (e) { /* ignore */ }
+}
+
+/* ─── JSON live update ─── */
+function formatMobile(n) { return (n || "").replace(/\s+/g,""); }
+
+function updateJSON() {
+  const name   = document.getElementById("name").value;
+  const desg   = document.getElementById("designation").value;
+  const cno    = document.getElementById("card_number").value;
+  const bg     = document.getElementById("blood_group").value;
+  const mobile = formatMobile(document.getElementById("contact").value);
+  const room   = document.getElementById("room").value || "Room - (-)";
+  const issue  = document.getElementById("issue_date").value || "-";
+  const auth   = document.getElementById("authority").value || "001";
+  const valid  = document.getElementById("validity").value || "UAE VISA EXPIRY";
+
+  const obj = { name, Desg: desg, CNo: cno, BG: bg, mobile, Status:"Active", Room: room, Issue: issue, Authority: auth, Validity: valid };
+  document.getElementById("jsonPreview").textContent = ",\n" + JSON.stringify(obj, null, 2);
+}
+
+/* Watch all form fields */
+["name","urdu_name","designation","card_number","blood_group","contact","room","issue_date","validity","authority"]
+  .forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", updateJSON);
+    if (el && el.tagName === "SELECT") el.addEventListener("change", updateJSON);
+  });
+
+/* ─── Auto-translate name to Urdu ─── */
+let translateTimer = null;
+document.getElementById("name").addEventListener("input", function () {
+  updateJSON();
+  clearTimeout(translateTimer);
+  const text = this.value.trim();
+  if (!text) { document.getElementById("urdu_name").value = ""; return; }
+  translateTimer = setTimeout(async () => {
     try {
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        submitBtn.disabled = true;
+      const res  = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      const translated = data[0].map(item => item[0]).join("");
+      document.getElementById("urdu_name").value = translated;
+      updateJSON();
+    } catch (e) { /* silent */ }
+  }, 450);
+});
 
-        const response = await fetch("https://api.remove.bg/v1.0/removebg", {
-            method: "POST",
-            headers: { "X-Api-Key": REMOVE_BG_API_KEY },
-            body: formData
-        });
+/* ─── Copy JSON ─── */
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = document.getElementById("jsonPreview").textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("copyBtn");
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+    setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy'; }, 2000);
+  });
+});
 
-        if (response.ok) {
-            return await response.blob();
-        } else {
-            console.error("BG Removal Error:", await response.text());
-            return blob; // Fallback to original crop if API fails
-        }
-    } catch (err) {
-        console.error(err);
-        return blob;
-    } finally {
-        submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Generate e-Card';
-        submitBtn.disabled = false;
-    }
+/* ─── Photo cropping ─── */
+const photoInput    = document.getElementById("photo");
+const cropModal     = document.getElementById("cropModal");
+const imageToCrop   = document.getElementById("imageToCrop");
+const saveCropBtn   = document.getElementById("saveCrop");
+const cancelCropBtn = document.getElementById("cancelCrop");
+const photoPreview  = document.getElementById("photoPreview");
+const photoPlaceholder = document.getElementById("photoPlaceholderIcon");
+
+photoInput.addEventListener("change", function (e) {
+  if (portalLocked) return;
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    imageToCrop.src = evt.target.result;
+    cropModal.classList.add("show");
+    if (cropper) cropper.destroy();
+    cropper = new Cropper(imageToCrop, { aspectRatio: 1, viewMode: 1 });
+  };
+  reader.readAsDataURL(file);
+});
+
+cancelCropBtn.addEventListener("click", () => {
+  cropModal.classList.remove("show");
+  photoInput.value = "";
+  if (cropper) { cropper.destroy(); cropper = null; }
+});
+
+saveCropBtn.addEventListener("click", () => {
+  if (portalLocked) return;
+  if (!cropper) return;
+  const canvas = cropper.getCroppedCanvas({ width:500, height:500 });
+  canvas.toBlob(blob => {
+    finalPhotoBlob = blob;
+    cropModal.classList.remove("show");
+
+    const url = URL.createObjectURL(blob);
+    photoPreview.src = url;
+    photoPreview.style.display = "block";
+    if (photoPlaceholder) photoPlaceholder.style.display = "none";
+
+    document.getElementById("submitBtn").disabled = false;
+  });
+});
+
+/* ─── Remove.bg background removal ─── */
+async function removeBackground(blob) {
+  const apiKey = document.getElementById("removeBgKey").value.trim();
+  if (!apiKey) return blob;
+
+  const fd = new FormData();
+  fd.append("image_file", blob);
+  fd.append("size","auto");
+
+  const submitBtn = document.getElementById("submitBtn");
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Removing background…';
+  submitBtn.disabled = true;
+
+  try {
+    const res = await fetch("https://api.remove.bg/v1.0/removebg", {
+      method:"POST",
+      headers:{ "X-Api-Key": apiKey },
+      body: fd
+    });
+    if (res.ok) return await res.blob();
+    console.warn("remove.bg:", await res.text());
+    return blob;
+  } catch (err) {
+    console.error(err);
+    return blob;
+  } finally {
+    submitBtn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Generate e-Card';
+    submitBtn.disabled = false;
+  }
 }
 
-nameInput.addEventListener("input",()=>{
-clearTimeout(typingTimer);
-const text=nameInput.value.trim();
-if(!text){urduInput.value=""; updateJSON(); return;}
-typingTimer=setTimeout(async()=>{
-try{
-const res=await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q="+encodeURIComponent(text));
-const data=await res.json();
-const translated=data[0].map(item=>item[0]).join("");
-urduInput.value=translated;
-updateJSON();
-}catch(err){console.log("Translation error",err);}
-},delay);
-updateJSON();
+/* ─── Submit → generate card ─── */
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  if (portalLocked) {
+    showAccessDenied("You are not permitted to generate the new card.");
+    return;
+  }
+
+  if (!finalPhotoBlob) {
+    alert("Please upload and crop a photo first.");
+    return;
+  }
+
+  const name       = document.getElementById("name").value.trim();
+  const urduName   = document.getElementById("urdu_name").value.trim();
+  const designation= document.getElementById("designation").value;
+  const cardNumber = document.getElementById("card_number").value.trim();
+  const bloodGroup = document.getElementById("blood_group").value;
+  const contact    = formatMobile(document.getElementById("contact").value);
+  const room       = document.getElementById("room").value.trim() || "Room - (-)";
+  const issueDate  = document.getElementById("issue_date").value.trim() || "-";
+  const validity   = document.getElementById("validity").value.trim() || "UAE VISA EXPIRY";
+  const authority  = document.getElementById("authority").value.trim() || "001";
+
+  if (!name || !cardNumber) {
+    alert("Please fill in Name and Card Number.");
+    return;
+  }
+
+  const processedBlob = await removeBackground(finalPhotoBlob);
+
+  const reader = new FileReader();
+  reader.onload = evt => {
+    localStorage.setItem("ecardData", JSON.stringify({
+      name, urduName, designation, cardNumber, bloodGroup,
+      contact, room, issueDate, validity, authority,
+      photoData: evt.target.result
+    }));
+    window.location.href = "generate.html";
+  };
+  reader.readAsDataURL(processedBlob);
 });
 
-[urduInput,designationInput,cardInput,bloodInput,contactInput].forEach(el=>el.addEventListener("input",updateJSON));
-
-copyBtn.addEventListener("click",()=>{
-navigator.clipboard.writeText(jsonPreview.textContent);
-alert("JSON copied!");
+/* ─── Reset form ─── */
+document.getElementById("clearBtn").addEventListener("click", () => {
+  if (portalLocked) return;
+  document.getElementById("name").value = "";
+  document.getElementById("urdu_name").value = "";
+  document.getElementById("designation").value = "Committee Member";
+  document.getElementById("blood_group").value = "A+";
+  document.getElementById("contact").value = "";
+  document.getElementById("room").value = "";
+  document.getElementById("validity").value = "UAE VISA EXPIRY";
+  document.getElementById("authority").value = "001";
+  document.getElementById("photo").value = "";
+  finalPhotoBlob = null;
+  photoPreview.src = "";
+  photoPreview.style.display = "none";
+  if (photoPlaceholder) photoPlaceholder.style.display = "block";
+  document.getElementById("submitBtn").disabled = true;
+  autoCardNumber();
+  updateJSON();
 });
 
-if(!localStorage.getItem("loggedInUser")) window.location.href="login.html";
-
-fetch("https://livenews.live/KFC/cards.json")
-.then(res=>res.json())
-.then(data=>{
-if(!data||data.length===0) return;
-let last=data[data.length-1].CNo||data[data.length-1].cardNumber;
-if(!last) return;
-let parts=last.split("-");
-let number=parseInt(parts[2])+1;
-let newNumber=number.toString().padStart(3,"0");
-document.getElementById("card_number").value=parts[0]+"-"+parts[1]+"-"+newNumber;
+/* ─── Init ─── */
+initTheme();
+checkSession();
+autoCardNumber();
 updateJSON();
-})
-.catch(err=>console.log("Card auto number not loaded"));
-
-document.getElementById("ecardForm").addEventListener("submit", async function(e){
-    e.preventDefault();
-    if(!finalPhotoBlob){alert("Please select and crop a photo");return;}
-
-    // Process background removal
-    const processedBlob = await removeBackground(finalPhotoBlob);
-
-    const reader = new FileReader();
-    reader.onload = function(evt){
-        localStorage.setItem("ecardData",JSON.stringify({
-            name: nameInput.value,
-            urduName: urduInput.value,
-            designation: designationInput.value,
-            cardNumber: cardInput.value,
-            bloodGroup: bloodInput.value,
-            contact: contactInput.value,
-            photoData: evt.target.result
-        }));
-        window.location.href="generate.html";
-    };
-    reader.readAsDataURL(processedBlob);
-});
+window.addEventListener("load", () => document.body.classList.add("loaded"));
 </script>
 </body>
 </html>
