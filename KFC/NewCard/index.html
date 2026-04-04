@@ -434,21 +434,58 @@ body.dark-mode .access-denied-card p { color:var(--text-dark); }
 }
 
 /* ══════════════════════════════════════════
-   CROP MODAL
+   CROP MODAL  ← FIXED SECTION
 ══════════════════════════════════════════ */
 .crop-modal {
-  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);
-  z-index:5000; justify-content:center; align-items:center; flex-direction:column;
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.82);
+  backdrop-filter:blur(8px);
+  z-index:5000;
+  /* Use flex only when .show is applied — avoids 0-size layout during hidden state */
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
   gap:16px;
+  padding:16px;
 }
-.crop-modal.show { display:flex; }
+/* KEY FIX: use flex when shown, not before */
+.crop-modal.show {
+  display:flex;
+}
+
 .crop-container {
-  width:90%; max-width:500px; background:#fff; border-radius:20px; overflow:hidden; padding:12px;
-  box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  width:min(92vw, 720px);
+  /* Fixed height so Cropper has a defined space to render into */
+  height:min(72vh, 540px);
+  background:#1a1a1a;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  /* Flex centre the inner img while Cropper initialises */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
 }
-body.dark-mode .crop-container { background:#0e1a2d; }
-.crop-actions { display:flex; gap:12px; }
+
+/*
+  The image inside .crop-container must NOT be constrained by
+  max-height before Cropper initialises — Cropper sets its own
+  sizing once ready.  We let it fill the container naturally.
+*/
+.crop-container img {
+  display:block;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+
+.crop-actions { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
 
 /* ══════════════════════════════════════════
    WELCOME POPUP
@@ -482,7 +519,9 @@ body.loaded * { opacity:1; transform:translateY(0); }
 .info-banner   { transition-delay:0.10s; }
 .page-wrapper  { transition-delay:0.18s; }
 footer         { transition-delay:0.30s; }
-.crop-modal    { transition:none; opacity:1 !important; transform:none !important; }
+/* Modals must never be hidden by the load animation */
+.crop-modal    { transition:none !important; opacity:1 !important; transform:none !important; }
+.crop-modal *  { transition:none !important; opacity:1 !important; transform:none !important; }
 
 @media(max-width:600px) {
   .top-header  { padding:10px 12px; }
@@ -569,8 +608,8 @@ footer         { transition-delay:0.30s; }
 
 <!-- CROP MODAL -->
 <div id="cropModal" class="crop-modal" role="dialog" aria-modal="true" aria-label="Crop photo">
-  <div class="crop-container">
-    <img id="imageToCrop" style="max-width:100%;" alt="Photo to crop">
+  <div class="crop-container" id="cropContainer">
+    <img id="imageToCrop" alt="Photo to crop">
   </div>
   <div class="crop-actions">
     <button class="btn-secondary" id="cancelCrop" type="button">
@@ -1050,42 +1089,109 @@ document.getElementById("copyBtn").addEventListener("click", () => {
   });
 });
 
-/* ─── Photo cropping ─── */
-const photoInput    = document.getElementById("photo");
-const cropModal     = document.getElementById("cropModal");
-const imageToCrop   = document.getElementById("imageToCrop");
-const saveCropBtn   = document.getElementById("saveCrop");
-const cancelCropBtn = document.getElementById("cancelCrop");
-const photoPreview  = document.getElementById("photoPreview");
+/* ══════════════════════════════════════════
+   PHOTO CROPPING  ← FIXED SECTION
+══════════════════════════════════════════ */
+const photoInput       = document.getElementById("photo");
+const cropModal        = document.getElementById("cropModal");
+const imageToCrop      = document.getElementById("imageToCrop");
+const saveCropBtn      = document.getElementById("saveCrop");
+const cancelCropBtn    = document.getElementById("cancelCrop");
+const photoPreview     = document.getElementById("photoPreview");
 const photoPlaceholder = document.getElementById("photoPlaceholderIcon");
+
+/**
+ * Destroy any existing Cropper instance cleanly.
+ */
+function destroyCropper() {
+  if (cropper) {
+    try { cropper.destroy(); } catch (e) { /* ignore */ }
+    cropper = null;
+  }
+}
+
+/**
+ * Open the crop modal and initialise Cropper.js only after:
+ *   1. The modal is visible (display:flex applied)
+ *   2. The <img> src has fully loaded (onload fires)
+ *   3. One rAF tick so the browser has painted the layout
+ *
+ * This three-step sequence is the fix for the blank crop window bug.
+ */
+function openCropModal(dataUrl) {
+  destroyCropper();
+
+  // Reset the img element completely before setting new src
+  imageToCrop.removeAttribute("src");
+  imageToCrop.style.cssText = "";
+
+  // Step 1 — make the modal visible FIRST so the container has real dimensions
+  cropModal.classList.add("show");
+
+  // Step 2 — attach onload BEFORE setting src so it fires reliably
+  imageToCrop.onload = function () {
+    // Step 3 — wait one animation frame so the browser paints the image
+    requestAnimationFrame(() => {
+      destroyCropper(); // safety: destroy if somehow called twice
+      cropper = new Cropper(imageToCrop, {
+        viewMode     : 1,
+        responsive   : true,
+        background   : false,
+        autoCropArea : 0.85,
+        movable      : true,
+        zoomable     : true,
+        rotatable    : true,
+        scalable     : true,
+        cropBoxMovable   : true,
+        cropBoxResizable : true,
+        toggleDragModeOnDblclick: true,
+        // Give Cropper explicit container dimensions
+        minContainerWidth  : 200,
+        minContainerHeight : 200
+      });
+    });
+  };
+
+  // Step 4 — set src AFTER onload is attached and modal is shown
+  imageToCrop.src = dataUrl;
+}
 
 photoInput.addEventListener("change", function (e) {
   if (portalLocked) return;
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = evt => {
-    imageToCrop.src = evt.target.result;
-    cropModal.classList.add("show");
-    if (cropper) cropper.destroy();
-    cropper = new Cropper(imageToCrop, { aspectRatio: 1, viewMode: 1 });
-  };
+  reader.onload = evt => openCropModal(evt.target.result);
   reader.readAsDataURL(file);
 });
 
 cancelCropBtn.addEventListener("click", () => {
   cropModal.classList.remove("show");
   photoInput.value = "";
-  if (cropper) { cropper.destroy(); cropper = null; }
+  destroyCropper();
+  // Reset imageToCrop src to free memory
+  imageToCrop.src = "";
 });
 
 saveCropBtn.addEventListener("click", () => {
   if (portalLocked) return;
   if (!cropper) return;
-  const canvas = cropper.getCroppedCanvas({ width:500, height:500 });
+
+  const canvas = cropper.getCroppedCanvas({
+    imageSmoothingEnabled : true,
+    imageSmoothingQuality : "high"
+  });
+
+  if (!canvas) return;
+
   canvas.toBlob(blob => {
+    if (!blob) return;
+
     finalPhotoBlob = blob;
     cropModal.classList.remove("show");
+    destroyCropper();
+    imageToCrop.src = "";
 
     const url = URL.createObjectURL(blob);
     photoPreview.src = url;
@@ -1093,7 +1199,7 @@ saveCropBtn.addEventListener("click", () => {
     if (photoPlaceholder) photoPlaceholder.style.display = "none";
 
     document.getElementById("submitBtn").disabled = false;
-  });
+  }, "image/png");
 });
 
 /* ─── Remove.bg background removal ─── */
