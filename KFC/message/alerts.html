@@ -1,565 +1,690 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alerts - Khawrai Falahi Committee UAE</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Alerts — Khawrai Falahi Committee UAE</title>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://livenews.live/KFC/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<style>
-/* Urdu Font */
-@font-face{
-  font-family:'UrduFont';
-  src:url('../NewCard/static/fonts/urdu.ttf') format('truetype');
-  font-display:swap;
-}
+  <style>
+    @font-face {
+      font-family: "UrduFont";
+      src: url("https://livenews.live/KFC/static/fonts/urdu.ttf") format("truetype");
+      font-display: swap;
+    }
 
-/* Reset */
-*{margin:0;padding:0;box-sizing:border-box;}
-body{
-  font-family:'Calibri',sans-serif;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  background: linear-gradient(135deg,#e0eaff,#ffffff);
-  color:#1a1a1a;
-  padding:20px;
-  overflow-x:hidden;
-  direction:rtl;
-  text-align:right;
-}
+    .alerts-page-shell {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px 60px;
+      position: relative;
+      z-index: 1;
+    }
 
-/* Urdu style */
-[lang="ur"]{
-  font-family:'UrduFont',serif;
-  direction:rtl;
-}
+    .alerts-hero {
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      text-align: center;
+    }
 
-/* Hero */
-.hero{
-  position:relative;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  text-align:center;
-  min-height:100vh;
-  width:100%;
-  padding:1.5rem;
-}
-.hero-overlay{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:rgba(255,255,255,0.15);
-  backdrop-filter:blur(18px) saturate(180%);
-  z-index:1;
-  border-radius:50px;
-}
-.hero-content{
-  position:relative;
-  z-index:2;
-  max-width:700px;
-  width:100%;
-  padding:2rem 1.5rem;
-  border-radius:25px;
-  background:rgba(255,255,255,0.25);
-  box-shadow:0 12px 40px rgba(0,0,0,0.18);
-  border:1px solid rgba(255,255,255,0.4);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
+    .alerts-hero h2 {
+      margin-bottom: 0;
+    }
 
-/* Top-left icons */
-.top-icons{
-  position:absolute;
-  top:15px;
-  left:15px;
-  display:flex;
-  gap:10px;
-  z-index:5;
-}
-.top-icons a{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  color:#fff;
-  text-decoration:none;
-  box-shadow:0 8px 20px rgba(0,0,0,0.35);
-  transition:0.3s;
-  font-size:18px;
-}
-.top-icons a:hover{
-  transform:scale(1.1);
-}
+    .alerts-hero p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--soft-light);
+      max-width: 820px;
+    }
 
-/* Top-right user icon */
-.user-icon{
-  position:absolute;
-  top:15px;
-  right:15px;
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  cursor:pointer;
-  z-index:5;
-  font-size:18px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.35);
-  transition:0.3s;
-}
-.user-icon:hover{
-  transform:scale(1.1);
-}
+    body.dark-mode .alerts-hero p {
+      color: var(--soft-dark);
+    }
 
-/* User info panel */
-.user-panel{
-  position:absolute;
-  top:70px;
-  right:15px;
-  width:250px;
-  background:rgba(255,255,255,0.25);
-  backdrop-filter:blur(18px);
-  border-radius:20px;
-  border:1px solid rgba(255,255,255,0.4);
-  padding:15px;
-  box-shadow:0 12px 35px rgba(0,0,0,0.25);
-  display:none;
-  z-index:10;
-}
-.user-panel h3{
-  margin-bottom:10px;
-  font-size:16px;
-  text-align:center;
-}
-.user-panel p{
-  font-size:14px;
-  margin-bottom:6px;
-}
-.user-panel button{
-  width:100%;
-  padding:8px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-  margin-top:10px;
-}
+    .alerts-section {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
 
-/* Logo */
-.logo-title{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  margin-bottom:20px;
-}
-.logo-title img.logo{
-  width:100px;
-  margin-bottom:12px;
-  animation:logoFade 2.5s ease-in-out infinite;
-  filter:drop-shadow(0 6px 14px rgba(0,0,0,0.35));
-}
-@keyframes logoFade{
-  0%{opacity:0.8;transform:scale(1);}
-  50%{opacity:1;transform:scale(1.05);}
-  100%{opacity:0.8;transform:scale(1);}
-}
-.logo-title h1 span{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  flex-direction:row-reverse; 
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.logo-title h1 span i{
-  font-size:1em;
-}
+    .alerts-section h2 {
+      margin-bottom: 10px;
+    }
 
-/* ALERT CARD */
-.alert-card{
-  background:rgba(255,255,255,0.35);
-  border-radius:25px;
-  padding:15px 20px;
-  box-shadow:0 12px 35px rgba(0,0,0,0.25);
-  margin-bottom:20px;
-  text-align:center;
-  transition:0.3s;
-  cursor:pointer;
-  direction:rtl;
-  position:relative;
-  overflow:hidden;
-}
-.alert-card::before{
-  content:'';
-  position:absolute;
-  top:50%;
-  left:50%;
-  width:200px;
-  height:200px;
-  background:url('https://livenews.live/KFC/logo.png') center/contain no-repeat;
-  opacity:0.06;
-  transform:translate(-50%,-50%);
-}
-.alert-card .card-logo{
-  position:absolute;
-  top:10px;
-  right:30px;
-  width:80px;
-  height:80px;
-  filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));
-}
-.alert-card:hover{
-  transform:translateY(-4px);
-}
+    .alerts-section p {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--soft-light);
+      text-align: center;
+    }
 
-/* Date */
-.alert-date{
-  font-weight:bold;
-  font-size:12px;
-  margin-bottom:8px;
-  color:#0d3c91;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-}
+    body.dark-mode .alerts-section p {
+      color: var(--soft-dark);
+    }
 
-/* Titles */
-.alert-title{
-  font-size:13px;
-  font-weight:600;
-  margin-bottom:6px;
-}
-.alert-title[lang="ur"]{
-  font-size:18px;
-}
+    .alerts-list {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
 
-/* Body */
-.alert-body{
-  max-height:0;
-  overflow:hidden;
-  transition:max-height 0.5s ease;
-  font-size:14px;
-  color:#333;
-  white-space:pre-line;
-}
-.alert-body[lang="ur"]{
-  font-size:18px;
-}
-.alert-card.active .alert-body{
-  max-height:1000px;
-}
+    .alert-card {
+      position: relative;
+      overflow: hidden;
+      padding: 16px 18px 14px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      direction: inherit;
+      text-align: inherit;
+    }
 
-/* Share icon */
-.share-icon{
-  position:absolute;
-  top:15px;
-  left:15px;
-  font-size:1rem;
-  color:#0d3c91;
-  cursor:pointer;
-  transition:0.3s;
-  filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35));
-}
-.share-icon:hover{
-  color:#ff6ec4;
-}
+    .alert-card:hover {
+      transform: translateY(-3px);
+    }
 
-/* Floating shapes */
-.floating-shape{
-  position:absolute;
-  border-radius:50%;
-  opacity:0.25;
-  animation:floatShapes 8s ease-in-out infinite;
-}
-.shape1{width:120px;height:120px;background:#ff9a9e;top:10%;left:5%;}
-.shape2{width:180px;height:180px;background:#a1c4fd;bottom:15%;right:10%;}
-.shape3{width:90px;height:90px;background:#fccb90;top:50%;left:70%;}
+    .alert-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("https://livenews.live/KFC/logo.png") center/180px no-repeat;
+      opacity: 0.05;
+      pointer-events: none;
+    }
 
-@keyframes floatShapes{
-  0%,100%{transform:translateY(0);}
-  50%{transform:translateY(15px);}
-}
+    .alert-card-top {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
 
-/* LOGIN OVERLAY */
-.login-overlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
-}
-.login-box{
-  width:90%;
-  max-width:360px;
-  background:rgba(255,255,255,0.2);
-  backdrop-filter:blur(18px);
-  border-radius:25px;
-  border:1px solid rgba(255,255,255,0.3);
-  padding:25px;
-  text-align:center;
-}
-.login-box input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: none;
-  direction: ltr;         /* <-- ensures typing is left-to-right */
-  text-align: left;       /* <-- text inside input starts from left */
-}
-.login-box button{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  background:linear-gradient(90deg,#ff6ec4,#7873f5);
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-}
-.login-error{
-  color:red;
-  font-size:12px;
-  margin-bottom:8px;
-}
-</style>
+    .alert-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .alert-date {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--brand);
+    }
+
+    body.dark-mode .alert-date {
+      color: #9bc2ff;
+    }
+
+    .alert-title-en {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--brand);
+      word-break: break-word;
+    }
+
+    body.dark-mode .alert-title-en {
+      color: #9bc2ff;
+    }
+
+    .alert-title-ur {
+      font-size: 17px;
+      font-weight: bold;
+      color: #301934;
+      direction: rtl;
+      font-family: "UrduFont", serif;
+      word-break: break-word;
+    }
+
+    body.dark-mode .alert-title-ur {
+      color: #eef4ff;
+    }
+
+    .alert-share {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff6ec4, #7873f5);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      position: relative;
+      z-index: 3;
+    }
+
+    .alert-share:hover {
+      transform: scale(1.08);
+      opacity: 0.95;
+    }
+
+    .alert-body {
+      position: relative;
+      z-index: 2;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.45s ease;
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 1px dashed transparent;
+      font-size: 14px;
+      line-height: 1.9;
+      color: #333;
+      white-space: pre-line;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .alert-body[lang="ur"] {
+      font-size: 17px;
+      direction: rtl;
+      font-family: "UrduFont", serif;
+      text-align: right;
+    }
+
+    .alert-card.active .alert-body {
+      max-height: 1200px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top-color: rgba(120, 115, 245, 0.35);
+    }
+
+    body.dark-mode .alert-body {
+      color: #d9e6ff;
+    }
+
+    body.dark-mode .alert-card.active .alert-body {
+      border-top-color: rgba(167, 139, 250, 0.55);
+    }
+
+    .alert-footer-line {
+      position: relative;
+      z-index: 2;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      text-align: center;
+      font-size: 10px;
+      color: #888;
+    }
+
+    body.dark-mode .alert-footer-line {
+      border-top-color: rgba(255, 255, 255, 0.08);
+      color: #c9d5ea;
+    }
+
+    .alerts-empty {
+      padding: 22px 18px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--soft-light);
+    }
+
+    body.dark-mode .alerts-empty {
+      color: var(--soft-dark);
+    }
+
+    .alert-login-note {
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--soft-light);
+    }
+
+    body.dark-mode .alert-login-note {
+      color: var(--soft-dark);
+    }
+
+    @media (max-width: 600px) {
+      .alerts-page-shell {
+        padding: 0 12px 50px;
+      }
+
+      .alerts-hero,
+      .alerts-section {
+        padding: 16px;
+      }
+
+      .alert-title-en {
+        font-size: 14px;
+      }
+
+      .alert-title-ur {
+        font-size: 16px;
+      }
+
+      .alert-body {
+        font-size: 13px;
+        line-height: 1.85;
+      }
+
+      .alert-body[lang="ur"] {
+        font-size: 16px;
+      }
+
+      .alert-share {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<section class="hero">
-<div class="hero-overlay"></div>
-
-<div class="hero-content">
-
-<!-- Left Icons -->
-<div class="top-icons">
-  <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images"></i></a>
-  <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users"></i></a>
-  <a href="https://livenews.live/KFC/index.html"><i class="fa-solid fa-house"></i></a>
-</div>
-
-<!-- User Icon Right -->
-<div id="userIcon" class="user-icon"><i class="fa-solid fa-user"></i></div>
-<div id="userPanel" class="user-panel"></div>
-
-<!-- Logo & Title -->
-<div class="logo-title">
-<img src="https://livenews.live/KFC/logo.png" class="logo">
-<h1><span><i class="fa-solid fa-bell"></i> Alerts</span></h1>
-</div>
-
-<div id="alerts-container"></div>
-
-</div>
-
-<div class="floating-shape shape1"></div>
-<div class="floating-shape shape2"></div>
-<div class="floating-shape shape3"></div>
-</section>
-
-<!-- LOGIN OVERLAY -->
-<div id="loginOverlay" class="login-overlay">
-  <div class="login-box">
-    <h2>Login</h2>
-    <input type="text" id="loginUsername" placeholder="Username">
-    <input type="password" id="loginPassword" placeholder="Password">
-    <div id="loginError" class="login-error"></div>
-    <button id="loginBtn">Login</button>
+  <div class="floating-circles" aria-hidden="true">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
   </div>
-</div>
 
-<script>
-/* ================= USERS & SESSION ================= */
-let users = [];
-let currentUser = null;
+  <header class="top-header">
+    <div class="logo-area">
+      <a href="https://livenews.live/KFC" aria-label="Go to KFC home page">
+        <img src="https://livenews.live/KFC/logo.png" alt="KFC Logo" class="dancing-logo">
+      </a>
 
-async function loadUsers(){
-  try{
-    const res = await fetch("https://livenews.live/KFC/cards.json");
-    users = await res.json();
-  }catch(e){
-    console.error("Error loading users:", e);
-  }
-}
+      <div class="logo-text"></div>
+    </div>
 
-function generateUsername(name){
-  let parts = name.toLowerCase().split(" ");
-  if(parts.length < 2) return name.toLowerCase();
-  return (parts[0]+parts[parts.length-1]).replace(/\s/g,'');
-}
+    <div class="user-area" id="userArea">
+      <button class="notification-wrapper theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="themeToggleIcon" aria-hidden="true"></i>
+      </button>
 
-function generatePassword(card){
-  if(!card) return "";
-  let parts = card.split("-");
-  return parts[parts.length-1];
-}
+      <button class="notification-wrapper translate-toggle-btn" id="translateToggleBtn" type="button" aria-label="Translate page to Urdu" title="Translate page to Urdu">
+        <i class="fa-solid fa-language" id="translateToggleIcon" aria-hidden="true"></i>
+      </button>
 
-function checkSession(){
-  const saved = localStorage.getItem("kfcUser");
-  if(saved) currentUser = JSON.parse(saved);
-}
+      <div class="notification-wrapper" id="msgBtn">
+        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+        <span class="notification-badge" id="msgBadge" style="display:none;">!</span>
 
-/* ================= LOGIN FUNCTION ================= */
-function login(){
-  const uname = document.getElementById("loginUsername").value.trim().toLowerCase();
-  const pass = document.getElementById("loginPassword").value.trim();
-  const loginError = document.getElementById("loginError");
+        <div class="notification-dropdown glass" id="msgDropdown">
+          <div class="noti-header">Personal Messages</div>
+          <div id="msgList" class="noti-list">
+            <p class="noti-loading">Loading messages...</p>
+          </div>
+        </div>
+      </div>
 
-  if(!uname || !pass){
-    loginError.innerText = "Enter username & password";
-    return;
-  }
+      <div class="notification-wrapper" id="notificationBtn">
+        <i class="fa-solid fa-bell" aria-hidden="true"></i>
+        <span class="notification-badge" id="notiBadge" style="display:none;">!</span>
 
-  const user = users.find(u=>{
-    return generateUsername(u.name)===uname && generatePassword(u.CNo)===pass;
-  });
+        <div class="notification-dropdown glass" id="notiDropdown">
+          <div class="noti-header">Recent Alerts</div>
+          <div id="notiList" class="noti-list">
+            <p class="noti-loading">Loading alerts...</p>
+          </div>
+        </div>
+      </div>
 
-  if(!user){
-    loginError.innerText = "Invalid credentials";
-    return;
-  }
+      <div class="header-profile-img-container">
+        <img
+          id="headerProfileImg"
+          src="https://livenews.live/KFC/static/images/photos/default.png"
+          alt="User"
+          class="header-profile-img"
+          style="display:none;"
+        >
+        <i class="fa-solid fa-user-circle" id="headerUserIcon" aria-hidden="true"></i>
+      </div>
 
-  if(user.Status.toLowerCase()==="cancelled"){
-    loginError.innerText = "This card is cancelled";
-    return;
-  }
+      <span id="username">Welcome, Guest</span>
+      <i class="fa-solid fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
+    </div>
+  </header>
 
-  currentUser = user;
-  localStorage.setItem("kfcUser", JSON.stringify(user));
-  document.getElementById("loginOverlay").style.display="none";
+  <div id="infoBanner" class="info-banner">
+    <div class="marquee">
+      🕭 Dear members: The Khawrai Falahi Committee can now send personal messages to all members privately. Please log in to your Committee account to view your messages and recent alerts. Stay updated.
+    </div>
+  </div>
 
-  loadAlerts(); // load alerts after login
-  updateUserPanel();
-}
+  <div id="userDropdown" class="user-dropdown glass">
+    <div id="guestView">
+      <h3>Welcome Guest</h3>
+      <p>Please sign in to access your account</p>
+      <button id="openLoginBtn" type="button">
+        <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Sign In
+      </button>
+    </div>
 
-document.getElementById("loginBtn").addEventListener("click", login);
+    <div id="userView" style="display:none; flex-direction:column; align-items:center; gap:6px;">
+      <div class="dropdown-photo-area">
+        <img id="dropdownProfileImg" src="" alt="Profile Photo" class="dropdown-profile-img">
+      </div>
 
-/* ================= USER PANEL ================= */
-function updateUserPanel(){
-  const panel = document.getElementById("userPanel");
-  if(!currentUser){
-    panel.style.display="none";
-    return;
-  }
-  panel.innerHTML=`
-    <h3>${currentUser.name}</h3>
-    <p><strong>Card:</strong> ${currentUser.CNo}</p>
-    <p><strong>Blood:</strong> ${currentUser.BG}</p>
-    <p><strong>Mobile:</strong> ${currentUser.mobile}</p>
-    <p><strong>Status:</strong> ${currentUser.Status}</p>
-    <button id="signOutBtn">Sign Out</button>
-  `;
-  document.getElementById("signOutBtn").addEventListener("click",()=>{
-    localStorage.removeItem("kfcUser");
-    currentUser=null;
-    updateUserPanel();
-    loadAlerts();
-  });
-}
+      <h3 id="userFullName"></h3>
 
-/* Toggle user panel on icon click */
-document.getElementById("userIcon").addEventListener("click", ()=>{
-  const panel = document.getElementById("userPanel");
-  if(panel.style.display==="block") panel.style.display="none";
-  else panel.style.display="block";
-});
+      <div class="user-info">
+        <p id="userCard"></p>
+        <p id="userDesg"></p>
+        <p id="userBlood"></p>
+        <p id="userMobile"></p>
+      </div>
 
-/* ================= LOAD ALERTS ================= */
-async function loadAlerts(){
-  await document.fonts.ready;
-  const container = document.getElementById("alerts-container");
+      <div class="user-buttons" style="display:flex; flex-direction:column; gap:8px; width:100%; align-items:center;">
+        <button id="viewPhotoBtn" type="button">
+          <i class="fa-solid fa-image" aria-hidden="true"></i> View Photo
+        </button>
+        <a id="viewCardBtn" href="#" target="_blank" rel="noopener noreferrer">View Card</a>
+        <button id="logoutBtn" type="button">
+          <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
 
-  if(!currentUser){
-    container.innerHTML = `<p style="text-align:center;margin-top:50px;font-family:UrduFont;">براہ کرم لاگ ان کریں تاکہ تمام نوٹیفیکیشنز دیکھ سکیں۔</p>`;
-    document.getElementById("loginOverlay").style.display = "flex";
-    return;
-  }
+  <div id="photoOverlay" class="overlay" aria-hidden="true">
+    <div class="photo-viewer-box glass">
+      <div class="leaders-header">
+        <h2>Profile Photo</h2>
+        <i class="fa-solid fa-xmark" id="closePhotoOverlay" aria-hidden="true"></i>
+      </div>
+      <img
+        id="fullProfileImg"
+        src=""
+        alt="User Photo"
+        style="width:100%; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.2);"
+      >
+    </div>
+  </div>
 
-  const res = await fetch('https://livenews.live/KFC/message/alerts.json');
-  const data = await res.json();
+  <div id="loginOverlay" class="login-overlay" aria-hidden="true">
+    <div class="login-box glass">
+      <h2><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Secure Login</h2>
+      <input type="text" id="loginUsername" placeholder="Enter Username" autocomplete="username">
+      <input type="password" id="loginPassword" placeholder="Enter Password" autocomplete="current-password">
+      <button id="loginBtn" type="button">Login</button>
+      <p id="loginError" aria-live="polite"></p>
+    </div>
+  </div>
 
-  data.sort((a,b)=>{
-    const [dA,mA,yA] = a.date.split('-').map(Number);
-    const [dB,mB,yB] = b.date.split('-').map(Number);
-    return new Date(yB,mB-1,dB)-new Date(yA,mA-1,dA);
-  });
+  <div id="welcomePopup" class="welcome-popup" aria-live="polite">
+    <p id="welcomeText"></p>
+  </div>
 
-  container.innerHTML = '';
+  <div class="dashboard-container">
+    <aside class="sidebar glass">
+      <div class="sidebar-header">
+        <h2>Main Menu</h2>
+        <i class="fa-solid fa-bars" id="sidebarToggle" aria-hidden="true"></i>
+      </div>
 
-  data.forEach(item=>{
-    const card=document.createElement('div');
-    card.className='alert-card';
-    card.innerHTML=`
-      <img src="https://livenews.live/KFC/logo.png" class="card-logo">
-      <div class="alert-date"><i class="fa-solid fa-calendar-days"></i> ${item.date}</div>
-      <div class="alert-title">${item.title_en}</div>
-      <div class="alert-title" lang="ur">${item.title_ur}</div>
-      <div class="alert-body" lang="ur">${item.body_ur}</div>
-      <div class="share-icon"><i class="fa-solid fa-bell"></i></div>
-    `;
-    card.addEventListener('click',()=>card.classList.toggle('active'));
+      <nav class="sidebar-nav" aria-label="Primary navigation">
+        <a href="https://livenews.live/KFC/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i> Dashboard</a>
+        <a href="https://livenews.live/KFC/message/president.html"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> President's Message</a>
+        <a href="https://livenews.live/KFC/message/alerts.html"><i class="fa-solid fa-bell" aria-hidden="true"></i> Alerts</a>
+        <a href="https://livenews.live/KFC/database.html"><i class="fa-solid fa-database" aria-hidden="true"></i> Member Database</a>
+        <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users" aria-hidden="true"></i> Cabinet Members</a>
+        <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images" aria-hidden="true"></i> Gallery</a>
+      </nav>
+    </aside>
 
-    const shareBtn=card.querySelector('.share-icon');
-    shareBtn.addEventListener('click',async e=>{
-      e.stopPropagation();
+    <main class="main-content">
+      <section class="alerts-hero glass">
+        <h2>Alerts</h2>
+        <p>
+          Official announcements, committee notices, and important updates are published here for members.
+          Please sign in to view the latest alerts.
+        </p>
+      </section>
+
+      <section class="alerts-section glass">
+        <h2>Latest Alerts</h2>
+        <p>
+          Click any alert card to expand the full message. Use the share icon to download the alert as an image.
+        </p>
+      </section>
+
+      <div id="alertsContainer" class="alerts-list"></div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 Khawrai Falahi Committee United Arab Emirates | All Rights Reserved</p>
+  </footer>
+
+  <div id="google_translate_element" class="translate-host" aria-hidden="true"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://livenews.live/KFC/main.js"></script>
+
+  <script>
+    "use strict";
+
+    const ALERTS_URL = "https://livenews.live/KFC/message/alerts.json";
+    const SESSION_KEY = "kfcUser";
+
+    const alertsContainer = document.getElementById("alertsContainer");
+    const loginOverlayEl = document.getElementById("loginOverlay");
+    const loginBtnEl = document.getElementById("loginBtn");
+
+    function normalizeText(value) {
+      return (value || "").toString().trim();
+    }
+
+    function escapeHTML(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function parseAlertDate(dateValue) {
+      const raw = normalizeText(dateValue);
+      if (!raw) return new Date(0);
+
+      const parts = raw.split(/[-/]/).map(v => parseInt(v, 10));
+      if (parts.length >= 3 && parts.every(n => !Number.isNaN(n))) {
+        const [d, m, y] = parts;
+        return new Date(y, m - 1, d);
+      }
+
+      const parsed = new Date(raw);
+      return Number.isNaN(parsed.getTime()) ? new Date(0) : parsed;
+    }
+
+    function formatDateValue(value) {
+      return normalizeText(value) || "No date";
+    }
+
+    function getSessionUser() {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function isLoggedIn() {
+      return !!getSessionUser();
+    }
+
+    function buildLoginPrompt() {
+      if (!alertsContainer) return;
+      alertsContainer.innerHTML = `
+        <div class="glass alerts-empty">
+          <div class="alert-login-note">
+            Please sign in to view the latest alerts and announcements.
+          </div>
+        </div>
+      `;
+    }
+
+    async function downloadAlertAsImage(cardEl, fileName) {
+      if (typeof html2canvas === "undefined") return;
+
       await document.fonts.ready;
-      html2canvas(card,{scale:4,useCORS:true,backgroundColor:null}).then(canvas=>{
-        const finalCanvas=document.createElement('canvas');
-        const ctx=finalCanvas.getContext('2d');
-        const padding=40;
-        finalCanvas.width=canvas.width+padding*2;
-        finalCanvas.height=canvas.height+padding*2;
-        ctx.fillStyle="#ffffff";
-        ctx.fillRect(0,0,finalCanvas.width,finalCanvas.height);
-        ctx.shadowColor="rgba(0,0,0,0.25)";
-        ctx.shadowBlur=30;
-        ctx.shadowOffsetY=10;
-        ctx.drawImage(canvas,padding,padding);
-        finalCanvas.toBlob(blob=>{
-          const url=URL.createObjectURL(blob);
-          const link=document.createElement('a');
-          link.href=url;
-          link.download=`Alert_${item.date}.png`;
-          link.click();
-          URL.revokeObjectURL(url);
-        });
+      await new Promise(resolve => setTimeout(resolve, 120));
+
+      const canvas = await html2canvas(cardEl, {
+        scale: 4,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scrollX: 0,
+        scrollY: 0
       });
-    });
 
-    container.appendChild(card);
-  });
-}
+      const finalCanvas = document.createElement("canvas");
+      const ctx = finalCanvas.getContext("2d");
+      const padding = 40;
 
-/* ================= INIT ================= */
-(async function(){
-  await loadUsers();
-  checkSession();
-  updateUserPanel();
-  loadAlerts();
-})();
-</script>
+      finalCanvas.width = canvas.width + padding * 2;
+      finalCanvas.height = canvas.height + padding * 2;
 
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetY = 10;
+      ctx.drawImage(canvas, padding, padding);
+
+      finalCanvas.toBlob(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, "image/png");
+    }
+
+    function renderAlertCard(item) {
+      const card = document.createElement("div");
+      card.className = "alert-card glass";
+
+      const titleEn = normalizeText(item.title_en || item.title || "Alert");
+      const titleUr = normalizeText(item.title_ur || item.title || "اعلان");
+      const bodyEn = normalizeText(item.body_en || item.body || "");
+      const bodyUr = normalizeText(item.body_ur || item.body || "");
+
+      card.innerHTML = `
+        <div class="alert-card-top">
+          <div class="alert-meta">
+            <div class="alert-date"><i class="fa-solid fa-calendar-days"></i> ${escapeHTML(formatDateValue(item.date))}</div>
+            <div class="alert-title-en">${escapeHTML(titleEn)}</div>
+            <div class="alert-title-ur" lang="ur">${escapeHTML(titleUr)}</div>
+          </div>
+          <button class="alert-share" type="button" title="Download alert as image" aria-label="Download alert as image">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+        </div>
+
+        <div class="alert-body" lang="ur">${escapeHTML(bodyUr || bodyEn)}</div>
+
+        <div class="alert-footer-line">Khawrai Falahi Committee UAE</div>
+      `;
+
+      const shareBtn = card.querySelector(".alert-share");
+
+      card.addEventListener("click", () => {
+        card.classList.toggle("active");
+      });
+
+      shareBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const cleanDate = String(item.date || "alert").replace(/[^\w\-]+/g, "_");
+        await downloadAlertAsImage(card, `Alert_${cleanDate}.png`);
+      });
+
+      return card;
+    }
+
+    async function loadAlerts() {
+      if (!alertsContainer) return;
+
+      if (!isLoggedIn()) {
+        buildLoginPrompt();
+        if (loginOverlayEl) loginOverlayEl.classList.add("show");
+        return;
+      }
+
+      alertsContainer.innerHTML = `
+        <div class="glass alerts-empty">Loading alerts...</div>
+      `;
+
+      try {
+        const response = await fetch(ALERTS_URL, { cache: "no-store" });
+        const data = await response.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          alertsContainer.innerHTML = `
+            <div class="glass alerts-empty">No alerts found.</div>
+          `;
+          return;
+        }
+
+        const sorted = [...data].sort((a, b) => parseAlertDate(b.date) - parseAlertDate(a.date));
+        alertsContainer.innerHTML = "";
+
+        sorted.forEach(item => {
+          alertsContainer.appendChild(renderAlertCard(item));
+        });
+      } catch (error) {
+        console.error("Failed to load alerts:", error);
+        alertsContainer.innerHTML = `
+          <div class="glass alerts-empty">Error loading alerts.</div>
+        `;
+      }
+    }
+
+    function initAlertsPage() {
+      loadAlerts();
+
+      if (loginBtnEl) {
+        loginBtnEl.addEventListener("click", () => {
+          setTimeout(loadAlerts, 150);
+        });
+      }
+
+      document.addEventListener("keydown", e => {
+        if (e.key === "Enter" && loginOverlayEl && loginOverlayEl.classList.contains("show")) {
+          setTimeout(loadAlerts, 150);
+        }
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initAlertsPage);
+    } else {
+      initAlertsPage();
+    }
+  </script>
 </body>
 </html>
