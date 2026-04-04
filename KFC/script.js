@@ -1,422 +1,777 @@
-document.addEventListener("DOMContentLoaded", function () {
+/* ═══════════════════════════════════════════════════════════════════
+   Khawrai Falahi Committee UAE — Database Page Script
+   Synced with main page session • Inline card overlay • No floating
+   menu icon • Correct print layout • Matching header/theme
+═══════════════════════════════════════════════════════════════════ */
 
-    // ------------------- PRINT FOOTER -------------------
-    function createPrintFooter() {
-        const existing = document.querySelector(".print-footer");
-        if (existing) existing.remove();
+"use strict";
 
-        const footer = document.createElement("div");
-        footer.className = "print-footer";
-        footer.innerHTML = `
-            <a href="#"><i class="fas fa-users"></i>  <span>CABINET MEMBERS</span></a>
-            <a href="#"><i class="fas fa-user"></i> Arbab M. Rizwan <span>President</span></a>
-            <a href="#"><i class="fas fa-user"></i> Salar Khan <span>Vice President</span></a>
-            <a href="#"><i class="fas fa-user"></i> Ahmad A. Khattak <span>Acting President</span></a>
-            <a href="#"><i class="fas fa-user"></i> Naveed A. Liaqat <span>Finance Manager</span></a>
-            <a href="#"><i class="fas fa-user"></i> Nadeem Shahzad Fida <span>Media Manager</span></a>
-            <a href="#"><i class="fas fa-user"></i> Sabir Ali <span>Joint Finance Secretary</span></a>
-            <a href="#"><i class="fas fa-user"></i> Amjad Ali Khattak <span>General Secretary</span></a>
-        `;
-        document.body.appendChild(footer);
+/* ─── constants ─────────────────────────────────────────────────── */
+const API_BASE   = "https://livenews.live/KFC";
+const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
+const DEFAULT_PHOTO = `${PHOTOS_BASE}default.png`;
+const CARD_DATA_URL = `${API_BASE}/card2.json`;
+const THEME_KEY   = "kfcTheme";
+const SESSION_KEY = "kfcUser";          // same key as main page
+
+const ALLOWED_FULL_ACCESS = [
+  "746-210-001","746-210-011","746-210-040",
+  "746-210-006","746-210-007","746-210-008","746-210-021"
+];
+
+/* ─── state ──────────────────────────────────────────────────────── */
+let allData      = [];
+let currentUser  = null;
+let currentSort  = { column:null, asc:true };
+
+/* ─── DOM refs ───────────────────────────────────────────────────── */
+let userArea, usernameSpan, userDropdown,
+    guestView, userView, openLoginBtn,
+    loginOverlay, loginBtn, loginUsername, loginPassword, loginError,
+    logoutBtn, userFullName, userCard, userDesg, userBlood, userMobile, userAccess,
+    welcomePopup, welcomeText,
+    headerProfileImg, headerUserIcon, dropdownProfileImg,
+    viewPhotoBtn, photoOverlay, fullProfileImg, closePhotoOverlay,
+    viewCardBtn,
+    themeToggleBtn, themeToggleIcon,
+    searchField, searchInput, searchButton, printButton,
+    generateButton, englishConstitution, urduConstitution,
+    resultContainer,
+    ecardOverlay, ecardOverlayBox, ecardCloseBtn, ecardSpinner, ecardInner;
+
+function cacheDOM() {
+  userArea         = document.getElementById("userArea");
+  usernameSpan     = document.getElementById("username");
+  userDropdown     = document.getElementById("userDropdown");
+  guestView        = document.getElementById("guestView");
+  userView         = document.getElementById("userView");
+  openLoginBtn     = document.getElementById("openLoginBtn");
+  loginOverlay     = document.getElementById("loginOverlay");
+  loginBtn         = document.getElementById("loginBtn");
+  loginUsername    = document.getElementById("loginUsername");
+  loginPassword    = document.getElementById("loginPassword");
+  loginError       = document.getElementById("loginError");
+  logoutBtn        = document.getElementById("logoutBtn");
+  userFullName     = document.getElementById("userFullName");
+  userCard         = document.getElementById("userCard");
+  userDesg         = document.getElementById("userDesg");
+  userBlood        = document.getElementById("userBlood");
+  userMobile       = document.getElementById("userMobile");
+  userAccess       = document.getElementById("userAccess");
+  welcomePopup     = document.getElementById("welcomePopup");
+  welcomeText      = document.getElementById("welcomeText");
+  headerProfileImg = document.getElementById("headerProfileImg");
+  headerUserIcon   = document.getElementById("headerUserIcon");
+  dropdownProfileImg= document.getElementById("dropdownProfileImg");
+  viewPhotoBtn     = document.getElementById("viewPhotoBtn");
+  photoOverlay     = document.getElementById("photoOverlay");
+  fullProfileImg   = document.getElementById("fullProfileImg");
+  closePhotoOverlay= document.getElementById("closePhotoOverlay");
+  viewCardBtn      = document.getElementById("viewCardBtn");
+  themeToggleBtn   = document.getElementById("themeToggleBtn");
+  themeToggleIcon  = document.getElementById("themeToggleIcon");
+  searchField      = document.getElementById("searchField");
+  searchInput      = document.getElementById("searchInput");
+  searchButton     = document.getElementById("searchButton");
+  printButton      = document.getElementById("printButton");
+  generateButton   = document.getElementById("generateButton");
+  englishConstitution = document.getElementById("englishConstitution");
+  urduConstitution    = document.getElementById("urduConstitution");
+  resultContainer  = document.getElementById("resultContainer");
+  ecardOverlay     = document.getElementById("ecardOverlay");
+  ecardOverlayBox  = document.getElementById("ecardOverlayBox");
+  ecardCloseBtn    = document.getElementById("ecardCloseBtn");
+  ecardSpinner     = document.getElementById("ecardSpinner");
+  ecardInner       = document.getElementById("ecardInner");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════════════════════════════ */
+function applyTheme(mode) {
+  const dark = mode === "dark";
+  document.body.classList.toggle("dark-mode", dark);
+  localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+  if (themeToggleIcon)
+    themeToggleIcon.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+}
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "dark" || saved === "light") { applyTheme(saved); return; }
+  const pref = window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)").matches;
+  applyTheme(pref ? "dark" : "light");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════════════ */
+function norm(v)    { return (v||"").toString().trim(); }
+function esc(str)   {
+  return String(str||"")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function genUsername(name) {
+  const parts = norm(name).toLowerCase().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return norm(name).toLowerCase();
+  return parts[0] + parts[parts.length-1];
+}
+function genPassword(cardNo) {
+  if (!cardNo) return "";
+  const parts = String(cardNo).split("-");
+  return parts[parts.length-1] || "";
+}
+function isCancelled(status) {
+  const s = norm(status).toLowerCase();
+  return s === "cancel" || s === "cancelled";
+}
+function isFullAccess(cardNo) {
+  return ALLOWED_FULL_ACCESS.includes(norm(cardNo));
+}
+
+/* Profile image with fallback */
+function getImageSources(cardNo) {
+  const c = encodeURIComponent(String(cardNo||""));
+  return [`${PHOTOS_BASE}${c}.png`, `${PHOTOS_BASE}${c}.jpg`, DEFAULT_PHOTO];
+}
+function setImgWithFallback(imgEl, sources, fallbackIconEl) {
+  if (!imgEl) return;
+  let idx = 0;
+  const tryNext = () => {
+    if (idx >= sources.length) {
+      imgEl.style.display = "none";
+      if (fallbackIconEl) fallbackIconEl.style.display = "block";
+      return;
     }
+    imgEl.src = sources[idx++];
+  };
+  imgEl.onerror = tryNext;
+  imgEl.onload  = () => {
+    imgEl.style.display = "block";
+    if (fallbackIconEl) fallbackIconEl.style.display = "none";
+  };
+  tryNext();
+}
+function applyProfileImages(cardNo) {
+  const srcs = getImageSources(cardNo);
+  setImgWithFallback(headerProfileImg,   srcs, headerUserIcon);
+  setImgWithFallback(dropdownProfileImg, srcs, null);
+  setImgWithFallback(fullProfileImg,     srcs, null);
+}
 
-    window.onbeforeprint = createPrintFooter;
-    window.onafterprint = () => {
-        const footer = document.querySelector(".print-footer");
-        if (footer) footer.remove();
-    };
+/* ═══════════════════════════════════════════════════════════════════
+   SESSION  (shared with main page via localStorage key "kfcUser")
+═══════════════════════════════════════════════════════════════════ */
+function saveSession(user)  { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); }
+function clearSession()     { localStorage.removeItem(SESSION_KEY); }
 
-    // ------------------- VARIABLES -------------------
-    let data = [];
-    let currentSort = { column: null, asc: true };
+function showGuestUI() {
+  if (headerProfileImg) headerProfileImg.style.display = "none";
+  if (headerUserIcon)   headerUserIcon.style.display   = "block";
+  if (guestView)        guestView.style.display        = "block";
+  if (userView)         userView.style.display         = "none";
+  if (usernameSpan)     usernameSpan.innerText         = "Welcome, Guest";
+  updateButtonAccess();
+}
+function showLoggedInUI() {
+  if (guestView) guestView.style.display = "none";
+  if (userView)  userView.style.display  = "flex";
+}
 
-    let loggedInUsername = "";
-    let loggedInCardNo = "";
-    let loggedInFullName = "";
-    let loggedInStatus = "";
-    let isLoggedIn = false;
+function renderUser(user) {
+  if (!user) return;
+  const firstName = norm(user.name).split(" ")[0] || "User";
+  if (usernameSpan)   usernameSpan.innerText   = `Welcome, ${firstName}`;
+  if (userFullName)   userFullName.innerText   = `Welcome, ${user.name}`;
+  if (userCard)       userCard.innerText       = `Card Number: ${user.CNo}`;
+  if (userDesg)       userDesg.innerText       = `Designation: ${user.Desg}`;
+  if (userBlood)      userBlood.innerText      = `Blood Group: ${user.BG||"Not available"}`;
+  if (userMobile)     userMobile.innerText     = `Registered Mobile: ${user.mobile||"Not available"}`;
+  if (userAccess)     userAccess.innerText     = isFullAccess(user.CNo) ? "✦ Full Access" : "◈ Limited Access";
+  applyProfileImages(user.CNo);
+  if (viewCardBtn)    viewCardBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`;
+  showLoggedInUI();
+  updateButtonAccess();
+}
 
-    const allowedFullAccess = [
-        "746-210-001",
-        "746-210-011",
-        "746-210-040",
-        "746-210-006",
-        "746-210-007",
-        "746-210-008",
-        "746-210-021"
-    ];
-
-    const loginOverlay = document.getElementById("loginOverlay");
-    const loginButton = document.getElementById("loginButton");
-    const loginUser = document.getElementById("loginUser");
-    const loginPass = document.getElementById("loginPass");
-    const loginError = document.getElementById("loginError");
-
-    const searchInput = document.getElementById("searchInput");
-    const searchField = document.getElementById("searchField");
-    const searchButton = document.getElementById("searchButton");
-    const resultContainer = document.getElementById("resultContainer");
-    const printButton = document.getElementById("printButton");
-
-    const generateButton = document.getElementById("generateButton");
-    const englishConstitution = document.getElementById("englishConstitution");
-    const urduConstitution = document.getElementById("urduConstitution");
-
-const toggle = document.getElementById('menuToggle');
-const menu = document.getElementById('menuList');
-
-toggle.addEventListener('click', () => {
-  menu.classList.toggle('show');
-});
-document.addEventListener('click', function (e) {
-  if (!menu.contains(e.target) && !toggle.contains(e.target)) {
-    menu.classList.remove('show');
-  }
-});
-
-    printButton.disabled = true;
-    searchButton.disabled = true;
-
-    // ------------------- BUTTON EVENTS -------------------
-    printButton.addEventListener("click", () => window.print());
-    generateButton.addEventListener("click", () => window.location.href = "NewCard/login.html");
-    englishConstitution.addEventListener("click", () => window.open("English.pdf","_blank"));
-    urduConstitution.addEventListener("click", () => window.open("Urdu.pdf","_blank"));
-
-    // ------------------- LOAD DATA -------------------
-    function loadData(){
-        const token = Math.random().toString(36).substring(2);
-        fetch(`https://livenews.live/KFC/cards.json?t=${token}`)
-            .then(response => response.json())
-            .then(json => data = json)
-            .catch(err => {
-                console.error("Error loading JSON:", err);
-                resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
-            });
-    }
-    loadData();
-
-    // ------------------- CHECK SAVED LOGIN -------------------
-    const savedLogin = localStorage.getItem("kfcLogin");
-    if(savedLogin){
-        const session = JSON.parse(savedLogin);
-        loggedInUsername = session.username;
-        loggedInCardNo = session.cardNo;
-        loggedInFullName = session.fullName;
-        loggedInStatus = session.status;
-        isLoggedIn = true;
-
-        loginOverlay.style.display = "none";
-        showWelcomeBox(loggedInFullName);
-        showLoggedInUser(loggedInFullName);
-    }
-if (isLoggedIn) {
-    if (!allowedFullAccess.includes(loggedInCardNo)) {
-        generateButton.disabled = true;          // disable the button
-        generateButton.title = "Full Access members only";  // optional tooltip
-        generateButton.style.cursor = "not-allowed";
+function checkSession() {
+  const raw = localStorage.getItem(SESSION_KEY);
+  if (!raw) { currentUser = null; showGuestUI(); return; }
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && !isCancelled(parsed.Status)) {
+      currentUser = parsed;
+      renderUser(parsed);
     } else {
-        generateButton.disabled = false;
+      clearSession(); currentUser = null; showGuestUI();
     }
-} else {
-    generateButton.disabled = true;  // default for not logged-in users
-}
-    // ------------------- LOGIN SYSTEM -------------------
-    loginButton.addEventListener("click", function(){
-        let user = loginUser.value.trim().toLowerCase();
-        let pass = loginPass.value.trim();
-
-        if(!user || !pass){
-            loginError.innerText = "Enter username and password";
-            return;
-        }
-
-        let valid = false;
-        let cancelled = false;
-        let cardNoOfUser = "";
-        let fullNameOfUser = "";
-        let statusOfUser = "";
-
-        data.forEach(card=>{
-            let names = card.name.trim().toLowerCase().split(" ");
-            let username = names[0] + names[names.length-1];
-            let cnoParts = card.CNo.split("-");
-            let password = cnoParts[cnoParts.length-1];
-
-            if(user === username && pass === password){
-                if(card.Status && card.Status.toLowerCase() === "active"){
-                    valid = true;
-                    cardNoOfUser = card.CNo;
-                    fullNameOfUser = card.name;
-                    statusOfUser = card.Status;
-                } else {
-                    cancelled = true;
-                }
-            }
-        });
-
-        if(valid){
-            loggedInUsername = user;
-            loggedInCardNo = cardNoOfUser;
-            loggedInFullName = fullNameOfUser;
-            loggedInStatus = statusOfUser;
-            isLoggedIn = true;
-
-            localStorage.setItem("kfcLogin", JSON.stringify({
-                username: loggedInUsername,
-                cardNo: loggedInCardNo,
-                fullName: loggedInFullName,
-                status: loggedInStatus
-            }));
-
-            loginOverlay.classList.add("fadeOut");
-            setTimeout(() => {
-                loginOverlay.style.display = "none";
-                showWelcomeBox(loggedInFullName);
-                showLoggedInUser(loggedInFullName);
-            }, 800);
-        }
-        else if(cancelled){
-            loginError.innerText = "This user cannot login as the card is already cancelled.";
-        }
-        else{
-            loginError.innerText = "Invalid login details";
-        }
-    });
-
-    // ------------------- WELCOME MESSAGE -------------------
-    function showWelcomeBox(fullName){
-        const box = document.createElement("div");
-        box.className="welcome-box";
-        box.innerText = `Welcome, ${fullName}`;
-        document.body.appendChild(box);
-        setTimeout(()=>{
-            box.remove();
-        },3500);
-    }
-
-    // ------------------- LOGGED IN USER -------------------
-function showLoggedInUser(fullName){
-    let existing = document.querySelector(".logged-in-user");
-    if(existing) existing.remove();
-
-    const uaetitle = document.querySelector(".uae-text");
-
-    // Try .png first, then .jpg, then default photo.png
-    function getProfileImagePath(cardNo) {
-        const basePath = `static/images/photos/${cardNo}`;
-        const defaultPath = "static/images/photos/photo.png";
-
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(`${basePath}.png`);
-            img.onerror = () => {
-                const imgJpg = new Image();
-                imgJpg.onload = () => resolve(`${basePath}.jpg`);
-                imgJpg.onerror = () => resolve(defaultPath);
-                imgJpg.src = `${basePath}.jpg`;
-            };
-            img.src = `${basePath}.png`;
-        });
-    }
-
-    getProfileImagePath(loggedInCardNo).then(profileImgPath => {
-        const userDiv = document.createElement("div");
-        userDiv.className = "logged-in-user";
-
-        userDiv.innerHTML = `
-            <img src="${profileImgPath}" class="user-avatar">
-            <span>Welcome, ${fullName}</span>
-        `;
-
-        uaetitle.insertAdjacentElement("afterend", userDiv);
-
-        const profileBox = document.createElement("div");
-        profileBox.className = "user-dropdown";
-
-        const accessType = allowedFullAccess.includes(loggedInCardNo) ? "Full Access" : "Limited Access";
-
-        profileBox.innerHTML = `
-            <div class="profile-banner">
-                <img src="${profileImgPath}" class="profile-large">
-                <div style="margin-top:6px;font-weight:bold">${loggedInFullName}</div>
-            </div>
-
-            <div style="text-align:center;margin:5px 0;font-weight:bold">${accessType}</div>
-            <div>Card No: ${loggedInCardNo}</div>
-            <div>Status: ${loggedInStatus || "Active"}</div>
-
-            <div class="photo-action">
-                <button id="viewPhotoBtn" class="view-photo-btn">
-                    View Photo
-                </button>
-            </div>
-
-            <hr>
-            <div id="signOutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
-        `;
-
-        userDiv.appendChild(profileBox);
-
-        userDiv.addEventListener("click",function(e){
-            e.stopPropagation();
-            profileBox.style.display = profileBox.style.display === "block" ? "none" : "block";
-        });
-
-        // PHOTO MODAL
-        let existingModal = document.getElementById("photoModal");
-        if(!existingModal){
-            const modal = document.createElement("div");
-            modal.id = "photoModal";
-            modal.innerHTML = `
-                <div class="photo-modal-content">
-                    <span class="close-photo">&times;</span>
-                    <img id="modalImage" src="">
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        profileBox.querySelector("#viewPhotoBtn").addEventListener("click", function(e){
-            e.stopPropagation();
-            const modal = document.getElementById("photoModal");
-            const modalImg = document.getElementById("modalImage");
-            modalImg.src = profileImgPath;
-            modal.style.display = "flex";
-        });
-
-        document.addEventListener("click", function(e){
-            const modal = document.getElementById("photoModal");
-            if(e.target.classList.contains("close-photo") || e.target.id === "photoModal"){
-                modal.style.display = "none";
-            }
-        });
-
-        profileBox.querySelector("#signOutBtn").addEventListener("click",function(){
-            localStorage.removeItem("kfcLogin");
-            location.reload();
-        });
-
-        document.addEventListener("click",function(){
-            profileBox.style.display="none";
-        });
-    });
+  } catch(e) {
+    clearSession(); currentUser = null; showGuestUI();
+  }
 }
 
-    // ------------------- SEARCH SYSTEM -------------------
-    searchInput.addEventListener("input", handleSearch);
-    searchField.addEventListener("change", handleSearch);
-    searchButton.addEventListener("click", handleSearch);
+/* ─── button access ─────────────────────────────────────────────── */
+function updateButtonAccess() {
+  const loggedIn  = !!currentUser;
+  const fullAcc   = loggedIn && isFullAccess(currentUser.CNo);
 
-    function handleSearch(){
-        if(!isLoggedIn){
-            resultContainer.innerHTML = "<p class='no-data'>⚠ Please login before searching.</p>";
-            searchButton.disabled = true;
-            printButton.disabled = true;
-            return;
+  if (searchButton)       searchButton.disabled       = !loggedIn || norm(searchInput?.value) === "";
+  if (printButton)        printButton.disabled        = true; // enabled when results rendered
+  if (generateButton) {
+    generateButton.disabled     = !fullAcc;
+    generateButton.title        = fullAcc ? "" : "Full Access members only";
+    generateButton.style.cursor = fullAcc ? "pointer" : "not-allowed";
+  }
+}
+
+/* ─── welcome popup ─────────────────────────────────────────────── */
+function showWelcome(name) {
+  if (!welcomePopup || !welcomeText) return;
+  welcomeText.innerText = `Welcome, ${name} 👋`;
+  welcomePopup.classList.add("show");
+  setTimeout(() => welcomePopup.classList.remove("show"), 2500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════════════════════════ */
+function doLogin() {
+  if (loginError) loginError.innerText = "";
+  const uname = norm(loginUsername?.value).toLowerCase();
+  const pass  = norm(loginPassword?.value);
+
+  if (!uname || !pass) {
+    if (loginError) loginError.innerText = "Enter username and password";
+    return;
+  }
+
+  const user = allData.find(u => {
+    return genUsername(u.name) === uname && genPassword(u.CNo) === pass;
+  });
+
+  if (!user) {
+    if (loginError) loginError.innerText = "Invalid credentials";
+    return;
+  }
+  if (isCancelled(user.Status)) {
+    if (loginError) loginError.innerText = "This account cannot log in — card is cancelled";
+    return;
+  }
+
+  currentUser = user;
+  saveSession(user);
+  renderUser(user);
+  showWelcome(user.name);
+  if (loginOverlay) loginOverlay.classList.remove("show");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOAD DATA
+═══════════════════════════════════════════════════════════════════ */
+async function loadData() {
+  try {
+    const res  = await fetch(`${CARD_DATA_URL}?t=${Math.random().toString(36).slice(2)}`);
+    allData    = await res.json();
+  } catch(e) {
+    console.error("Failed to load card data:", e);
+    if (resultContainer)
+      resultContainer.innerHTML = "<p class='no-data'>Failed to load data.</p>";
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEARCH & TABLE
+═══════════════════════════════════════════════════════════════════ */
+function handleSearch() {
+  if (!currentUser) {
+    resultContainer.innerHTML = "<p class='no-data'>⚠ Please sign in before searching.</p>";
+    if (searchButton) searchButton.disabled = true;
+    if (printButton)  printButton.disabled  = true;
+    return;
+  }
+  const term = norm(searchInput?.value);
+  if (searchButton) searchButton.disabled = term === "";
+  if (term !== "") renderTable();
+  else {
+    resultContainer.innerHTML = "";
+    if (printButton) printButton.disabled = true;
+  }
+}
+
+function renderTable() {
+  if (!currentUser) {
+    resultContainer.innerHTML = "<p class='no-data'>⚠ Login required to search.</p>";
+    if (printButton) printButton.disabled = true;
+    return;
+  }
+
+  const term  = norm(searchInput?.value).toLowerCase();
+  const field = searchField?.value || "name";
+
+  if (!allData.length || term === "") {
+    resultContainer.innerHTML = "";
+    if (printButton) printButton.disabled = true;
+    return;
+  }
+
+  let results = allData.filter(item =>
+    item[field] && item[field].toString().toLowerCase().includes(term)
+  );
+
+  if (!results.length) {
+    resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
+    if (printButton) printButton.disabled = true;
+    return;
+  }
+
+  if (currentSort.column) {
+    results.sort((a,b) => {
+      const va = (a[currentSort.column]||"").toString().toLowerCase();
+      const vb = (b[currentSort.column]||"").toString().toLowerCase();
+      if (va < vb) return currentSort.asc ? -1 : 1;
+      if (va > vb) return currentSort.asc ?  1 : -1;
+      return 0;
+    });
+  }
+
+  const fullAcc = isFullAccess(currentUser.CNo);
+  const loggedUsername = genUsername(currentUser.name);
+
+  /* print header (hidden on screen, visible on print) */
+  let html = `
+    <div class="print-header-bar no-screen">
+      <img src="logo.png" alt="KFC">
+      <div>
+        <div class="ph-title">Khawrai Falahi Committee UAE</div>
+        <div class="ph-subtitle">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>S.No.</th>`;
+
+  const keys = Object.keys(results[0]);
+  keys.forEach(k => {
+    html += `<th onclick="window.sortTable('${k}')">${k==="Room"?"ROOM/ADDRESS":k}</th>`;
+  });
+  html += `<th class="no-print">VIEW CARD</th></tr></thead><tbody>`;
+
+  results.forEach((item, idx) => {
+    const rowUsername = genUsername(item.name);
+    const isOwnRow   = loggedUsername === rowUsername;
+
+    html += "<tr>";
+    html += `<td data-label="S.No.">${idx+1}</td>`;
+
+    keys.forEach(k => {
+      let val = esc(item[k]);
+
+      /* privacy masking for limited-access users */
+      if (!fullAcc && !isOwnRow) {
+        if (k === "name") {
+          const parts = norm(item.name).split(/\s+/);
+          val = parts.length > 2
+            ? esc("*** " + parts.slice(1,-1).join(" ") + " ***")
+            : "*** ***";
         }
-
-        const term = searchInput.value.trim();
-        searchButton.disabled = term === "";
-        if(term !== ""){
-            renderTable();
-        } else {
-            resultContainer.innerHTML = "";
-            printButton.disabled = true;
+        if (k === "CNo") {
+          const parts = norm(item.CNo).split("-");
+          val = esc(parts.slice(0,-1).join("-") + "-***");
         }
-    }
+      }
 
-    // ------------------- TABLE RENDER -------------------
-    function renderTable() {
-        if(!isLoggedIn){
-            resultContainer.innerHTML = "<p class='no-data'>⚠ Login required to search.</p>";
-            printButton.disabled = true;
-            return;
-        }
+      let cls = "";
+      if (k.toLowerCase() === "status") {
+        const s = norm(item[k]).toLowerCase();
+        if (s === "active") cls = "class='active'";
+        if (s === "cancel" || s === "cancelled") cls = "class='cancel'";
+      }
+      html += `<td data-label="${esc(k)}" ${cls}>${val}</td>`;
+    });
 
-        const term = searchInput.value.trim().toLowerCase();
-        const field = searchField.value;
-        if(!data.length || term === ""){
-            resultContainer.innerHTML = "";
-            printButton.disabled = true;
-            return;
-        }
+    /* View Card button — opens overlay */
+    const canView = fullAcc || (norm(item.CNo) === norm(currentUser.CNo));
+    html += `<td data-label="VIEW CARD" class="no-print">
+      <button class="view-card-inline-btn"
+        ${canView ? `onclick="window.openCardOverlay('${btoa(String(item.CNo))}')"` : "disabled"}>
+        VIEW CARD
+      </button></td>`;
+    html += "</tr>";
+  });
 
-        let results = data.filter(item =>
-            item[field] && item[field].toString().toLowerCase().includes(term)
-        );
+  html += "</tbody></table>";
+  resultContainer.innerHTML = html;
+  if (printButton) printButton.disabled = false;
+}
 
-        if(results.length===0){
-            resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
-            printButton.disabled = true;
-            return;
-        }
+window.sortTable = function(col) {
+  if (currentSort.column === col) currentSort.asc = !currentSort.asc;
+  else { currentSort.column = col; currentSort.asc = true; }
+  renderTable();
+};
 
-        if(currentSort.column){
-            results.sort((a,b)=>{
-                let valA = a[currentSort.column] ? a[currentSort.column].toString().toLowerCase() : "";
-                let valB = b[currentSort.column] ? b[currentSort.column].toString().toLowerCase() : "";
-                if(valA < valB) return currentSort.asc ? -1 : 1;
-                if(valA > valB) return currentSort.asc ? 1 : -1;
-                return 0;
-            });
-        }
+/* ═══════════════════════════════════════════════════════════════════
+   e-CARD OVERLAY
+   Renders an exact replica of viewcard.html inline in the overlay.
+═══════════════════════════════════════════════════════════════════ */
+window.openCardOverlay = async function(encodedCard) {
+  /* show overlay + spinner */
+  if (!ecardOverlay) return;
+  ecardOverlay.classList.add("show");
+  ecardOverlay.setAttribute("aria-hidden","false");
+  ecardSpinner.style.display = "flex";
+  ecardInner.style.display   = "none";
+  ecardInner.innerHTML       = "";
 
-        let table = "<table><thead><tr><th>S.No.</th>";
+  let cardNo;
+  try { cardNo = atob(encodedCard); } catch(e) { cardNo = null; }
+  if (!cardNo) { ecardSpinner.style.display="none"; return; }
 
-        for(const key in results[0]){
-            table += `<th onclick="sortTable('${key}')">${key==="Room"?"ROOM/ADDRESS":key}</th>`;
-        }
-        table += "<th>VIEW CARD</th></tr></thead><tbody>";
+  /* fetch data if not already loaded */
+  if (!allData.length) await loadData();
+  const card = allData.find(c => norm(c.CNo) === norm(cardNo));
+  if (!card) { ecardSpinner.style.display="none"; return; }
 
-        results.forEach((item,index)=>{
-            table += "<tr>";
-            table += `<td data-label="S.No.">${index+1}</td>`;
+  /* ─── Build the card HTML (mirrors viewcard.html exactly) ─── */
+  const BASE = API_BASE + "/static/images/";
 
-            for(const key in item){
-                let value = item[key];
-                let names = item.name.trim().split(" ");
-                let usernameOfRow = names[0].toLowerCase() + names[names.length-1].toLowerCase();
-                let isFullAccessUser = allowedFullAccess.includes(loggedInCardNo);
+  /* determine background based on designation */
+  const desg = norm(card.Desg).toLowerCase();
+  const bgSrc = (desg.includes("president") && !desg.includes("vice"))
+    ? `${BASE}background2.png`
+    : `${BASE}background.png`;
+  const labelText = desg.includes("president") && !desg.includes("vice")
+    ? "President's e-Card"
+    : desg.includes("vice president") ? "Vice President's e-Card" : "e-Card";
 
-                if(!isFullAccessUser && loggedInUsername && loggedInUsername.toLowerCase()!==usernameOfRow){
-                    if(key==="name"){
-                        if(names.length>2) value="*** "+names.slice(1,-1).join(" ")+" ***";
-                        else if(names.length===2) value="*** ***";
-                        else value="***";
-                    }
-                    if(key==="CNo"){
-                        let parts = item.CNo.split("-");
-                        value = parts.slice(0,-1).join("-")+"-***";
-                    }
-                }
+  /* Photo */
+  const photoCNo = encodeURIComponent(norm(card.CNo));
+  const photoSrc  = `${PHOTOS_BASE}${photoCNo}.png`;
+  const photoFallback = `${PHOTOS_BASE}photo.png`;
 
-                let cellStyle="";
-                if(key.toLowerCase()==="status"){
-                    if(value && value.toLowerCase()==="cancel") cellStyle="class='cancel'";
-                    if(value && value.toLowerCase()==="active") cellStyle="class='active'";
-                }
+  /* Stamp / signature by authority */
+  const defaultStamp = `${BASE}stamp.png`;
+  const defaultSign  = `${BASE}signature.png`;
+  const authFolder   = (card.Authority||"").trim().toLowerCase();
+  const stampSrc     = authFolder ? `${PHOTOS_BASE}${authFolder}/stamp.png`     : defaultStamp;
+  const signSrc      = authFolder ? `${PHOTOS_BASE}${authFolder}/signature.png` : defaultSign;
 
-                table += `<td data-label="${key}" ${cellStyle}>${value}</td>`;
-            }
+  /* Cancel banner */
+  const cancelled = isCancelled(card.Status);
 
-            const canViewCard = allowedFullAccess.includes(loggedInCardNo) || (item.CNo === loggedInCardNo);
-            const cardFileName = `e-Cards/${item.name} e-Card.pdf`;
-            table += `<td data-label='VIEW CARD'>
-<button onclick="window.open('viewcard.html?card=${btoa(item.CNo)}','_blank')" ${canViewCard?"":"disabled"}>
-VIEW CARD
-</button></td>`;
-            table += "</tr>";
-        });
+  /* Unique id prefix to avoid id collisions */
+  const uid = "ov_" + Math.random().toString(36).slice(2,8);
 
-        table += "</tbody></table>";
-        resultContainer.innerHTML = table;
-        printButton.disabled = false;
-    }
+  const frontHTML = `
+    <div class="ecard-container" id="${uid}_front">
+      <img src="${bgSrc}"          class="card-bg-img">
+      <img src="${BASE}watermark.png" class="card-watermark">
+      <div class="card-strip-hole"></div>
+      <div class="card-strip-hole2"></div>
+      <img src="${BASE}logo1.png"  class="card-logo1">
+      <img src="${BASE}logo2.png"  class="card-logo2">
+      <img src="${BASE}logo.png"   class="card-logo">
+      <img src="${BASE}logo.png"   class="card-center-logo">
+      <img id="${uid}_stamp"   src="${stampSrc}"  class="card-stamp">
+      <img id="${uid}_photo"   class="card-photo">
+      <img id="${uid}_photoSm" class="card-photo-small">
+      <img src="${BASE}sticker.png" class="card-photosticker">
+      <img src="${BASE}logo.png"    class="card-photo-logo">
+      <img src="${BASE}sticker.png" class="card-photo-logo2">
+      <img src="${BASE}shadow.png"  class="card-photo-logo3">
+      <div class="card-ecard-label">${esc(labelText)}</div>
+      <img src="${BASE}qrcode.png"  class="card-qr">
+      <img id="${uid}_sign"    src="${signSrc}"   class="card-signature">
+      <div class="card-text-container">
+        <p id="${uid}_name"></p>
+        <p><span>Urdu Name: </span><span id="${uid}_urdu" class="card-text-urdu"></span></p>
+        <p id="${uid}_desg" class="card-designation">${esc("Desg: "+norm(card.Desg))}</p>
+        <p id="${uid}_cno"></p>
+        <p>${esc("B-Group: " + norm(card.BG))}</p>
+        <p id="${uid}_mobile"></p>
+        <p class="card-issuance">Issuance Authority: ___________________</p>
+      </div>
+      <div class="card-header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
+      <div class="card-header-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
+      <div class="card-date">ISSUE DATE: ${esc(norm(card.Issue))}</div>
+      <div class="card-valid-till">VALIDITY: ${esc(norm(card.Validity||"UAE VISA EXPIRY").toUpperCase())}</div>
+      ${cancelled ? '<div class="card-cancel-banner">e-Card CANCELLED</div>' : ""}
+    </div>`;
 
-    window.sortTable = function(column){
-        if(currentSort.column===column) currentSort.asc=!currentSort.asc;
-        else { currentSort.column=column; currentSort.asc=true; }
-        renderTable();
-    };
-});
+  const backHTML = `
+    <div class="ecard-container" id="${uid}_back">
+      <img src="${bgSrc}"          class="card-bg-img">
+      <img src="${BASE}watermark.png" class="card-watermark">
+      <img src="${BASE}logo.png"   class="card-back-overlay-logo">
+      <div class="card-verify-box">
+        <div>Verification QR</div>
+        <div class="card-verify-qr-wrap">
+          <img id="${uid}_qr">
+          <div id="${uid}_qrmask" class="card-qr-mask-emoji">✘</div>
+        </div>
+        <div id="${uid}_vname" class="card-verify-name"></div>
+        <img id="${uid}_vphoto" class="card-verify-photo">
+      </div>
+      <div class="card-center-text">
+        <p>The Khawrai Falahi Committee UAE was established in December 2016.
+        The purpose of the committee is to address the issues faced by residents
+        of Khawrai in the United Arab Emirates and its surroundings, and to
+        resolve them in a timely and professional manner. The leadership of
+        the committee is committed to serving the residents of Khawrai in
+        the United Arab Emirates and is determined to address and resolve
+        their various issues promptly.</p>
+        <p class="card-urdu-text">
+        متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔
+        </p>
+      </div>
+      <div class="card-contacts">
+        Arbab Rizwan (President): +971 55 735 3212<br>
+        Salar Khan (Vice President): +971 58 884 0090<br>
+        Ahmad Aman (Acting President): +971 56 803 9690
+      </div>
+    </div>`;
+
+  /* ─── Action buttons (mask toggle + save PDF) ─── */
+  const actionsHTML = `
+    <div class="card-action-buttons">
+      <button id="${uid}_maskBtn" title="Toggle privacy mask">👁</button>
+      <button id="${uid}_saveBtn" title="Save as PDF">💾</button>
+    </div>`;
+
+  ecardInner.innerHTML = `<div class="card-wrapper" id="${uid}_wrapper">${frontHTML}${backHTML}</div>${actionsHTML}`;
+
+  /* ─── Inject into DOM, then wire up images & QR ─── */
+  ecardSpinner.style.display = "none";
+  ecardInner.style.display   = "flex";
+
+  /* Helper: img with fallback */
+  const loadImg = (id, primary, fallback) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const tryFallback = () => { el.onerror=null; el.src=fallback; };
+    el.onerror = tryFallback;
+    el.src = primary;
+  };
+
+  loadImg(`${uid}_photo`,   photoSrc, photoFallback);
+  loadImg(`${uid}_photoSm`, photoSrc, photoFallback);
+  loadImg(`${uid}_vphoto`,  photoSrc, photoFallback);
+  loadImg(`${uid}_stamp`,   stampSrc,  defaultStamp);
+  loadImg(`${uid}_sign`,    signSrc,   defaultSign);
+
+  /* Stamp / sign error fallback (already set via onerror above) */
+
+  /* QR code */
+  const qrTemp = document.createElement("div");
+  qrTemp.style.cssText = "position:absolute;left:-9999px;top:0;width:200px;height:200px;";
+  document.body.appendChild(qrTemp);
+  const verifyURL = `${API_BASE}/viewcard.html?card=${btoa(String(card.CNo))}`;
+  try {
+    new QRCode(qrTemp, {
+      text: verifyURL, width:200, height:200,
+      colorDark:"#000000", colorLight:"#0000",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    setTimeout(() => {
+      const qrCanvas = qrTemp.querySelector("canvas");
+      const qrEl = document.getElementById(`${uid}_qr`);
+      if (qrEl && qrCanvas) qrEl.src = qrCanvas.toDataURL("image/png");
+      qrTemp.remove();
+    }, 300);
+  } catch(e) { qrTemp.remove(); }
+
+  /* Verify name */
+  const vnameEl = document.getElementById(`${uid}_vname`);
+  if (vnameEl) vnameEl.textContent = norm(card.name);
+
+  /* Urdu name */
+  let urduName = norm(card.urduName||"");
+  const urduEl = document.getElementById(`${uid}_urdu`);
+  const setUrdu = (n) => { if (urduEl) urduEl.textContent = n; };
+  if (urduName) { setUrdu(urduName); }
+  else {
+    setUrdu("…");
+    fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(norm(card.name))}`)
+      .then(r=>r.json())
+      .then(d=>{ urduName=d[0][0][0]; setUrdu(urduName); })
+      .catch(()=>{ setUrdu(norm(card.name)); });
+  }
+
+  /* ─── Masking logic ─── */
+  let masked = false;
+  const nameEl   = document.getElementById(`${uid}_name`);
+  const cnoEl    = document.getElementById(`${uid}_cno`);
+  const mobileEl = document.getElementById(`${uid}_mobile`);
+  const qrMask   = document.getElementById(`${uid}_qrmask`);
+  const maskBtn  = document.getElementById(`${uid}_maskBtn`);
+
+  const renderMask = () => {
+    const m = masked;
+    if (nameEl)   nameEl.textContent   = "Name: "    + (m ? maskName(norm(card.name))   : norm(card.name));
+    if (cnoEl)    cnoEl.textContent    = "Card No.: " + (m ? maskCardNo(norm(card.CNo)) : norm(card.CNo));
+    if (mobileEl) mobileEl.textContent = "Contact: "  + (m ? maskPhone(norm(card.mobile||"")) : norm(card.mobile||""));
+    if (urduEl)   urduEl.textContent   = m ? maskName(urduName||norm(card.name)) : (urduName||norm(card.name));
+    if (vnameEl)  vnameEl.textContent  = m ? maskName(norm(card.name)) : norm(card.name);
+    if (qrMask)   qrMask.style.display = m ? "flex" : "none";
+    if (maskBtn)  maskBtn.textContent  = m ? "🙈" : "👁";
+  };
+  renderMask();
+
+  if (maskBtn) maskBtn.addEventListener("click", () => { masked = !masked; renderMask(); });
+
+  /* ─── Save PDF ─── */
+  const saveBtn = document.getElementById(`${uid}_saveBtn`);
+  if (saveBtn && typeof html2pdf !== "undefined") {
+    saveBtn.addEventListener("click", () => {
+      const wrapper = document.getElementById(`${uid}_wrapper`);
+      if (!wrapper) return;
+      const opt = {
+        margin:0,
+        filename:`${norm(card.name)} e-Card.pdf`,
+        image:{type:"jpeg", quality:1},
+        html2canvas:{
+          scale:5, useCORS:true,
+          windowWidth: wrapper.scrollWidth,
+          windowHeight: wrapper.scrollHeight
+        },
+        jsPDF:{unit:"mm", format:[180,270], orientation:"portrait"}
+      };
+      html2pdf().set(opt).from(wrapper).save();
+    });
+  }
+
+  /* ─── Mobile scale ─── */
+  scaleMobileCard();
+};
+
+function maskName(n) {
+  if (!n) return "";
+  const p = n.trim().split(/\s+/);
+  if (p.length <= 1) return "***";
+  if (p.length === 2) return "*** ***";
+  return ["***", ...p.slice(1,-1), "***"].join(" ");
+}
+function maskCardNo(v) {
+  return v ? v.replace(/(\d{3})(?!.*\d)/, "***") : "";
+}
+function maskPhone(v) {
+  return v ? v.replace(/(\d{4})(?!.*\d)/, "****") : "";
+}
+
+function scaleMobileCard() {
+  const isMobile = window.innerWidth <= 680;
+  const scale = isMobile ? Math.min((window.innerWidth - 40) / 610, 1) : 1;
+  document.querySelectorAll("#ecardInner .ecard-container").forEach(el => {
+    el.style.transformOrigin = "top center";
+    el.style.transform = isMobile ? `scale(${scale})` : "";
+    el.style.marginBottom = isMobile ? `${-(400*(1-scale))}px` : "";
+  });
+}
+
+function closeCardOverlay() {
+  if (!ecardOverlay) return;
+  ecardOverlay.classList.remove("show");
+  ecardOverlay.setAttribute("aria-hidden","true");
+  ecardInner.innerHTML = "";
+  ecardInner.style.display = "none";
+  ecardSpinner.style.display = "flex";
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRINT
+═══════════════════════════════════════════════════════════════════ */
+function doPrint() {
+  /* Make sure overlay is closed so it doesn't appear in print */
+  closeCardOverlay();
+  window.print();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EVENTS
+═══════════════════════════════════════════════════════════════════ */
+function bindEvents() {
+  /* theme */
+  if (themeToggleBtn)
+    themeToggleBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      const isDark = document.body.classList.contains("dark-mode");
+      applyTheme(isDark ? "light" : "dark");
+    });
+
+  /* user area dropdown */
+  if (userArea)
+    userArea.addEventListener("click", e => {
+      e.stopPropagation();
+      userDropdown?.classList.toggle("show");
+    });
+
+  /* close dropdown on outside click */
+  document.addEventListener("click", () => { userDropdown?.classList.remove("show"); });
+  if (userDropdown) userDropdown.addEventListener("click", e => e.stopPropagation());
+
+  /* login */
+  if (openLoginBtn)
+    openLoginBtn.addEventListener("click", () => loginOverlay?.classList.add("show"));
+  if (loginOverlay)
+    loginOverlay.addEventListener("click", e => {
+      if (e.target === loginOverlay) loginOverlay.classList.remove("show");
+    });
+  if (loginBtn)  loginBtn.addEventListener("click", doLogin);
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && loginOverlay?.classList.contains("show")) doLogin();
+  });
+
+  /* logout */
+  if (logoutBtn)
+    logoutBtn.addEventListener("click", () => { clearSession(); currentUser=null; location.reload(); });
+
+  /* view photo */
+  if (viewPhotoBtn)
+    viewPhotoBtn.addEventListener("click", () => {
+      photoOverlay?.classList.add("show");
+      userDropdown?.classList.remove("show");
+    });
+  if (closePhotoOverlay)
+    closePhotoOverlay.addEventListener("click", () => photoOverlay?.classList.remove("show"));
+  if (photoOverlay)
+    photoOverlay.addEventListener("click", e => { if (e.target===photoOverlay) photoOverlay.classList.remove("show"); });
+
+  /* search */
+  if (searchInput)  searchInput.addEventListener("input",  handleSearch);
+  if (searchField)  searchField.addEventListener("change", handleSearch);
+  if (searchButton) searchButton.addEventListener("click",  handleSearch);
+
+  /* print */
+  if (printButton) printButton.addEventListener("click", doPrint);
+
+  /* buttons */
+  if (generateButton)      generateButton.addEventListener("click", () => { if (!generateButton.disabled) window.location.href = "NewCard/login.html"; });
+  if (englishConstitution) englishConstitution.addEventListener("click", () => window.open(`${API_BASE}/English.pdf`,"_blank"));
+  if (urduConstitution)    urduConstitution.addEventListener("click",    () => window.open(`${API_BASE}/Urdu.pdf`,"_blank"));
+
+  /* e-card overlay close */
+  if (ecardCloseBtn)
+    ecardCloseBtn.addEventListener("click", closeCardOverlay);
+  if (ecardOverlay)
+    ecardOverlay.addEventListener("click", e => { if (e.target===ecardOverlay) closeCardOverlay(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeCardOverlay(); });
+
+  /* mobile card scale on resize */
+  window.addEventListener("resize", scaleMobileCard);
+  window.addEventListener("orientationchange", scaleMobileCard);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════════ */
+async function init() {
+  cacheDOM();
+  initTheme();
+  bindEvents();
+  await loadData();
+  checkSession();
+}
+
+if (document.readyState === "loading")
+  document.addEventListener("DOMContentLoaded", init);
+else
+  init();
