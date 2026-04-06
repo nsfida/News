@@ -458,16 +458,32 @@ if(card.Status && card.Status.toLowerCase() === "cancel"){
     currentUrduName = await translateToUrdu(card.name);
   }
 
-  const desg = (card.Desg||"").toLowerCase();
-  if(desg.includes("president") && !desg.includes("vice")){
-    frontBg.src = "static/images/background2.png";
-    backBg.src = "static/images/background2.png";
-    ecardLabel.textContent = "President's e-Card";
-  } else if(desg.includes("vice president")){
-    frontBg.src = "static/images/background2.png";
-    backBg.src = "static/images/background2.png";
-    ecardLabel.textContent = "Vice President's e-Card";
-  }
+const desg = (card.Desg || "").toLowerCase();
+
+const isActingPresident = desg.includes("acting president");
+const isVicePresident = desg.includes("vice president");
+const isPresident = desg.includes("president") && !isVicePresident && !isActingPresident;
+
+if (isActingPresident) {
+  frontBg.src = "static/images/background2.png";
+  backBg.src = "static/images/background2.png";
+  ecardLabel.textContent = "Acting President's e-Card";
+
+} else if (isVicePresident) {
+  frontBg.src = "static/images/background2.png";
+  backBg.src = "static/images/background2.png";
+  ecardLabel.textContent = "Vice President's e-Card";
+
+} else if (isPresident) {
+  frontBg.src = "static/images/background2.png";
+  backBg.src = "static/images/background2.png";
+  ecardLabel.textContent = "President's e-Card";
+
+} else {
+  frontBg.src = "static/images/background.png";
+  backBg.src = "static/images/background.png";
+  ecardLabel.textContent = "e-Card";
+}
 
   const encoded = encodeCard(card.CNo);
   const url = "https://livenews.live/KFC/viewcard.html?card=" + encoded;
