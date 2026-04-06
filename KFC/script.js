@@ -264,6 +264,12 @@ function updateButtonAccess() {
     generateButton.title = fullAcc ? "" : "Full Access members only";
     generateButton.style.cursor = fullAcc ? "pointer" : "not-allowed";
   }
+const allCards = document.getElementById("allCards");
+if (allCards) {
+  allCards.disabled = !fullAcc;
+  allCards.title = fullAcc ? "" : "Full Access members only";
+  allCards.style.cursor = fullAcc ? "pointer" : "not-allowed";
+}
 }
 
 /* ─── welcome popup ─────────────────────────────────────────────── */
@@ -1054,6 +1060,7 @@ async function init() {
 const allCards = document.getElementById("allCards");
 if (allCards) {
   allCards.addEventListener("click", () => {
+    if (!currentUser || !isFullAccess(currentUser.CNo)) return;
     window.location.href = "AllCards.html";
   });
 }}
