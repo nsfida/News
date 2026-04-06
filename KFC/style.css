@@ -698,3 +698,32 @@ body.dark-mode .ecard-spinner { color:#9bc2ff; }
     padding:12px; max-height:470px;
   }
 }
+.search-name-link{
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: normal;
+  text-align: left;
+  width: 100%;
+}
+
+.search-name-text{
+  display: inline-block;
+  width: 100%;
+}
+
+.search-result-table{
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.search-result-table td,
+.search-result-table th{
+  word-break: break-word;
+}
