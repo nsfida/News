@@ -706,8 +706,6 @@ body.dark-mode .ecard-spinner { color:#9bc2ff; }
   color: inherit;
   font: inherit;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
   white-space: normal;
   text-align: left;
   width: 100%;
