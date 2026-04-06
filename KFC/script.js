@@ -1051,7 +1051,12 @@ async function init() {
   bindEvents();
   await loadData();
   checkSession();
-}
+const allCards = document.getElementById("allCards");
+if (allCards) {
+  allCards.addEventListener("click", () => {
+    window.location.href = "AllCards.html";
+  });
+}}
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
