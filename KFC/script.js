@@ -641,13 +641,23 @@ window.openCardOverlay = async function (encodedCard) {
   const BASE = API_BASE + "/static/images/";
 
   /* determine background based on designation */
-  const desg = norm(card.Desg).toLowerCase();
-  const bgSrc = (desg.includes("president") && !desg.includes("vice"))
-    ? `${BASE}background2.png`
-    : `${BASE}background.png`;
-  const labelText = desg.includes("president") && !desg.includes("vice")
-    ? "President's e-Card"
-    : desg.includes("vice president") ? "Vice President's e-Card" : "e-Card";
+const desg = norm(card.Desg).toLowerCase();
+
+const isActingPresident = desg.includes("acting president");
+const isVicePresident = desg.includes("vice president");
+const isPresident = desg.includes("president") && !isVicePresident && !isActingPresident;
+
+const bgSrc = (isPresident || isActingPresident || isVicePresident)
+  ? `${BASE}background2.png`
+  : `${BASE}background.png`;
+
+const labelText = isActingPresident
+  ? "Acting President's e-Card"
+  : isPresident
+  ? "President's e-Card"
+  : isVicePresident
+  ? "Vice President's e-Card"
+  : "e-Card";
 
   /* Photo */
   const photoCNo = encodeURIComponent(norm(card.CNo));
