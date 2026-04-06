@@ -345,6 +345,10 @@ function handleSearch() {
   }
 }
 
+function openCardInNewWindow(cardNo) {
+  window.open(`viewcard.html?card=${btoa(String(cardNo))}`, "_blank", "noopener,noreferrer");
+}
+
 function renderTable() {
   if (!currentUser) {
     resultContainer.innerHTML = "<p class='no-data'>⚠ Login required to search.</p>";
@@ -393,7 +397,7 @@ function renderTable() {
         <div class="ph-subtitle">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
       </div>
     </div>
-    <table>
+    <table class="search-result-table">
       <thead><tr><th>S.No.</th>`;
 
   const keys = Object.keys(results[0]);
@@ -405,6 +409,7 @@ function renderTable() {
   results.forEach((item, idx) => {
     const rowUsername = genUsername(item.name);
     const isOwnRow = loggedUsername === rowUsername;
+    const canView = fullAcc || (norm(item.CNo) === norm(currentUser.CNo));
 
     html += "<tr>";
     html += `<td data-label="S.No.">${idx + 1}</td>`;
@@ -433,11 +438,19 @@ function renderTable() {
         if (s === "cancel" || s === "cancelled") cls = "class='cancel'";
       }
 
-      html += `<td data-label="${esc(k)}" ${cls}>${val}</td>`;
+      if (k === "name") {
+        html += `<td data-label="${esc(k)}" ${cls}>
+          ${canView
+            ? `<button type="button" class="search-name-link" onclick="window.openCardInNewWindow('${esc(item.CNo)}')">${val}</button>`
+            : `<span class="search-name-text">${val}</span>`
+          }
+        </td>`;
+      } else {
+        html += `<td data-label="${esc(k)}" ${cls}>${val}</td>`;
+      }
     });
 
     /* View Card button — opens overlay */
-    const canView = fullAcc || (norm(item.CNo) === norm(currentUser.CNo));
     html += `<td data-label="VIEW CARD" class="no-print">
       <button class="view-card-inline-btn"
         ${canView ? `onclick="window.openCardOverlay('${btoa(String(item.CNo))}')"` : "disabled"}>
