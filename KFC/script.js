@@ -788,7 +788,7 @@ const labelText = isActingPresident
   qrTemp.style.cssText = "position:absolute;left:-9999px;top:0;width:200px;height:200px;";
   document.body.appendChild(qrTemp);
 
-  const verifyURL = `${API_BASE}/viewcard.html?card=${btoa(String(card.CNo))}`;
+  const verifyURL = `${API_BASE}/verify.html?card=${btoa(String(card.CNo))}`;
   try {
     new QRCode(qrTemp, {
       text: verifyURL,
