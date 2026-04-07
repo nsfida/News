@@ -244,6 +244,9 @@
     .media-play-label{color:#fff;font-size:13px;font-weight:700;text-shadow:0 2px 10px rgba(0,0,0,.65);}
     .media-count-badge{position:absolute;top:10px;left:10px;z-index:3;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;backdrop-filter:blur(6px);}
 
+    /* VIDEO THUMBNAIL — canvas-generated poster */
+    .media-tile .video-thumb-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;display:block;}
+
     /* LIGHTBOX */
     .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;flex-direction:column;justify-content:center;align-items:center;z-index:9000;padding:20px;}
     .lightbox.show{display:flex;}
@@ -484,9 +487,7 @@
     let fixRunning  = false;
 
     // Lightbox state
-    // Each lightbox "session" stores the list of media items for the current post,
-    // plus optional extra items from individual media links.
-    let lbItems   = [];   // [{type, src, thumbnail, mime, postTitle, postToken, mediaIdx}]
+    let lbItems   = [];
     let lbCurrent = 0;
 
     /* ─── DOM CACHE ─────────────────────────────────────────────────── */
@@ -521,32 +522,21 @@
     function infoMsg(t){ return `<p style="text-align:center;padding:20px;color:#888;">${esc(t)}</p>`; }
 
     /* ─── URL / DEEP LINK HELPERS ────────────────────────────────────── */
-    // Encode a token: base64url of payload string
     function b64enc(str){
       try{ return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,""); }
       catch(e){ return encodeURIComponent(str).replace(/%/g,""); }
     }
-    // Token for a whole post: "p|date|title|idx"
     function postToken(item, idx){
       return b64enc(["p",norm(item.date),norm(item.title),String(idx)].join("|"));
     }
-    // Token for a specific media in a post: "m|date|title|idx|mediaIdx"
     function mediaToken(item, idx, mediaIdx){
       return b64enc(["m",norm(item.date),norm(item.title),String(idx),String(mediaIdx)].join("|"));
     }
-    // Token for the whole post as a "group" (all media): "g|date|title|idx"
     function groupToken(item, idx){
       return b64enc(["g",norm(item.date),norm(item.title),String(idx)].join("|"));
     }
-
-    // Build shareable URL for a given token
     function makeUrl(token){ return `${location.origin}${location.pathname}#${token}`; }
-
-    // Parse the current URL hash to extract token
     function getHashToken(){ return (location.hash || "").replace(/^#/,""); }
-
-    // Read the current hash and return parsed info: {type, postIdx, mediaIdx}
-    // type: "p"=post, "m"=media, "g"=group
     function parseToken(token){
       if(!token) return null;
       try{
@@ -559,11 +549,95 @@
       }catch(e){}
       return null;
     }
-
-    // Push a hash to the URL without adding to browser history (replaceState)
     function setHash(token){ history.replaceState(null,"",token ? "#"+token : location.pathname+location.search); }
-    // Remove hash from URL
     function clearHash(){ history.replaceState(null,"",location.pathname+location.search); }
+
+    /* ─── VIDEO THUMBNAIL GENERATOR ─────────────────────────────────────
+     *
+     * For videos WITHOUT an explicit thumbnail/poster image, this function:
+     *  1. Creates a hidden <video> element (muted, crossOrigin anonymous)
+     *  2. Seeks to a random position between 10% and 60% of the video duration
+     *     (avoids black frames at the very start and potential fade-outs at the end)
+     *  3. Captures a frame onto a hidden <canvas>
+     *  4. Converts that canvas to a data-URL
+     *  5. Sets it as the src of the poster <img> element inside the tile
+     *
+     * Falls back gracefully if:
+     *  - The video is cross-origin and canvas tainting blocks toDataURL()
+     *  - The video fails to load / seek (duration is 0 or NaN)
+     *  - The browser blocks autoplay/seek for the given source
+     *
+     * The hidden video is removed from the DOM after capture.
+     * ─────────────────────────────────────────────────────────────────── */
+    function generateVideoThumbnail(videoSrc, posterImg, tileBg){
+      if(!videoSrc) return;
+
+      const vid = document.createElement("video");
+      vid.muted        = true;
+      vid.autoplay     = false;
+      vid.playsInline  = true;
+      vid.preload      = "metadata";
+      vid.crossOrigin  = "anonymous";     // needed for canvas capture; harmless if not CORS
+      vid.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
+
+      const canvas = document.createElement("canvas");
+      const ctx    = canvas.getContext("2d");
+
+      let done = false;
+
+      function cleanup(){ if(vid.parentNode) vid.parentNode.removeChild(vid); }
+
+      function captureFrame(){
+        if(done) return;
+        done = true;
+        try{
+          // Use the actual video dimensions for crisp capture
+          canvas.width  = vid.videoWidth  || 320;
+          canvas.height = vid.videoHeight || 180;
+          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          if(dataUrl && dataUrl !== "data:,"){
+            posterImg.src = dataUrl;
+            posterImg.style.display = "block";
+          }
+        }catch(err){
+          // Canvas tainted (cross-origin) or other error — silently ignore,
+          // the tile already has the gradient fallback background.
+        }finally{
+          cleanup();
+        }
+      }
+
+      // After metadata loads we know the duration; seek to a random spot
+      vid.addEventListener("loadedmetadata", function(){
+        const dur = vid.duration;
+        if(!dur || !isFinite(dur) || dur < 0.5){
+          // Very short or unreadable duration — just try time=0.5s
+          vid.currentTime = 0.5;
+        } else {
+          // Random position between 10% and 60% of total duration
+          const min = dur * 0.10;
+          const max = dur * 0.60;
+          vid.currentTime = min + Math.random() * (max - min);
+        }
+      }, {once:true});
+
+      // seeked fires when the browser has decoded frames at the new position
+      vid.addEventListener("seeked", captureFrame, {once:true});
+
+      // Safety net: if seeked never fires within 8 s, give up cleanly
+      const timeout = setTimeout(function(){ if(!done){ done=true; cleanup(); } }, 8000);
+      vid.addEventListener("seeked", function(){ clearTimeout(timeout); }, {once:true});
+
+      // Error: video failed to load — clean up silently
+      vid.addEventListener("error", function(){ if(!done){ done=true; cleanup(); } }, {once:true});
+
+      const src = document.createElement("source");
+      src.src  = videoSrc;
+      vid.appendChild(src);
+      document.body.appendChild(vid);
+      vid.load();
+    }
 
     /* ─── DOM CACHE INIT ─────────────────────────────────────────────── */
     function cache(){
@@ -741,8 +815,6 @@
     function closeAll(){ if(eDropdown) eDropdown.classList.remove("show"); if(eNotiDrop) eNotiDrop.classList.remove("show"); if(eMsgDrop) eMsgDrop.classList.remove("show"); }
 
     /* ─── LIGHTBOX ───────────────────────────────────────────────────── */
-
-    // Copy a URL to clipboard
     async function copyToClipboard(url, btn){
       if(!btn) return;
       const orig = btn.innerHTML;
@@ -763,20 +835,16 @@
       }
     }
 
-    // Render a single lightbox frame given lbItems[lbCurrent]
     function lbRender(){
       if(!eLightboxInner || !lbItems.length) return;
       const item = lbItems[lbCurrent];
       eLightboxInner.innerHTML = "";
 
-      // Update URL
       if(item.token) setHash(item.token);
 
-      // Nav button visibility
       if(eLbPrev) eLbPrev.classList.toggle("hidden", lbItems.length <= 1);
       if(eLbNext) eLbNext.classList.toggle("hidden", lbItems.length <= 1);
 
-      // Build media content
       let mediaEl;
 
       if(item.type === "image"){
@@ -806,7 +874,12 @@
           video.autoplay = true;
           video.preload = "metadata";
           video.setAttribute("playsinline","");
-          if(item.thumbnail) video.poster = item.thumbnail;
+          // Use cached thumbnail data-URL as poster in the lightbox too
+          if(item.thumbnailDataUrl){
+            video.poster = item.thumbnailDataUrl;
+          } else if(item.thumbnail){
+            video.poster = item.thumbnail;
+          }
           const source = document.createElement("source");
           source.src = item.src;
           source.type = item.mime || "video/mp4";
@@ -820,11 +893,9 @@
 
       if(mediaEl) eLightboxInner.appendChild(mediaEl);
 
-      // Build bottom bar
       const bar = document.createElement("div");
       bar.className = "lightbox-bar";
 
-      // Counter
       if(lbItems.length > 1){
         const counter = document.createElement("span");
         counter.className = "lightbox-meta";
@@ -832,7 +903,6 @@
         bar.appendChild(counter);
       }
 
-      // Post title
       if(item.postTitle){
         const title = document.createElement("span");
         title.className = "lightbox-meta";
@@ -841,7 +911,6 @@
         bar.appendChild(title);
       }
 
-      // Copy this media link
       if(item.token){
         const url = makeUrl(item.token);
         const btn = document.createElement("button");
@@ -852,7 +921,6 @@
         bar.appendChild(btn);
       }
 
-      // Copy post link (all media)
       if(item.postToken && lbItems.length > 1){
         const url = makeUrl(item.postToken);
         const btn2 = document.createElement("button");
@@ -877,7 +945,6 @@
     function lbClose(){
       if(eLightbox) eLightbox.classList.remove("show");
       document.body.style.overflow = "";
-      // Pause any playing video
       if(eLightboxInner){
         const vid = eLightboxInner.querySelector("video");
         if(vid) vid.pause();
@@ -891,7 +958,6 @@
     function lbNav(dir){
       if(!lbItems.length) return;
       lbCurrent = (lbCurrent + dir + lbItems.length) % lbItems.length;
-      // Pause any playing video before switching
       if(eLightboxInner){
         const vid = eLightboxInner.querySelector("video");
         if(vid) vid.pause();
@@ -944,21 +1010,17 @@
     }
 
     /* ─── POST BUILDING ──────────────────────────────────────────────── */
-
-    // Build the lightbox items array for a given post + its media list
     function buildLbItems(item, postIdx, mediaList){
-      const pt = postToken(item, postIdx);
       const gt = groupToken(item, postIdx);
       return mediaList.map((m, mi) => ({
-        type:      m.type,
-        src:       m.src,
-        thumbnail: m.thumbnail || "",
-        mime:      m.mime || "",
-        postTitle: item.title || "",
-        // token for this specific media item
-        token:     mediaToken(item, postIdx, mi),
-        // token for the whole post
-        postToken: gt
+        type:             m.type,
+        src:              m.src,
+        thumbnail:        m.thumbnail || "",
+        thumbnailDataUrl: "",          // filled in later by generateVideoThumbnail
+        mime:             m.mime || "",
+        postTitle:        item.title || "",
+        token:            mediaToken(item, postIdx, mi),
+        postToken:        gt
       }));
     }
 
@@ -981,20 +1043,40 @@
         return btn;
       }
 
-      // Video tile
-      const poster = document.createElement("img");
-      poster.className = "media-video-poster";
-      if(media.thumbnail) poster.src = media.thumbnail;
-      poster.alt = postTitle || "Video thumbnail";
-      poster.loading = "lazy";
-      poster.onerror = () => { poster.remove(); btn.style.background="linear-gradient(135deg,#0d3c91,#7873f5)"; };
-      if(media.thumbnail) btn.appendChild(poster);
+      /* ── VIDEO TILE ──
+       * Layout (z-order, back to front):
+       *   1. Gradient fallback background (CSS on .media-tile)
+       *   2. posterImg — an <img> that starts hidden; filled by canvas capture OR explicit thumbnail
+       *   3. play overlay (always visible, on top of everything)
+       */
+      btn.style.background = "linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)";
 
-      const badge = document.createElement("div");
-      badge.className = "media-count-badge";
-      badge.textContent = "VIDEO";
-      btn.appendChild(badge);
+      // Poster image element (hidden until a thumbnail is ready)
+      const posterImg = document.createElement("img");
+      posterImg.className  = "video-thumb-canvas";
+      posterImg.alt        = postTitle || "Video thumbnail";
+      posterImg.loading    = "lazy";
+      posterImg.style.display = "none";   // hidden until populated
 
+      // If an explicit thumbnail URL was provided in the JSON, use it straight away
+      if(media.thumbnail){
+        posterImg.src = media.thumbnail;
+        posterImg.style.display = "block";
+        posterImg.onerror = () => {
+          // explicit thumbnail failed — try auto-generate as fallback
+          posterImg.style.display = "none";
+          if(!isFB(media.src)){
+            generateVideoThumbnail(media.src, posterImg, btn, lbItemsArr[tileIdx]);
+          }
+        };
+      } else if(!isFB(media.src)){
+        // No thumbnail provided and not a Facebook embed — auto-generate
+        generateVideoThumbnail(media.src, posterImg, btn, lbItemsArr[tileIdx]);
+      }
+
+      btn.appendChild(posterImg);
+
+      // Play overlay (always on top)
       const overlay = document.createElement("div");
       overlay.className = "media-play-overlay";
       overlay.innerHTML = `<div class="media-play-circle"><i class="fa-solid fa-play"></i></div><div class="media-play-label">Play Video</div>`;
@@ -1003,6 +1085,71 @@
       btn.addEventListener("click", () => lbOpen(lbItemsArr, tileIdx));
       return btn;
     }
+
+    // Override generateVideoThumbnail to also cache the dataUrl into lbItemsArr
+    // We monkey-patch here so the lbItem reference can be updated in-place.
+    const _origGenerate = generateVideoThumbnail;
+    window._generateVideoThumbnailWithCache = function(videoSrc, posterImg, tileBg, lbItem){
+      if(!videoSrc) return;
+
+      const vid = document.createElement("video");
+      vid.muted        = true;
+      vid.autoplay     = false;
+      vid.playsInline  = true;
+      vid.preload      = "metadata";
+      vid.crossOrigin  = "anonymous";
+      vid.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
+
+      const canvas = document.createElement("canvas");
+      const ctx    = canvas.getContext("2d");
+      let done = false;
+
+      function cleanup(){ if(vid.parentNode) vid.parentNode.removeChild(vid); }
+
+      function captureFrame(){
+        if(done) return;
+        done = true;
+        try{
+          canvas.width  = vid.videoWidth  || 320;
+          canvas.height = vid.videoHeight || 180;
+          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          if(dataUrl && dataUrl !== "data:,"){
+            posterImg.src = dataUrl;
+            posterImg.style.display = "block";
+            // Also store in the lightbox item so the lightbox poster is set too
+            if(lbItem) lbItem.thumbnailDataUrl = dataUrl;
+          }
+        }catch(err){
+          // Cross-origin canvas taint — silently ignore
+        }finally{
+          cleanup();
+        }
+      }
+
+      vid.addEventListener("loadedmetadata", function(){
+        const dur = vid.duration;
+        if(!dur || !isFinite(dur) || dur < 0.5){
+          vid.currentTime = 0.5;
+        } else {
+          const min = dur * 0.10;
+          const max = dur * 0.60;
+          vid.currentTime = min + Math.random() * (max - min);
+        }
+      }, {once:true});
+
+      vid.addEventListener("seeked", captureFrame, {once:true});
+
+      const timeout = setTimeout(function(){ if(!done){ done=true; cleanup(); } }, 8000);
+      vid.addEventListener("seeked", function(){ clearTimeout(timeout); }, {once:true});
+      vid.addEventListener("error",  function(){ if(!done){ done=true; cleanup(); } }, {once:true});
+
+      const src = document.createElement("source");
+      src.src  = videoSrc;
+      vid.appendChild(src);
+      document.body.appendChild(vid);
+      vid.load();
+    };
 
     function buildMediaGroup(item, postIdx){
       const mediaList = normalizeMedia(item);
@@ -1013,14 +1160,71 @@
       if(mediaList.length === 1){
         const wrap = document.createElement("div");
         wrap.className = "post-media media-single";
-        wrap.appendChild(makeMediaTile(mediaList[0], lbItemsArr, 0, item.title||""));
+        wrap.appendChild(makeMediaTileExt(mediaList[0], lbItemsArr, 0, item.title||""));
         return {el:wrap, mediaList, lbItemsArr};
       }
 
       const grid = document.createElement("div");
       grid.className = "post-media media-grid count-"+Math.min(mediaList.length,6);
-      mediaList.forEach((m,i) => grid.appendChild(makeMediaTile(m, lbItemsArr, i, item.title||"")));
+      mediaList.forEach((m,i) => grid.appendChild(makeMediaTileExt(m, lbItemsArr, i, item.title||"")));
       return {el:grid, mediaList, lbItemsArr};
+    }
+
+    // Extended version of makeMediaTile that passes lbItem reference for thumbnail caching
+    function makeMediaTileExt(media, lbItemsArr, tileIdx, postTitle){
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "media-tile";
+      btn.setAttribute("aria-label", media.type==="video" ? "Open video" : "Open image");
+
+      if(media.type === "image"){
+        const img = document.createElement("img");
+        img.className = "media-thumb";
+        img.src = media.src;
+        img.alt = postTitle || "Gallery photo";
+        img.loading = "lazy";
+        img.onerror = () => { btn.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-size:13px;padding:18px;text-align:center;">Image unavailable</div>`; };
+        btn.appendChild(img);
+        btn.addEventListener("click", () => lbOpen(lbItemsArr, tileIdx));
+        return btn;
+      }
+
+      // Video tile
+      btn.style.background = "linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)";
+
+      const posterImg = document.createElement("img");
+      posterImg.className     = "video-thumb-canvas";
+      posterImg.alt           = postTitle || "Video thumbnail";
+      posterImg.loading       = "lazy";
+      posterImg.style.display = "none";
+
+      const lbItem = lbItemsArr[tileIdx];
+
+      if(media.thumbnail){
+        posterImg.src           = media.thumbnail;
+        posterImg.style.display = "block";
+        // Pre-populate lightbox item too
+        if(lbItem) lbItem.thumbnailDataUrl = media.thumbnail;
+        posterImg.onerror = () => {
+          posterImg.style.display = "none";
+          if(!isFB(media.src)){
+            window._generateVideoThumbnailWithCache(media.src, posterImg, btn, lbItem);
+          }
+        };
+      } else if(!isFB(media.src)){
+        // Auto-generate thumbnail from video frames
+        window._generateVideoThumbnailWithCache(media.src, posterImg, btn, lbItem);
+      }
+
+      btn.appendChild(posterImg);
+
+      const overlay = document.createElement("div");
+      overlay.className = "media-play-overlay";
+      overlay.innerHTML = `<div class="media-play-circle"><i class="fa-solid fa-play"></i></div><div class="media-play-label">Play Video</div>`;
+      btn.appendChild(overlay);
+
+      btn.addEventListener("click", () => lbOpen(lbItemsArr, tileIdx));
+      return btn;
     }
 
     function buildPost(item, idx){
@@ -1067,7 +1271,6 @@
       meta.appendChild(dateEl);
       meta.appendChild(badge);
 
-      // Copy post link button (in the meta row)
       const copyPostBtn = document.createElement("button");
       copyPostBtn.className = "post-copy-link-btn";
       copyPostBtn.innerHTML = `<i class="fa-solid fa-link"></i> Copy Link`;
@@ -1093,7 +1296,7 @@
         card.appendChild(t);
       }
 
-      /* ── POST CAPTION — single line + see more ── */
+      /* ── POST CAPTION ── */
       const capText = item.caption || "";
       if(capText){
         const capWrap = document.createElement("div");
@@ -1102,8 +1305,6 @@
         cap.className = "post-caption";
         cap.textContent = capText;
         capWrap.appendChild(cap);
-
-        // Always add "see more" toggle (even for short text, show it; it just won't need expanding)
         const rm = document.createElement("button");
         rm.className = "read-more-btn";
         rm.textContent = "See more";
@@ -1138,27 +1339,22 @@
         : `<i class="fa-solid fa-camera" title="Photo"></i>`;
       footer.appendChild(typeIcon);
 
-      // Per-media links if more than one media item
       if(mediaList.length > 1){
         const linksWrap = document.createElement("div");
         linksWrap.className = "post-media-links";
 
-        // All-group link
         const groupBtn = document.createElement("button");
         groupBtn.className = "post-media-link-btn";
         groupBtn.innerHTML = `<i class="fa-solid fa-layer-group"></i> All (${mediaList.length})`;
         groupBtn.title = "Open all media / copy group link";
         groupBtn.addEventListener("click", e => {
           e.stopPropagation();
-          // Open lightbox at first item
           lbOpen(lbItemsArr, 0);
         });
         linksWrap.appendChild(groupBtn);
 
-        // Per-item links
         mediaList.forEach((m, mi) => {
           const mToken = mediaToken(item, idx, mi);
-          const mUrl   = makeUrl(mToken);
           const mBtn   = document.createElement("button");
           mBtn.className = "post-media-link-btn";
           const icon = m.type==="video"
@@ -1185,7 +1381,6 @@
       try{ const r=await fetch(API+"/cards.json",{cache:"no-store"}); users=await r.json(); }catch(e){ console.error(e); }
     }
 
-    // Map from token string → {lbItemsArr, mediaList}
     const postRegistry = {};
 
     async function loadGallery(){
@@ -1208,7 +1403,6 @@
           try{
             const {card, lbItemsArr, mediaList, pt, gt} = buildPost(item, i);
             if(wrapper) wrapper.appendChild(card);
-            // Register tokens for deep-link resolution
             postRegistry[pt]  = {lbItemsArr, mediaList, card};
             postRegistry[gt]  = {lbItemsArr, mediaList, card};
             lbItemsArr.forEach((lb, mi) => {
@@ -1217,7 +1411,6 @@
           }catch(e){ console.warn("Post error:",e); }
         });
 
-        // After all posts rendered, handle deep link
         handleDeepLink();
 
         const end = document.createElement("div");
@@ -1240,7 +1433,6 @@
 
       const {card, lbItemsArr, startIdx} = reg;
 
-      // Scroll to the card
       if(card){
         requestAnimationFrame(()=>{
           card.scrollIntoView({behavior:"smooth",block:"start"});
@@ -1252,13 +1444,11 @@
       const parsed = parseToken(token);
       if(!parsed) return;
 
-      // Open lightbox for media / group tokens
       if(parsed.type==="m" && lbItemsArr && lbItemsArr.length){
         setTimeout(()=>lbOpen(lbItemsArr, typeof startIdx==="number" ? startIdx : 0), 600);
       } else if(parsed.type==="g" && lbItemsArr && lbItemsArr.length){
         setTimeout(()=>lbOpen(lbItemsArr, 0), 600);
       }
-      // "p" type just scrolls, no lightbox
     }
 
     /* ─── EVENT BINDING ──────────────────────────────────────────────── */
@@ -1286,13 +1476,11 @@
       if(eLoginOverlay) eLoginOverlay.addEventListener("click",e=>{ if(e.target===eLoginOverlay) eLoginOverlay.classList.remove("show"); });
       if(eLoginBtn) eLoginBtn.addEventListener("click",login);
 
-      // Lightbox controls
       if(eLightboxClose) eLightboxClose.addEventListener("click", lbClose);
       if(eLightbox) eLightbox.addEventListener("click",e=>{ if(e.target===eLightbox) lbClose(); });
       if(eLbPrev) eLbPrev.addEventListener("click",e=>{ e.stopPropagation(); lbNav(-1); });
       if(eLbNext) eLbNext.addEventListener("click",e=>{ e.stopPropagation(); lbNav(+1); });
 
-      // Keyboard
       document.addEventListener("keydown",e=>{
         if(e.key==="Enter" && eLoginOverlay && eLoginOverlay.classList.contains("show")) login();
         if(e.key==="Escape"){
@@ -1303,7 +1491,6 @@
         if(e.key==="ArrowRight" && eLightbox&&eLightbox.classList.contains("show")) lbNav(+1);
       });
 
-      // Touch swipe on lightbox
       let touchStartX = 0;
       if(eLightbox){
         eLightbox.addEventListener("touchstart",e=>{ touchStartX=e.changedTouches[0].clientX; },{passive:true});
@@ -1318,7 +1505,6 @@
       if(eCloseLeaders) eCloseLeaders.addEventListener("click",()=>{ if(eLeadersOverlay) eLeadersOverlay.classList.remove("show"); });
       if(eLeadersOverlay) eLeadersOverlay.addEventListener("click",e=>{ if(e.target===eLeadersOverlay) eLeadersOverlay.classList.remove("show"); });
 
-      // Handle browser back/forward (hash changes)
       window.addEventListener("hashchange",()=>{
         const token = getHashToken();
         if(!token){
@@ -1332,7 +1518,6 @@
         const {lbItemsArr, startIdx} = reg;
         if((parsed.type==="m"||parsed.type==="g") && lbItemsArr){
           if(eLightbox&&eLightbox.classList.contains("show")){
-            // Already open — just navigate to the right item
             lbItems = lbItemsArr;
             lbCurrent = typeof startIdx==="number" ? startIdx : 0;
             lbRender();
