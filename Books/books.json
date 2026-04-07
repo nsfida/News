@@ -1,0 +1,18 @@
+[
+  {
+    "id": "book1",
+    "title": "Neerang-E-Hikmat",
+    "author": "Nadeem Shahzad Fida",
+    "language": "ur",
+    "cover": "https://livenews.live/Books/Neerang-E-Hikmat.jpg",
+    "pdf": "https://livenews.live/Books/Neerang-E-Hikmat.pdf"
+  },
+  {
+    "id": "book2",
+    "title": "اردو کہانیاں",
+    "author": "Ali Khan",
+    "language": "ur",
+    "cover": "books/book2/cover.jpg",
+    "pdf": "books/book2/book.pdf"
+  }
+]
