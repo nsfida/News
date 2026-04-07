@@ -726,7 +726,7 @@ async function renderPage(pageNumber) {
     });
 
     const encoded = encodeCard(card.CNo);
-    const url = "https://livenews.live/KFC/viewcard.html?card=" + encoded;
+    const url = "https://livenews.live/KFC/verify.html?card=" + encoded;
     const qrImgEl = personDiv.querySelector(".verify-qr-img");
     await loadQrIntoImage(url, qrImgEl);
   }
