@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Khawrai Falahi Committee UAE - Card Verification</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    @font-face {
+      font-family: 'UrduFont';
+      src: url('static/fonts/Urdu.ttf') format('truetype');
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    :root {
+      --bg-light-1: #e0eaff;
+      --bg-light-2: #ffffff;
+      --bg-dark-1: #07111f;
+      --bg-dark-2: #0e1a2d;
+      --text-light: #1a1a1a;
+      --text-dark: #eef4ff;
+      --soft-light: #3c3c3c;
+      --soft-dark: #c9d5ea;
+      --brand: #0d3c91;
+      --accent: #7873f5;
+      --accent-2: #ff6ec4;
+      --glass-light: rgba(255,255,255,0.25);
+      --glass-dark: rgba(10,18,33,0.58);
+      --glass-border-light: rgba(255,255,255,0.3);
+      --glass-border-dark: rgba(255,255,255,0.12);
+      --shadow-light: 0 8px 30px rgba(0,0,0,0.1);
+      --shadow-dark: 0 18px 45px rgba(0,0,0,0.32);
+      --header-h: 60px;
+      --safe-gap: 16px;
+    }
+
+    body {
+      font-family: Calibri, sans-serif;
+      background: linear-gradient(135deg, var(--bg-light-1), var(--bg-light-2));
+      min-height: 100vh;
+      color: var(--text-light);
+      overflow-x: hidden;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark-mode {
+      background:
+        radial-gradient(circle at top left, rgba(80,98,255,0.24), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255,110,196,0.14), transparent 30%),
+        linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+      color: var(--text-dark);
+    }
+
+    .glass {
+      background: var(--glass-light);
+      backdrop-filter: blur(18px);
+      border-radius: 20px;
+      border: 1px solid var(--glass-border-light);
+      box-shadow: var(--shadow-light);
+      position: relative;
+      overflow: hidden;
+    }
+
+    body.dark-mode .glass {
+      background: var(--glass-dark);
+      border: 1px solid var(--glass-border-dark);
+      box-shadow: var(--shadow-dark);
+    }
+
+    /* ─── Floating circles ─── */
+    .floating-circles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .floating-circles .circle {
+      position: absolute;
+      border-radius: 50%;
+      animation: floatMove 20s ease-in-out infinite alternate;
+      box-shadow:
+        inset -10px -10px 20px rgba(0,0,0,0.15),
+        inset 10px 10px 20px rgba(255,255,255,0.6),
+        0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .circle:nth-child(1){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,105,180,0.4)); width:180px; height:180px; top:10%; left:15%; filter:blur(3px); }
+    .circle:nth-child(2){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(0,191,255,0.4)); width:90px; height:90px; top:50%; left:25%; filter:blur(3px); }
+    .circle:nth-child(3){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,20,147,0.4)); width:150px; height:150px; top:30%; left:70%; filter:blur(3px); }
+    .circle:nth-child(4){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(30,144,255,0.4)); width:100px; height:100px; top:80%; left:40%; filter:blur(3px); }
+    .circle:nth-child(5){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,182,193,0.4)); width:80px; height:80px; top:60%; left:80%; filter:blur(3px); }
+    .circle:nth-child(6){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(0,255,200,0.28)); width:110px; height:110px; top:18%; left:55%; filter:blur(3px); }
+    .circle:nth-child(7){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,180,0,0.22)); width:70px; height:70px; top:72%; left:12%; filter:blur(2px); }
+    .circle:nth-child(8){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(180,110,255,0.24)); width:130px; height:130px; top:8%; left:82%; filter:blur(3px); }
+    .circle:nth-child(9){ background:radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,90,120,0.24)); width:95px; height:95px; top:84%; left:68%; filter:blur(3px); }
+
+    @keyframes floatMove {
+      0%   { transform: translate(0,0) scale(1); }
+      33%  { transform: translate(100px,-50px) scale(1.2); }
+      66%  { transform: translate(-80px,120px) scale(0.8); }
+      100% { transform: translate(50px,20px) scale(1.1); }
+    }
+
+    /* ─── Header ─── */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: var(--glass-light);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 10px;
+      transition: background 0.5s ease, border-color 0.5s ease;
+    }
+
+    body.dark-mode .top-header {
+      background: var(--glass-dark);
+      border-bottom: 1px solid var(--glass-border-dark);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-area img {
+      width: 50px;
+    }
+
+    .dancing-logo {
+      width: 50px;
+      animation: logoZoomFade 3s ease-in-out infinite;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    @keyframes logoZoomFade {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.6; transform:scale(1.2); }
+    }
+
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      position: relative;
+    }
+
+    .user-area i {
+      font-size: 24px;
+      color: var(--accent);
+    }
+
+    .dropdown-arrow { font-size: 10px; }
+
+    .header-profile-img-container {
+      width: 35px; height: 35px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .header-profile-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .notification-wrapper {
+      position: relative;
+      margin-right: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .notification-wrapper i {
+      font-size: 20px;
+      color: #7873f5;
+      cursor: pointer;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -8px; right: -8px;
+      background: #ff4d4d;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 50%;
+      font-weight: bold;
+      border: 2px solid #fff;
+    }
+
+    .theme-toggle-btn,
+    .translate-toggle-btn {
+      border: none; outline: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .theme-toggle-btn i,
+    .translate-toggle-btn i { pointer-events: none; }
+
+    .translate-toggle-btn i {
+      font-size: 17px;
+      color: #7873f5;
+    }
+
+    .translate-toggle-btn.active i { color: #ff6ec4; }
+
+    /* ─── Banner ─── */
+    .info-banner {
+      background: rgba(167,199,203,0.15);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #501AB0;
+      font-weight: bold;
+      font-size: 20px;
+      padding: 5px 20px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+      position: relative;
+      z-index: 50;
+    }
+
+    .info-banner .marquee {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scrollBanner 25s linear infinite;
+    }
+
+    @keyframes scrollBanner {
+      0%   { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    @keyframes scrollBannerRtl {
+      0%   { transform: translateX(0%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .info-banner:hover .marquee { animation-play-state: paused; }
+
+    body.dark-mode .info-banner {
+      color: #d9c8ff;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* ─── Dropdowns ─── */
+    .user-dropdown {
+      position: fixed;
+      top: calc(var(--header-h) + 2px);
+      inset-inline-end: var(--safe-gap);
+      width: min(240px, calc(100vw - 24px));
+      padding: 15px;
+      display: none;
+      flex-direction: column;
+      height: auto;
+      max-height: 550px;
+      z-index: 999;
+    }
+
+    .user-dropdown.show { display: flex; }
+
+    .user-dropdown h3 { margin-bottom: 5px; text-align: center; }
+    .user-dropdown p  { font-size: 10px; text-align: flex; margin: 2px 0; }
+
+    .user-dropdown .user-info {
+      display: right;
+      font-weight: bold;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .dropdown-photo-area {
+      width: 100px; height: 100px;
+      border-radius: 40%;
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .dropdown-profile-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .user-dropdown button#logoutBtn,
+    .user-dropdown a#viewCardBtn {
+      margin-top: 2px;
+      align-self: center;
+      width: 70%;
+      padding: 10px 0;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      text-align: center;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .user-dropdown button#logoutBtn:hover,
+    .user-dropdown a#viewCardBtn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    #viewPhotoBtn {
+      margin-top: 5px;
+      width: 60%;
+      padding: 8px 0;
+      border: 1px solid var(--accent);
+      border-radius: 40px;
+      background: transparent;
+      color: var(--accent);
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #viewPhotoBtn:hover { background: var(--accent); color: #fff; }
+
+    /* ─── Login overlay ─── */
+    .login-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .login-overlay.show { display: flex; }
+
+    .login-box {
+      width: 90%;
+      max-width: 360px;
+      padding: 25px;
+      text-align: center;
+    }
+
+    .login-box h2 { margin-bottom: 10px; }
+
+    .login-box input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 10px;
+    }
+
+    body.dark-mode .login-box input { background: #fff; color: #111; }
+
+    .login-box button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #openLoginBtn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin: 15px auto 0;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #openLoginBtn:hover { opacity: 0.9; transform: translateY(-2px); transition: 0.3s; }
+
+    .welcome-popup {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      color: #fff;
+      padding: 12px 25px;
+      border-radius: 25px;
+      display: none;
+      z-index: 3000;
+    }
+
+    .welcome-popup.show { display: block; }
+
+    /* ─── Layout ─── */
+    .dashboard-container {
+      display: flex;
+      flex-direction: row;
+      min-height: calc(100vh - var(--header-h));
+    }
+
+    .sidebar {
+      width: 250px;
+      padding: 20px;
+      background: var(--glass-light);
+      backdrop-filter: blur(18px);
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      z-index: 500;
+      position: relative;
+    }
+
+    body.dark-mode .sidebar { background: var(--glass-dark); }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-nav a {
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 10px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.3s;
+    }
+
+    body.dark-mode .sidebar-nav a { color: #FFFFFF; }
+
+    .sidebar-nav a:hover {
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      color: #fff;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* ─── Headings ─── */
+    h1, h2, h3 {
+      background: linear-gradient(90deg, #0d3c91, #0d3c91);
+      display: inline-block;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      width: 100%;
+      text-align: center;
+    }
+
+    body.dark-mode h1,
+    body.dark-mode h2,
+    body.dark-mode h3 {
+      background: linear-gradient(90deg, #9bc2ff, #9bc2ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ─── Footer ─── */
+    .footer {
+      text-align: center;
+      padding: 10px;
+      background: var(--glass-light);
+      margin-top: 20px;
+      font-size: 10px;
+    }
+
+    body.dark-mode .footer { background: var(--glass-dark); }
+
+    /* ─── Photo overlay ─── */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+    }
+
+    body.dark-mode .overlay { background: rgba(0,0,0,0.45); }
+    .overlay.show { display: flex; }
+
+    .photo-viewer-box {
+      width: 50%;
+      max-width: 400px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .leaders-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .leaders-header i {
+      color: #0d3c91;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    body.dark-mode .leaders-header i { color: #9bc2ff; }
+
+    .leaders-header i:hover { color: #ff4d4d; transform: scale(1.2); }
+
+    /* ─── Translate host ─── */
+    .translate-host {
+      position: absolute;
+      left: -9999px; top: 0;
+      width: 1px; height: 1px;
+      overflow: hidden;
+    }
+
+    /* ─── Page load animation ─── */
+    body * {
+      opacity: 0;
+      transform: translateY(-40px);
+      transition: all 0.8s ease;
+    }
+
+    body.loaded * {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .top-header      { transition-delay: 0.1s; }
+    .sidebar         { transition-delay: 0.2s; }
+    .verify-section  { transition-delay: 0.3s; }
+    .footer          { transition-delay: 0.5s; }
+
+    /* ─── Verification Card Styles ─── */
+    .verify-section {
+      padding: 20px;
+    }
+
+    .verification-card {
+      width: min(640px, 100%);
+      margin: 0 auto;
+      background: var(--glass-light);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border-light);
+      border-radius: 24px;
+      box-shadow: var(--shadow-light);
+      overflow: hidden;
+    }
+
+    body.dark-mode .verification-card {
+      background: var(--glass-dark);
+      border: 1px solid var(--glass-border-dark);
+      box-shadow: var(--shadow-dark);
+    }
+
+    .top-strip {
+      height: 6px;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5, #0d3c91);
+    }
+
+    .verify-header {
+      padding: 22px 24px 16px;
+      text-align: center;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    body.dark-mode .verify-header {
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .verify-header .logo-img {
+      width: 76px;
+      display: block;
+      margin: 0 auto 12px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    .verify-header p {
+      font-size: 13px;
+      color: var(--soft-light);
+      margin-top: 4px;
+    }
+
+    body.dark-mode .verify-header p { color: var(--soft-dark); }
+
+    .verify-body {
+      padding: 22px 24px 24px;
+    }
+
+    /* Status pill */
+    .status-wrap {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      border: 1px solid transparent;
+    }
+
+    .status-pill.active {
+      background: rgba(31,157,85,0.12);
+      color: #1f9d55;
+      border-color: rgba(31,157,85,0.22);
+    }
+
+    .status-pill.inactive {
+      background: rgba(214,69,69,0.09);
+      color: #d64545;
+      border-color: rgba(214,69,69,0.2);
+    }
+
+    .dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+      display: inline-block;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.4);
+    }
+
+    /* Member layout */
+    .member-layout {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .photo-col { width: 160px; }
+
+    .member-photo {
+      width: 160px; height: 190px;
+      border-radius: 18px;
+      object-fit: cover;
+      background: rgba(200,220,255,0.3);
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+      display: block;
+    }
+
+    body.dark-mode .member-photo {
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .photo-placeholder {
+      width: 160px; height: 190px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(200,220,255,0.2));
+      border: 1px dashed rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: var(--soft-light);
+    }
+
+    body.dark-mode .photo-placeholder {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.12);
+      color: var(--soft-dark);
+    }
+
+    /* Info column */
+    .info-col { min-width: 0; }
+
+    .verified-stmt {
+      font-size: 15px;
+      line-height: 1.65;
+      margin-bottom: 16px;
+      color: var(--soft-light);
+    }
+
+    body.dark-mode .verified-stmt { color: var(--soft-dark); }
+
+    .verified-stmt strong {
+      color: var(--brand);
+      -webkit-text-fill-color: unset;
+    }
+
+    body.dark-mode .verified-stmt strong { color: #9bc2ff; }
+
+    .details-grid {
+      display: grid;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+    }
+
+    body.dark-mode .details-grid {
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .detail-label {
+      color: var(--soft-light);
+      font-weight: 700;
+    }
+
+    body.dark-mode .detail-label { color: var(--soft-dark); }
+
+    .detail-value {
+      color: var(--text-light);
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    body.dark-mode .detail-value { color: var(--text-dark); }
+
+    /* Urdu block */
+    .urdu-block {
+      margin-top: 18px;
+      font-family: 'UrduFont', sans-serif;
+      direction: rtl;
+      text-align: right;
+      font-size: 15px;
+      line-height: 1.8;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(120,115,245,0.08);
+      border: 1px solid rgba(120,115,245,0.15);
+      color: var(--text-light);
+    }
+
+    body.dark-mode .urdu-block {
+      background: rgba(155,194,255,0.07);
+      border-color: rgba(155,194,255,0.12);
+      color: var(--text-dark);
+    }
+
+    /* Loading / error states */
+    .loading-state, .error-state {
+      padding: 32px;
+      text-align: center;
+      color: var(--soft-light);
+    }
+
+    body.dark-mode .loading-state,
+    body.dark-mode .error-state { color: var(--soft-dark); }
+
+    .loading-state i {
+      font-size: 32px;
+      color: var(--accent);
+      margin-bottom: 12px;
+      animation: spin 1.2s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .error-state i {
+      font-size: 32px;
+      color: #d64545;
+      margin-bottom: 12px;
+    }
+
+    .error-state strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 6px;
+      color: #d64545;
+    }
+
+    /* Verify footer */
+    .verify-footer {
+      padding: 14px 24px 20px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      text-align: center;
+      font-size: 12px;
+      color: var(--soft-light);
+    }
+
+    body.dark-mode .verify-footer {
+      border-top: 1px solid rgba(255,255,255,0.07);
+      color: var(--soft-dark);
+    }
+
+    /* ─── Google Translate ─── */
+    .goog-te-banner-frame.skiptranslate,
+    .goog-te-balloon-frame,
+    #goog-gt-tt { display: none !important; }
+
+    body { top: 0 !important; }
+
+    /* ─── RTL ─── */
+    body.page-rtl { direction: rtl; }
+
+    body.page-rtl .top-header,
+    body.page-rtl .sidebar-nav a { direction: rtl; }
+
+    body.page-rtl .sidebar-nav a {
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+    }
+
+    body.page-rtl .user-area { flex-direction: row-reverse; }
+
+    body.page-rtl .info-banner { direction: rtl; }
+    body.page-rtl .info-banner .marquee {
+      padding-left: 0;
+      padding-right: 100%;
+      animation: scrollBannerRtl 25s linear infinite;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1024px) {
+      .dashboard-container { flex-direction: column; }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+      }
+
+      .sidebar-nav {
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .sidebar-nav a {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 8px 12px;
+        font-size: 13px;
+        border-radius: 15px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .member-layout {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+
+      .photo-col { width: 100%; display: flex; justify-content: center; }
+
+      .member-photo, .photo-placeholder {
+        width: min(240px, 100%);
+        height: 280px;
+      }
+
+      .verified-stmt { text-align: center; }
+
+      .detail-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+      }
+
+      .detail-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top-header { padding: 10px 12px; gap: 8px; }
+
+      .user-area { gap: 4px; }
+      .user-area i { font-size: 20px; }
+
+      .notification-wrapper {
+        width: 34px; height: 34px;
+        display: flex; align-items: center; justify-content: center;
+      }
+
+      .notification-wrapper i { font-size: 16px; }
+
+      .header-profile-img-container { width: 30px; height: 30px; }
+
+      .info-banner {
+        font-size: 12px;
+        padding: 3px 8px;
+        min-height: 28px;
+      }
+
+      .sidebar {
+        display: none;
+        position: fixed;
+        top: var(--header-h);
+        left: 0;
+        height: calc(100vh - var(--header-h));
+        width: 200px;
+        flex-direction: column;
+        background: var(--glass-light);
+        backdrop-filter: blur(18px);
+        padding: 20px;
+        z-index: 999;
+      }
+
+      body.dark-mode .sidebar { background: var(--glass-dark); }
+
+      .user-dropdown {
+        width: min(280px, calc(100vw - 16px));
+        inset-inline-end: 8px;
+        top: calc(var(--header-h) - 4px);
+        padding: 12px;
+        max-height: 470px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="floating-circles" aria-hidden="true">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+
+  <!-- ─── Header ─── -->
+  <header class="top-header">
+    <div class="logo-area">
+      <a href="https://livenews.live/KFC" aria-label="Go to KFC home page">
+        <img src="logo.png" alt="KFC Logo" class="dancing-logo">
+      </a>
+    </div>
+
+    <div class="user-area" id="userArea">
+      <button class="notification-wrapper theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="themeToggleIcon" aria-hidden="true"></i>
+      </button>
+      <button class="notification-wrapper translate-toggle-btn" id="translateToggleBtn" type="button" aria-label="Translate page to Urdu" title="Translate page to Urdu">
+        <i class="fa-solid fa-language" id="translateToggleIcon" aria-hidden="true"></i>
+      </button>
+
+      <div class="header-profile-img-container">
+        <img id="headerProfileImg" src="https://livenews.live/KFC/static/images/photos/default.png"
+          alt="User" class="header-profile-img" style="display:none;">
+        <i class="fa-solid fa-user-circle" id="headerUserIcon" aria-hidden="true"></i>
+      </div>
+
+      <span id="username">Welcome, Guest</span>
+      <i class="fa-solid fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
+    </div>
+  </header>
+
+  <!-- ─── Banner ─── -->
+  <div id="infoBanner" class="info-banner">
+    <div class="marquee">
+      🕭 Dear members: The Khawrai Falahi Committee can now send personal messages to all members privately. Please log in to your Committee account to view your messages and recent alerts. Stay updated.
+    </div>
+  </div>
+
+  <!-- ─── User Dropdown ─── -->
+  <div id="userDropdown" class="user-dropdown glass">
+    <div id="guestView">
+      <h3>Welcome Guest</h3>
+      <p>Please sign in to access your account</p>
+      <button id="openLoginBtn" type="button">
+        <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Sign In
+      </button>
+    </div>
+
+    <div id="userView" style="display:none; flex-direction:column; align-items:center; gap:6px;">
+      <div class="dropdown-photo-area">
+        <img id="dropdownProfileImg" src="" alt="Profile Photo" class="dropdown-profile-img">
+      </div>
+      <h3 id="userFullName"></h3>
+      <div class="user-info">
+        <p id="userCard"></p>
+        <p id="userDesg"></p>
+        <p id="userBlood"></p>
+        <p id="userMobile"></p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; width:100%; align-items:center;">
+        <button id="viewPhotoBtn" type="button">
+          <i class="fa-solid fa-image" aria-hidden="true"></i> View Photo
+        </button>
+        <a id="viewCardBtn" href="#" target="_blank" rel="noopener noreferrer">View Card</a>
+        <button id="logoutBtn" type="button">
+          <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Photo Overlay ─── -->
+  <div id="photoOverlay" class="overlay" aria-hidden="true">
+    <div class="photo-viewer-box glass">
+      <div class="leaders-header">
+        <h2>Profile Photo</h2>
+        <i class="fa-solid fa-xmark" id="closePhotoOverlay" aria-hidden="true"></i>
+      </div>
+      <img id="fullProfileImg" src="" alt="User Photo"
+        style="width:100%; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
+    </div>
+  </div>
+
+  <!-- ─── Login Overlay ─── -->
+  <div id="loginOverlay" class="login-overlay" aria-hidden="true">
+    <div class="login-box glass">
+      <h2><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Secure Login</h2>
+      <input type="text" id="loginUsername" placeholder="Enter Username" autocomplete="username">
+      <input type="password" id="loginPassword" placeholder="Enter Password" autocomplete="current-password">
+      <button id="loginBtn" type="button">Login</button>
+      <p id="loginError" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <!-- ─── Welcome Popup ─── -->
+  <div id="welcomePopup" class="welcome-popup" aria-live="polite">
+    <p id="welcomeText"></p>
+  </div>
+
+  <!-- ─── Main Layout ─── -->
+  <div class="dashboard-container">
+    <aside class="sidebar glass">
+      <div class="sidebar-header">
+        <h2>Main Menu</h2>
+        <i class="fa-solid fa-bars" id="sidebarToggle" aria-hidden="true"></i>
+      </div>
+      <nav class="sidebar-nav" aria-label="Primary navigation">
+        <a href="https://livenews.live/KFC"><i class="fa-solid fa-house" aria-hidden="true"></i> Dashboard</a>
+        <a href="https://livenews.live/KFC/message/president.html"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> President's Message</a>
+        <a href="https://livenews.live/KFC/message/alerts.html"><i class="fa-solid fa-bell" aria-hidden="true"></i> Alerts</a>
+        <a href="https://livenews.live/KFC/database.html"><i class="fa-solid fa-database" aria-hidden="true"></i> Member Database</a>
+        <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users" aria-hidden="true"></i> Cabinet Members</a>
+        <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images" aria-hidden="true"></i> Gallery</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="verify-section">
+        <div class="verification-card" id="verificationCard">
+          <div class="top-strip"></div>
+
+          <div class="verify-header">
+            <img src="logo.png" alt="KFC Logo" class="logo-img">
+            <h2>Khawrai Falahi Committee UAE</h2>
+            <p>Card Verification Page</p>
+          </div>
+
+          <div class="verify-body" id="verifyBody">
+            <div class="loading-state" id="loadingBox">
+              <i class="fa-solid fa-circle-notch"></i>
+              <p>Loading verification details...</p>
+            </div>
+          </div>
+
+          <div class="verify-footer">
+            Verify this page by opening the QR link tied to the member record.
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <footer class="footer">
+    <p>© 2026 Khawrai Falahi Committee United Arab Emirates | All Rights Reserved</p>
+  </footer>
+
+  <div id="google_translate_element" class="translate-host" aria-hidden="true"></div>
+
+  <script>
+  (() => {
+    /* ════════════════════════════════
+       CONSTANTS
+    ════════════════════════════════ */
+    const API_BASE    = "https://livenews.live/KFC";
+    const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
+    const DEFAULT_PHOTO = `${PHOTOS_BASE}default.png`;
+    const CARDS_API   = `${API_BASE}/cards.json`;
+    const VERIFY_API  = `${API_BASE}/card2.json`;
+
+    const THEME_KEY   = "kfcTheme";
+    const LANG_KEY    = "kfcPageLanguage";
+
+    /* ════════════════════════════════
+       STATE
+    ════════════════════════════════ */
+    let users = [];
+    let currentUser = null;
+    let currentPageLanguage = localStorage.getItem(LANG_KEY) === "ur" ? "ur" : "en";
+    let googleTranslateLoadPromise = null;
+    let translatePending = null;
+    let translationRefreshTimer = null;
+    let translationMutationObserver = null;
+    let translationFixRunning = false;
+
+    /* ════════════════════════════════
+       ELEMENT CACHE
+    ════════════════════════════════ */
+    const el = id => document.getElementById(id);
+
+    const userArea        = el("userArea");
+    const usernameText    = el("username");
+    const dropdown        = el("userDropdown");
+    const guestView       = el("guestView");
+    const userView        = el("userView");
+    const openLoginBtn    = el("openLoginBtn");
+    const loginOverlay    = el("loginOverlay");
+    const loginBtn        = el("loginBtn");
+    const loginUsername   = el("loginUsername");
+    const loginPassword   = el("loginPassword");
+    const loginError      = el("loginError");
+    const logoutBtn       = el("logoutBtn");
+    const userFullName    = el("userFullName");
+    const userCard        = el("userCard");
+    const userDesg        = el("userDesg");
+    const userBlood       = el("userBlood");
+    const userMobile      = el("userMobile");
+    const welcomePopup    = el("welcomePopup");
+    const welcomeText     = el("welcomeText");
+    const headerProfileImg  = el("headerProfileImg");
+    const headerUserIcon    = el("headerUserIcon");
+    const dropdownProfileImg = el("dropdownProfileImg");
+    const viewPhotoBtn    = el("viewPhotoBtn");
+    const photoOverlay    = el("photoOverlay");
+    const fullProfileImg  = el("fullProfileImg");
+    const closePhotoOverlay = el("closePhotoOverlay");
+    const themeToggleBtn  = el("themeToggleBtn");
+    const themeToggleIcon = el("themeToggleIcon");
+    const translateToggleBtn  = el("translateToggleBtn");
+    const translateToggleIcon = el("translateToggleIcon");
+    const verifyBody      = el("verifyBody");
+
+    /* ════════════════════════════════
+       UTILITIES
+    ════════════════════════════════ */
+    function normalizeText(v){ return (v || "").toString().trim(); }
+
+    function escapeHTML(str){
+      return String(str || "")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;")
+        .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function isCancelled(status){
+      const s = normalizeText(status).toLowerCase();
+      return s === "cancel" || s === "cancelled";
+    }
+
+    function generateUsername(name){
+      const p = normalizeText(name).toLowerCase().split(/\s+/).filter(Boolean);
+      if (p.length < 2) return normalizeText(name).toLowerCase();
+      return (p[0] + p[p.length - 1]).replace(/\s/g,"");
+    }
+
+    function generatePassword(card){
+      if (!card) return "";
+      const p = String(card).split("-");
+      return p[p.length - 1] || "";
+    }
+
+    function safeCardNo(c){ return encodeURIComponent(String(c || "")); }
+
+    function getPhotoSources(cardNo){
+      const c = safeCardNo(cardNo);
+      return [`${PHOTOS_BASE}${c}.png`, `${PHOTOS_BASE}${c}.jpg`, DEFAULT_PHOTO];
+    }
+
+    function setImageWithFallback(img, sources, iconEl){
+      if (!img) return;
+      let idx = 0;
+      const tryNext = () => {
+        if (idx >= sources.length){
+          img.style.display = "none";
+          if (iconEl) iconEl.style.display = "block";
+          return;
+        }
+        img.src = sources[idx++];
+      };
+      img.onerror = tryNext;
+      img.onload  = () => {
+        img.style.display = "block";
+        if (iconEl) iconEl.style.display = "none";
+      };
+      tryNext();
+    }
+
+    function applyProfileImage(cardNo){
+      const s = getPhotoSources(cardNo);
+      setImageWithFallback(headerProfileImg, s, headerUserIcon);
+      setImageWithFallback(dropdownProfileImg, s, null);
+      setImageWithFallback(fullProfileImg, s, null);
+    }
+
+    /* ════════════════════════════════
+       THEME
+    ════════════════════════════════ */
+    function applyTheme(mode){
+      const dark = mode === "dark";
+      document.body.classList.toggle("dark-mode", dark);
+      localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+      if (themeToggleIcon)
+        themeToggleIcon.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+    }
+
+    function initTheme(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark" || saved === "light"){ applyTheme(saved); return; }
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)").matches;
+      applyTheme(prefersDark ? "dark" : "light");
+    }
+
+    function toggleTheme(){
+      applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark");
+    }
+
+    /* ════════════════════════════════
+       TRANSLATION
+    ════════════════════════════════ */
+    function setDocumentDirection(){
+      const rtl = currentPageLanguage === "ur";
+      document.documentElement.lang = rtl ? "ur" : "en";
+      document.documentElement.dir  = rtl ? "rtl" : "ltr";
+      document.body.classList.toggle("page-rtl", rtl);
+      if (translateToggleBtn){
+        translateToggleBtn.classList.toggle("active", rtl);
+        translateToggleBtn.setAttribute("aria-label", rtl ? "Switch to English" : "Translate page to Urdu");
+        translateToggleBtn.title = rtl ? "Switch to English" : "Translate page to Urdu";
+      }
+    }
+
+    function applyTranslationFixes(){
+      if (translationFixRunning) return;
+      translationFixRunning = true;
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      const replacements = currentPageLanguage === "ur"
+        ? [
+            ["Khawrai Falahi Committee","خاورئی فلاحی کمیٹی"],
+            ["Khawarai Welfare Committee","خاورئی فلاحی کمیٹی"],
+            ["Khawrai","خاورئی"],
+            ["Constitution","دستور"]
+          ]
+        : [
+            ["Khawarai Welfare Committee UAE","Khawrai Falahi Committee UAE"],
+            ["Khawarai Welfare Committee","Khawrai Falahi Committee"]
+          ];
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(node => {
+        let t = node.nodeValue; if (!t) return;
+        replacements.forEach(([f,to]) => { if (t.includes(f)) t = t.split(f).join(to); });
+        if (t !== node.nodeValue) node.nodeValue = t;
+      });
+      setTimeout(() => { translationFixRunning = false; }, 0);
+    }
+
+    function scheduleTranslationNormalization(){
+      clearTimeout(translationRefreshTimer);
+      translationRefreshTimer = setTimeout(applyTranslationFixes, 120);
+    }
+
+    function startTranslationObserver(){
+      if (translationMutationObserver || !window.MutationObserver || !document.body) return;
+      translationMutationObserver = new MutationObserver(() => {
+        if (!translationFixRunning) scheduleTranslationNormalization();
+      });
+      translationMutationObserver.observe(document.body,{ subtree:true, childList:true, characterData:true });
+    }
+
+    function applyGoogleTranslation(lang){
+      const combo = document.querySelector(".goog-te-combo");
+      if (!combo) return false;
+      combo.value = lang;
+      combo.dispatchEvent(new Event("change"));
+      currentPageLanguage = lang;
+      localStorage.setItem(LANG_KEY, lang);
+      setDocumentDirection();
+      return true;
+    }
+
+    function applyGoogleTranslationWithRetry(lang, attempt = 0){
+      if (applyGoogleTranslation(lang)){ setTimeout(applyTranslationFixes, 250); return; }
+      if (attempt < 20) setTimeout(() => applyGoogleTranslationWithRetry(lang, attempt+1), 200);
+      else translatePending = lang;
+    }
+
+    function ensureGoogleTranslateWidget(){
+      if (googleTranslateLoadPromise) return googleTranslateLoadPromise;
+      googleTranslateLoadPromise = new Promise((resolve, reject) => {
+        if (window.google && window.google.translate && document.querySelector(".goog-te-combo")){ resolve(); return; }
+        window.googleTranslateElementInit = function(){
+          try {
+            const host = document.getElementById("google_translate_element");
+            if (host) host.innerHTML = "";
+            new google.translate.TranslateElement({ pageLanguage:"en", includedLanguages:"ur,en", autoDisplay:false }, "google_translate_element");
+            resolve();
+            if (translatePending){ const p = translatePending; translatePending = null; setTimeout(() => applyGoogleTranslationWithRetry(p), 250); }
+          } catch(e){ reject(e); }
+        };
+        if (!document.getElementById("kfc-gt-script")){
+          const s = document.createElement("script");
+          s.id = "kfc-gt-script";
+          s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+          s.async = true;
+          s.onerror = () => reject(new Error("Translator failed to load"));
+          document.head.appendChild(s);
+        }
+      });
+      return googleTranslateLoadPromise;
+    }
+
+    async function toggleTranslation(){
+      const target = currentPageLanguage === "ur" ? "en" : "ur";
+      translatePending = target;
+      try {
+        await ensureGoogleTranslateWidget();
+        applyGoogleTranslationWithRetry(target);
+      } catch(e){ console.error("Translation error:", e); }
+    }
+
+    /* ════════════════════════════════
+       SESSION / AUTH
+    ════════════════════════════════ */
+    function saveSession(user){ localStorage.setItem("kfcUser", JSON.stringify(user)); }
+    function clearSession(){ localStorage.removeItem("kfcUser"); }
+
+    function showLoggedOutUI(){
+      if (headerProfileImg) headerProfileImg.style.display = "none";
+      if (headerUserIcon)   headerUserIcon.style.display = "block";
+      if (guestView) guestView.style.display = "block";
+      if (userView)  userView.style.display  = "none";
+      if (usernameText) usernameText.innerText = "Welcome, Guest";
+    }
+
+    function showLoggedInUI(){
+      if (guestView) guestView.style.display = "none";
+      if (userView)  userView.style.display  = "flex";
+    }
+
+    function renderUserToUI(user){
+      if (!user) return;
+      const firstName = normalizeText(user.name).split(" ")[0] || "User";
+      if (usernameText)  usernameText.innerText  = `Welcome, ${firstName}`;
+      if (userFullName)  userFullName.innerText  = `Welcome, ${user.name}`;
+      if (userCard)      userCard.innerText       = `Card Number: ${user.CNo}`;
+      if (userDesg)      userDesg.innerText       = `Designation: ${user.Desg}`;
+      if (userBlood)     userBlood.innerText      = `Blood Group: ${user.BG || "Not available"}`;
+      if (userMobile)    userMobile.innerText     = `Registered Mobile: ${user.mobile || "Not available"}`;
+      applyProfileImage(user.CNo);
+      const vcBtn = document.getElementById("viewCardBtn");
+      if (vcBtn){ vcBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`; vcBtn.target = "_blank"; }
+      showLoggedInUI();
+      scheduleTranslationNormalization();
+    }
+
+    function showWelcome(name){
+      if (!welcomePopup || !welcomeText) return;
+      welcomeText.innerText = `Welcome, ${name} 👋`;
+      welcomePopup.classList.add("show");
+      setTimeout(() => welcomePopup.classList.remove("show"), 2500);
+    }
+
+    async function login(){
+      if (loginError) loginError.innerText = "";
+      const uname = normalizeText(loginUsername?.value).toLowerCase();
+      const pass  = normalizeText(loginPassword?.value);
+      if (!uname || !pass){ if (loginError) loginError.innerText = "Enter username and password"; return; }
+      const user = users.find(u => generateUsername(u.name) === uname && generatePassword(u.CNo) === pass);
+      if (!user){ if (loginError) loginError.innerText = "Invalid credentials"; return; }
+      if (isCancelled(user.Status)){ if (loginError) loginError.innerText = "This account cannot log in because the card is cancelled"; return; }
+      currentUser = user;
+      saveSession(user);
+      renderUserToUI(user);
+      showWelcome(user.name);
+      if (loginOverlay) loginOverlay.classList.remove("show");
+    }
+
+    function checkSession(){
+      const saved = localStorage.getItem("kfcUser");
+      if (!saved){ currentUser = null; showLoggedOutUI(); return; }
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && !isCancelled(parsed.Status)){ currentUser = parsed; renderUserToUI(parsed); return; }
+        clearSession(); currentUser = null; showLoggedOutUI();
+      } catch(e){ clearSession(); currentUser = null; showLoggedOutUI(); }
+    }
+
+    /* ════════════════════════════════
+       LOAD USERS
+    ════════════════════════════════ */
+    async function loadUsers(){
+      try {
+        const r = await fetch(CARDS_API, { cache:"no-store" });
+        users = await r.json();
+      } catch(e){ console.error("Error loading users:", e); }
+    }
+
+    /* ════════════════════════════════
+       VERIFICATION LOGIC
+    ════════════════════════════════ */
+    function decodeCard(encoded){
+      try { return atob(encoded); } catch(e){ return null; }
+    }
+
+    function getStatusInfo(status){
+      const s = normalizeText(status).toLowerCase();
+      const activeStates = ["active","valid","approved","approved active"];
+      const cancelStates = ["cancel","cancelled","canceled","inactive","disabled","expired"];
+      if (activeStates.includes(s)) return { label:"ACTIVE",    cls:"active",   icon:"●" };
+      if (cancelStates.includes(s)) return { label: s === "expired" ? "EXPIRED" : "NOT ACTIVE", cls:"inactive", icon:"●" };
+      if (!s) return { label:"STATUS UNKNOWN", cls:"inactive", icon:"●" };
+      return { label: s.toUpperCase(), cls:"inactive", icon:"●" };
+    }
+
+    function renderVerification(card){
+      const statusInfo = getStatusInfo(card.Status);
+      const photoSrc   = `${PHOTOS_BASE}${encodeURIComponent(String(card.CNo))}.png`;
+
+      const safeName     = escapeHTML(card.name     || "Unknown Member");
+      const safeDesg     = escapeHTML(card.Desg     || "-");
+      const safeIssue    = escapeHTML(card.Issue    || "-");
+      const safeMobile   = escapeHTML(card.mobile   || "-");
+      const safeUrdu     = escapeHTML(card.urduName || "");
+
+      verifyBody.innerHTML = `
+        <div class="status-wrap">
+          <div class="status-pill ${statusInfo.cls}">
+            <span class="dot"></span>
+            <span>${statusInfo.label}</span>
+          </div>
+        </div>
+
+        <div class="member-layout">
+          <div class="photo-col">
+            <img
+              class="member-photo"
+              id="verifyPhoto"
+              src="${photoSrc}"
+              alt="${safeName}"
+            >
+            <div class="photo-placeholder" id="verifyPhotoFallback" style="display:none;">
+              <i class="fa-solid fa-user"></i>
+            </div>
+          </div>
+
+          <div class="info-col">
+            <p class="verified-stmt">
+              This is to verify that this card is
+              <strong>${statusInfo.cls === "active" ? "ACTIVE" : "CANCELLED"}</strong>
+              under the name of <strong>${safeName}</strong>.
+            </p>
+
+            <div class="details-grid">
+              <div class="detail-row">
+                <div class="detail-label">Member Name</div>
+                <div class="detail-value">${safeName}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Designation</div>
+                <div class="detail-value">${safeDesg}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Issue Date</div>
+                <div class="detail-value">${safeIssue}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Mobile</div>
+                <div class="detail-value">${safeMobile}</div>
+              </div>
+            </div>
+
+            ${safeUrdu ? `<div class="urdu-block">${safeUrdu}</div>` : ""}
+          </div>
+        </div>
+      `;
+
+      // Photo fallback
+      const verifyPhoto = document.getElementById("verifyPhoto");
+      const verifyFallback = document.getElementById("verifyPhotoFallback");
+      if (verifyPhoto && verifyFallback){
+        verifyPhoto.onerror = () => {
+          verifyPhoto.style.display = "none";
+          verifyFallback.style.display = "flex";
+        };
+      }
+
+      scheduleTranslationNormalization();
+    }
+
+    function renderError(title, message){
+      verifyBody.innerHTML = `
+        <div class="error-state">
+          <i class="fa-solid fa-circle-xmark"></i>
+          <strong>${escapeHTML(title)}</strong>
+          <p>${escapeHTML(message)}</p>
+        </div>
+      `;
+    }
+
+    async function runVerification(){
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("card");
+
+      if (!encoded){
+        renderError("No Verification Code", "Please open this page using a valid member QR code.");
+        return;
+      }
+
+      const cardNo = decodeCard(encoded);
+      if (!cardNo){
+        renderError("Invalid Link", "The verification code is missing or not valid.");
+        return;
+      }
+
+      try {
+        const res = await fetch(VERIFY_API, { cache:"no-store" });
+        if (!res.ok) throw new Error("Data load failed");
+        const data = await res.json();
+        const card = Array.isArray(data) ? data.find(item => String(item.CNo) === String(cardNo)) : null;
+
+        if (!card){
+          renderError("Record Not Found", "No member record matches this verification code.");
+          return;
+        }
+
+        renderVerification(card);
+      } catch(e){
+        console.error("Verification error:", e);
+        renderError("Unable to Verify", "The verification data could not be loaded right now. Please try again.");
+      }
+    }
+
+    /* ════════════════════════════════
+       EVENT BINDINGS
+    ════════════════════════════════ */
+    function bindEvents(){
+      if (userArea){
+        userArea.addEventListener("click", e => {
+          e.stopPropagation();
+          if (dropdown) dropdown.classList.toggle("show");
+        });
+      }
+
+      if (themeToggleBtn){
+        themeToggleBtn.addEventListener("click", e => { e.stopPropagation(); toggleTheme(); });
+      }
+
+      if (translateToggleBtn){
+        translateToggleBtn.addEventListener("click", e => { e.stopPropagation(); toggleTranslation(); });
+      }
+
+      if (viewPhotoBtn){
+        viewPhotoBtn.addEventListener("click", () => {
+          if (photoOverlay) photoOverlay.classList.add("show");
+          if (dropdown) dropdown.classList.remove("show");
+        });
+      }
+
+      if (closePhotoOverlay){
+        closePhotoOverlay.addEventListener("click", () => {
+          if (photoOverlay) photoOverlay.classList.remove("show");
+        });
+      }
+
+      if (photoOverlay){
+        photoOverlay.addEventListener("click", e => {
+          if (e.target === photoOverlay) photoOverlay.classList.remove("show");
+        });
+      }
+
+      document.addEventListener("click", () => {
+        if (dropdown) dropdown.classList.remove("show");
+      });
+
+      if (dropdown) dropdown.addEventListener("click", e => e.stopPropagation());
+
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", () => { clearSession(); currentUser = null; location.reload(); });
+      }
+
+      if (openLoginBtn){
+        openLoginBtn.addEventListener("click", () => { if (loginOverlay) loginOverlay.classList.add("show"); });
+      }
+
+      if (loginOverlay){
+        loginOverlay.addEventListener("click", e => {
+          if (e.target === loginOverlay) loginOverlay.classList.remove("show");
+        });
+      }
+
+      if (loginBtn) loginBtn.addEventListener("click", login);
+
+      document.addEventListener("keydown", e => {
+        if (e.key === "Enter" && loginOverlay && loginOverlay.classList.contains("show")) login();
+      });
+
+      window.addEventListener("load", () => {
+        document.body.classList.add("loaded");
+      });
+    }
+
+    /* ════════════════════════════════
+       INIT
+    ════════════════════════════════ */
+    function init(){
+      initTheme();
+      setDocumentDirection();
+      bindEvents();
+      startTranslationObserver();
+
+      if (currentPageLanguage === "ur"){
+        ensureGoogleTranslateWidget()
+          .then(() => applyGoogleTranslationWithRetry("ur"))
+          .catch(e => console.error("Translator init error:", e));
+      }
+
+      loadUsers().then(() => {
+        checkSession();
+        scheduleTranslationNormalization();
+      });
+
+      runVerification();
+    }
+
+    if (document.readyState === "loading"){
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>
