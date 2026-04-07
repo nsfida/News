@@ -465,11 +465,6 @@ footer { transition-delay:0.30s; }
         <input type="file" id="photo" accept="image/*" />
       </div>
 
-      <div class="input-group">
-        <label for="removeBgKey"><i class="fa-solid fa-scissors"></i> Remove.bg API Key (optional)</label>
-        <input type="text" id="removeBgKey" placeholder="Leave blank to skip background removal" />
-      </div>
-
       <div class="btn-row">
         <button class="btn-primary" id="submitBtn" type="button" disabled>
           <i class="fa-solid fa-plus-circle"></i> Generate e-Card
@@ -537,7 +532,9 @@ footer { transition-delay:0.30s; }
   <p style="margin-top:4px;font-size:10px;opacity:0.7;">Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" rel="noopener">Nadeem Shahzad Fida</a></p>
 </footer>
 
-<script>
+<script type="module">
+import { removeBackground as imglyRemoveBackground } from 'https://esm.sh/@imgly/background-removal@1.6.0';
+
 "use strict";
 
 const API_BASE    = "https://livenews.live/KFC";
@@ -607,7 +604,6 @@ function disablePortalControls() {
   document.getElementById("clearBtn").disabled = true;
   document.getElementById("copyBtn").disabled = true;
   document.getElementById("photo").disabled = true;
-  document.getElementById("removeBgKey").disabled = true;
   document.querySelector(".page-wrapper").style.filter = "blur(1px)";
   document.querySelector(".page-wrapper").style.pointerEvents = "none";
   document.querySelector(".page-wrapper").style.userSelect = "none";
@@ -936,7 +932,6 @@ saveCropBtn.addEventListener("click", () => {
   if (!imageRect || !currentPhotoUrl) return;
 
   const source = imageToCrop;
-  const stageRect = getStageRect();
   const naturalW = source.naturalWidth;
   const naturalH = source.naturalHeight;
   if (!naturalW || !naturalH) return;
@@ -973,30 +968,15 @@ saveCropBtn.addEventListener("click", () => {
   }, "image/png");
 });
 
-async function removeBackground(blob) {
-  const apiKey = document.getElementById("removeBgKey").value.trim();
-  if (!apiKey) return blob;
-
-  const fd = new FormData();
-  fd.append("image_file", blob);
-  fd.append("size", "auto");
-
+async function removeBackgroundWithImgly(blob) {
   const submitBtn = document.getElementById("submitBtn");
   submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Removing background…';
   submitBtn.disabled = true;
-
   try {
-    const res = await fetch("https://api.remove.bg/v1.0/removebg", {
-      method: "POST",
-      headers: { "X-Api-Key": apiKey },
-      body: fd
-    });
-    if (res.ok) return await res.blob();
-    console.warn("remove.bg:", await res.text());
-    return blob;
-  } catch (err) {
-    console.error(err);
-    return blob;
+    const result = await imglyRemoveBackground(blob, { debug: false });
+    if (result instanceof Blob) return result;
+    if (result && typeof result.blob === "function") return await result.blob();
+    throw new Error("Background removal did not return a valid image blob.");
   } finally {
     submitBtn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Generate e-Card';
     submitBtn.disabled = false;
@@ -1020,17 +1000,22 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
 
   if (!name || !cardNumber) { alert("Please fill in Name and Card Number."); return; }
 
-  const processedBlob = await removeBackground(finalPhotoBlob);
-  const reader = new FileReader();
-  reader.onload = evt => {
-    localStorage.setItem("ecardData", JSON.stringify({
-      name, urduName, designation, cardNumber, bloodGroup,
-      contact, room, issueDate, validity, authority,
-      photoData: evt.target.result
-    }));
-    window.location.href = "generate.html";
-  };
-  reader.readAsDataURL(processedBlob);
+  try {
+    const processedBlob = await removeBackgroundWithImgly(finalPhotoBlob);
+    const reader = new FileReader();
+    reader.onload = evt => {
+      localStorage.setItem("ecardData", JSON.stringify({
+        name, urduName, designation, cardNumber, bloodGroup,
+        contact, room, issueDate, validity, authority,
+        photoData: evt.target.result
+      }));
+      window.location.href = "generate.html";
+    };
+    reader.readAsDataURL(processedBlob);
+  } catch (err) {
+    console.error(err);
+    alert("Background removal failed. Please try another image or crop again.");
+  }
 });
 
 document.getElementById("clearBtn").addEventListener("click", () => {
