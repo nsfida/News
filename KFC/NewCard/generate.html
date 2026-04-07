@@ -479,7 +479,7 @@ async function translateToUrdu(text){
 
 function generateQR(){
   const encoded = encodeCard(formData.cardNumber);
-  const url = "https://livenews.live/KFC/viewcard.html?card=" + encoded;
+  const url = "https://livenews.live/KFC/verify.html?card=" + encoded;
 
   qrTemp.innerHTML = "";
   new QRCode(qrTemp, {
