@@ -20,12 +20,11 @@
     "date": "May 24, 2025",
     "caption": "New changes was suggested and the bill was submitted to committee's leadership, was later approved."
   },
-  {
-    "type": "image",
-    "src": "https://livenews.live/KFC/message/Gallery/images/c9c95286-3968-45a1-b5f5-ac9820b13f6b.jpg",
-    "src": "https://livenews.live/KFC/message/Gallery/images/db963073-4be0-4c08-857f-70dc16bcb0ad.jpg",
-    "title": "Formation Of New Cabinet",
-    "date": "May 26, 2025",
-    "caption": "New cabinet was formated and designations were assigned according to rules and regulations mentioned in the constitution of Khawrai Falahi Committee UAE."
-  }
+ {
+  "type": "image",
+  "src": "https://livenews.live/KFC/message/Gallery/images/c9c95286-3968-45a1-b5f5-ac9820b13f6b.jpg||https://livenews.live/KFC/message/Gallery/images/db963073-4be0-4c08-857f-70dc16bcb0ad.jpg",
+  "title": "Formation Of New Cabinet",
+  "date": "May 26, 2025",
+  "caption": "New cabinet was formated and designations were assigned according to rules and regulations mentioned in the constitution of Khawrai Falahi Committee UAE."
+ }
 ]
