@@ -1,73 +1,93 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="color-scheme" content="light dark" />
-  <title>PDF Flipbook Library Viewer</title>
+  <meta name="theme-color" content="#0f2742" />
+  <title>NSF Library — Official PDF Library</title>
+
   <style>
     :root{
-      --bg0:#f5f7fb;
-      --bg1:#edf2ff;
-      --panel: rgba(255,255,255,.74);
-      --panel-strong: rgba(255,255,255,.92);
-      --text:#111827;
-      --muted:#6b7280;
-      --line: rgba(17,24,39,.08);
+      --bg0:#f4f7fb;
+      --bg1:#eef3f8;
+      --bg2:#e7edf4;
+      --panel: rgba(255,255,255,.78);
+      --panel-strong: rgba(255,255,255,.94);
+      --line: rgba(15,23,42,.08);
+      --line-strong: rgba(15,23,42,.14);
+      --text:#0f172a;
+      --muted:#5b6678;
+      --muted-2:#7a8698;
+      --brand:#0f2742;
+      --brand-2:#1d4ed8;
+      --good:#16a34a;
+      --danger:#dc2626;
       --shadow: 0 18px 50px rgba(15,23,42,.12);
-      --shadow-soft: 0 10px 30px rgba(15,23,42,.10);
-      --accent:#4f46e5;
-      --accent-2:#7c3aed;
-      --danger:#ef4444;
-      --ok:#10b981;
-      --radius:24px;
-      --radius-sm:16px;
-      --card-ratio: 0.72;
+      --shadow-soft: 0 10px 25px rgba(15,23,42,.08);
+      --radius: 24px;
+      --content-max: 1500px;
       --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-ur: "Noto Naskh Arabic", "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+      --font-ur: "Noto Naskh Arabic", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
     }
 
     [data-theme="dark"]{
-      --bg0:#0b1020;
-      --bg1:#121a31;
-      --panel: rgba(15,23,42,.72);
-      --panel-strong: rgba(17,24,39,.92);
-      --text:#f3f4f6;
-      --muted:#9ca3af;
+      --bg0:#07111f;
+      --bg1:#0b1727;
+      --bg2:#102235;
+      --panel: rgba(10,18,31,.74);
+      --panel-strong: rgba(11,20,34,.92);
       --line: rgba(255,255,255,.08);
+      --line-strong: rgba(255,255,255,.12);
+      --text:#eaf0f8;
+      --muted:#a7b1c2;
+      --muted-2:#8d99ad;
+      --brand:#dbeafe;
+      --brand-2:#60a5fa;
       --shadow: 0 20px 50px rgba(0,0,0,.38);
-      --shadow-soft: 0 12px 30px rgba(0,0,0,.28);
+      --shadow-soft: 0 12px 28px rgba(0,0,0,.24);
     }
 
     *{ box-sizing:border-box; }
-    html, body{
-      height:100%;
+    html,body{ height:100%; }
+    body{
       margin:0;
-      background:
-        radial-gradient(circle at top left, rgba(79,70,229,.18), transparent 30%),
-        radial-gradient(circle at top right, rgba(124,58,237,.16), transparent 28%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
       color:var(--text);
       font-family:var(--font-ui);
+      background:
+        radial-gradient(circle at top left, rgba(29,78,216,.12), transparent 25%),
+        radial-gradient(circle at top right, rgba(20,184,166,.10), transparent 22%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 56%, var(--bg2));
       overflow-x:hidden;
     }
 
-    body{
-      min-height:100%;
-    }
+    a{ color:inherit; }
+    button, input, select{ font:inherit; }
+    img{ max-width:100%; display:block; }
 
-    .app{
-      max-width: 1460px;
-      margin: 0 auto;
-      padding: 22px 18px 40px;
+    .shell{
+      max-width:var(--content-max);
+      margin:0 auto;
+      padding:20px 16px 40px;
     }
 
     .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      padding:10px 0 14px;
+      backdrop-filter:saturate(180%) blur(18px);
+      background:linear-gradient(180deg, rgba(244,247,251,.92), rgba(244,247,251,.58));
+    }
+    [data-theme="dark"] .topbar{
+      background:linear-gradient(180deg, rgba(7,17,31,.96), rgba(7,17,31,.64));
+    }
+
+    .topbar-row{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:16px;
-      padding: 6px 0 18px;
     }
 
     .brand{
@@ -78,97 +98,108 @@
     }
 
     .brand-mark{
-      width:52px;
-      height:52px;
+      width:54px;
+      height:54px;
       border-radius:18px;
-      background:
-        linear-gradient(135deg, var(--accent), var(--accent-2));
-      color:white;
+      flex:0 0 auto;
       display:grid;
       place-items:center;
-      font-weight:800;
+      color:#fff;
+      background:linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow:var(--shadow-soft);
+      font-weight:900;
       letter-spacing:.5px;
-      box-shadow: var(--shadow-soft);
-      flex:0 0 auto;
       user-select:none;
     }
 
-    .brand-copy{
-      min-width:0;
-    }
-
+    .brand-copy{ min-width:0; }
     .brand-copy h1{
       margin:0;
-      font-size: clamp(20px, 2.3vw, 30px);
-      line-height:1.15;
-      letter-spacing:-.03em;
+      line-height:1.08;
+      font-size:clamp(20px, 2.2vw, 30px);
+      letter-spacing:-.04em;
+      color:var(--text);
     }
-
     .brand-copy p{
-      margin:4px 0 0;
+      margin:5px 0 0;
       color:var(--muted);
       font-size:14px;
+      line-height:1.45;
     }
 
-    .actions{
+    .header-actions{
       display:flex;
       align-items:center;
       gap:10px;
       flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
     .btn{
       appearance:none;
-      border:1px solid var(--line);
+      border:1px solid var(--line-strong);
       background:var(--panel);
       color:var(--text);
-      padding:11px 15px;
       border-radius:16px;
-      font:inherit;
-      font-weight:650;
+      padding:11px 14px;
       display:inline-flex;
       align-items:center;
       gap:10px;
       cursor:pointer;
-      box-shadow: var(--shadow-soft);
+      box-shadow:var(--shadow-soft);
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease, opacity .18s ease;
       backdrop-filter: blur(16px);
-      transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, opacity .2s ease;
+      user-select:none;
     }
-    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
-    .btn:active{ transform: translateY(0); opacity:.92; }
-    .btn svg{ width:18px; height:18px; flex:0 0 auto; }
+    .btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow); }
+    .btn:active{ transform:translateY(0); opacity:.92; }
+    .btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
     .btn.small{ padding:10px 12px; border-radius:14px; font-size:14px; }
+    .btn.primary{ background:linear-gradient(135deg, var(--brand), var(--brand-2)); border-color:transparent; color:#fff; }
 
     .hero{
       display:grid;
-      grid-template-columns: 1.35fr .65fr;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, .75fr);
       gap:16px;
-      margin: 10px 0 18px;
+      margin-top:10px;
     }
 
-    .hero-card{
+    .panel{
       border:1px solid var(--line);
       background:var(--panel);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-soft);
       backdrop-filter: blur(18px);
-      border-radius: var(--radius);
-      padding: 22px;
-      box-shadow: var(--shadow-soft);
       overflow:hidden;
+    }
+
+    .hero-main{
+      padding:24px;
       position:relative;
+      overflow:hidden;
     }
-
-    .hero-card h2{
-      margin:0 0 8px;
-      font-size: clamp(22px, 2.6vw, 38px);
-      line-height:1.08;
-      letter-spacing:-.04em;
+    .hero-main::after{
+      content:"";
+      position:absolute;
+      inset:auto -120px -120px auto;
+      width:280px;
+      height:280px;
+      border-radius:50%;
+      background: radial-gradient(circle, rgba(29,78,216,.16), transparent 65%);
+      pointer-events:none;
     }
-
-    .hero-card p{
+    .hero-main h2{
+      margin:0 0 10px;
+      font-size:clamp(24px, 3vw, 42px);
+      line-height:1.06;
+      letter-spacing:-.05em;
+      max-width:18ch;
+    }
+    .hero-main p{
       margin:0;
-      max-width: 70ch;
+      max-width:78ch;
       color:var(--muted);
-      line-height:1.65;
+      line-height:1.75;
       font-size:15px;
     }
 
@@ -176,364 +207,307 @@
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      margin-top:16px;
+      margin-top:18px;
     }
-
     .chip{
       display:inline-flex;
       align-items:center;
       gap:8px;
       padding:9px 12px;
       border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.3);
+      border:1px solid var(--line-strong);
+      background:rgba(255,255,255,.22);
       color:var(--text);
       font-size:13px;
       font-weight:650;
+      white-space:nowrap;
     }
+    [data-theme="dark"] .chip{ background:rgba(255,255,255,.04); }
 
     .hero-side{
       display:grid;
       gap:16px;
     }
-
-    .mini-card{
-      border:1px solid var(--line);
-      background:var(--panel);
-      backdrop-filter: blur(18px);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow-soft);
+    .stat-card{
+      padding:18px 20px;
+      min-height:110px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
     }
-
-    .mini-card .label{
-      color:var(--muted);
+    .stat-card .label{
       font-size:12px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      margin-bottom:8px;
-      font-weight:700;
-    }
-
-    .mini-card .value{
-      font-size: 30px;
       font-weight:800;
-      letter-spacing:-.04em;
-      line-height:1.1;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted-2);
+    }
+    .stat-card .value{
+      font-size:clamp(26px, 2.3vw, 34px);
+      font-weight:900;
+      letter-spacing:-.05em;
+      line-height:1;
+    }
+    .stat-card .sub{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+      margin-top:8px;
     }
 
-    .gallery-wrap{
-      margin-top: 16px;
+    .toolbar{
+      margin-top:18px;
+      padding:14px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr .55fr auto;
+      gap:12px;
+      align-items:center;
     }
 
-    .section-head{
+    .field, .select{
+      width:100%;
+      height:48px;
+      border-radius:15px;
+      border:1px solid var(--line-strong);
+      background:var(--panel-strong);
+      color:var(--text);
+      outline:none;
+      padding:0 14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .field::placeholder{ color:var(--muted-2); }
+    .select{ padding-inline-end:40px; cursor:pointer; }
+
+    .gallery-head{
       display:flex;
       align-items:end;
       justify-content:space-between;
-      gap:14px;
-      margin: 0 0 14px;
+      gap:12px;
+      margin:20px 0 12px;
     }
-
-    .section-head h3{
+    .gallery-head h3{
       margin:0;
-      font-size: 18px;
-      letter-spacing:-.02em;
+      font-size:18px;
+      letter-spacing:-.03em;
     }
-
-    .section-head p{
-      margin:0;
+    .gallery-head p{
+      margin:3px 0 0;
       color:var(--muted);
       font-size:14px;
+      line-height:1.45;
     }
 
     .gallery{
       display:grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    @media (max-width: 1280px){
-      .gallery{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .hero{ grid-template-columns: 1fr; }
-      .hero-side{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 980px){
-      .gallery{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    }
-    @media (max-width: 700px){
-      .topbar{ flex-direction:column; align-items:stretch; }
-      .actions{ justify-content:space-between; }
-      .hero-side{ grid-template-columns: 1fr; }
-      .gallery{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px; }
-    }
-    @media (max-width: 520px){
-      .app{ padding: 14px 12px 26px; }
-      .gallery{ grid-template-columns: 1fr; }
-      .hero-card{ padding: 18px; }
+      gap:16px;
     }
 
     .book-card{
-      position:relative;
       border:1px solid var(--line);
-      background: rgba(255,255,255,.34);
-      backdrop-filter: blur(18px);
-      border-radius: 22px;
+      border-radius:22px;
       overflow:hidden;
-      box-shadow: var(--shadow-soft);
+      background:rgba(255,255,255,.34);
+      box-shadow:var(--shadow-soft);
       cursor:pointer;
-      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
-      min-height: 100%;
       display:flex;
       flex-direction:column;
+      min-height:100%;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
       outline:none;
-      transform: translateZ(0);
     }
+    [data-theme="dark"] .book-card{ background:rgba(255,255,255,.03); }
     .book-card:hover,
     .book-card:focus-visible{
-      transform: translateY(-4px) scale(1.01);
-      box-shadow: var(--shadow);
-      border-color: rgba(79,70,229,.28);
+      transform:translateY(-4px);
+      border-color:rgba(29,78,216,.28);
+      box-shadow:var(--shadow);
     }
 
     .cover{
       position:relative;
-      aspect-ratio: 0.72;
-      background:
-        linear-gradient(145deg, rgba(79,70,229,.18), rgba(124,58,237,.14)),
-        linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.28));
+      aspect-ratio:.72;
+      background:linear-gradient(145deg, rgba(29,78,216,.18), rgba(20,184,166,.12)), linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,.24));
       overflow:hidden;
       border-bottom:1px solid var(--line);
     }
-
     .cover img{
       width:100%;
       height:100%;
       object-fit:cover;
-      display:block;
-      transform: scale(1.001);
-      transition: transform .35s ease, opacity .2s ease;
+      transition:transform .3s ease, opacity .2s ease;
     }
-
-    .book-card:hover .cover img{
-      transform: scale(1.04);
-    }
-
+    .book-card:hover .cover img{ transform:scale(1.03); }
     .cover-fallback{
       position:absolute;
       inset:0;
       display:grid;
       place-items:center;
-      padding:16px;
       text-align:center;
-      color:white;
-      font-weight:800;
+      padding:16px;
+      background:linear-gradient(135deg, #0f2742, #1d4ed8);
+      color:#fff;
+      font-size:17px;
+      font-weight:850;
       letter-spacing:-.03em;
-      font-size:18px;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,.18), transparent 22%),
-        linear-gradient(135deg, #4f46e5, #7c3aed);
       opacity:0;
       pointer-events:none;
-      transition: opacity .2s ease;
     }
-
     .cover.is-broken img{ opacity:0; }
     .cover.is-broken .cover-fallback{ opacity:1; }
 
-    .card-meta{
-      padding: 14px 14px 15px;
+    .card-body{
+      padding:14px 14px 15px;
       display:grid;
       gap:8px;
       flex:1 1 auto;
     }
-
     .card-title{
       margin:0;
       font-size:15px;
       line-height:1.35;
+      font-weight:850;
       letter-spacing:-.02em;
-      font-weight:800;
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
-      min-height: 2.75em;
+      min-height:2.75em;
     }
-
     .card-author{
       margin:0;
       color:var(--muted);
       font-size:13px;
-      line-height:1.35;
+      line-height:1.4;
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
-      min-height: 1.8em;
+      min-height:1.85em;
     }
-
     .card-footer{
+      margin-top:auto;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:8px;
-      margin-top:auto;
+      flex-wrap:wrap;
     }
-
-    .lang-badge{
+    .lang-badge,
+    .type-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 9px;
+      border-radius:999px;
       font-size:12px;
       font-weight:800;
       letter-spacing:.06em;
       text-transform:uppercase;
-      color: var(--accent);
-      background: rgba(79,70,229,.10);
-      border:1px solid rgba(79,70,229,.16);
-      padding:6px 9px;
-      border-radius:999px;
       white-space:nowrap;
     }
-
-    .open-hint{
-      color:var(--muted);
-      font-size:12px;
-      font-weight:700;
-    }
+    .lang-badge{ color:#0f4c81; background:rgba(14,165,233,.12); border:1px solid rgba(14,165,233,.18); }
+    .type-badge{ color:var(--good); background:rgba(22,163,74,.10); border:1px solid rgba(22,163,74,.16); }
+    .open-hint{ color:var(--muted-2); font-size:12px; font-weight:750; }
 
     .skeleton{
-      position:relative;
+      min-height:100%;
+      border-radius:22px;
       overflow:hidden;
-      border-radius: 22px;
-      min-height: 100%;
       border:1px solid var(--line);
-      background: rgba(255,255,255,.32);
-      box-shadow: var(--shadow-soft);
+      background:rgba(255,255,255,.30);
+      box-shadow:var(--shadow-soft);
+      position:relative;
     }
-
     .skeleton::after{
       content:"";
       position:absolute;
       inset:0;
-      transform: translateX(-120%);
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
-      animation: shimmer 1.5s infinite;
+      transform:translateX(-120%);
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.32), transparent);
+      animation: shimmer 1.4s infinite;
     }
-
-    .skeleton-cover{
-      aspect-ratio: 0.72;
-      background: linear-gradient(135deg, rgba(148,163,184,.24), rgba(99,102,241,.18));
-      border-bottom:1px solid var(--line);
-    }
-
-    .skeleton-body{
-      padding:14px;
-      display:grid;
-      gap:10px;
-    }
-
-    .sk-line{
-      height:12px;
-      border-radius:999px;
-      background: rgba(148,163,184,.22);
-    }
-
-    .sk-line.big{ height:15px; width:92%; }
-    .sk-line.mid{ width:75%; }
-    .sk-line.small{ width:44%; }
-
-    @keyframes shimmer{
-      100%{ transform: translateX(120%); }
-    }
+    .sk-cover{ aspect-ratio:.72; background:linear-gradient(135deg, rgba(148,163,184,.22), rgba(99,102,241,.14)); border-bottom:1px solid var(--line); }
+    .sk-body{ padding:14px; display:grid; gap:10px; }
+    .sk-line{ height:12px; border-radius:999px; background:rgba(148,163,184,.22); }
+    .sk-line.big{ height:15px; width:88%; }
+    .sk-line.mid{ width:74%; }
+    .sk-line.small{ width:48%; }
+    @keyframes shimmer{ 100%{ transform:translateX(120%); } }
 
     .empty-state,
     .error-state{
+      grid-column:1/-1;
       border:1px solid var(--line);
       background:var(--panel);
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow-soft);
-      border-radius: var(--radius);
-      padding: 26px;
+      border-radius:var(--radius);
+      padding:28px;
       text-align:center;
       color:var(--muted);
+      box-shadow:var(--shadow-soft);
     }
-    .error-state{
-      color: #dc2626;
-      border-color: rgba(220,38,38,.18);
-    }
+    .error-state{ color:var(--danger); }
     .empty-state strong,
-    .error-state strong{
-      color:var(--text);
-      display:block;
-      margin-bottom:6px;
-      font-size:18px;
-    }
+    .error-state strong{ display:block; margin-bottom:6px; color:var(--text); font-size:18px; }
+    .empty-state code,
+    .error-state code{ background:rgba(127,127,127,.10); border-radius:8px; padding:2px 6px; }
 
-    /* Modal viewer */
-    .modal{
+    /* Viewer */
+    .viewer{
       position:fixed;
       inset:0;
-      z-index:1000;
+      z-index:100;
       display:none;
     }
-    .modal.open{ display:block; }
+    .viewer.open{ display:block; }
 
-    .modal-backdrop{
+    .viewer-backdrop{
       position:absolute;
       inset:0;
-      background: rgba(8,12,24,.68);
-      backdrop-filter: blur(18px);
+      background:rgba(5,10,18,.72);
+      backdrop-filter:blur(18px);
       animation: fadeIn .18s ease-out both;
     }
-
-    .modal-panel{
+    .viewer-panel{
       position:absolute;
-      inset: 18px;
-      border-radius: 28px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(7,10,20,.82);
-      color:#fff;
-      box-shadow: 0 30px 90px rgba(0,0,0,.42);
+      inset:16px;
+      border-radius:28px;
       overflow:hidden;
+      background:rgba(7,12,20,.92);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 30px 90px rgba(0,0,0,.42);
       display:flex;
       flex-direction:column;
-      transform: scale(.98);
-      animation: panelIn .22s cubic-bezier(.2,.85,.2,1) both;
+      transform:scale(.985);
+      animation: riseIn .22s cubic-bezier(.2,.85,.2,1) both;
     }
+    @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+    @keyframes riseIn{ from{ opacity:0; transform:scale(.96) translateY(10px); } to{ opacity:1; transform:scale(1) translateY(0); } }
 
-    @keyframes fadeIn{
-      from{ opacity:0; } to{ opacity:1; }
-    }
-    @keyframes panelIn{
-      from{ opacity:0; transform: scale(.96) translateY(10px); }
-      to{ opacity:1; transform: scale(1) translateY(0); }
-    }
-
-    .viewer-topbar{
+    .viewer-top{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:14px;
-      padding: 18px 18px 14px;
+      padding:18px 18px 14px;
       border-bottom:1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), transparent);
     }
 
-    .viewer-heading{
-      min-width:0;
-    }
-
-    .viewer-heading h2{
+    .viewer-title-wrap{ min-width:0; }
+    .viewer-title{
       margin:0;
-      font-size: clamp(18px, 2vw, 26px);
+      font-size:clamp(18px, 2vw, 26px);
+      line-height:1.15;
       letter-spacing:-.03em;
-      line-height:1.2;
       word-break:break-word;
     }
-
-    .viewer-heading p{
+    .viewer-subtitle{
       margin:6px 0 0;
-      color: rgba(255,255,255,.72);
       font-size:14px;
       line-height:1.45;
+      color:rgba(255,255,255,.72);
       word-break:break-word;
     }
 
@@ -541,504 +515,490 @@
       display:flex;
       align-items:center;
       gap:8px;
-      flex:0 0 auto;
       flex-wrap:wrap;
       justify-content:flex-end;
+      flex:0 0 auto;
     }
-
     .viewer-actions .btn{
-      background: rgba(255,255,255,.08);
+      background:rgba(255,255,255,.08);
       color:#fff;
-      border-color: rgba(255,255,255,.10);
+      border-color:rgba(255,255,255,.10);
       box-shadow:none;
     }
-    .viewer-actions .btn:hover{ background: rgba(255,255,255,.12); }
-
-    .close-btn{
-      width:44px;
-      height:44px;
-      padding:0;
-      justify-content:center;
-      border-radius: 14px;
-      font-size: 20px;
-      line-height:1;
-    }
+    .viewer-actions .btn:hover{ background:rgba(255,255,255,.12); }
+    .viewer-actions .btn.primary{ background:linear-gradient(135deg, #2563eb, #0ea5e9); }
+    .close-btn{ width:44px; height:44px; justify-content:center; padding:0; border-radius:14px; font-size:20px; }
 
     .viewer-status{
-      min-height: 28px;
-      padding: 10px 18px 0;
-      color: rgba(255,255,255,.8);
-      font-size: 13px;
+      min-height:28px;
+      padding:10px 18px 0;
+      color:rgba(255,255,255,.82);
+      font-size:13px;
       display:flex;
       align-items:center;
       gap:10px;
     }
-
     .viewer-status.hidden{ display:none; }
 
     .spinner{
       width:16px;
       height:16px;
-      border-radius:999px;
-      border:2px solid rgba(255,255,255,.28);
-      border-top-color: white;
+      border-radius:50%;
+      border:2px solid rgba(255,255,255,.25);
+      border-top-color:#fff;
       animation: spin .8s linear infinite;
       flex:0 0 auto;
     }
-    @keyframes spin{ to{ transform: rotate(360deg); } }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
 
     .viewer-stage{
-      position:relative;
       flex:1 1 auto;
       min-height:0;
-      padding: 12px 14px 18px;
+      padding:12px 14px 18px;
       display:flex;
     }
 
-    .page-stack{
+    .page-stage{
       position:relative;
       width:100%;
-      height:100%;
-      min-height: 380px;
+      min-height:360px;
+      border-radius:24px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.05), transparent 28%),
+        radial-gradient(circle at top right, rgba(255,255,255,.05), transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       display:flex;
       align-items:center;
       justify-content:center;
+      perspective:2400px;
+    }
+
+    .book-stage{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      height:100%;
+      padding:16px;
       overflow:hidden;
-      border-radius: 24px;
-      background:
-        radial-gradient(circle at 20% 10%, rgba(255,255,255,.06), transparent 26%),
-        radial-gradient(circle at 80% 0%, rgba(255,255,255,.05), transparent 18%),
-        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
     }
 
-    .paper-canvas,
-    .flip-sheet{
+    .page-layer{
       position:absolute;
-      left:50%;
-      top:50%;
-      transform: translate(-50%, -50%);
-      transform-origin: center center;
-      will-change: transform, opacity;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      will-change:transform, opacity;
+      transform-style:preserve-3d;
+      backface-visibility:hidden;
     }
 
-    .paper-canvas{
+    .paper-frame{
+      background:#fff;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 22px 60px rgba(0,0,0,.35), 0 2px 0 rgba(255,255,255,.04) inset;
+      position:relative;
+      max-width:100%;
+      max-height:100%;
+    }
+
+    .paper-frame img{
       display:block;
-      border-radius: 18px;
-      background: #fff;
-      box-shadow:
-        0 22px 55px rgba(0,0,0,.35),
-        0 2px 0 rgba(255,255,255,.06) inset;
+      width:100%;
+      height:100%;
+      object-fit:contain;
       user-select:none;
       -webkit-user-drag:none;
       pointer-events:none;
-    }
-
-    .page-label{
-      position:absolute;
-      left:50%;
-      bottom:12px;
-      transform: translateX(-50%);
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.34);
-      color: rgba(255,255,255,.92);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing:.03em;
-      backdrop-filter: blur(8px);
-      pointer-events:none;
-      z-index:8;
-    }
-
-    .nav-zone{
-      position:absolute;
-      top:0;
-      bottom:0;
-      width: 50%;
-      border:0;
-      background: transparent;
-      cursor:pointer;
-      z-index:6;
-      outline:none;
-      padding:0;
-    }
-    .nav-zone:focus-visible{
-      outline: 2px solid rgba(255,255,255,.65);
-      outline-offset: -6px;
-    }
-    .nav-prev{ left:0; }
-    .nav-next{ right:0; }
-
-    .flip-sheet{
-      z-index: 7;
-      perspective: 2200px;
-      display:none;
-      pointer-events:none;
-    }
-    .flip-sheet.active{
-      display:block;
-    }
-
-    .flip-3d{
-      width:100%;
-      height:100%;
-      position:relative;
-      transform-style: preserve-3d;
-      backface-visibility:hidden;
-      box-shadow: 0 25px 60px rgba(0,0,0,.42);
-      border-radius:18px;
-    }
-
-    .face{
-      position:absolute;
-      inset:0;
-      overflow:hidden;
-      border-radius:18px;
-      backface-visibility:hidden;
       background:#fff;
     }
 
-    .face.front{
-      transform: rotateY(0deg);
-    }
-
-    .face.back{
-      transform: rotateY(180deg);
-    }
-
-    .face canvas{
-      display:block;
-      border-radius:18px;
-      width:100%;
-      height:100%;
+    .page-badge{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:-34px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(0,0,0,.32);
+      color:rgba(255,255,255,.90);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.03em;
+      backdrop-filter:blur(8px);
+      white-space:nowrap;
       pointer-events:none;
-      user-select:none;
-      -webkit-user-drag:none;
     }
+
+    .base-layer{ z-index:2; }
+    .under-layer{ z-index:1; opacity:0; }
+    .turn-layer{ z-index:3; opacity:0; pointer-events:none; }
+
+    .turn-layer.show{ opacity:1; }
+    .turn-layer.turn-next{
+      transform-origin:left center;
+      animation: turnNext .78s cubic-bezier(.2,.65,.18,1) forwards;
+    }
+    .turn-layer.turn-prev{
+      transform-origin:right center;
+      animation: turnPrev .78s cubic-bezier(.2,.65,.18,1) forwards;
+    }
+
+    @keyframes turnNext{
+      0%   { transform:translateX(0) rotateY(0deg); filter:brightness(1); }
+      20%  { filter:brightness(.97); }
+      100% { transform:translateX(-1.5%) rotateY(-180deg); filter:brightness(.94); }
+    }
+    @keyframes turnPrev{
+      0%   { transform:translateX(0) rotateY(0deg); filter:brightness(1); }
+      20%  { filter:brightness(.97); }
+      100% { transform:translateX(1.5%) rotateY(180deg); filter:brightness(.94); }
+    }
+
+    .page-shadow{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:4;
+      background:linear-gradient(90deg, rgba(0,0,0,.0), rgba(0,0,0,.14), rgba(0,0,0,.0));
+      opacity:0;
+      transition:opacity .18s ease;
+    }
+    .page-shadow.active{ opacity:1; }
+
+    .viewer-nav-zone{
+      position:absolute;
+      top:0;
+      bottom:0;
+      width:46%;
+      border:0;
+      background:transparent;
+      cursor:pointer;
+      z-index:5;
+      padding:0;
+    }
+    .viewer-nav-zone:focus-visible{
+      outline:2px solid rgba(255,255,255,.70);
+      outline-offset:-6px;
+    }
+    .nav-prev{ left:0; }
+    .nav-next{ right:0; }
 
     .viewer-footer{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding: 0 18px 18px;
-      color: rgba(255,255,255,.72);
+      padding:0 18px 18px;
+      color:rgba(255,255,255,.74);
       font-size:13px;
     }
-
-    .viewer-footer .left{
+    .viewer-footer .left,
+    .viewer-footer .right{
       display:flex;
       align-items:center;
       gap:10px;
       flex-wrap:wrap;
     }
-
     .kbd{
-      font-size:12px;
-      font-weight:700;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.06);
-      border-radius:8px;
       padding:3px 7px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.07);
+      font-size:12px;
+      font-weight:800;
+      color:#fff;
     }
 
-    .status-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .overlay-msg{
+    .toast{
       position:absolute;
-      inset:auto 18px 18px auto;
+      right:18px;
+      bottom:18px;
       z-index:20;
       display:none;
       padding:10px 12px;
       border-radius:14px;
-      background: rgba(0,0,0,.5);
+      background:rgba(0,0,0,.52);
       color:#fff;
       font-size:13px;
-      box-shadow: 0 12px 28px rgba(0,0,0,.28);
-      backdrop-filter: blur(10px);
+      box-shadow:0 12px 28px rgba(0,0,0,.28);
+      backdrop-filter:blur(10px);
+      max-width:min(360px, calc(100vw - 36px));
     }
-    .overlay-msg.show{ display:block; }
+    .toast.show{ display:block; }
 
-    .rtl{
-      direction: rtl;
-      font-family: var(--font-ur);
-    }
-
-    .rtl .viewer-heading,
+    .rtl{ direction:rtl; }
+    .rtl, .rtl *{ font-family:var(--font-ur); }
+    .rtl .viewer-title-wrap,
     .rtl .viewer-footer,
-    .rtl .hero-card,
-    .rtl .card-meta{
-      direction: rtl;
-    }
-
-    .rtl .viewer-actions{
-      flex-direction: row-reverse;
-    }
-
-    .loading-line{
-      color: rgba(255,255,255,.78);
-    }
-
-    @media (max-width: 800px){
-      .modal-panel{
-        inset: 10px;
-        border-radius: 22px;
-      }
-      .viewer-topbar{
-        padding: 14px 14px 12px;
-      }
-      .viewer-stage{
-        padding: 10px 10px 14px;
-      }
-      .viewer-footer{
-        padding: 0 14px 14px;
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .page-stack{
-        min-height: 320px;
-      }
-      .page-label{
-        bottom: 10px;
-      }
-    }
-
-    @media (max-width: 520px){
-      .modal-panel{
-        inset: 0;
-        border-radius: 0;
-      }
-      .page-stack{
-        min-height: 280px;
-      }
-      .viewer-status{
-        padding-top: 8px;
-      }
-    }
+    .rtl .card-body,
+    .rtl .hero-main{ direction:rtl; }
 
     .visually-hidden{
       position:absolute !important;
-      height:1px; width:1px;
+      width:1px;
+      height:1px;
       overflow:hidden;
-      clip: rect(1px,1px,1px,1px);
+      clip:rect(1px,1px,1px,1px);
       white-space:nowrap;
     }
 
-    body.modal-open{
-      overflow:hidden;
+    body.modal-open{ overflow:hidden; }
+
+    @media (max-width: 1280px){
+      .gallery{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .hero{ grid-template-columns:1fr; }
+      .toolbar{ grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width: 980px){
+      .gallery{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .topbar-row{ flex-direction:column; align-items:stretch; }
+      .header-actions{ justify-content:space-between; }
+    }
+    @media (max-width: 700px){
+      .shell{ padding:14px 12px 28px; }
+      .gallery{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px; }
+      .toolbar{ grid-template-columns:1fr; }
+      .viewer-panel{ inset:10px; border-radius:22px; }
+      .viewer-top{ padding:14px 14px 12px; }
+      .viewer-stage{ padding:10px 10px 14px; }
+      .viewer-footer{ padding:0 14px 14px; flex-direction:column; align-items:flex-start; }
+      .page-stage{ min-height:300px; }
+      .book-stage{ padding:10px; }
+      .page-badge{ bottom:-30px; }
+    }
+    @media (max-width: 520px){
+      .gallery{ grid-template-columns:1fr; }
+      .hero-main, .stat-card{ padding:18px; }
+      .viewer-panel{ inset:0; border-radius:0; }
+      .page-stage{ min-height:260px; }
+      .btn.small{ padding:9px 10px; }
+      .close-btn{ width:42px; height:42px; }
+      .viewer-actions{ gap:6px; }
     }
   </style>
 </head>
 <body>
-  <div class="app" id="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">PDF</div>
-        <div class="brand-copy">
-          <h1>PDF Flipbook Library Viewer</h1>
-          <p id="subTitle">Loading your books from books.json…</p>
+  <div class="topbar">
+    <div class="shell">
+      <div class="topbar-row">
+        <div class="brand" aria-label="NSF Library">
+          <div class="brand-mark">NSF</div>
+          <div class="brand-copy">
+            <h1>NSF Library</h1>
+            <p id="pageTagline">Official digital library for PDF books and publications</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn small" id="refreshBtn" type="button" aria-label="Reload books">
+            <span>⟳</span>
+            <span>Reload</span>
+          </button>
+          <button class="btn small" id="themeToggle" type="button" aria-label="Toggle theme">
+            <span id="themeIcon">🌙</span>
+            <span id="themeLabel">Dark</span>
+          </button>
         </div>
       </div>
 
-      <div class="actions">
-        <button class="btn small" id="themeToggle" type="button" aria-label="Toggle dark mode">
-          <span id="themeIcon">🌙</span>
-          <span id="themeLabel">Dark mode</span>
+      <section class="hero">
+        <div class="panel hero-main">
+          <h2>High-quality PDF pages with real page-turn animation.</h2>
+          <p>
+            This version renders each page as an image snapshot first, then flips the image like a real page.
+            Urdu text stays exactly as it appears in the PDF because nothing is reflowed or converted into HTML text.
+          </p>
+          <div class="hero-badges">
+            <span class="chip">Image-based page rendering</span>
+            <span class="chip">Real flip animation</span>
+            <span class="chip">Urdu + English support</span>
+            <span class="chip">Search and filters</span>
+            <span class="chip">Theme support</span>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="panel stat-card">
+            <div class="label">Library items</div>
+            <div class="value" id="booksCount">—</div>
+            <div class="sub" id="libraryStatus">Loading books.json…</div>
+          </div>
+          <div class="panel stat-card">
+            <div class="label">Viewer mode</div>
+            <div class="value" style="font-size:20px; line-height:1.35;" id="modeSummary">Flipbook</div>
+            <div class="sub">Pages open one by one with a turning animation.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel toolbar" aria-label="Library controls">
+        <input class="field" id="searchInput" type="search" placeholder="Search title, author, category…" aria-label="Search books" />
+        <select class="select" id="languageFilter" aria-label="Filter by language">
+          <option value="all">All languages</option>
+          <option value="en">English</option>
+          <option value="ur">Urdu</option>
+        </select>
+        <select class="select" id="sortSelect" aria-label="Sort books">
+          <option value="featured">Sort: Featured</option>
+          <option value="title-asc">Title A → Z</option>
+          <option value="title-desc">Title Z → A</option>
+          <option value="year-desc">Newest first</option>
+          <option value="year-asc">Oldest first</option>
+        </select>
+        <button class="btn primary" id="clearFiltersBtn" type="button">
+          <span>✕</span>
+          <span>Clear filters</span>
         </button>
-      </div>
-    </header>
+      </section>
 
-    <section class="hero">
-      <div class="hero-card">
-        <h2>Modern flipbook reading, tuned for English and Urdu.</h2>
-        <p>
-          This viewer loads a local <strong>books.json</strong> file, displays a responsive library grid, and opens each PDF
-          in a full-screen overlay with page-flip animation, touch support, URL deep-linking, page memory, and mirrored
-          reading direction for Urdu.
-        </p>
-        <div class="hero-badges">
-          <span class="chip">PDF.js rendering</span>
-          <span class="chip">LTR / RTL support</span>
-          <span class="chip">Mobile swipe gestures</span>
-          <span class="chip">Saved page state</span>
-          <span class="chip">Dark mode</span>
-        </div>
-      </div>
-
-      <div class="hero-side">
-        <div class="mini-card">
-          <div class="label">Books</div>
-          <div class="value" id="booksCount">—</div>
-        </div>
-        <div class="mini-card">
-          <div class="label">Status</div>
-          <div class="value" style="font-size:18px;font-weight:750;line-height:1.35;" id="statusText">Waiting for data</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="gallery-wrap">
-      <div class="section-head">
+      <div class="gallery-head">
         <div>
           <h3>Library</h3>
-          <p>Click a book to open the full-screen flipbook viewer.</p>
+          <p id="resultsLabel">Browse available books from books.json</p>
         </div>
       </div>
 
-      <div id="gallery" class="gallery" aria-live="polite"></div>
-    </section>
+      <section id="gallery" class="gallery" aria-live="polite"></section>
+    </div>
   </div>
 
-  <div id="viewerModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" id="viewerBackdrop"></div>
+  <div class="viewer" id="viewer" aria-hidden="true">
+    <div class="viewer-backdrop" id="viewerBackdrop"></div>
 
-    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
-      <div class="viewer-topbar">
-        <div class="viewer-heading">
-          <h2 id="viewerTitle">Book title</h2>
-          <p id="viewerMeta">Author · Language</p>
+    <div class="viewer-panel" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+      <div class="viewer-top">
+        <div class="viewer-title-wrap">
+          <h2 class="viewer-title" id="viewerTitle">Book title</h2>
+          <p class="viewer-subtitle" id="viewerMeta">Author · Language</p>
         </div>
 
         <div class="viewer-actions">
+          <button class="btn small" id="downloadBtn" type="button" aria-label="Open PDF in a new tab">PDF</button>
           <button class="btn small" id="zoomOutBtn" type="button" aria-label="Zoom out">−</button>
-          <button class="btn small" id="zoomResetBtn" type="button" aria-label="Reset zoom">Fit</button>
+          <button class="btn small" id="fitBtn" type="button" aria-label="Fit page to screen">Fit</button>
           <button class="btn small" id="zoomInBtn" type="button" aria-label="Zoom in">＋</button>
-          <button class="btn close-btn" id="closeViewerBtn" type="button" aria-label="Close viewer">×</button>
+          <button class="btn close-btn" id="closeBtn" type="button" aria-label="Close viewer">×</button>
         </div>
       </div>
 
-      <div class="viewer-status hidden" id="viewerStatus">
+      <div id="viewerStatus" class="viewer-status hidden">
         <span class="spinner" aria-hidden="true"></span>
         <span id="viewerStatusText">Loading…</span>
       </div>
 
       <div class="viewer-stage">
-        <div id="pageStack" class="page-stack">
-          <canvas id="currentCanvas" class="paper-canvas"></canvas>
-
-          <div id="flipSheet" class="flip-sheet">
-            <div class="flip-3d" id="flip3d">
-              <div class="face front"><canvas id="flipFrontCanvas"></canvas></div>
-              <div class="face back"><canvas id="flipBackCanvas"></canvas></div>
-            </div>
+        <div class="page-stage" id="pageStage">
+          <div class="book-stage" id="bookStage">
+            <div class="page-layer under-layer" id="underLayer"></div>
+            <div class="page-layer base-layer" id="baseLayer"></div>
+            <div class="page-layer turn-layer" id="turnLayer"></div>
+            <div class="page-shadow" id="pageShadow"></div>
           </div>
 
-          <div class="page-label" id="pageLabel">Page 1 / 1</div>
-
-          <button class="nav-zone nav-prev" id="navPrev" type="button" aria-label="Previous page">
-            <span class="visually-hidden">Previous page</span>
+          <button class="viewer-nav-zone nav-prev" id="prevZone" type="button" aria-label="Previous page">
+            <span class="visually-hidden">Previous</span>
           </button>
-          <button class="nav-zone nav-next" id="navNext" type="button" aria-label="Next page">
-            <span class="visually-hidden">Next page</span>
+          <button class="viewer-nav-zone nav-next" id="nextZone" type="button" aria-label="Next page">
+            <span class="visually-hidden">Next</span>
           </button>
 
-          <div class="overlay-msg" id="overlayMsg"></div>
+          <div class="toast" id="toast"></div>
         </div>
       </div>
 
       <div class="viewer-footer">
         <div class="left">
-          <span class="status-pill">
-            <span class="kbd">←</span>
-            <span class="kbd">→</span>
-            <span id="directionHint">Navigate pages</span>
-          </span>
-          <span class="status-pill">
-            <span class="kbd">Esc</span>
-            <span>Close</span>
-          </span>
+          <span class="kbd">←</span><span class="kbd">→</span><span id="navHint">Navigate pages</span>
+          <span class="kbd">Esc</span><span>Close</span>
         </div>
-        <div id="renderHint">Tip: swipe on mobile to flip pages.</div>
+        <div class="right" id="footerHint">Swipe on mobile to navigate.</div>
       </div>
     </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
-    /* global pdfjsLib */
     'use strict';
 
     if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
     const els = {
-      subTitle: document.getElementById('subTitle'),
-      booksCount: document.getElementById('booksCount'),
-      statusText: document.getElementById('statusText'),
-      gallery: document.getElementById('gallery'),
+      pageTagline: document.getElementById('pageTagline'),
+      refreshBtn: document.getElementById('refreshBtn'),
       themeToggle: document.getElementById('themeToggle'),
       themeIcon: document.getElementById('themeIcon'),
       themeLabel: document.getElementById('themeLabel'),
+      booksCount: document.getElementById('booksCount'),
+      libraryStatus: document.getElementById('libraryStatus'),
+      searchInput: document.getElementById('searchInput'),
+      languageFilter: document.getElementById('languageFilter'),
+      sortSelect: document.getElementById('sortSelect'),
+      clearFiltersBtn: document.getElementById('clearFiltersBtn'),
+      resultsLabel: document.getElementById('resultsLabel'),
+      gallery: document.getElementById('gallery'),
 
-      viewerModal: document.getElementById('viewerModal'),
+      viewer: document.getElementById('viewer'),
       viewerBackdrop: document.getElementById('viewerBackdrop'),
       viewerTitle: document.getElementById('viewerTitle'),
       viewerMeta: document.getElementById('viewerMeta'),
       viewerStatus: document.getElementById('viewerStatus'),
       viewerStatusText: document.getElementById('viewerStatusText'),
-      viewerStage: document.querySelector('.viewer-stage'),
-      pageStack: document.getElementById('pageStack'),
-      currentCanvas: document.getElementById('currentCanvas'),
-      flipSheet: document.getElementById('flipSheet'),
-      flip3d: document.getElementById('flip3d'),
-      flipFrontCanvas: document.getElementById('flipFrontCanvas'),
-      flipBackCanvas: document.getElementById('flipBackCanvas'),
-      pageLabel: document.getElementById('pageLabel'),
-      directionHint: document.getElementById('directionHint'),
-      renderHint: document.getElementById('renderHint'),
-      overlayMsg: document.getElementById('overlayMsg'),
-      closeViewerBtn: document.getElementById('closeViewerBtn'),
-      navPrev: document.getElementById('navPrev'),
-      navNext: document.getElementById('navNext'),
+      closeBtn: document.getElementById('closeBtn'),
+      downloadBtn: document.getElementById('downloadBtn'),
       zoomInBtn: document.getElementById('zoomInBtn'),
       zoomOutBtn: document.getElementById('zoomOutBtn'),
-      zoomResetBtn: document.getElementById('zoomResetBtn')
+      fitBtn: document.getElementById('fitBtn'),
+      pageStage: document.getElementById('pageStage'),
+      bookStage: document.getElementById('bookStage'),
+      baseLayer: document.getElementById('baseLayer'),
+      underLayer: document.getElementById('underLayer'),
+      turnLayer: document.getElementById('turnLayer'),
+      pageShadow: document.getElementById('pageShadow'),
+      prevZone: document.getElementById('prevZone'),
+      nextZone: document.getElementById('nextZone'),
+      toast: document.getElementById('toast'),
+      navHint: document.getElementById('navHint'),
+      footerHint: document.getElementById('footerHint')
+    };
+
+    const storageKeys = {
+      theme: 'nsf-library-theme',
+      pagePrefix: 'nsf-library-page-',
+      zoomPrefix: 'nsf-library-zoom-',
+      lastQuery: 'nsf-library-query',
+      lastLang: 'nsf-library-lang',
+      lastSort: 'nsf-library-sort'
     };
 
     const state = {
       books: [],
+      filtered: [],
       currentBook: null,
       pdf: null,
-      isRTL: false,
-      currentPage: 1,
       totalPages: 1,
+      currentPage: 1,
       zoom: 1,
-      fitScale: 1,
-      openToken: 0,
-      renderToken: 0,
-      isFlipping: false,
+      isRTL: false,
+      isOpen: false,
       isRendering: false,
-      savedPageKeyPrefix: 'flipbook-page-',
-      activePointer: null,
-      startPoint: null,
-      lastUrlBook: null,
-      lastUrlPage: null,
-      currentCanvasSize: { w: 0, h: 0, cssW: 0, cssH: 0 },
-      theme: localStorage.getItem('flipbook-theme') || 'light'
+      isAnimating: false,
+      renderSeq: 0,
+      openSeq: 0,
+      theme: localStorage.getItem(storageKeys.theme) || 'light',
+      pageCache: new Map(),
+      pendingCache: new Map(),
+      frameW: 0,
+      frameH: 0
     };
 
-    function qs(name) {
+    function q(name) {
       return new URLSearchParams(location.search).get(name);
-    }
-
-    function setTheme(theme) {
-      state.theme = theme === 'dark' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', state.theme);
-      localStorage.setItem('flipbook-theme', state.theme);
-      const dark = state.theme === 'dark';
-      els.themeIcon.textContent = dark ? '☀️' : '🌙';
-      els.themeLabel.textContent = dark ? 'Light mode' : 'Dark mode';
-    }
-
-    function toggleTheme() {
-      setTheme(state.theme === 'dark' ? 'light' : 'dark');
     }
 
     function escapeHtml(str) {
@@ -1050,94 +1010,208 @@
         .replaceAll("'", '&#39;');
     }
 
-    function setStatus(text) {
-      els.statusText.textContent = text;
+    function setTheme(theme) {
+      state.theme = theme === 'dark' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', state.theme);
+      localStorage.setItem(storageKeys.theme, state.theme);
+      const dark = state.theme === 'dark';
+      els.themeIcon.textContent = dark ? '☀️' : '🌙';
+      els.themeLabel.textContent = dark ? 'Light' : 'Dark';
     }
 
-    function showOverlayMessage(message, timeout = 1800) {
-      els.overlayMsg.textContent = message;
-      els.overlayMsg.classList.add('show');
-      window.clearTimeout(showOverlayMessage._t);
-      showOverlayMessage._t = window.setTimeout(() => {
-        els.overlayMsg.classList.remove('show');
-      }, timeout);
+    function toast(message, ms = 1600) {
+      els.toast.textContent = message;
+      els.toast.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => els.toast.classList.remove('show'), ms);
     }
 
-    function showViewerStatus(text, visible = true) {
+    function setViewerStatus(text, visible = true) {
       els.viewerStatusText.textContent = text;
       els.viewerStatus.classList.toggle('hidden', !visible);
     }
 
-    function setLoadingState(text) {
-      showViewerStatus(text, true);
+    function showStatus(text) {
+      setViewerStatus(text, true);
     }
 
-    function hideLoadingState() {
-      showViewerStatus('', false);
+    function hideStatus() {
+      setViewerStatus('', false);
     }
 
-    function formatLanguage(lang) {
-      return lang === 'ur' ? 'Urdu' : 'English';
+    function openViewer() {
+      els.viewer.classList.add('open');
+      els.viewer.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+    }
+
+    function closeViewer() {
+      els.viewer.classList.remove('open');
+      els.viewer.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      clearPageCache(true);
+      els.baseLayer.innerHTML = '';
+      els.underLayer.innerHTML = '';
+      els.turnLayer.innerHTML = '';
+      els.pageShadow.classList.remove('active');
+      state.currentBook = null;
+      state.pdf = null;
+      state.totalPages = 1;
+      state.currentPage = 1;
+      state.zoom = 1;
+      state.isRTL = false;
+      state.isOpen = false;
+      state.isRendering = false;
+      state.isAnimating = false;
+      hideStatus();
+      updateFooterHints();
+      syncUrl(null, null, false);
+    }
+
+    function formatLanguage(code) {
+      const raw = String(code || '').toLowerCase();
+      if (raw === 'ur') return 'Urdu';
+      if (raw === 'en') return 'English';
+      return raw ? raw.toUpperCase() : 'Unknown';
+    }
+
+    function getBookId(book) {
+      return String(book?.id ?? book?.slug ?? book?.title ?? Math.random()).trim();
     }
 
     function getSavedPage(bookId) {
-      const raw = localStorage.getItem(state.savedPageKeyPrefix + bookId);
+      const raw = localStorage.getItem(storageKeys.pagePrefix + bookId);
       const n = raw ? parseInt(raw, 10) : NaN;
       return Number.isFinite(n) && n > 0 ? n : null;
     }
 
     function setSavedPage(bookId, page) {
-      localStorage.setItem(state.savedPageKeyPrefix + bookId, String(page));
+      localStorage.setItem(storageKeys.pagePrefix + bookId, String(page));
+    }
+
+    function getSavedZoom(bookId) {
+      const raw = localStorage.getItem(storageKeys.zoomPrefix + bookId);
+      const n = raw ? parseFloat(raw) : NaN;
+      return Number.isFinite(n) && n > 0 ? n : 1;
+    }
+
+    function setSavedZoom(bookId, zoom) {
+      localStorage.setItem(storageKeys.zoomPrefix + bookId, String(zoom));
     }
 
     function getInitialPage(book) {
-      const urlPage = parseInt(qs('page') || '', 10);
+      const urlPage = parseInt(q('page') || '', 10);
       if (Number.isFinite(urlPage) && urlPage > 0) return urlPage;
-      const saved = getSavedPage(book.id);
+      const saved = getSavedPage(getBookId(book));
       if (saved) return saved;
-      return book.language === 'ur' ? null : 1;
+      return 1;
     }
 
     function syncUrl(bookId, page, push = false) {
       const url = new URL(location.href);
-      if (bookId) {
-        url.searchParams.set('book', bookId);
-        url.searchParams.set('page', String(page));
-      } else {
+      if (!bookId) {
         url.search = '';
+      } else {
+        url.searchParams.set('book', bookId);
+        url.searchParams.set('page', String(page || 1));
       }
       const method = push ? 'pushState' : 'replaceState';
-      history[method]({ book: bookId, page }, '', url.toString());
-      state.lastUrlBook = bookId;
-      state.lastUrlPage = page;
+      history[method]({ bookId, page }, '', url.toString());
     }
 
-    function clearUrl() {
-      const url = new URL(location.href);
-      url.search = '';
-      history.pushState({}, '', url.toString());
-      state.lastUrlBook = null;
-      state.lastUrlPage = null;
+    function setControlsEnabled(enabled) {
+      [els.prevZone, els.nextZone, els.zoomInBtn, els.zoomOutBtn, els.fitBtn, els.downloadBtn].forEach((btn) => {
+        btn.disabled = !enabled;
+      });
+    }
+
+    function setLoadingBookCount(value) {
+      els.booksCount.textContent = value;
+    }
+
+    function normalizeBook(book) {
+      const id = getBookId(book);
+      return {
+        id,
+        title: String(book.title || book.name || 'Untitled book'),
+        author: String(book.author || book.writer || 'Unknown author'),
+        category: String(book.category || book.subject || 'General'),
+        language: String(book.language || 'en').toLowerCase(),
+        direction: String(book.direction || '').toLowerCase(),
+        year: String(book.year || book.published || ''),
+        pdf: String(book.pdf || book.file || book.url || ''),
+        cover: String(book.cover || book.thumbnail || ''),
+        featured: Boolean(book.featured),
+        description: String(book.description || ''),
+        raw: book
+      };
     }
 
     function renderSkeletons(count = 10) {
-      els.gallery.innerHTML = '';
       const frag = document.createDocumentFragment();
-
+      els.gallery.innerHTML = '';
       for (let i = 0; i < count; i++) {
-        const card = document.createElement('div');
-        card.className = 'skeleton';
-        card.innerHTML = `
-          <div class="skeleton-cover"></div>
-          <div class="skeleton-body">
+        const el = document.createElement('div');
+        el.className = 'skeleton';
+        el.innerHTML = `
+          <div class="sk-cover"></div>
+          <div class="sk-body">
             <div class="sk-line big"></div>
             <div class="sk-line mid"></div>
             <div class="sk-line small"></div>
           </div>
         `;
-        frag.appendChild(card);
+        frag.appendChild(el);
       }
       els.gallery.appendChild(frag);
+    }
+
+    function applyFilters() {
+      const query = els.searchInput.value.trim().toLowerCase();
+      const lang = els.languageFilter.value;
+      const sort = els.sortSelect.value;
+
+      let list = state.books.filter((book) => {
+        const hay = [book.title, book.author, book.category, book.year, book.language, book.description].join(' ').toLowerCase();
+        const matchesQuery = !query || hay.includes(query);
+        const matchesLang = lang === 'all' || book.language === lang;
+        return matchesQuery && matchesLang;
+      });
+
+      switch (sort) {
+        case 'title-asc':
+          list.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case 'title-desc':
+          list.sort((a, b) => b.title.localeCompare(a.title));
+          break;
+        case 'year-asc':
+          list.sort((a, b) => (parseInt(a.year) || 0) - (parseInt(b.year) || 0));
+          break;
+        case 'year-desc':
+          list.sort((a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0));
+          break;
+        default:
+          list.sort((a, b) => (b.featured === a.featured ? a.title.localeCompare(b.title) : (b.featured ? 1 : -1)));
+      }
+
+      state.filtered = list;
+      renderGallery(list);
+      updateResultsLabel();
+    }
+
+    function updateResultsLabel() {
+      const total = state.books.length;
+      const shown = state.filtered.length;
+      if (!total) {
+        els.resultsLabel.textContent = 'No books loaded yet.';
+        return;
+      }
+      if (shown === total) {
+        els.resultsLabel.textContent = `Showing all ${total} book${total === 1 ? '' : 's'}.`;
+      } else {
+        els.resultsLabel.textContent = `Showing ${shown} of ${total} book${total === 1 ? '' : 's'} after filtering.`;
+      }
     }
 
     function renderGallery(books) {
@@ -1145,21 +1219,18 @@
 
       if (!books.length) {
         els.gallery.innerHTML = `
-          <div class="empty-state" style="grid-column:1/-1;">
-            <strong>No books found</strong>
-            Add items to <code>books.json</code> and reload the page.
+          <div class="empty-state">
+            <strong>No matching books</strong>
+            Try another search term or clear the filters.
           </div>
         `;
-        els.booksCount.textContent = '0';
-        setStatus('No books available');
+        setLoadingBookCount('0');
         return;
       }
 
-      els.booksCount.textContent = String(books.length);
-      setStatus('Library ready');
+      setLoadingBookCount(String(books.length));
 
       const frag = document.createDocumentFragment();
-
       books.forEach((book) => {
         const card = document.createElement('article');
         card.className = 'book-card';
@@ -1167,19 +1238,21 @@
         card.setAttribute('role', 'button');
         card.setAttribute('aria-label', `Open ${book.title}`);
 
-        const author = book.author ? escapeHtml(book.author) : 'Unknown author';
         const langLabel = book.language === 'ur' ? 'UR' : 'EN';
+        const author = escapeHtml(book.author || 'Unknown author');
+        const cover = escapeHtml(book.cover || '');
 
         card.innerHTML = `
           <div class="cover" data-cover-wrap>
-            <img loading="lazy" alt="${escapeHtml(book.title)} cover" src="${escapeHtml(book.cover || '')}" />
+            <img loading="lazy" alt="${escapeHtml(book.title)} cover" src="${cover}" />
             <div class="cover-fallback">${escapeHtml(book.title)}</div>
           </div>
-          <div class="card-meta">
+          <div class="card-body">
             <h4 class="card-title">${escapeHtml(book.title)}</h4>
-            <p class="card-author">${author}</p>
+            <p class="card-author">${author}${book.year ? ` · ${escapeHtml(book.year)}` : ''}${book.category ? ` · ${escapeHtml(book.category)}` : ''}</p>
             <div class="card-footer">
               <span class="lang-badge">${langLabel}</span>
+              <span class="type-badge">PDF</span>
               <span class="open-hint">Open</span>
             </div>
           </div>
@@ -1187,9 +1260,7 @@
 
         const img = card.querySelector('img');
         const wrap = card.querySelector('[data-cover-wrap]');
-        img.addEventListener('error', () => {
-          wrap.classList.add('is-broken');
-        });
+        img.addEventListener('error', () => wrap.classList.add('is-broken'));
 
         const open = () => openBook(book, true);
         card.addEventListener('click', open);
@@ -1206,366 +1277,448 @@
       els.gallery.appendChild(frag);
     }
 
-    function updateDirectionUi() {
+    function updateViewerHeader() {
       if (!state.currentBook) return;
-      const nextText = state.isRTL ? 'Previous page is on the left.' : 'Next page is on the right.';
-      els.directionHint.textContent = nextText;
-      els.renderHint.textContent = state.isRTL
-        ? 'Swipe right to go forward, left to go back.'
-        : 'Swipe left to go forward, right to go back.';
+      els.viewerTitle.textContent = state.currentBook.title;
       els.viewerMeta.textContent = [
         state.currentBook.author || 'Unknown author',
+        state.currentBook.category || 'General',
         formatLanguage(state.currentBook.language)
-      ].join(' · ');
-      els.viewerTitle.textContent = state.currentBook.title;
-      els.viewerModal.classList.toggle('rtl', state.isRTL);
+      ].filter(Boolean).join(' · ');
+      els.viewer.classList.toggle('rtl', state.isRTL);
+      updateFooterHints();
     }
 
-    function openModal() {
-      els.viewerModal.classList.add('open');
-      els.viewerModal.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('modal-open');
+    function updateFooterHints() {
+      if (!state.currentBook) {
+        els.navHint.textContent = 'Navigate pages';
+        els.footerHint.textContent = 'Swipe on mobile to navigate.';
+        return;
+      }
+      els.navHint.textContent = state.isRTL ? 'RTL reading supported' : 'LTR reading supported';
+      els.footerHint.textContent = 'Swipe or use the arrow keys to turn pages.';
     }
 
-    function closeModal() {
-      els.viewerModal.classList.remove('open');
-      els.viewerModal.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('modal-open');
-      hideLoadingState();
+    function getBookScale(page, targetWidth, targetHeight) {
+      const viewport = page.getViewport({ scale: 1 });
+      const fit = Math.min(targetWidth / viewport.width, targetHeight / viewport.height);
+      return Math.max(0.22, fit * state.zoom);
     }
 
-    function setControlsEnabled(enabled) {
-      [els.navPrev, els.navNext, els.zoomInBtn, els.zoomOutBtn, els.zoomResetBtn].forEach((btn) => {
-        btn.disabled = !enabled;
-        btn.style.opacity = enabled ? '1' : '.55';
+    function stageMetrics() {
+      const rect = els.pageStage.getBoundingClientRect();
+      const pad = window.innerWidth <= 700 ? 26 : 44;
+      return {
+        width: Math.max(280, rect.width - pad),
+        height: Math.max(240, rect.height - pad)
+      };
+    }
+
+    function pageShell(pageNumber, labelText) {
+      const shell = document.createElement('div');
+      shell.className = 'paper-frame';
+      shell.dataset.pageNumber = String(pageNumber);
+      shell.innerHTML = `
+        <img alt="Page ${pageNumber}" />
+        <div class="page-badge">${escapeHtml(labelText)}</div>
+      `;
+      return shell;
+    }
+
+    function setLayerContent(layerEl, entry, pageNumber) {
+      layerEl.innerHTML = '';
+      if (!entry) return;
+      const frame = pageShell(pageNumber, `Page ${pageNumber}`);
+      frame.style.width = `${entry.cssW}px`;
+      frame.style.height = `${entry.cssH}px`;
+      const img = frame.querySelector('img');
+      img.src = entry.url;
+      img.alt = `Page ${pageNumber}`;
+      layerEl.appendChild(frame);
+    }
+
+    function setLayerFrame(layerEl, entry) {
+      if (!layerEl.firstElementChild || !entry) return;
+      const frame = layerEl.firstElementChild;
+      frame.style.width = `${entry.cssW}px`;
+      frame.style.height = `${entry.cssH}px`;
+      const img = frame.querySelector('img');
+      if (img) img.src = entry.url;
+    }
+
+    function clearPageCache(revokeUrls = true) {
+      if (revokeUrls) {
+        for (const item of state.pageCache.values()) {
+          try { URL.revokeObjectURL(item.url); } catch (_) {}
+        }
+      }
+      state.pageCache.clear();
+      state.pendingCache.clear();
+    }
+
+    async function canvasToBlobUrl(canvas) {
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/png');
       });
+      if (!blob) throw new Error('Failed to create page image');
+      return URL.createObjectURL(blob);
     }
 
-    function updatePageLabel() {
-      els.pageLabel.textContent = `Page ${state.currentPage} / ${state.totalPages}`;
+    async function renderPageAsImage(pageNumber) {
+      if (!state.pdf) throw new Error('No PDF loaded');
+
+      const cached = state.pageCache.get(pageNumber);
+      if (cached) return cached;
+
+      const pending = state.pendingCache.get(pageNumber);
+      if (pending) return pending;
+
+      const promise = (async () => {
+        const page = await state.pdf.getPage(pageNumber);
+        const metrics = stageMetrics();
+        const maxW = Math.floor(metrics.width);
+        const maxH = Math.floor(metrics.height);
+        const scale = getBookScale(page, maxW, maxH);
+
+        const viewport = page.getViewport({ scale });
+        const cssW = Math.max(1, Math.floor(viewport.width));
+        const cssH = Math.max(1, Math.floor(viewport.height));
+
+        const canvas = document.createElement('canvas');
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        canvas.width = Math.max(1, Math.floor(cssW * dpr));
+        canvas.height = Math.max(1, Math.floor(cssH * dpr));
+        const ctx = canvas.getContext('2d', { alpha: false });
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+
+        await page.render({
+          canvasContext: ctx,
+          viewport,
+          intent: 'display',
+          annotationMode: 2
+        }).promise;
+
+        try { page.cleanup(); } catch (_) {}
+
+        const url = await canvasToBlobUrl(canvas);
+        const entry = { url, cssW, cssH, pageNumber };
+        state.pageCache.set(pageNumber, entry);
+        state.pendingCache.delete(pageNumber);
+        return entry;
+      })().catch((err) => {
+        state.pendingCache.delete(pageNumber);
+        throw err;
+      });
+
+      state.pendingCache.set(pageNumber, promise);
+      return promise;
+    }
+
+    function isValidPage(page) {
+      return Number.isFinite(page) && page >= 1 && page <= state.totalPages;
     }
 
     function canGoNext() {
-      return state.isRTL ? state.currentPage > 1 : state.currentPage < state.totalPages;
+      return !!state.pdf && state.currentPage < state.totalPages;
     }
 
     function canGoPrev() {
-      return state.isRTL ? state.currentPage < state.totalPages : state.currentPage > 1;
+      return !!state.pdf && state.currentPage > 1;
     }
 
-    function nextPageNumber() {
-      return state.isRTL ? state.currentPage - 1 : state.currentPage + 1;
+    function updateNavigationState() {
+      els.prevZone.disabled = !canGoPrev() || state.isRendering || state.isAnimating;
+      els.nextZone.disabled = !canGoNext() || state.isRendering || state.isAnimating;
+      els.prevZone.style.opacity = els.prevZone.disabled ? '.35' : '1';
+      els.nextZone.style.opacity = els.nextZone.disabled ? '.35' : '1';
     }
 
-    function prevPageNumber() {
-      return state.isRTL ? state.currentPage + 1 : state.currentPage - 1;
-    }
-
-    function canvasContext(canvas) {
-      return canvas.getContext('2d', { alpha: false });
-    }
-
-    function applyCanvasSize(canvas, cssW, cssH) {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.max(1, Math.floor(cssW * dpr));
-      canvas.height = Math.max(1, Math.floor(cssH * dpr));
-      canvas.style.width = `${Math.max(1, Math.floor(cssW))}px`;
-      canvas.style.height = `${Math.max(1, Math.floor(cssH))}px`;
-      const ctx = canvasContext(canvas);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return { dpr, ctx };
-    }
-
-    function copyCanvas(srcCanvas, dstCanvas) {
-      const w = srcCanvas.width;
-      const h = srcCanvas.height;
-      dstCanvas.width = w;
-      dstCanvas.height = h;
-      dstCanvas.style.width = srcCanvas.style.width;
-      dstCanvas.style.height = srcCanvas.style.height;
-      const dctx = canvasContext(dstCanvas);
-      dctx.setTransform(1, 0, 0, 1, 0, 0);
-      dctx.clearRect(0, 0, dstCanvas.width, dstCanvas.height);
-      dctx.drawImage(srcCanvas, 0, 0);
-    }
-
-    function getStageMetrics() {
-      const rect = els.pageStack.getBoundingClientRect();
-      const pad = 34;
-      const maxW = Math.max(280, rect.width - pad);
-      const maxH = Math.max(240, rect.height - pad);
-      return { maxW, maxH };
-    }
-
-    async function renderPdfPageToCanvas(pageNumber, canvas) {
-      if (!state.pdf) return;
-
-      const page = await state.pdf.getPage(pageNumber);
-      const pageViewport = page.getViewport({ scale: 1 });
-      const { maxW, maxH } = getStageMetrics();
-      const fit = Math.min(maxW / pageViewport.width, maxH / pageViewport.height);
-      const scale = Math.max(0.2, fit * state.zoom);
-
-      const viewport = page.getViewport({ scale });
-      const cssW = Math.max(1, Math.floor(viewport.width));
-      const cssH = Math.max(1, Math.floor(viewport.height));
-
-      const { ctx, dpr } = applyCanvasSize(canvas, cssW, cssH);
-      canvas.style.borderRadius = '18px';
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      const renderContext = {
-        canvasContext: ctx,
-        viewport,
-        annotationMode: 2
+    function setBookUrlAction(book) {
+      els.downloadBtn.onclick = () => {
+        window.open(book.pdf, '_blank', 'noopener,noreferrer');
       };
-
-      const task = page.render(renderContext);
-      await task.promise;
-      return { cssW, cssH };
     }
 
-    async function renderCurrentPage(force = false) {
-      if (!state.pdf || state.isRendering) return;
-      state.isRendering = true;
-      try {
-        const size = await renderPdfPageToCanvas(state.currentPage, els.currentCanvas);
-        if (size) {
-          state.currentCanvasSize = size;
-          els.flipSheet.style.width = `${size.cssW}px`;
-          els.flipSheet.style.height = `${size.cssH}px`;
-          els.flip3d.style.width = `${size.cssW}px`;
-          els.flip3d.style.height = `${size.cssH}px`;
-        }
-        updatePageLabel();
-        updateNavState();
-        if (force) {
-          // no-op; this keeps the API explicit for later extensions
-        }
-      } catch (err) {
-        if (String(err && err.name) !== 'RenderingCancelledException') {
-          console.error(err);
-          showOverlayMessage('Failed to render page');
-        }
-      } finally {
-        state.isRendering = false;
-      }
+    async function renderBasePage(pageNumber) {
+      const entry = await renderPageAsImage(pageNumber);
+      setLayerContent(els.baseLayer, entry, pageNumber);
+      els.baseLayer.style.width = `${entry.cssW}px`;
+      els.baseLayer.style.height = `${entry.cssH}px`;
+      els.baseLayer.style.opacity = '1';
+      els.baseLayer.style.transform = 'translateX(0)';
+      els.underLayer.innerHTML = '';
+      els.turnLayer.innerHTML = '';
+      els.pageShadow.classList.remove('active');
+      state.frameW = entry.cssW;
+      state.frameH = entry.cssH;
+      return entry;
     }
 
-    function updateNavState() {
-      els.navPrev.disabled = !canGoPrev() || state.isFlipping || !state.pdf;
-      els.navNext.disabled = !canGoNext() || state.isFlipping || !state.pdf;
-      els.navPrev.style.opacity = els.navPrev.disabled ? '.35' : '1';
-      els.navNext.style.opacity = els.navNext.disabled ? '.35' : '1';
-    }
-
-    function getFlipConfig(isNext) {
-      const origin = isNext
-        ? (state.isRTL ? 'right center' : 'left center')
-        : (state.isRTL ? 'left center' : 'right center');
-
-      const rotate = isNext
-        ? (state.isRTL ? 180 : -180)
-        : (state.isRTL ? -180 : 180);
-
-      return { origin, rotate };
-    }
-
-    function waitForTransitionEnd(el, fallbackMs = 850) {
-      return new Promise((resolve) => {
-        let done = false;
-        const finish = () => {
-          if (done) return;
-          done = true;
-          el.removeEventListener('transitionend', onEnd);
-          clearTimeout(timer);
-          resolve();
-        };
-        const onEnd = (ev) => {
-          if (ev.target === el) finish();
-        };
-        const timer = setTimeout(finish, fallbackMs);
-        el.addEventListener('transitionend', onEnd);
+    async function prefetchAround(pageNumber) {
+      const targets = [pageNumber - 1, pageNumber + 1].filter(isValidPage);
+      targets.forEach((n) => {
+        renderPageAsImage(n).catch(() => {});
       });
     }
 
-    async function animateFlip(targetPage, isNext) {
-      if (state.isFlipping || !state.pdf) return;
-      if (targetPage < 1 || targetPage > state.totalPages) return;
+    async function turnToPage(targetPage, direction, pushHistory = false) {
+      if (!state.pdf || !state.currentBook) return;
+      if (!isValidPage(targetPage) || targetPage === state.currentPage) return;
+      if (state.isAnimating || state.isRendering) return;
 
-      state.isFlipping = true;
-      updateNavState();
+      state.isAnimating = true;
+      updateNavigationState();
+      showStatus('Turning page…');
+
+      const turnSeq = ++state.renderSeq;
+      const fromPage = state.currentPage;
+      const nextPage = targetPage;
 
       try {
-        // Prepare the flip sheet.
-        copyCanvas(els.currentCanvas, els.flipFrontCanvas);
-        await renderPdfPageToCanvas(targetPage, els.flipBackCanvas);
+        const [fromEntry, toEntry] = await Promise.all([
+          renderPageAsImage(fromPage),
+          renderPageAsImage(nextPage)
+        ]);
 
-        const { origin, rotate } = getFlipConfig(isNext);
-        els.flipSheet.style.transformOrigin = origin;
-        els.flipSheet.classList.add('active');
+        if (turnSeq !== state.renderSeq) return;
 
-        // Start from the current position.
-        els.flip3d.style.transition = 'none';
-        els.flip3d.style.transform = 'rotateY(0deg)';
-        void els.flip3d.offsetWidth; // force reflow
+        els.underLayer.style.width = `${toEntry.cssW}px`;
+        els.underLayer.style.height = `${toEntry.cssH}px`;
+        setLayerContent(els.underLayer, toEntry, nextPage);
+        setLayerContent(els.turnLayer, fromEntry, fromPage);
 
-        els.flip3d.style.transition = 'transform 720ms cubic-bezier(.2,.75,.15,1)';
-        requestAnimationFrame(() => {
-          els.flip3d.style.transform = `rotateY(${rotate}deg)`;
+        els.underLayer.style.opacity = '1';
+        els.pageShadow.classList.add('active');
+
+        const turnFrame = els.turnLayer.firstElementChild;
+        const underFrame = els.underLayer.firstElementChild;
+        if (turnFrame) {
+          turnFrame.style.width = `${fromEntry.cssW}px`;
+          turnFrame.style.height = `${fromEntry.cssH}px`;
+        }
+        if (underFrame) {
+          underFrame.style.width = `${toEntry.cssW}px`;
+          underFrame.style.height = `${toEntry.cssH}px`;
+        }
+
+        await new Promise((resolve) => {
+          const onEnd = (e) => {
+            if (e.target !== els.turnLayer) return;
+            resolve();
+          };
+          els.turnLayer.addEventListener('animationend', onEnd, { once: true });
+          requestAnimationFrame(() => {
+            els.turnLayer.classList.remove('turn-next', 'turn-prev', 'show');
+            void els.turnLayer.offsetWidth;
+            els.turnLayer.classList.add('show', direction === 'prev' ? 'turn-prev' : 'turn-next');
+          });
         });
 
-        await waitForTransitionEnd(els.flip3d);
+        if (turnSeq !== state.renderSeq) return;
 
-        state.currentPage = targetPage;
-        copyCanvas(els.flipBackCanvas, els.currentCanvas);
-        updatePageLabel();
+        state.currentPage = nextPage;
         setSavedPage(state.currentBook.id, state.currentPage);
-        syncUrl(state.currentBook.id, state.currentPage, false);
+        syncUrl(state.currentBook.id, state.currentPage, pushHistory);
+
+        await renderBasePage(state.currentPage);
+        await prefetchAround(state.currentPage);
+        hideStatus();
       } catch (err) {
         console.error(err);
-        showOverlayMessage('Page flip failed');
+        toast('Failed to render page');
+        showStatus('Failed to render page');
       } finally {
-        els.flipSheet.classList.remove('active');
-        els.flip3d.style.transition = 'none';
-        els.flip3d.style.transform = 'rotateY(0deg)';
-        state.isFlipping = false;
-        updateNavState();
+        if (turnSeq === state.renderSeq) {
+          state.isAnimating = false;
+          state.isRendering = false;
+          updateNavigationState();
+          els.pageShadow.classList.remove('active');
+          els.turnLayer.classList.remove('show', 'turn-next', 'turn-prev');
+        }
       }
     }
 
-    function goNext() {
+    async function nextPage() {
       if (!canGoNext()) return;
-      animateFlip(nextPageNumber(), true);
+      await turnToPage(state.currentPage + 1, 'next', false);
     }
 
-    function goPrev() {
+    async function prevPage() {
       if (!canGoPrev()) return;
-      animateFlip(prevPageNumber(), false);
+      await turnToPage(state.currentPage - 1, 'prev', false);
     }
 
-    function zoomBy(delta) {
-      const next = Math.min(2.0, Math.max(0.65, +(state.zoom + delta).toFixed(2)));
+    function adjustZoom(delta) {
+      if (!state.currentBook) return;
+      const next = Math.min(2.4, Math.max(0.7, +(state.zoom + delta).toFixed(2)));
       if (next === state.zoom) return;
       state.zoom = next;
-      showOverlayMessage(`Zoom ${Math.round(next * 100)}%`);
-      renderCurrentPage(true);
+      setSavedZoom(state.currentBook.id, state.zoom);
+      toast(`Zoom ${Math.round(state.zoom * 100)}%`);
+      rebuildCurrentPage();
     }
 
-    function resetZoom() {
+    function fitZoom() {
+      if (!state.currentBook) return;
       state.zoom = 1;
-      showOverlayMessage('Fit to screen');
-      renderCurrentPage(true);
+      setSavedZoom(state.currentBook.id, 1);
+      toast('Fit to screen');
+      rebuildCurrentPage();
     }
 
-    async function openBook(book, pushState = false) {
+    async function rebuildCurrentPage() {
+      if (!state.pdf || !state.currentBook || state.isAnimating) return;
+      state.isRendering = true;
+      updateNavigationState();
+      showStatus('Rendering page image…');
+      clearPageCache(true);
+      try {
+        await renderBasePage(state.currentPage);
+        await prefetchAround(state.currentPage);
+        hideStatus();
+      } catch (err) {
+        console.error(err);
+        showStatus('Failed to render page', true);
+      } finally {
+        state.isRendering = false;
+        updateNavigationState();
+      }
+    }
+
+    async function openBook(book, pushHistory = false) {
       if (!window.pdfjsLib) {
-        setStatus('PDF.js failed to load');
+        els.libraryStatus.textContent = 'PDF.js failed to load.';
         return;
       }
 
-      state.openToken += 1;
-      const token = state.openToken;
-      state.currentBook = book;
+      const normalized = normalizeBook(book);
+      if (!normalized.pdf) return;
+
+      state.openSeq += 1;
+      const mySeq = state.openSeq;
+
+      state.currentBook = normalized;
       state.pdf = null;
-      state.currentPage = 1;
       state.totalPages = 1;
-      state.zoom = 1;
-      state.isRTL = String(book.language || '').toLowerCase() === 'ur';
+      state.currentPage = 1;
+      state.zoom = getSavedZoom(normalized.id);
+      state.isRTL = normalized.language === 'ur' || normalized.direction === 'rtl';
+      state.isOpen = true;
+      state.isRendering = false;
+      state.isAnimating = false;
 
-      openModal();
-      updateDirectionUi();
+      openViewer();
       setControlsEnabled(false);
-      setLoadingState('Loading PDF…');
-      els.currentCanvas.removeAttribute('width');
-      els.currentCanvas.removeAttribute('height');
-      els.currentCanvas.style.width = '';
-      els.currentCanvas.style.height = '';
+      updateViewerHeader();
+      setBookUrlAction(normalized);
+      showStatus('Loading PDF document…');
+      els.baseLayer.innerHTML = '';
+      els.underLayer.innerHTML = '';
+      els.turnLayer.innerHTML = '';
+      els.pageShadow.classList.remove('active');
+      clearPageCache(true);
 
-      if (pushState) {
-        const initialPage = getInitialPage(book);
-        syncUrl(book.id, initialPage || 1, true);
-      }
+      const initialPage = getInitialPage(normalized);
+      if (pushHistory) syncUrl(normalized.id, initialPage || 1, true);
 
       try {
         const pdf = await pdfjsLib.getDocument({
-          url: book.pdf,
-          withCredentials: false
+          url: normalized.pdf,
+          withCredentials: false,
+          cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+          cMapPacked: true,
+          standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/'
         }).promise;
 
-        if (token !== state.openToken) return;
+        if (mySeq !== state.openSeq) return;
 
         state.pdf = pdf;
         state.totalPages = pdf.numPages;
+        state.currentPage = Math.max(1, Math.min(state.totalPages, Number.isFinite(initialPage) ? initialPage : 1));
 
-        const initialPage = getInitialPage(book);
-        if (state.isRTL) {
-          state.currentPage = Number.isFinite(initialPage) && initialPage >= 1 && initialPage <= pdf.numPages
-            ? initialPage
-            : pdf.numPages;
-        } else {
-          state.currentPage = Number.isFinite(initialPage) && initialPage >= 1 && initialPage <= pdf.numPages
-            ? initialPage
-            : 1;
-        }
+        await renderBasePage(state.currentPage);
+        await prefetchAround(state.currentPage);
 
-        updateDirectionUi();
-        updatePageLabel();
-        await renderCurrentPage(true);
-        hideLoadingState();
+        if (mySeq !== state.openSeq) return;
+        hideStatus();
         setControlsEnabled(true);
-        updateNavState();
-
-        syncUrl(book.id, state.currentPage, pushState);
-        setSavedPage(book.id, state.currentPage);
+        updateViewerHeader();
+        updateNavigationState();
+        syncUrl(normalized.id, state.currentPage, pushHistory);
+        setSavedPage(normalized.id, state.currentPage);
       } catch (err) {
         console.error(err);
-        if (token !== state.openToken) return;
-        hideLoadingState();
-        els.viewerStatus.classList.remove('hidden');
-        els.viewerStatusText.textContent = 'Failed to load PDF';
+        if (mySeq !== state.openSeq) return;
+        setViewerStatus('Failed to load PDF', true);
         setControlsEnabled(false);
-        showOverlayMessage('Failed to load PDF');
+        toast('Failed to load PDF');
       }
     }
 
-    function closeBook() {
-      state.openToken += 1;
-      state.currentBook = null;
-      state.pdf = null;
-      state.totalPages = 1;
-      state.currentPage = 1;
-      state.isRTL = false;
-      state.isFlipping = false;
-      state.isRendering = false;
-      closeModal();
-      clearUrl();
-      setControlsEnabled(false);
-      setStatus('Library ready');
-      els.viewerTitle.textContent = 'Book title';
-      els.viewerMeta.textContent = 'Author · Language';
-      els.pageLabel.textContent = 'Page 1 / 1';
-      els.viewerModal.classList.remove('rtl');
-    }
-
     function findBookById(id) {
-      return state.books.find((b) => String(b.id) === String(id)) || null;
+      return state.books.find((book) => String(book.id) === String(id)) || null;
     }
 
-    function handleUrlOpen() {
-      const bookId = qs('book');
-      if (!bookId) return;
-      const book = findBookById(bookId);
-      if (!book) return;
-      openBook(book, false);
+    function clearFilters() {
+      els.searchInput.value = '';
+      els.languageFilter.value = 'all';
+      els.sortSelect.value = 'featured';
+      localStorage.removeItem(storageKeys.lastQuery);
+      localStorage.removeItem(storageKeys.lastLang);
+      localStorage.removeItem(storageKeys.lastSort);
+      applyFilters();
     }
 
-    function onPopState() {
-      const bookId = qs('book');
+    async function loadBooks() {
+      renderSkeletons(10);
+      els.libraryStatus.textContent = 'Loading books.json…';
+      setLoadingBookCount('—');
+      updateResultsLabel();
+
+      try {
+        const res = await fetch('https://livenews.live/Books/books.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('books.json must contain an array');
+
+        state.books = data.map(normalizeBook).filter((b) => b.pdf);
+        els.libraryStatus.textContent = 'Library ready';
+        setLoadingBookCount(String(state.books.length));
+
+        const savedQuery = localStorage.getItem(storageKeys.lastQuery);
+        const savedLang = localStorage.getItem(storageKeys.lastLang);
+        const savedSort = localStorage.getItem(storageKeys.lastSort);
+        if (savedQuery !== null) els.searchInput.value = savedQuery;
+        if (savedLang !== null) els.languageFilter.value = savedLang;
+        if (savedSort !== null) els.sortSelect.value = savedSort;
+
+        applyFilters();
+
+        const bookId = q('book');
+        if (bookId) {
+          const book = findBookById(bookId);
+          if (book) {
+            requestAnimationFrame(() => openBook(book, false));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        els.libraryStatus.textContent = 'Failed to load books.json';
+        els.gallery.innerHTML = `
+          <div class="error-state">
+            <strong>Failed to load books</strong>
+            Make sure <code>books.json</code> is next to <code>index.html</code> and the page is served from a web server.
+          </div>
+        `;
+        setLoadingBookCount('0');
+      }
+    }
+
+    function handleHistoryChange() {
+      const bookId = q('book');
       if (!bookId) {
-        if (state.currentBook) closeBook();
+        if (state.currentBook) closeViewer();
         return;
       }
       const book = findBookById(bookId);
@@ -1574,127 +1727,112 @@
       }
     }
 
-    async function loadBooks() {
-      renderSkeletons(10);
-      setStatus('Loading books…');
-
-      try {
-        const response = await fetch('books.json', { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        if (!Array.isArray(data)) throw new Error('Invalid JSON structure');
-
-        state.books = data;
-        renderGallery(data);
-
-        const urlBook = qs('book');
-        if (urlBook) {
-          const found = findBookById(urlBook);
-          if (found) {
-            // Give the DOM a moment so the modal can measure correctly before rendering.
-            requestAnimationFrame(() => openBook(found, false));
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        els.gallery.innerHTML = `
-          <div class="error-state" style="grid-column:1/-1;">
-            <strong>Failed to load books</strong>
-            Make sure <code>books.json</code> exists next to <code>index.html</code> and that the page is served from a local web server.
-          </div>
-        `;
-        els.booksCount.textContent = '0';
-        setStatus('Failed to load books');
-      }
-    }
-
     // Events
-    els.themeToggle.addEventListener('click', toggleTheme);
+    els.themeToggle.addEventListener('click', () => setTheme(state.theme === 'dark' ? 'light' : 'dark'));
+    els.refreshBtn.addEventListener('click', loadBooks);
 
-    els.closeViewerBtn.addEventListener('click', closeBook);
-    els.viewerBackdrop.addEventListener('click', closeBook);
+    els.searchInput.addEventListener('input', () => {
+      localStorage.setItem(storageKeys.lastQuery, els.searchInput.value);
+      applyFilters();
+    });
+    els.languageFilter.addEventListener('change', () => {
+      localStorage.setItem(storageKeys.lastLang, els.languageFilter.value);
+      applyFilters();
+    });
+    els.sortSelect.addEventListener('change', () => {
+      localStorage.setItem(storageKeys.lastSort, els.sortSelect.value);
+      applyFilters();
+    });
+    els.clearFiltersBtn.addEventListener('click', clearFilters);
 
-    els.navNext.addEventListener('click', goNext);
-    els.navPrev.addEventListener('click', goPrev);
+    els.closeBtn.addEventListener('click', closeViewer);
+    els.viewerBackdrop.addEventListener('click', closeViewer);
+    els.prevZone.addEventListener('click', prevPage);
+    els.nextZone.addEventListener('click', nextPage);
+    els.zoomInBtn.addEventListener('click', () => adjustZoom(0.12));
+    els.zoomOutBtn.addEventListener('click', () => adjustZoom(-0.12));
+    els.fitBtn.addEventListener('click', fitZoom);
 
-    els.zoomInBtn.addEventListener('click', () => zoomBy(0.12));
-    els.zoomOutBtn.addEventListener('click', () => zoomBy(-0.12));
-    els.zoomResetBtn.addEventListener('click', resetZoom);
+    els.downloadBtn.addEventListener('click', () => {
+      if (state.currentBook?.pdf) window.open(state.currentBook.pdf, '_blank', 'noopener,noreferrer');
+    });
 
     window.addEventListener('keydown', (e) => {
       if (!state.currentBook) return;
 
       if (e.key === 'Escape') {
         e.preventDefault();
-        closeBook();
+        closeViewer();
         return;
       }
 
-      if (state.isFlipping || !state.pdf) return;
+      if (state.isRendering || state.isAnimating || !state.pdf) return;
 
-      const nextKey = state.isRTL ? 'ArrowLeft' : 'ArrowRight';
-      const prevKey = state.isRTL ? 'ArrowRight' : 'ArrowLeft';
-
-      if (e.key === nextKey) {
+      if (e.key === 'ArrowRight') {
         e.preventDefault();
-        goNext();
-      } else if (e.key === prevKey) {
+        nextPage();
+      } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        goPrev();
+        prevPage();
       } else if (e.key === '+' || e.key === '=') {
         e.preventDefault();
-        zoomBy(0.12);
+        adjustZoom(0.12);
       } else if (e.key === '-' || e.key === '_') {
         e.preventDefault();
-        zoomBy(-0.12);
+        adjustZoom(-0.12);
+      } else if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        fitZoom();
       }
     });
 
     // Swipe support
-    els.pageStack.addEventListener('pointerdown', (e) => {
-      if (!state.currentBook || state.isFlipping) return;
-      state.activePointer = e.pointerId;
-      state.startPoint = { x: e.clientX, y: e.clientY, t: Date.now() };
-      els.pageStack.setPointerCapture?.(e.pointerId);
+    const pointer = { id: null, x: 0, y: 0, t: 0 };
+
+    els.pageStage.addEventListener('pointerdown', (e) => {
+      if (!state.currentBook || state.isRendering || state.isAnimating) return;
+      pointer.id = e.pointerId;
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+      pointer.t = Date.now();
+      try { els.pageStage.setPointerCapture(e.pointerId); } catch (_) {}
     });
 
-    els.pageStack.addEventListener('pointerup', (e) => {
-      if (state.activePointer !== e.pointerId || !state.startPoint || state.isFlipping) return;
-      const dx = e.clientX - state.startPoint.x;
-      const dy = e.clientY - state.startPoint.y;
-      const dt = Date.now() - state.startPoint.t;
-      state.activePointer = null;
+    els.pageStage.addEventListener('pointerup', (e) => {
+      if (pointer.id !== e.pointerId || !state.currentBook || state.isRendering || state.isAnimating) return;
+      const dx = e.clientX - pointer.x;
+      const dy = e.clientY - pointer.y;
+      const dt = Date.now() - pointer.t;
+      pointer.id = null;
+      const isSwipe = Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 900;
+      if (!isSwipe) return;
 
-      const swipeX = Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 900;
-      if (!swipeX) return;
-
-      // Mirrored navigation for Urdu.
-      if (!state.isRTL) {
-        if (dx < 0) goNext();
-        else goPrev();
-      } else {
-        if (dx > 0) goNext();
-        else goPrev();
-      }
-      state.startPoint = null;
+      if (dx < 0) nextPage();
+      else prevPage();
     });
 
-    els.pageStack.addEventListener('pointercancel', () => {
-      state.activePointer = null;
-      state.startPoint = null;
-    });
+    els.pageStage.addEventListener('pointercancel', () => { pointer.id = null; });
 
+    let resizeTimer = null;
     window.addEventListener('resize', () => {
       if (!state.currentBook || !state.pdf) return;
-      // Re-render current page for the new viewport size.
-      renderCurrentPage(true);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!state.currentBook || !state.pdf) return;
+        rebuildCurrentPage();
+      }, 150);
     });
 
-    window.addEventListener('popstate', onPopState);
+    window.addEventListener('popstate', handleHistoryChange);
 
     // Init
     setTheme(state.theme);
+    els.pageTagline.textContent = 'Official digital library for PDF books and publications';
     setControlsEnabled(false);
+    els.searchInput.value = localStorage.getItem(storageKeys.lastQuery) || '';
+    els.languageFilter.value = localStorage.getItem(storageKeys.lastLang) || 'all';
+    els.sortSelect.value = localStorage.getItem(storageKeys.lastSort) || 'featured';
+
     loadBooks();
   </script>
 </body>
