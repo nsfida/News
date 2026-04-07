@@ -196,21 +196,28 @@
     .post-header-info{flex:1;min-width:0;}
     .post-org-name{font-weight:700;font-size:14px;color:#0d3c91;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:none;-webkit-text-fill-color:unset;display:block;width:auto;text-align:left;}
     body.dark-mode .post-org-name{color:#9bc2ff;}
-    .post-meta{display:flex;align-items:center;gap:6px;margin-top:2px;}
+    .post-meta{display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap;}
     .post-date{font-size:11px;color:#888;}
     body.dark-mode .post-date{color:#7a90a8;}
     .post-badge{font-size:10px;padding:1px 8px;border-radius:50px;font-weight:600;background:linear-gradient(90deg,rgba(255,110,196,.15),rgba(120,115,245,.15));color:#7873f5;border:1px solid rgba(120,115,245,.25);}
     body.dark-mode .post-badge{background:rgba(120,115,245,.2);color:#a78bfa;}
 
+    /* POST COPY LINK (in header row) */
+    .post-copy-link-btn{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:rgba(120,115,245,.1);color:#7873f5;font-size:10px;font-weight:700;border:1px solid rgba(120,115,245,.18);cursor:pointer;transition:.22s;margin-left:auto;flex-shrink:0;}
+    .post-copy-link-btn:hover{background:rgba(255,110,196,.14);color:#ff6ec4;border-color:rgba(255,110,196,.28);}
+    body.dark-mode .post-copy-link-btn{background:rgba(120,115,245,.18);color:#a78bfa;border-color:rgba(167,139,250,.22);}
+    .post-copy-link-btn i{font-size:9px;}
+
     /* POST TITLE */
     .post-title{font-size:15px;font-weight:700;color:#1a1a1a;padding:0 16px 8px;line-height:1.4;background:none;-webkit-text-fill-color:unset;display:block;width:auto;text-align:left;}
     body.dark-mode .post-title{color:#eef4ff;}
 
-    /* POST CAPTION */
-    .post-caption{font-size:13px;line-height:1.7;color:#444;padding:0 16px 14px;}
+    /* POST CAPTION — single line default, expandable */
+    .post-caption-wrap{padding:0 16px 10px;}
+    .post-caption{font-size:13px;line-height:1.7;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
     body.dark-mode .post-caption{color:#b0c4d8;}
-    .post-caption.collapsed{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-    .read-more-btn{background:none;border:none;color:#7873f3;font-size:12px;font-weight:600;cursor:pointer;padding:0 16px 12px;display:block;}
+    .post-caption.expanded{white-space:pre-wrap;overflow:visible;text-overflow:unset;}
+    .read-more-btn{background:none;border:none;color:#7873f3;font-size:12px;font-weight:600;cursor:pointer;padding:0;margin-top:3px;display:inline-block;}
     .read-more-btn:hover{color:#ff6ec4;}
 
     /* MULTI-MEDIA POST GROUPS */
@@ -229,10 +236,7 @@
     .media-grid.count-4 .media-tile,
     .media-grid.count-5 .media-tile,
     .media-grid.count-6 .media-tile{aspect-ratio:1/1;}
-    .media-thumb,
-    .media-video-poster,
-    .media-tile img,
-    .media-video{width:100%;height:100%;display:block;object-fit:cover;}
+    .media-thumb,.media-video-poster,.media-tile img,.media-video{width:100%;height:100%;display:block;object-fit:cover;}
     .media-video{background:#000;object-fit:contain;aspect-ratio:16/9;}
     .media-play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column;z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.22));}
     .media-play-circle{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#ff6ec4,#7873f5);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px rgba(120,115,245,.55);}
@@ -240,22 +244,42 @@
     .media-play-label{color:#fff;font-size:13px;font-weight:700;text-shadow:0 2px 10px rgba(0,0,0,.65);}
     .media-count-badge{position:absolute;top:10px;left:10px;z-index:3;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;backdrop-filter:blur(6px);}
 
+    /* LIGHTBOX */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;flex-direction:column;justify-content:center;align-items:center;z-index:9000;padding:20px;}
+    .lightbox.show{display:flex;}
+    .lightbox-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:96vw;}
+    .lightbox-img{max-width:94vw;max-height:82vh;border-radius:12px;box-shadow:0 10px 50px rgba(0,0,0,.6);object-fit:contain;display:block;}
+    .lightbox-close{position:fixed;top:18px;right:22px;color:#fff;font-size:28px;cursor:pointer;transition:.2s;z-index:9002;}
+    .lightbox-close:hover{color:#ff6ec4;transform:scale(1.2);}
+    /* Lightbox bottom bar */
+    .lightbox-bar{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap;justify-content:center;}
+    .lightbox-meta{color:rgba(255,255,255,.7);font-size:12px;font-family:Calibri,sans-serif;}
+    .lightbox-copy-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;background:rgba(120,115,245,.25);color:#fff;font-size:12px;font-weight:700;border:1px solid rgba(120,115,245,.4);cursor:pointer;transition:.22s;font-family:Calibri,sans-serif;}
+    .lightbox-copy-btn:hover{background:rgba(255,110,196,.28);border-color:rgba(255,110,196,.4);}
+    .lightbox-copy-btn i{font-size:11px;}
+    /* Lightbox nav arrows */
+    .lightbox-nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:9002;font-size:18px;transition:.2s;}
+    .lightbox-nav:hover{background:rgba(120,115,245,.6);}
+    .lightbox-nav.prev{left:12px;}
+    .lightbox-nav.next{right:12px;}
+    .lightbox-nav.hidden{display:none;}
+
+    /* VIDEO lightbox */
+    .lightbox-video{max-width:94vw;max-height:82vh;border-radius:12px;box-shadow:0 10px 50px rgba(0,0,0,.6);display:block;background:#000;}
+    .lightbox-iframe-wrap{position:relative;width:min(860px,94vw);padding-bottom:min(483px,53vw);height:0;border-radius:12px;overflow:hidden;box-shadow:0 10px 50px rgba(0,0,0,.6);}
+    .lightbox-iframe-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
+
     /* POST FOOTER */
     .post-footer{padding:10px 16px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid rgba(120,115,245,.12);margin-top:4px;}
     body.dark-mode .post-footer{border-top-color:rgba(120,115,245,.2);}
     .post-tag{font-size:11px;color:#7873f5;background:rgba(120,115,245,.1);border-radius:50px;padding:3px 10px;font-weight:600;}
     body.dark-mode .post-tag{background:rgba(120,115,245,.2);color:#a78bfa;}
-    .post-type-icon{margin-left:auto;font-size:14px;color:#ccc;}
-    .post-share-link{margin-left:8px;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(120,115,245,.12);color:#7873f5;text-decoration:none;font-size:11px;font-weight:700;border:1px solid rgba(120,115,245,.18);transition:.25s;cursor:pointer;}
-    .post-share-link:hover{background:rgba(255,110,196,.14);color:#ff6ec4;transform:translateY(-1px);}
-    body.dark-mode .post-share-link{background:rgba(120,115,245,.18);color:#a78bfa;border-color:rgba(167,139,250,.22);}
-
-    /* LIGHTBOX */
-    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;justify-content:center;align-items:center;z-index:9000;padding:20px;}
-    .lightbox.show{display:flex;}
-    .lightbox-img{max-width:94vw;max-height:88vh;border-radius:12px;box-shadow:0 10px 50px rgba(0,0,0,.6);object-fit:contain;}
-    .lightbox-close{position:absolute;top:18px;right:22px;color:#fff;font-size:28px;cursor:pointer;transition:.2s;z-index:9001;}
-    .lightbox-close:hover{color:#ff6ec4;transform:scale(1.2);}
+    .post-type-icon{font-size:14px;color:#ccc;}
+    .post-media-links{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto;align-items:center;}
+    .post-media-link-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;background:rgba(120,115,245,.1);color:#7873f5;font-size:10px;font-weight:700;border:1px solid rgba(120,115,245,.18);cursor:pointer;transition:.22s;text-decoration:none;}
+    .post-media-link-btn:hover{background:rgba(255,110,196,.14);color:#ff6ec4;border-color:rgba(255,110,196,.28);}
+    body.dark-mode .post-media-link-btn{background:rgba(120,115,245,.18);color:#a78bfa;border-color:rgba(167,139,250,.22);}
+    .post-media-link-btn i{font-size:9px;}
 
     /* LOADING / EMPTY */
     .feed-loading{text-align:center;padding:60px 20px;color:#888;font-size:15px;}
@@ -265,6 +289,10 @@
     .feed-end-marker i{display:block;font-size:22px;color:#ddd;margin-bottom:6px;}
     body.dark-mode .feed-end-marker{color:#4a5568;}
     body.dark-mode .feed-end-marker i{color:#2d3748;}
+
+    /* POST HIGHLIGHT when linked */
+    .post-card.highlighted{box-shadow:0 0 0 3px rgba(120,115,245,.45),0 12px 32px rgba(0,0,0,.15);}
+    body.dark-mode .post-card.highlighted{box-shadow:0 0 0 3px rgba(167,139,250,.45),0 12px 32px rgba(0,0,0,.4);}
 
     /* RESPONSIVE TABLET */
     @media(max-width:1024px){
@@ -291,6 +319,8 @@
       .notification-dropdown{position:fixed !important;left:50% !important;right:50% !important;top:calc(var(--header-h) + 8px) !important;transform:translateX(-50%) !important;width:min(92vw,320px) !important;max-height:calc(100vh - 96px) !important;margin:0 !important;z-index:9999 !important;}
       .user-dropdown{width:min(280px,calc(100vw - 16px));inset-inline-end:8px;top:calc(var(--header-h) - 4px);max-height:470px;}
       .media-grid.count-3 .media-tile:first-child{min-height:180px;}
+      .lightbox-nav.prev{left:6px;}
+      .lightbox-nav.next{right:6px;}
     }
   </style>
 </head>
@@ -388,9 +418,14 @@
     </div>
   </div>
 
-  <div id="lightbox" class="lightbox" role="dialog" aria-label="Image viewer">
+  <!-- LIGHTBOX -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-label="Media viewer">
     <i class="fa-solid fa-xmark lightbox-close" id="lightboxClose" aria-label="Close"></i>
-    <img id="lightboxImg" class="lightbox-img" src="" alt="Gallery image">
+    <button class="lightbox-nav prev" id="lbPrev" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="lightbox-nav next" id="lbNext" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+    <div class="lightbox-inner" id="lightboxInner">
+      <!-- content injected by JS -->
+    </div>
   </div>
 
   <div class="dashboard-container">
@@ -429,587 +464,510 @@
   (function(){
     "use strict";
 
-    const API = "https://livenews.live/KFC";
-    const PHOTOS = API + "/static/images/photos/";
-    const DEF = PHOTOS + "default.png";
-    const TK = "kfcTheme";
-    const LK = "kfcPageLanguage";
+    /* ─── CONSTANTS ─────────────────────────────────────────────────── */
+    const API        = "https://livenews.live/KFC";
+    const PHOTOS     = API + "/static/images/photos/";
+    const DEF        = PHOTOS + "default.png";
+    const TK         = "kfcTheme";
+    const LK         = "kfcPageLanguage";
     const GALLERY_JSON = API + "/message/Gallery/gallery.json";
-    const ORG_LOGO = API + "/logo.png";
-    const ORG_NAME = "Khawrai Falahi Committee UAE";
+    const ORG_LOGO   = API + "/logo.png";
+    const ORG_NAME   = "Khawrai Falahi Committee UAE";
 
-    let users = [];
+    /* ─── STATE ─────────────────────────────────────────────────────── */
+    let users       = [];
     let currentUser = null;
-    let lang = localStorage.getItem(LK) === "ur" ? "ur" : "en";
-    let gtPromise = null;
-    let gtPending = null;
-    let fixTimer = null;
-    let fixRunning = false;
+    let lang        = localStorage.getItem(LK) === "ur" ? "ur" : "en";
+    let gtPromise   = null;
+    let gtPending   = null;
+    let fixTimer    = null;
+    let fixRunning  = false;
 
+    // Lightbox state
+    // Each lightbox "session" stores the list of media items for the current post,
+    // plus optional extra items from individual media links.
+    let lbItems   = [];   // [{type, src, thumbnail, mime, postTitle, postToken, mediaIdx}]
+    let lbCurrent = 0;
+
+    /* ─── DOM CACHE ─────────────────────────────────────────────────── */
     let eUserArea, eUsername, eDropdown, eGuestView, eUserView, eOpenLoginBtn, eLoginOverlay,
         eLoginBtn, eLoginUser, eLoginPass, eLoginError, eLogoutBtn, eUserFullName, eUserCard,
         eUserDesg, eUserBlood, eUserMobile, eWelcomePopup, eWelcomeText, eHeaderImg, eHeaderIcon,
         eDropdownImg, eViewPhotoBtn, ePhotoOverlay, eFullImg, eClosePhoto,
         eNotifBtn, eNotiDrop, eNotiBadge, eNotiList, eMsgBtn, eMsgDrop, eMsgBadge, eMsgList,
-        eLeadersOverlay, eCloseLeaders, eLeadersList, eThemeBtn, eThemeIcon, eTransBtn, eTransHost;
+        eLeadersOverlay, eCloseLeaders, eLeadersList, eThemeBtn, eThemeIcon, eTransBtn, eTransHost,
+        eLightbox, eLightboxInner, eLightboxClose, eLbPrev, eLbNext;
 
     function id(x){ return document.getElementById(x); }
     function norm(v){ return (v || "").toString().trim(); }
     function esc(s){
       return String(s || "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     }
-    function isCx(s){
-      const v = norm(s).toLowerCase();
-      return v === "cancel" || v === "cancelled";
-    }
-    function genU(n){
-      const p = norm(n).toLowerCase().split(/\s+/).filter(Boolean);
-      return p.length < 2 ? norm(n).toLowerCase() : (p[0] + p[p.length - 1]).replace(/\s/g,"");
-    }
-    function genP(c){
-      const p = String(c || "").split("-");
-      return p[p.length - 1] || "";
-    }
-    function srcs(cno){
-      const c = encodeURIComponent(String(cno || ""));
-      return [PHOTOS + c + ".png", PHOTOS + c + ".jpg", DEF];
-    }
+    function isCx(s){ const v = norm(s).toLowerCase(); return v === "cancel" || v === "cancelled"; }
+    function genU(n){ const p = norm(n).toLowerCase().split(/\s+/).filter(Boolean); return p.length < 2 ? norm(n).toLowerCase() : (p[0]+p[p.length-1]).replace(/\s/g,""); }
+    function genP(c){ const p = String(c||"").split("-"); return p[p.length-1]||""; }
+    function srcs(cno){ const c = encodeURIComponent(String(cno||"")); return [PHOTOS+c+".png",PHOTOS+c+".jpg",DEF]; }
     function setImg(img, ss, fi){
       if(!img) return;
       let i = 0;
-      const t = () => {
-        if(i >= ss.length){
-          img.style.display = "none";
-          if(fi) fi.style.display = "block";
-          return;
-        }
-        img.src = ss[i++];
-      };
+      const t = () => { if(i>=ss.length){ img.style.display="none"; if(fi) fi.style.display="block"; return; } img.src=ss[i++]; };
       img.onerror = t;
-      img.onload = () => {
-        img.style.display = "block";
-        if(fi) fi.style.display = "none";
-      };
+      img.onload  = () => { img.style.display="block"; if(fi) fi.style.display="none"; };
       t();
     }
-    function applyPic(cno){
-      const s = srcs(cno);
-      setImg(eHeaderImg, s, eHeaderIcon);
-      setImg(eDropdownImg, s, null);
-      setImg(eFullImg, s, null);
-    }
+    function applyPic(cno){ const s = srcs(cno); setImg(eHeaderImg,s,eHeaderIcon); setImg(eDropdownImg,s,null); setImg(eFullImg,s,null); }
     function infoMsg(t){ return `<p style="text-align:center;padding:20px;color:#888;">${esc(t)}</p>`; }
 
-    function cache(){
-      eUserArea = id("userArea"); eUsername = id("username"); eDropdown = id("userDropdown");
-      eGuestView = id("guestView"); eUserView = id("userView"); eOpenLoginBtn = id("openLoginBtn");
-      eLoginOverlay = id("loginOverlay"); eLoginBtn = id("loginBtn"); eLoginUser = id("loginUsername");
-      eLoginPass = id("loginPassword"); eLoginError = id("loginError"); eLogoutBtn = id("logoutBtn");
-      eUserFullName = id("userFullName"); eUserCard = id("userCard"); eUserDesg = id("userDesg");
-      eUserBlood = id("userBlood"); eUserMobile = id("userMobile"); eWelcomePopup = id("welcomePopup");
-      eWelcomeText = id("welcomeText"); eHeaderImg = id("headerProfileImg"); eHeaderIcon = id("headerUserIcon");
-      eDropdownImg = id("dropdownProfileImg"); eViewPhotoBtn = id("viewPhotoBtn"); ePhotoOverlay = id("photoOverlay");
-      eFullImg = id("fullProfileImg"); eClosePhoto = id("closePhotoOverlay"); eNotifBtn = id("notificationBtn");
-      eNotiDrop = id("notiDropdown"); eNotiBadge = id("notiBadge"); eNotiList = id("notiList");
-      eMsgBtn = id("msgBtn"); eMsgDrop = id("msgDropdown"); eMsgBadge = id("msgBadge"); eMsgList = id("msgList");
-      eLeadersOverlay = id("leadersOverlay"); eCloseLeaders = id("closeLeaders"); eLeadersList = id("leadersList");
-      eThemeBtn = id("themeToggleBtn"); eThemeIcon = id("themeToggleIcon");
-      eTransBtn = id("translateToggleBtn"); eTransHost = id("google_translate_element");
+    /* ─── URL / DEEP LINK HELPERS ────────────────────────────────────── */
+    // Encode a token: base64url of payload string
+    function b64enc(str){
+      try{ return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,""); }
+      catch(e){ return encodeURIComponent(str).replace(/%/g,""); }
+    }
+    // Token for a whole post: "p|date|title|idx"
+    function postToken(item, idx){
+      return b64enc(["p",norm(item.date),norm(item.title),String(idx)].join("|"));
+    }
+    // Token for a specific media in a post: "m|date|title|idx|mediaIdx"
+    function mediaToken(item, idx, mediaIdx){
+      return b64enc(["m",norm(item.date),norm(item.title),String(idx),String(mediaIdx)].join("|"));
+    }
+    // Token for the whole post as a "group" (all media): "g|date|title|idx"
+    function groupToken(item, idx){
+      return b64enc(["g",norm(item.date),norm(item.title),String(idx)].join("|"));
     }
 
+    // Build shareable URL for a given token
+    function makeUrl(token){ return `${location.origin}${location.pathname}#${token}`; }
+
+    // Parse the current URL hash to extract token
+    function getHashToken(){ return (location.hash || "").replace(/^#/,""); }
+
+    // Read the current hash and return parsed info: {type, postIdx, mediaIdx}
+    // type: "p"=post, "m"=media, "g"=group
+    function parseToken(token){
+      if(!token) return null;
+      try{
+        const raw = decodeURIComponent(escape(atob(token.replace(/-/g,"+").replace(/_/g,"/"))));
+        const parts = raw.split("|");
+        const type = parts[0];
+        if(type==="p") return {type:"p", date:parts[1], title:parts[2], idx:parseInt(parts[3]||"0",10)};
+        if(type==="m") return {type:"m", date:parts[1], title:parts[2], idx:parseInt(parts[3]||"0",10), mediaIdx:parseInt(parts[4]||"0",10)};
+        if(type==="g") return {type:"g", date:parts[1], title:parts[2], idx:parseInt(parts[3]||"0",10)};
+      }catch(e){}
+      return null;
+    }
+
+    // Push a hash to the URL without adding to browser history (replaceState)
+    function setHash(token){ history.replaceState(null,"",token ? "#"+token : location.pathname+location.search); }
+    // Remove hash from URL
+    function clearHash(){ history.replaceState(null,"",location.pathname+location.search); }
+
+    /* ─── DOM CACHE INIT ─────────────────────────────────────────────── */
+    function cache(){
+      eUserArea=id("userArea"); eUsername=id("username"); eDropdown=id("userDropdown");
+      eGuestView=id("guestView"); eUserView=id("userView"); eOpenLoginBtn=id("openLoginBtn");
+      eLoginOverlay=id("loginOverlay"); eLoginBtn=id("loginBtn"); eLoginUser=id("loginUsername");
+      eLoginPass=id("loginPassword"); eLoginError=id("loginError"); eLogoutBtn=id("logoutBtn");
+      eUserFullName=id("userFullName"); eUserCard=id("userCard"); eUserDesg=id("userDesg");
+      eUserBlood=id("userBlood"); eUserMobile=id("userMobile"); eWelcomePopup=id("welcomePopup");
+      eWelcomeText=id("welcomeText"); eHeaderImg=id("headerProfileImg"); eHeaderIcon=id("headerUserIcon");
+      eDropdownImg=id("dropdownProfileImg"); eViewPhotoBtn=id("viewPhotoBtn"); ePhotoOverlay=id("photoOverlay");
+      eFullImg=id("fullProfileImg"); eClosePhoto=id("closePhotoOverlay"); eNotifBtn=id("notificationBtn");
+      eNotiDrop=id("notiDropdown"); eNotiBadge=id("notiBadge"); eNotiList=id("notiList");
+      eMsgBtn=id("msgBtn"); eMsgDrop=id("msgDropdown"); eMsgBadge=id("msgBadge"); eMsgList=id("msgList");
+      eLeadersOverlay=id("leadersOverlay"); eCloseLeaders=id("closeLeaders"); eLeadersList=id("leadersList");
+      eThemeBtn=id("themeToggleBtn"); eThemeIcon=id("themeToggleIcon");
+      eTransBtn=id("translateToggleBtn"); eTransHost=id("google_translate_element");
+      eLightbox=id("lightbox"); eLightboxInner=id("lightboxInner");
+      eLightboxClose=id("lightboxClose"); eLbPrev=id("lbPrev"); eLbNext=id("lbNext");
+    }
+
+    /* ─── THEME ──────────────────────────────────────────────────────── */
     function applyTheme(m){
-      const d = m === "dark";
-      document.body.classList.toggle("dark-mode", d);
-      localStorage.setItem(TK, d ? "dark" : "light");
-      if(eThemeIcon) eThemeIcon.className = d ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      const d = m==="dark";
+      document.body.classList.toggle("dark-mode",d);
+      localStorage.setItem(TK,d?"dark":"light");
+      if(eThemeIcon) eThemeIcon.className=d?"fa-solid fa-sun":"fa-solid fa-moon";
     }
     function initTheme(){
       const s = localStorage.getItem(TK);
-      if(s === "dark" || s === "light"){
-        applyTheme(s);
-        return;
-      }
-      applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
+      if(s==="dark"||s==="light"){ applyTheme(s); return; }
+      applyTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
     }
-    function toggleTheme(){ applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark"); }
+    function toggleTheme(){ applyTheme(document.body.classList.contains("dark-mode")?"light":"dark"); }
 
+    /* ─── LANGUAGE / TRANSLATE ───────────────────────────────────────── */
     function setDir(){
-      const r = lang === "ur";
-      document.documentElement.lang = r ? "ur" : "en";
-      document.documentElement.dir = r ? "rtl" : "ltr";
-      document.body.classList.toggle("page-rtl", r);
-      if(eTransBtn) eTransBtn.classList.toggle("active", r);
+      const r = lang==="ur";
+      document.documentElement.lang=r?"ur":"en";
+      document.documentElement.dir=r?"rtl":"ltr";
+      document.body.classList.toggle("page-rtl",r);
+      if(eTransBtn) eTransBtn.classList.toggle("active",r);
     }
     function fixTerms(root){
       if(!root) return;
-      const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-      const rr = lang === "ur"
+      const w = document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+      const rr = lang==="ur"
         ? [["خواری فلاحی کمیٹی","خاورئی فلاحی کمیٹی"],["Khawrai Falahi Committee","خاورئی فلاحی کمیٹی"],["Khawrai","خاورئی"]]
         : [["Khawarai Welfare Committee","Khawrai Falahi Committee"],["Recipe (English)","Constitution (English)"],["Order (Translated)","Constitution (Translated)"]];
-      const ns = [];
+      const ns=[];
       while(w.nextNode()) ns.push(w.currentNode);
-      ns.forEach(n => {
-        let t = n.nodeValue;
-        if(!t) return;
-        rr.forEach(([f,r]) => {
-          if(t.includes(f)) t = t.split(f).join(r);
-        });
-        if(t !== n.nodeValue) n.nodeValue = t;
-      });
+      ns.forEach(n=>{ let t=n.nodeValue; if(!t) return; rr.forEach(([f,r])=>{ if(t.includes(f)) t=t.split(f).join(r); }); if(t!==n.nodeValue) n.nodeValue=t; });
     }
-    function schedFix(){
-      clearTimeout(fixTimer);
-      fixTimer = setTimeout(() => {
-        if(!fixRunning){
-          fixRunning = true;
-          try { fixTerms(document.body); }
-          finally { setTimeout(() => fixRunning = false, 0); }
-        }
-      }, 120);
-    }
+    function schedFix(){ clearTimeout(fixTimer); fixTimer=setTimeout(()=>{ if(!fixRunning){ fixRunning=true; try{ fixTerms(document.body); }finally{ setTimeout(()=>fixRunning=false,0); } } },120); }
     function refreshView(){ schedFix(); }
 
-    function applyGT(l){
-      const c = document.querySelector(".goog-te-combo");
-      if(!c) return false;
-      c.value = l;
-      c.dispatchEvent(new Event("change"));
-      lang = l;
-      localStorage.setItem(LK, l);
-      setDir();
-      return true;
-    }
-    function applyGTR(l, a = 0){
-      if(applyGT(l)){
-        setTimeout(() => fixTerms(document.body), 250);
-        return;
-      }
-      if(a < 20) setTimeout(() => applyGTR(l, a + 1), 200);
-      else gtPending = l;
-    }
+    function applyGT(l){ const c=document.querySelector(".goog-te-combo"); if(!c) return false; c.value=l; c.dispatchEvent(new Event("change")); lang=l; localStorage.setItem(LK,l); setDir(); return true; }
+    function applyGTR(l,a=0){ if(applyGT(l)){ setTimeout(()=>fixTerms(document.body),250); return; } if(a<20) setTimeout(()=>applyGTR(l,a+1),200); else gtPending=l; }
     function ensureGT(){
       if(gtPromise) return gtPromise;
-      gtPromise = new Promise((res, rej) => {
-        if(window.google && window.google.translate && document.querySelector(".goog-te-combo")){
-          res();
-          return;
-        }
-        window.googleTranslateElementInit = function(){
+      gtPromise=new Promise((res,rej)=>{
+        if(window.google&&window.google.translate&&document.querySelector(".goog-te-combo")){ res(); return; }
+        window.googleTranslateElementInit=function(){
           try{
-            if(eTransHost) eTransHost.innerHTML = "";
-            new google.translate.TranslateElement(
-              {pageLanguage:"en",includedLanguages:"ur,en",autoDisplay:false},
-              "google_translate_element"
-            );
+            if(eTransHost) eTransHost.innerHTML="";
+            new google.translate.TranslateElement({pageLanguage:"en",includedLanguages:"ur,en",autoDisplay:false},"google_translate_element");
             res();
-            if(gtPending){
-              const p = gtPending;
-              gtPending = null;
-              setTimeout(() => applyGTR(p), 250);
-            }
-          }catch(e){
-            rej(e);
-          }
+            if(gtPending){ const p=gtPending; gtPending=null; setTimeout(()=>applyGTR(p),250); }
+          }catch(e){ rej(e); }
         };
         if(!document.getElementById("kfc-gt-script")){
-          const s = document.createElement("script");
-          s.id = "kfc-gt-script";
-          s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-          s.async = true;
-          s.onerror = () => rej(new Error("Translator failed"));
-          document.head.appendChild(s);
+          const s=document.createElement("script");
+          s.id="kfc-gt-script"; s.src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+          s.async=true; s.onerror=()=>rej(new Error("Translator failed")); document.head.appendChild(s);
         }
       });
       return gtPromise;
     }
-    async function toggleTrans(){
-      const t = lang === "ur" ? "en" : "ur";
-      gtPending = t;
-      try{ await ensureGT(); applyGTR(t); }catch(e){ console.error(e); }
-    }
+    async function toggleTrans(){ const t=lang==="ur"?"en":"ur"; gtPending=t; try{ await ensureGT(); applyGTR(t); }catch(e){ console.error(e); } }
 
-    function showOut(){
-      if(eMsgBtn) eMsgBtn.style.display = "none";
-      if(eNotifBtn) eNotifBtn.style.display = "none";
-      if(eHeaderImg) eHeaderImg.style.display = "none";
-      if(eHeaderIcon) eHeaderIcon.style.display = "block";
-      if(eGuestView) eGuestView.style.display = "block";
-      if(eUserView) eUserView.style.display = "none";
-      if(eUsername) eUsername.innerText = "Welcome, Guest";
-    }
-    function showIn(){
-      if(eMsgBtn) eMsgBtn.style.display = "flex";
-      if(eNotifBtn) eNotifBtn.style.display = "flex";
-      if(eGuestView) eGuestView.style.display = "none";
-      if(eUserView) eUserView.style.display = "flex";
-    }
+    /* ─── AUTH UI ────────────────────────────────────────────────────── */
+    function showOut(){ if(eMsgBtn) eMsgBtn.style.display="none"; if(eNotifBtn) eNotifBtn.style.display="none"; if(eHeaderImg) eHeaderImg.style.display="none"; if(eHeaderIcon) eHeaderIcon.style.display="block"; if(eGuestView) eGuestView.style.display="block"; if(eUserView) eUserView.style.display="none"; if(eUsername) eUsername.innerText="Welcome, Guest"; }
+    function showIn(){ if(eMsgBtn) eMsgBtn.style.display="flex"; if(eNotifBtn) eNotifBtn.style.display="flex"; if(eGuestView) eGuestView.style.display="none"; if(eUserView) eUserView.style.display="flex"; }
     function renderUser(u){
       if(!u) return;
-      const fn = norm(u.name).split(" ")[0] || "User";
-      if(eUsername) eUsername.innerText = `Welcome, ${fn}`;
-      if(eUserFullName) eUserFullName.innerText = `Welcome, ${u.name}`;
-      if(eUserCard) eUserCard.innerText = `Card Number: ${u.CNo}`;
-      if(eUserDesg) eUserDesg.innerText = `Designation: ${u.Desg}`;
-      if(eUserBlood) eUserBlood.innerText = `Blood Group: ${u.BG || "Not available"}`;
-      if(eUserMobile) eUserMobile.innerText = `Registered Mobile: ${u.mobile || "Not available"}`;
+      const fn=norm(u.name).split(" ")[0]||"User";
+      if(eUsername) eUsername.innerText=`Welcome, ${fn}`;
+      if(eUserFullName) eUserFullName.innerText=`Welcome, ${u.name}`;
+      if(eUserCard) eUserCard.innerText=`Card Number: ${u.CNo}`;
+      if(eUserDesg) eUserDesg.innerText=`Designation: ${u.Desg}`;
+      if(eUserBlood) eUserBlood.innerText=`Blood Group: ${u.BG||"Not available"}`;
+      if(eUserMobile) eUserMobile.innerText=`Registered Mobile: ${u.mobile||"Not available"}`;
       applyPic(u.CNo);
-      const vcb = id("viewCardBtn");
-      if(vcb){
-        vcb.href = `https://livenews.live/KFC/viewcard.html?card=${btoa(String(u.CNo))}`;
-        vcb.target = "_blank";
-      }
-      showIn();
-      refreshView();
+      const vcb=id("viewCardBtn"); if(vcb){ vcb.href=`https://livenews.live/KFC/viewcard.html?card=${btoa(String(u.CNo))}`; vcb.target="_blank"; }
+      showIn(); refreshView();
     }
-    function showWelcome(name){
-      if(!eWelcomePopup || !eWelcomeText) return;
-      eWelcomeText.innerText = `Welcome, ${name} 👋`;
-      eWelcomePopup.classList.add("show");
-      setTimeout(() => eWelcomePopup.classList.remove("show"), 2500);
-      refreshView();
-    }
-    function saveS(u){ localStorage.setItem("kfcUser", JSON.stringify(u)); }
+    function showWelcome(name){ if(!eWelcomePopup||!eWelcomeText) return; eWelcomeText.innerText=`Welcome, ${name} 👋`; eWelcomePopup.classList.add("show"); setTimeout(()=>eWelcomePopup.classList.remove("show"),2500); refreshView(); }
+    function saveS(u){ localStorage.setItem("kfcUser",JSON.stringify(u)); }
     function clearS(){ localStorage.removeItem("kfcUser"); }
-    function checkSession(){
-      const s = localStorage.getItem("kfcUser");
-      if(!s){ showOut(); return; }
-      try{
-        const p = JSON.parse(s);
-        if(p && !isCx(p.Status)){
-          currentUser = p;
-          renderUser(p);
-          return;
-        }
-        clearS();
-        showOut();
-      }catch(e){
-        clearS();
-        showOut();
-      }
-    }
+    function checkSession(){ const s=localStorage.getItem("kfcUser"); if(!s){ showOut(); return; } try{ const p=JSON.parse(s); if(p&&!isCx(p.Status)){ currentUser=p; renderUser(p); return; } clearS(); showOut(); }catch(e){ clearS(); showOut(); } }
     function login(){
-      if(eLoginError) eLoginError.innerText = "";
-      const u = norm(eLoginUser && eLoginUser.value).toLowerCase();
-      const p = norm(eLoginPass && eLoginPass.value);
-      if(!u || !p){
-        if(eLoginError) eLoginError.innerText = "Enter username and password";
-        return;
-      }
-      const user = users.find(x => genU(x.name) === u && genP(x.CNo) === p);
-      if(!user){
-        if(eLoginError) eLoginError.innerText = "Invalid credentials";
-        return;
-      }
-      if(isCx(user.Status)){
-        if(eLoginError) eLoginError.innerText = "This account is cancelled";
-        return;
-      }
-      currentUser = user;
-      saveS(user);
-      renderUser(user);
-      showWelcome(user.name);
+      if(eLoginError) eLoginError.innerText="";
+      const u=norm(eLoginUser&&eLoginUser.value).toLowerCase();
+      const p=norm(eLoginPass&&eLoginPass.value);
+      if(!u||!p){ if(eLoginError) eLoginError.innerText="Enter username and password"; return; }
+      const user=users.find(x=>genU(x.name)===u&&genP(x.CNo)===p);
+      if(!user){ if(eLoginError) eLoginError.innerText="Invalid credentials"; return; }
+      if(isCx(user.Status)){ if(eLoginError) eLoginError.innerText="This account is cancelled"; return; }
+      currentUser=user; saveS(user); renderUser(user); showWelcome(user.name);
       if(eLoginOverlay) eLoginOverlay.classList.remove("show");
       refreshView();
     }
 
+    /* ─── ALERTS / MESSAGES ──────────────────────────────────────────── */
     async function fetchAlerts(){
       try{
-        const r = await fetch(API + "/message/alerts.json", {cache:"no-store"});
-        const al = await r.json();
+        const r=await fetch(API+"/message/alerts.json",{cache:"no-store"});
+        const al=await r.json();
         if(!eNotiList) return;
-        eNotiList.innerHTML = "";
-        if(!Array.isArray(al) || !al.length){
-          eNotiList.innerHTML = infoMsg("No alerts found.");
-          return;
-        }
-        [...al].reverse().slice(0,3).forEach(a => {
-          const item = document.createElement("div");
-          item.className = "noti-item";
-          const tr = document.createElement("div");
-          tr.className = "noti-top-row";
-          const ti = document.createElement("span");
-          ti.style.cssText = "font-weight:bold;color:#0d3c91;font-size:14px;";
-          ti.textContent = a.title_en || a.title || "Alert";
-          const dt = document.createElement("span");
-          dt.style.cssText = "font-size:11px;color:#888;";
-          dt.textContent = a.date || "";
+        eNotiList.innerHTML="";
+        if(!Array.isArray(al)||!al.length){ eNotiList.innerHTML=infoMsg("No alerts found."); return; }
+        [...al].reverse().slice(0,3).forEach(a=>{
+          const item=document.createElement("div"); item.className="noti-item";
+          const tr=document.createElement("div"); tr.className="noti-top-row";
+          const ti=document.createElement("span"); ti.style.cssText="font-weight:bold;color:#0d3c91;font-size:14px;"; ti.textContent=a.title_en||a.title||"Alert";
+          const dt=document.createElement("span"); dt.style.cssText="font-size:11px;color:#888;"; dt.textContent=a.date||"";
           tr.appendChild(ti); tr.appendChild(dt);
-          const bd = document.createElement("div");
-          bd.className = "noti-body";
-          bd.textContent = a.body_en || a.body || "";
+          const bd=document.createElement("div"); bd.className="noti-body"; bd.textContent=a.body_en||a.body||"";
           item.appendChild(tr); item.appendChild(bd);
-          item.addEventListener("click", () => {
-            const v = bd.style.display === "block";
-            document.querySelectorAll(".noti-body").forEach(el => el.style.display = "none");
-            if(!v) bd.style.display = "block";
-          });
+          item.addEventListener("click",()=>{ const v=bd.style.display==="block"; document.querySelectorAll(".noti-body").forEach(el=>el.style.display="none"); if(!v) bd.style.display="block"; });
           eNotiList.appendChild(item);
         });
-        const btn = document.createElement("button");
-        btn.style.cssText = "width:100%;padding:10px;border:none;border-radius:50px;background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;font-weight:bold;cursor:pointer;margin-top:10px;font-size:13px;";
-        btn.textContent = "See all alerts";
-        btn.onclick = () => window.location.href = "https://livenews.live/KFC/message/alerts.html";
+        const btn=document.createElement("button");
+        btn.style.cssText="width:100%;padding:10px;border:none;border-radius:50px;background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;font-weight:bold;cursor:pointer;margin-top:10px;font-size:13px;";
+        btn.textContent="See all alerts"; btn.onclick=()=>window.location.href="https://livenews.live/KFC/message/alerts.html";
         eNotiList.appendChild(btn);
-      }catch(e){
-        if(eNotiList) eNotiList.innerHTML = infoMsg("Error loading alerts.");
-      }
+      }catch(e){ if(eNotiList) eNotiList.innerHTML=infoMsg("Error loading alerts."); }
     }
 
     async function fetchMessages(){
       try{
-        const r = await fetch(API + "/messages.json", {cache:"no-store"});
-        const ms = await r.json();
+        const r=await fetch(API+"/messages.json",{cache:"no-store"});
+        const ms=await r.json();
         if(!eMsgList) return;
-        eMsgList.innerHTML = "";
-        if(!currentUser){
-          eMsgList.innerHTML = infoMsg("Please sign in to view messages.");
-          return;
-        }
-        const mine = (Array.isArray(ms) ? ms : []).filter(m =>
-          norm(m.cardNumber).toLowerCase() === norm(currentUser.CNo).toLowerCase() ||
-          norm(m.cardNumber).toLowerCase() === "all"
-        );
-        if(!mine.length){
-          eMsgList.innerHTML = infoMsg("No messages found.");
-          return;
-        }
-        mine.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
-        mine.forEach(m => {
-          const item = document.createElement("div");
-          item.className = "noti-item";
-          const tr = document.createElement("div");
-          tr.className = "noti-top-row";
-          const ti = document.createElement("strong");
-          ti.style.cssText = "color:#0d3c91;font-size:14px;";
-          ti.textContent = m.title_en || m.title || "Message";
-          const dt = document.createElement("span");
-          dt.style.cssText = "font-size:11px;color:#888;";
-          dt.textContent = m.date || "";
+        eMsgList.innerHTML="";
+        if(!currentUser){ eMsgList.innerHTML=infoMsg("Please sign in to view messages."); return; }
+        const mine=(Array.isArray(ms)?ms:[]).filter(m=>norm(m.cardNumber).toLowerCase()===norm(currentUser.CNo).toLowerCase()||norm(m.cardNumber).toLowerCase()==="all");
+        if(!mine.length){ eMsgList.innerHTML=infoMsg("No messages found."); return; }
+        mine.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+        mine.forEach(m=>{
+          const item=document.createElement("div"); item.className="noti-item";
+          const tr=document.createElement("div"); tr.className="noti-top-row";
+          const ti=document.createElement("strong"); ti.style.cssText="color:#0d3c91;font-size:14px;"; ti.textContent=m.title_en||m.title||"Message";
+          const dt=document.createElement("span"); dt.style.cssText="font-size:11px;color:#888;"; dt.textContent=m.date||"";
           tr.appendChild(ti); tr.appendChild(dt);
-          const bd = document.createElement("div");
-          bd.className = "noti-body";
-          bd.textContent = m.body_en || m.body || "";
+          const bd=document.createElement("div"); bd.className="noti-body"; bd.textContent=m.body_en||m.body||"";
           item.appendChild(tr); item.appendChild(bd);
-          item.addEventListener("click", () => {
-            const v = bd.style.display === "block";
-            document.querySelectorAll(".noti-body").forEach(el => el.style.display = "none");
-            if(!v) bd.style.display = "block";
-          });
+          item.addEventListener("click",()=>{ const v=bd.style.display==="block"; document.querySelectorAll(".noti-body").forEach(el=>el.style.display="none"); if(!v) bd.style.display="block"; });
           eMsgList.appendChild(item);
         });
-      }catch(e){
-        if(eMsgList) eMsgList.innerHTML = infoMsg("Error loading messages.");
-      }
+      }catch(e){ if(eMsgList) eMsgList.innerHTML=infoMsg("Error loading messages."); }
     }
 
+    /* ─── LEADERS ────────────────────────────────────────────────────── */
     function showLeaders(){
       if(!eLeadersList) return;
-      eLeadersList.innerHTML = "";
-      const ROLES = ["president","acting president","vice president","committee guardian","committee guardian (ex-pr)","general secretary","finance manager","joint finance secretary","media manager"];
-      const leaders = users.filter(u => ROLES.includes(norm(u.Desg).toLowerCase()))
-        .sort((a,b) => ROLES.indexOf(norm(a.Desg).toLowerCase()) - ROLES.indexOf(norm(b.Desg).toLowerCase()));
-      if(!leaders.length){
-        eLeadersList.innerHTML = `<p style="text-align:center;color:#888;padding:15px;">No leaders found.</p>`;
-        return;
-      }
-      leaders.forEach(l => {
-        const d = document.createElement("div");
-        d.className = "leader-item";
-        d.innerHTML = `<h4>${esc(l.name)}</h4><p>${esc(l.Desg)}</p><p class="leader-phone"><i class="fa-solid fa-phone"></i> ${esc(l.mobile || "Not available")}</p>`;
-        eLeadersList.appendChild(d);
-      });
+      eLeadersList.innerHTML="";
+      const ROLES=["president","acting president","vice president","committee guardian","committee guardian (ex-pr)","general secretary","finance manager","joint finance secretary","media manager"];
+      const leaders=users.filter(u=>ROLES.includes(norm(u.Desg).toLowerCase())).sort((a,b)=>ROLES.indexOf(norm(a.Desg).toLowerCase())-ROLES.indexOf(norm(b.Desg).toLowerCase()));
+      if(!leaders.length){ eLeadersList.innerHTML=`<p style="text-align:center;color:#888;padding:15px;">No leaders found.</p>`; return; }
+      leaders.forEach(l=>{ const d=document.createElement("div"); d.className="leader-item"; d.innerHTML=`<h4>${esc(l.name)}</h4><p>${esc(l.Desg)}</p><p class="leader-phone"><i class="fa-solid fa-phone"></i> ${esc(l.mobile||"Not available")}</p>`; eLeadersList.appendChild(d); });
     }
 
-    function closeAll(){
-      if(eDropdown) eDropdown.classList.remove("show");
-      if(eNotiDrop) eNotiDrop.classList.remove("show");
-      if(eMsgDrop) eMsgDrop.classList.remove("show");
-    }
+    /* ─── DROPDOWN CLOSE ─────────────────────────────────────────────── */
+    function closeAll(){ if(eDropdown) eDropdown.classList.remove("show"); if(eNotiDrop) eNotiDrop.classList.remove("show"); if(eMsgDrop) eMsgDrop.classList.remove("show"); }
 
-    function bindEvents(){
-      if(eUserArea) eUserArea.addEventListener("click", e => {
-        e.stopPropagation();
-        if(eNotiDrop) eNotiDrop.classList.remove("show");
-        if(eMsgDrop) eMsgDrop.classList.remove("show");
-        if(eDropdown) eDropdown.classList.toggle("show");
-      });
-      if(eThemeBtn) eThemeBtn.addEventListener("click", e => { e.stopPropagation(); toggleTheme(); });
-      if(eTransBtn) eTransBtn.addEventListener("click", e => { e.stopPropagation(); toggleTrans(); });
-      if(eNotifBtn) eNotifBtn.addEventListener("click", e => {
-        e.stopPropagation();
-        if(eDropdown) eDropdown.classList.remove("show");
-        if(eMsgDrop) eMsgDrop.classList.remove("show");
-        if(eNotiDrop) eNotiDrop.classList.toggle("show");
-        if(!currentUser){
-          if(eNotiList) eNotiList.innerHTML = infoMsg("Please sign in to view alerts.");
-          return;
-        }
-        fetchAlerts();
-        if(eNotiBadge) eNotiBadge.style.display = "none";
-      });
-      if(eMsgBtn) eMsgBtn.addEventListener("click", e => {
-        e.stopPropagation();
-        if(eDropdown) eDropdown.classList.remove("show");
-        if(eNotiDrop) eNotiDrop.classList.remove("show");
-        if(eMsgDrop) eMsgDrop.classList.toggle("show");
-        if(!currentUser){
-          if(eMsgList) eMsgList.innerHTML = infoMsg("Please sign in to view messages.");
-          return;
-        }
-        fetchMessages();
-      });
-      if(eViewPhotoBtn) eViewPhotoBtn.addEventListener("click", () => {
-        if(ePhotoOverlay) ePhotoOverlay.classList.add("show");
-        if(eDropdown) eDropdown.classList.remove("show");
-      });
-      if(eClosePhoto) eClosePhoto.addEventListener("click", () => { if(ePhotoOverlay) ePhotoOverlay.classList.remove("show"); });
-      if(ePhotoOverlay) ePhotoOverlay.addEventListener("click", e => { if(e.target === ePhotoOverlay) ePhotoOverlay.classList.remove("show"); });
-      if(eLogoutBtn) eLogoutBtn.addEventListener("click", () => { clearS(); currentUser = null; location.reload(); });
-      if(eOpenLoginBtn) eOpenLoginBtn.addEventListener("click", () => { if(eLoginOverlay) eLoginOverlay.classList.add("show"); });
-      if(eLoginOverlay) eLoginOverlay.addEventListener("click", e => { if(e.target === eLoginOverlay) eLoginOverlay.classList.remove("show"); });
-      if(eLoginBtn) eLoginBtn.addEventListener("click", login);
-      document.addEventListener("keydown", e => {
-        if(e.key === "Enter" && eLoginOverlay && eLoginOverlay.classList.contains("show")) login();
-        if(e.key === "Escape"){
-          const lb = id("lightbox");
-          if(lb && lb.classList.contains("show")) closeLB();
-        }
-      });
-      document.addEventListener("click", closeAll);
-      [eDropdown, eNotiDrop, eMsgDrop].forEach(b => { if(b) b.addEventListener("click", e => e.stopPropagation()); });
-      if(eCloseLeaders) eCloseLeaders.addEventListener("click", () => { if(eLeadersOverlay) eLeadersOverlay.classList.remove("show"); });
-      if(eLeadersOverlay) eLeadersOverlay.addEventListener("click", e => { if(e.target === eLeadersOverlay) eLeadersOverlay.classList.remove("show"); });
-      const lbClose = id("lightboxClose"); if(lbClose) lbClose.addEventListener("click", closeLB);
-      const lb = id("lightbox"); if(lb) lb.addEventListener("click", e => { if(e.target === lb) closeLB(); });
-      window.addEventListener("load", () => document.body.classList.add("loaded"));
-    }
+    /* ─── LIGHTBOX ───────────────────────────────────────────────────── */
 
-    function openLB(src, alt){
-      const lb = id("lightbox");
-      const img = id("lightboxImg");
-      if(!lb || !img) return;
-      img.src = src;
-      img.alt = alt || "";
-      lb.classList.add("show");
-      document.body.style.overflow = "hidden";
-    }
-    function closeLB(){
-      const lb = id("lightbox");
-      const img = id("lightboxImg");
-      if(!lb) return;
-      lb.classList.remove("show");
-      document.body.style.overflow = "";
-      if(img) img.src = "";
-    }
-
-    function isFB(url){ return /facebook\.com|fb\.watch/i.test(url || ""); }
-    function fbEmbed(url){ return "https://www.facebook.com/plugins/video.php?href=" + encodeURIComponent(url) + "&show_text=false&width=560&mute=0&autoplay=0"; }
-    function fmtDate(raw){
-      if(!raw) return "";
-      const d = new Date(raw);
-      if(isNaN(d.getTime())) return String(raw);
-      return d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
-    }
-
-    function tokenForPost(item, idx){
-      const raw = [norm(item.date), norm(item.title), String(idx)].join("|");
+    // Copy a URL to clipboard
+    async function copyToClipboard(url, btn){
+      if(!btn) return;
+      const orig = btn.innerHTML;
       try{
-        return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+        if(navigator.clipboard && window.isSecureContext){
+          await navigator.clipboard.writeText(url);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = url; ta.style.position="fixed"; ta.style.opacity="0";
+          document.body.appendChild(ta); ta.select();
+          document.execCommand("copy"); document.body.removeChild(ta);
+        }
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+        setTimeout(()=>{ btn.innerHTML=orig; }, 1600);
       }catch(e){
-        return encodeURIComponent(raw).replace(/%/g,"");
+        btn.innerHTML = `<i class="fa-solid fa-xmark"></i> Failed`;
+        setTimeout(()=>{ btn.innerHTML=orig; }, 1600);
       }
     }
-    function postLink(token){
-      return `${location.origin}${location.pathname}#p=${token}`;
-    }
-    function tokenFromLocation(){
-      const h = location.hash || "";
-      const m = h.match(/#p=([^&]+)/) || (location.search.match(/[?&]p=([^&]+)/) || []);
-      return m && m[1] ? m[1] : "";
+
+    // Render a single lightbox frame given lbItems[lbCurrent]
+    function lbRender(){
+      if(!eLightboxInner || !lbItems.length) return;
+      const item = lbItems[lbCurrent];
+      eLightboxInner.innerHTML = "";
+
+      // Update URL
+      if(item.token) setHash(item.token);
+
+      // Nav button visibility
+      if(eLbPrev) eLbPrev.classList.toggle("hidden", lbItems.length <= 1);
+      if(eLbNext) eLbNext.classList.toggle("hidden", lbItems.length <= 1);
+
+      // Build media content
+      let mediaEl;
+
+      if(item.type === "image"){
+        const img = document.createElement("img");
+        img.className = "lightbox-img";
+        img.src = item.src;
+        img.alt = item.postTitle || "Gallery image";
+        img.onerror = () => { img.alt = "Image could not be loaded"; };
+        mediaEl = img;
+      } else if(item.type === "video"){
+        if(isFB(item.src)){
+          const wrap = document.createElement("div");
+          wrap.className = "lightbox-iframe-wrap";
+          const iframe = document.createElement("iframe");
+          iframe.src = fbEmbed(item.src);
+          iframe.setAttribute("allow","autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share");
+          iframe.setAttribute("allowfullscreen","true");
+          iframe.setAttribute("scrolling","no");
+          iframe.setAttribute("frameborder","0");
+          iframe.title = item.postTitle || "Video";
+          wrap.appendChild(iframe);
+          mediaEl = wrap;
+        } else {
+          const video = document.createElement("video");
+          video.className = "lightbox-video";
+          video.controls = true;
+          video.autoplay = true;
+          video.preload = "metadata";
+          video.setAttribute("playsinline","");
+          if(item.thumbnail) video.poster = item.thumbnail;
+          const source = document.createElement("source");
+          source.src = item.src;
+          source.type = item.mime || "video/mp4";
+          video.appendChild(source);
+          video.onerror = () => {
+            video.outerHTML = `<div style="padding:40px;text-align:center;color:#fff;font-size:14px;line-height:1.7;">Video could not be loaded.</div>`;
+          };
+          mediaEl = video;
+        }
+      }
+
+      if(mediaEl) eLightboxInner.appendChild(mediaEl);
+
+      // Build bottom bar
+      const bar = document.createElement("div");
+      bar.className = "lightbox-bar";
+
+      // Counter
+      if(lbItems.length > 1){
+        const counter = document.createElement("span");
+        counter.className = "lightbox-meta";
+        counter.textContent = `${lbCurrent+1} / ${lbItems.length}`;
+        bar.appendChild(counter);
+      }
+
+      // Post title
+      if(item.postTitle){
+        const title = document.createElement("span");
+        title.className = "lightbox-meta";
+        title.style.fontWeight = "600";
+        title.textContent = item.postTitle;
+        bar.appendChild(title);
+      }
+
+      // Copy this media link
+      if(item.token){
+        const url = makeUrl(item.token);
+        const btn = document.createElement("button");
+        btn.className = "lightbox-copy-btn";
+        btn.innerHTML = `<i class="fa-solid fa-link"></i> Copy Link`;
+        btn.title = "Copy link to this media";
+        btn.addEventListener("click", e => { e.stopPropagation(); copyToClipboard(url, btn); });
+        bar.appendChild(btn);
+      }
+
+      // Copy post link (all media)
+      if(item.postToken && lbItems.length > 1){
+        const url = makeUrl(item.postToken);
+        const btn2 = document.createElement("button");
+        btn2.className = "lightbox-copy-btn";
+        btn2.innerHTML = `<i class="fa-solid fa-layer-group"></i> Copy Post Link`;
+        btn2.title = "Copy link to this post (all media)";
+        btn2.addEventListener("click", e => { e.stopPropagation(); copyToClipboard(url, btn2); });
+        bar.appendChild(btn2);
+      }
+
+      eLightboxInner.appendChild(bar);
     }
 
-    function detectMediaType(url, fallback){
-      const u = String(url || "").toLowerCase().split("?")[0].split("#")[0];
+    function lbOpen(items, startIdx){
+      lbItems   = items;
+      lbCurrent = Math.max(0, Math.min(startIdx, items.length-1));
+      if(eLightbox) eLightbox.classList.add("show");
+      document.body.style.overflow = "hidden";
+      lbRender();
+    }
+
+    function lbClose(){
+      if(eLightbox) eLightbox.classList.remove("show");
+      document.body.style.overflow = "";
+      // Pause any playing video
+      if(eLightboxInner){
+        const vid = eLightboxInner.querySelector("video");
+        if(vid) vid.pause();
+        eLightboxInner.innerHTML = "";
+      }
+      lbItems   = [];
+      lbCurrent = 0;
+      clearHash();
+    }
+
+    function lbNav(dir){
+      if(!lbItems.length) return;
+      lbCurrent = (lbCurrent + dir + lbItems.length) % lbItems.length;
+      // Pause any playing video before switching
+      if(eLightboxInner){
+        const vid = eLightboxInner.querySelector("video");
+        if(vid) vid.pause();
+      }
+      lbRender();
+    }
+
+    /* ─── MEDIA UTILITIES ────────────────────────────────────────────── */
+    function isFB(url){ return /facebook\.com|fb\.watch/i.test(url||""); }
+    function fbEmbed(url){ return "https://www.facebook.com/plugins/video.php?href="+encodeURIComponent(url)+"&show_text=false&width=560&mute=0&autoplay=0"; }
+    function fmtDate(raw){ if(!raw) return ""; const d=new Date(raw); if(isNaN(d.getTime())) return String(raw); return d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}); }
+
+    function detectMediaType(url,fallback){
+      const u=String(url||"").toLowerCase().split("?")[0].split("#")[0];
       if(/\.(mp4|webm|ogg|mov|m4v|m3u8)$/.test(u)) return "video";
       if(/\.(jpg|jpeg|png|gif|webp|bmp|avif|svg)$/.test(u)) return "image";
-      return fallback || "image";
+      return fallback||"image";
     }
 
     function splitMultiValue(v){
       if(Array.isArray(v)) return v.flatMap(splitMultiValue);
-      if(typeof v !== "string") return [];
-      const s = v.trim();
-      if(!s) return [];
-      if(s.includes("||")) return s.split("||").map(x => x.trim()).filter(Boolean);
-      if(s.includes("\n")) return s.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+      if(typeof v!=="string") return [];
+      const s=v.trim(); if(!s) return [];
+      if(s.includes("||")) return s.split("||").map(x=>x.trim()).filter(Boolean);
+      if(s.includes("\n")) return s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
       return [s];
     }
 
     function normalizeMedia(item){
-      const out = [];
-      const pushMedia = (m, fallbackType) => {
+      const out=[];
+      const pushMedia=(m,fallbackType)=>{
         if(!m) return;
-        if(typeof m === "string"){
-          const parts = splitMultiValue(m);
-          if(parts.length > 1){
-            parts.forEach(part => pushMedia({type: detectMediaType(part, fallbackType), src: part}, fallbackType));
-            return;
-          }
-          out.push({ type: detectMediaType(m, fallbackType), src: m });
-          return;
+        if(typeof m==="string"){
+          const parts=splitMultiValue(m);
+          if(parts.length>1){ parts.forEach(part=>pushMedia({type:detectMediaType(part,fallbackType),src:part},fallbackType)); return; }
+          out.push({type:detectMediaType(m,fallbackType),src:m}); return;
         }
-        if(typeof m === "object" && m.src){
-          const sParts = splitMultiValue(m.src);
-          if(sParts.length > 1){
-            sParts.forEach(part => pushMedia({
-              type: m.type || detectMediaType(part, fallbackType),
-              src: part,
-              thumbnail: m.thumbnail || m.poster || "",
-              mime: m.mime || "",
-              caption: m.caption || ""
-            }, fallbackType));
-            return;
-          }
-          out.push({
-            type: m.type || detectMediaType(m.src, fallbackType),
-            src: m.src,
-            thumbnail: m.thumbnail || m.poster || "",
-            mime: m.mime || "",
-            caption: m.caption || ""
-          });
+        if(typeof m==="object"&&m.src){
+          const sParts=splitMultiValue(m.src);
+          if(sParts.length>1){ sParts.forEach(part=>pushMedia({type:m.type||detectMediaType(part,fallbackType),src:part,thumbnail:m.thumbnail||m.poster||"",mime:m.mime||"",caption:m.caption||""},fallbackType)); return; }
+          out.push({type:m.type||detectMediaType(m.src,fallbackType),src:m.src,thumbnail:m.thumbnail||m.poster||"",mime:m.mime||"",caption:m.caption||""});
         }
       };
-
-      if(Array.isArray(item.media)){
-        item.media.forEach(m => pushMedia(m, item.type));
-      }else if(Array.isArray(item.srcs)){
-        item.srcs.forEach(m => pushMedia(m, item.type));
-      }else if(Array.isArray(item.images)){
-        item.images.forEach(m => pushMedia(typeof m === "string" ? {type:"image",src:m} : m, "image"));
-      }else if(Array.isArray(item.videos)){
-        item.videos.forEach(m => pushMedia(typeof m === "string" ? {type:"video",src:m} : m, "video"));
-      }else if(item.src){
-        pushMedia({
-          type: item.type || detectMediaType(item.src, "image"),
-          src: item.src,
-          thumbnail: item.thumbnail || item.poster || "",
-          mime: item.mime || ""
-        }, item.type);
-      }
-
-      return out.filter(m => m && m.src);
+      if(Array.isArray(item.media)) item.media.forEach(m=>pushMedia(m,item.type));
+      else if(Array.isArray(item.srcs)) item.srcs.forEach(m=>pushMedia(m,item.type));
+      else if(Array.isArray(item.images)) item.images.forEach(m=>pushMedia(typeof m==="string"?{type:"image",src:m}:m,"image"));
+      else if(Array.isArray(item.videos)) item.videos.forEach(m=>pushMedia(typeof m==="string"?{type:"video",src:m}:m,"video"));
+      else if(item.src) pushMedia({type:item.type||detectMediaType(item.src,"image"),src:item.src,thumbnail:item.thumbnail||item.poster||"",mime:item.mime||""},"image");
+      return out.filter(m=>m&&m.src);
     }
 
-    function makeMediaTile(media, postTitle){
+    /* ─── POST BUILDING ──────────────────────────────────────────────── */
+
+    // Build the lightbox items array for a given post + its media list
+    function buildLbItems(item, postIdx, mediaList){
+      const pt = postToken(item, postIdx);
+      const gt = groupToken(item, postIdx);
+      return mediaList.map((m, mi) => ({
+        type:      m.type,
+        src:       m.src,
+        thumbnail: m.thumbnail || "",
+        mime:      m.mime || "",
+        postTitle: item.title || "",
+        // token for this specific media item
+        token:     mediaToken(item, postIdx, mi),
+        // token for the whole post
+        postToken: gt
+      }));
+    }
+
+    // Make a thumbnail tile in the grid
+    function makeMediaTile(media, lbItemsArr, tileIdx, postTitle){
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "media-tile";
-      btn.setAttribute("aria-label", media.type === "video" ? "Open video" : "Open image");
+      btn.setAttribute("aria-label", media.type==="video" ? "Open video" : "Open image");
 
       if(media.type === "image"){
         const img = document.createElement("img");
@@ -1017,23 +975,19 @@
         img.src = media.src;
         img.alt = postTitle || "Gallery photo";
         img.loading = "lazy";
-        img.onerror = () => {
-          btn.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-size:13px;padding:18px;text-align:center;">Image unavailable</div>`;
-        };
+        img.onerror = () => { btn.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#fff;font-size:13px;padding:18px;text-align:center;">Image unavailable</div>`; };
         btn.appendChild(img);
-        btn.addEventListener("click", () => openLB(media.src, postTitle || "Gallery image"));
+        btn.addEventListener("click", () => lbOpen(lbItemsArr, tileIdx));
         return btn;
       }
 
+      // Video tile
       const poster = document.createElement("img");
       poster.className = "media-video-poster";
       if(media.thumbnail) poster.src = media.thumbnail;
       poster.alt = postTitle || "Video thumbnail";
       poster.loading = "lazy";
-      poster.onerror = () => {
-        poster.remove();
-        btn.style.background = "linear-gradient(135deg,#0d3c91,#7873f5)";
-      };
+      poster.onerror = () => { poster.remove(); btn.style.background="linear-gradient(135deg,#0d3c91,#7873f5)"; };
       if(media.thumbnail) btn.appendChild(poster);
 
       const badge = document.createElement("div");
@@ -1043,96 +997,46 @@
 
       const overlay = document.createElement("div");
       overlay.className = "media-play-overlay";
-      overlay.innerHTML = `
-        <div class="media-play-circle"><i class="fa-solid fa-play"></i></div>
-        <div class="media-play-label">Play Video</div>
-      `;
+      overlay.innerHTML = `<div class="media-play-circle"><i class="fa-solid fa-play"></i></div><div class="media-play-label">Play Video</div>`;
       btn.appendChild(overlay);
 
-      btn.addEventListener("click", () => {
-        if(btn.dataset.playing === "1") return;
-        btn.dataset.playing = "1";
-        btn.innerHTML = "";
-
-        if(isFB(media.src)){
-          const wrap = document.createElement("div");
-          wrap.className = "post-media";
-          const cont = document.createElement("div");
-          cont.className = "post-video-container";
-          cont.style.position = "relative";
-          cont.style.width = "100%";
-          cont.style.paddingBottom = "56.25%";
-          cont.style.background = "#000";
-          const iframe = document.createElement("iframe");
-          iframe.src = fbEmbed(media.src);
-          iframe.setAttribute("allow","autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share");
-          iframe.setAttribute("allowfullscreen","true");
-          iframe.setAttribute("scrolling","no");
-          iframe.setAttribute("frameborder","0");
-          iframe.title = postTitle || "Facebook Video";
-          iframe.style.position = "absolute";
-          iframe.style.top = "0";
-          iframe.style.left = "0";
-          iframe.style.width = "100%";
-          iframe.style.height = "100%";
-          cont.appendChild(iframe);
-          wrap.appendChild(cont);
-          btn.replaceWith(wrap);
-          return;
-        }
-
-        const video = document.createElement("video");
-        video.className = "media-video";
-        video.controls = true;
-        video.autoplay = true;
-        video.preload = "metadata";
-        video.setAttribute("playsinline", "");
-        if(media.thumbnail) video.poster = media.thumbnail;
-
-        const source = document.createElement("source");
-        source.src = media.src;
-        source.type = media.mime || "video/mp4";
-        video.appendChild(source);
-
-        video.onerror = () => {
-          btn.innerHTML = `<div style="padding:30px;text-align:center;color:#fff;font-size:13px;line-height:1.7;">Video could not be loaded.</div>`;
-        };
-
-        btn.appendChild(video);
-        video.play().catch(() => {});
-      });
-
+      btn.addEventListener("click", () => lbOpen(lbItemsArr, tileIdx));
       return btn;
     }
 
-    function buildMediaGroup(item){
-      const media = normalizeMedia(item);
-      if(!media.length) return null;
+    function buildMediaGroup(item, postIdx){
+      const mediaList = normalizeMedia(item);
+      if(!mediaList.length) return {el:null, mediaList, lbItemsArr:[]};
 
-      if(media.length === 1){
+      const lbItemsArr = buildLbItems(item, postIdx, mediaList);
+
+      if(mediaList.length === 1){
         const wrap = document.createElement("div");
         wrap.className = "post-media media-single";
-        wrap.appendChild(makeMediaTile(media[0], item.title || ""));
-        return wrap;
+        wrap.appendChild(makeMediaTile(mediaList[0], lbItemsArr, 0, item.title||""));
+        return {el:wrap, mediaList, lbItemsArr};
       }
 
       const grid = document.createElement("div");
-      grid.className = "post-media media-grid count-" + Math.min(media.length, 6);
-      media.forEach(m => grid.appendChild(makeMediaTile(m, item.title || "")));
-      return grid;
+      grid.className = "post-media media-grid count-"+Math.min(mediaList.length,6);
+      mediaList.forEach((m,i) => grid.appendChild(makeMediaTile(m, lbItemsArr, i, item.title||"")));
+      return {el:grid, mediaList, lbItemsArr};
     }
 
     function buildPost(item, idx){
-      const token = tokenForPost(item, idx);
+      const pt  = postToken(item, idx);
+      const gt  = groupToken(item, idx);
       const card = document.createElement("div");
       card.className = "post-card";
-      card.dataset.postToken = token;
-      card.id = `post-${token}`;
+      card.dataset.postToken = pt;
+      card.dataset.groupToken = gt;
+      card.id = "post-"+pt;
       card.style.animationDelay = (idx * 0.07) + "s";
 
-      const mediaList = normalizeMedia(item);
-      const primaryType = mediaList.length ? mediaList[0].type : (item.type || "image");
+      const {el:mediaEl, mediaList, lbItemsArr} = buildMediaGroup(item, idx);
+      const primaryType = mediaList.length ? mediaList[0].type : (item.type||"image");
 
+      /* ── POST HEADER ── */
       const header = document.createElement("div");
       header.className = "post-header";
 
@@ -1140,7 +1044,7 @@
       avatar.className = "post-avatar";
       avatar.src = ORG_LOGO;
       avatar.alt = ORG_NAME;
-      avatar.onerror = () => { avatar.style.display = "none"; };
+      avatar.onerror = () => { avatar.style.display="none"; };
 
       const info = document.createElement("div");
       info.className = "post-header-info";
@@ -1158,16 +1062,30 @@
 
       const badge = document.createElement("span");
       badge.className = "post-badge";
-      badge.textContent = mediaList.length > 1 ? "Gallery" : (primaryType === "video" ? "Video" : "Photo");
+      badge.textContent = mediaList.length > 1 ? "Gallery" : (primaryType==="video" ? "Video" : "Photo");
 
       meta.appendChild(dateEl);
       meta.appendChild(badge);
+
+      // Copy post link button (in the meta row)
+      const copyPostBtn = document.createElement("button");
+      copyPostBtn.className = "post-copy-link-btn";
+      copyPostBtn.innerHTML = `<i class="fa-solid fa-link"></i> Copy Link`;
+      copyPostBtn.title = "Copy link to this post";
+      const postUrl = makeUrl(gt);
+      copyPostBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        copyToClipboard(postUrl, copyPostBtn);
+      });
+      meta.appendChild(copyPostBtn);
+
       info.appendChild(orgName);
       info.appendChild(meta);
       header.appendChild(avatar);
       header.appendChild(info);
       card.appendChild(header);
 
+      /* ── POST TITLE ── */
       if(item.title){
         const t = document.createElement("div");
         t.className = "post-title";
@@ -1175,109 +1093,132 @@
         card.appendChild(t);
       }
 
+      /* ── POST CAPTION — single line + see more ── */
       const capText = item.caption || "";
       if(capText){
-        const cap = document.createElement("div");
+        const capWrap = document.createElement("div");
+        capWrap.className = "post-caption-wrap";
+        const cap = document.createElement("span");
         cap.className = "post-caption";
-        const isLong = capText.length > 160;
-        if(isLong){
-          cap.classList.add("collapsed");
-          cap.textContent = capText;
-          card.appendChild(cap);
-          const rm = document.createElement("button");
-          rm.className = "read-more-btn";
-          rm.textContent = "See more";
-          let exp = false;
-          rm.addEventListener("click", () => {
-            exp = !exp;
-            cap.classList.toggle("collapsed", !exp);
-            rm.textContent = exp ? "See less" : "See more";
-          });
-          card.appendChild(rm);
-        }else{
-          cap.textContent = capText;
-          card.appendChild(cap);
-        }
+        cap.textContent = capText;
+        capWrap.appendChild(cap);
+
+        // Always add "see more" toggle (even for short text, show it; it just won't need expanding)
+        const rm = document.createElement("button");
+        rm.className = "read-more-btn";
+        rm.textContent = "See more";
+        let expanded = false;
+        rm.addEventListener("click", () => {
+          expanded = !expanded;
+          cap.classList.toggle("expanded", expanded);
+          rm.textContent = expanded ? "See less" : "See more";
+        });
+        capWrap.appendChild(rm);
+        card.appendChild(capWrap);
       }
 
-      const mediaWrap = buildMediaGroup(item);
-      if(mediaWrap) card.appendChild(mediaWrap);
+      /* ── MEDIA ── */
+      if(mediaEl) card.appendChild(mediaEl);
 
+      /* ── POST FOOTER ── */
       const footer = document.createElement("div");
       footer.className = "post-footer";
+
       if(item.category){
         const tag = document.createElement("span");
         tag.className = "post-tag";
-        tag.textContent = "# " + item.category;
+        tag.textContent = "# "+item.category;
         footer.appendChild(tag);
       }
+
       const typeIcon = document.createElement("span");
       typeIcon.className = "post-type-icon";
-      typeIcon.innerHTML = primaryType === "video"
+      typeIcon.innerHTML = primaryType==="video"
         ? `<i class="fa-solid fa-film" title="Video"></i>`
         : `<i class="fa-solid fa-camera" title="Photo"></i>`;
       footer.appendChild(typeIcon);
-      const share = document.createElement("a");
-      share.className = "post-share-link";
-      share.href = postLink(token);
-      share.target = "_blank";
-      share.rel = "noopener";
-      share.innerHTML = `<i class="fa-solid fa-link"></i> Link`;
-      share.addEventListener("click", async (ev) => {
-        ev.stopPropagation();
-        if(navigator.clipboard && window.isSecureContext){
-          try{ await navigator.clipboard.writeText(postLink(token)); share.innerHTML = `<i class="fa-solid fa-check"></i> Copied`; setTimeout(() => { share.innerHTML = `<i class="fa-solid fa-link"></i> Link`; }, 1400); }
-          catch(e){}
-        }
-      });
-      footer.appendChild(share);
+
+      // Per-media links if more than one media item
+      if(mediaList.length > 1){
+        const linksWrap = document.createElement("div");
+        linksWrap.className = "post-media-links";
+
+        // All-group link
+        const groupBtn = document.createElement("button");
+        groupBtn.className = "post-media-link-btn";
+        groupBtn.innerHTML = `<i class="fa-solid fa-layer-group"></i> All (${mediaList.length})`;
+        groupBtn.title = "Open all media / copy group link";
+        groupBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          // Open lightbox at first item
+          lbOpen(lbItemsArr, 0);
+        });
+        linksWrap.appendChild(groupBtn);
+
+        // Per-item links
+        mediaList.forEach((m, mi) => {
+          const mToken = mediaToken(item, idx, mi);
+          const mUrl   = makeUrl(mToken);
+          const mBtn   = document.createElement("button");
+          mBtn.className = "post-media-link-btn";
+          const icon = m.type==="video"
+            ? `<i class="fa-solid fa-film"></i>`
+            : `<i class="fa-solid fa-image"></i>`;
+          mBtn.innerHTML = `${icon} ${mi+1}`;
+          mBtn.title = `Open/copy link for ${m.type} ${mi+1}`;
+          mBtn.addEventListener("click", e => {
+            e.stopPropagation();
+            lbOpen(lbItemsArr, mi);
+          });
+          linksWrap.appendChild(mBtn);
+        });
+
+        footer.appendChild(linksWrap);
+      }
+
       card.appendChild(footer);
-
-      return card;
+      return {card, lbItemsArr, mediaList, pt, gt};
     }
 
+    /* ─── DATA LOADING ───────────────────────────────────────────────── */
     async function loadUsers(){
-      try{
-        const r = await fetch(API + "/cards.json", {cache:"no-store"});
-        users = await r.json();
-      }catch(e){ console.error(e); }
+      try{ const r=await fetch(API+"/cards.json",{cache:"no-store"}); users=await r.json(); }catch(e){ console.error(e); }
     }
+
+    // Map from token string → {lbItemsArr, mediaList}
+    const postRegistry = {};
 
     async function loadGallery(){
       const wrapper = id("feedWrapper");
-      const loader = id("feedLoader");
+      const loader  = id("feedLoader");
       try{
-        const r = await fetch(GALLERY_JSON, {cache:"no-store"});
+        const r    = await fetch(GALLERY_JSON,{cache:"no-store"});
         const data = await r.json();
 
         if(loader) loader.remove();
 
-        if(!Array.isArray(data) || !data.length){
-          if(wrapper) wrapper.innerHTML = `<div class="feed-loading" style="color:#aaa;"><i class="fa-solid fa-images" style="animation:none;color:#ccc;"></i>No posts found in the gallery yet.</div>`;
+        if(!Array.isArray(data)||!data.length){
+          if(wrapper) wrapper.innerHTML=`<div class="feed-loading" style="color:#aaa;"><i class="fa-solid fa-images" style="animation:none;color:#ccc;"></i>No posts found in the gallery yet.</div>`;
           return;
         }
 
-        const sorted = [...data].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
-        sorted.forEach((item, i) => {
+        const sorted = [...data].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+
+        sorted.forEach((item,i)=>{
           try{
-            const c = buildPost(item, i);
-            if(wrapper) wrapper.appendChild(c);
-          }catch(e){
-            console.warn("Post error:", e);
-          }
+            const {card, lbItemsArr, mediaList, pt, gt} = buildPost(item, i);
+            if(wrapper) wrapper.appendChild(card);
+            // Register tokens for deep-link resolution
+            postRegistry[pt]  = {lbItemsArr, mediaList, card};
+            postRegistry[gt]  = {lbItemsArr, mediaList, card};
+            lbItemsArr.forEach((lb, mi) => {
+              postRegistry[lb.token] = {lbItemsArr, mediaList, card, startIdx: mi};
+            });
+          }catch(e){ console.warn("Post error:",e); }
         });
 
-        const t = tokenFromLocation();
-        if(t){
-          requestAnimationFrame(() => {
-            const target = document.querySelector(`[data-post-token="${CSS.escape(t)}"]`);
-            if(target){
-              target.scrollIntoView({behavior:"smooth", block:"start"});
-              target.style.boxShadow = "0 0 0 3px rgba(120,115,245,.35)";
-              setTimeout(() => { target.style.boxShadow = ""; }, 2500);
-            }
-          });
-        }
+        // After all posts rendered, handle deep link
+        handleDeepLink();
 
         const end = document.createElement("div");
         end.className = "feed-end-marker";
@@ -1285,26 +1226,140 @@
         if(wrapper) wrapper.appendChild(end);
       }catch(e){
         console.error(e);
-        if(loader) loader.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="animation:none;color:#e55;"></i>Failed to load the gallery. Please try again later.`;
+        if(loader) loader.innerHTML=`<i class="fa-solid fa-triangle-exclamation" style="animation:none;color:#e55;"></i>Failed to load the gallery. Please try again later.`;
       }
     }
 
+    /* ─── DEEP LINK HANDLER ──────────────────────────────────────────── */
+    function handleDeepLink(){
+      const token = getHashToken();
+      if(!token) return;
+
+      const reg = postRegistry[token];
+      if(!reg) return;
+
+      const {card, lbItemsArr, startIdx} = reg;
+
+      // Scroll to the card
+      if(card){
+        requestAnimationFrame(()=>{
+          card.scrollIntoView({behavior:"smooth",block:"start"});
+          card.classList.add("highlighted");
+          setTimeout(()=>card.classList.remove("highlighted"),2500);
+        });
+      }
+
+      const parsed = parseToken(token);
+      if(!parsed) return;
+
+      // Open lightbox for media / group tokens
+      if(parsed.type==="m" && lbItemsArr && lbItemsArr.length){
+        setTimeout(()=>lbOpen(lbItemsArr, typeof startIdx==="number" ? startIdx : 0), 600);
+      } else if(parsed.type==="g" && lbItemsArr && lbItemsArr.length){
+        setTimeout(()=>lbOpen(lbItemsArr, 0), 600);
+      }
+      // "p" type just scrolls, no lightbox
+    }
+
+    /* ─── EVENT BINDING ──────────────────────────────────────────────── */
+    function bindEvents(){
+      if(eUserArea) eUserArea.addEventListener("click",e=>{ e.stopPropagation(); if(eNotiDrop) eNotiDrop.classList.remove("show"); if(eMsgDrop) eMsgDrop.classList.remove("show"); if(eDropdown) eDropdown.classList.toggle("show"); });
+      if(eThemeBtn) eThemeBtn.addEventListener("click",e=>{ e.stopPropagation(); toggleTheme(); });
+      if(eTransBtn) eTransBtn.addEventListener("click",e=>{ e.stopPropagation(); toggleTrans(); });
+      if(eNotifBtn) eNotifBtn.addEventListener("click",e=>{
+        e.stopPropagation();
+        if(eDropdown) eDropdown.classList.remove("show"); if(eMsgDrop) eMsgDrop.classList.remove("show"); if(eNotiDrop) eNotiDrop.classList.toggle("show");
+        if(!currentUser){ if(eNotiList) eNotiList.innerHTML=infoMsg("Please sign in to view alerts."); return; }
+        fetchAlerts(); if(eNotiBadge) eNotiBadge.style.display="none";
+      });
+      if(eMsgBtn) eMsgBtn.addEventListener("click",e=>{
+        e.stopPropagation();
+        if(eDropdown) eDropdown.classList.remove("show"); if(eNotiDrop) eNotiDrop.classList.remove("show"); if(eMsgDrop) eMsgDrop.classList.toggle("show");
+        if(!currentUser){ if(eMsgList) eMsgList.innerHTML=infoMsg("Please sign in to view messages."); return; }
+        fetchMessages();
+      });
+      if(eViewPhotoBtn) eViewPhotoBtn.addEventListener("click",()=>{ if(ePhotoOverlay) ePhotoOverlay.classList.add("show"); if(eDropdown) eDropdown.classList.remove("show"); });
+      if(eClosePhoto) eClosePhoto.addEventListener("click",()=>{ if(ePhotoOverlay) ePhotoOverlay.classList.remove("show"); });
+      if(ePhotoOverlay) ePhotoOverlay.addEventListener("click",e=>{ if(e.target===ePhotoOverlay) ePhotoOverlay.classList.remove("show"); });
+      if(eLogoutBtn) eLogoutBtn.addEventListener("click",()=>{ clearS(); currentUser=null; location.reload(); });
+      if(eOpenLoginBtn) eOpenLoginBtn.addEventListener("click",()=>{ if(eLoginOverlay) eLoginOverlay.classList.add("show"); });
+      if(eLoginOverlay) eLoginOverlay.addEventListener("click",e=>{ if(e.target===eLoginOverlay) eLoginOverlay.classList.remove("show"); });
+      if(eLoginBtn) eLoginBtn.addEventListener("click",login);
+
+      // Lightbox controls
+      if(eLightboxClose) eLightboxClose.addEventListener("click", lbClose);
+      if(eLightbox) eLightbox.addEventListener("click",e=>{ if(e.target===eLightbox) lbClose(); });
+      if(eLbPrev) eLbPrev.addEventListener("click",e=>{ e.stopPropagation(); lbNav(-1); });
+      if(eLbNext) eLbNext.addEventListener("click",e=>{ e.stopPropagation(); lbNav(+1); });
+
+      // Keyboard
+      document.addEventListener("keydown",e=>{
+        if(e.key==="Enter" && eLoginOverlay && eLoginOverlay.classList.contains("show")) login();
+        if(e.key==="Escape"){
+          if(eLightbox && eLightbox.classList.contains("show")) lbClose();
+          else{ if(ePhotoOverlay&&ePhotoOverlay.classList.contains("show")) ePhotoOverlay.classList.remove("show"); }
+        }
+        if(e.key==="ArrowLeft"  && eLightbox&&eLightbox.classList.contains("show")) lbNav(-1);
+        if(e.key==="ArrowRight" && eLightbox&&eLightbox.classList.contains("show")) lbNav(+1);
+      });
+
+      // Touch swipe on lightbox
+      let touchStartX = 0;
+      if(eLightbox){
+        eLightbox.addEventListener("touchstart",e=>{ touchStartX=e.changedTouches[0].clientX; },{passive:true});
+        eLightbox.addEventListener("touchend",e=>{
+          const dx = e.changedTouches[0].clientX - touchStartX;
+          if(Math.abs(dx)>50) lbNav(dx<0 ? 1 : -1);
+        },{passive:true});
+      }
+
+      document.addEventListener("click",closeAll);
+      [eDropdown,eNotiDrop,eMsgDrop].forEach(b=>{ if(b) b.addEventListener("click",e=>e.stopPropagation()); });
+      if(eCloseLeaders) eCloseLeaders.addEventListener("click",()=>{ if(eLeadersOverlay) eLeadersOverlay.classList.remove("show"); });
+      if(eLeadersOverlay) eLeadersOverlay.addEventListener("click",e=>{ if(e.target===eLeadersOverlay) eLeadersOverlay.classList.remove("show"); });
+
+      // Handle browser back/forward (hash changes)
+      window.addEventListener("hashchange",()=>{
+        const token = getHashToken();
+        if(!token){
+          if(eLightbox&&eLightbox.classList.contains("show")) lbClose();
+          return;
+        }
+        const reg = postRegistry[token];
+        if(!reg) return;
+        const parsed = parseToken(token);
+        if(!parsed) return;
+        const {lbItemsArr, startIdx} = reg;
+        if((parsed.type==="m"||parsed.type==="g") && lbItemsArr){
+          if(eLightbox&&eLightbox.classList.contains("show")){
+            // Already open — just navigate to the right item
+            lbItems = lbItemsArr;
+            lbCurrent = typeof startIdx==="number" ? startIdx : 0;
+            lbRender();
+          } else {
+            lbOpen(lbItemsArr, typeof startIdx==="number" ? startIdx : 0);
+          }
+        }
+      });
+
+      window.addEventListener("load",()=>document.body.classList.add("loaded"));
+    }
+
+    /* ─── INIT ───────────────────────────────────────────────────────── */
     function init(){
       cache();
       initTheme();
       setDir();
       bindEvents();
-      if(lang === "ur"){
-        ensureGT().then(() => applyGTR("ur")).catch(e => console.error(e));
-      }
-      loadUsers().then(() => {
+      if(lang==="ur") ensureGT().then(()=>applyGTR("ur")).catch(e=>console.error(e));
+      loadUsers().then(()=>{
         checkSession();
         schedFix();
         loadGallery();
       });
     }
 
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
     else init();
   })();
   </script>
