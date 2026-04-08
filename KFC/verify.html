@@ -575,7 +575,7 @@
     }
 
     .verification-card {
-      width: min(720px, 100%);
+      width: min(760px, 100%);
       margin: 0 auto;
       background: var(--glass-light);
       backdrop-filter: blur(18px);
@@ -703,21 +703,21 @@
 
     .verification-grid {
       display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 20px;
+      grid-template-columns: 190px 1fr;
+      gap: 22px;
       align-items: start;
     }
 
     .photo-col {
-      width: 180px;
+      width: 190px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     .member-photo {
-      width: 180px;
-      height: 210px;
+      width: 190px;
+      height: 220px;
       border-radius: 18px;
       object-fit: cover;
       background: rgba(200,220,255,0.3);
@@ -731,8 +731,8 @@
     }
 
     .photo-placeholder {
-      width: 180px;
-      height: 210px;
+      width: 190px;
+      height: 220px;
       border-radius: 18px;
       background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(200,220,255,0.2));
       border: 1px dashed rgba(0,0,0,0.15);
@@ -837,7 +837,7 @@
 
     .detail-row {
       display: grid;
-      grid-template-columns: 130px 1fr;
+      grid-template-columns: 140px 1fr;
       gap: 8px;
       font-size: 14px;
       line-height: 1.45;
@@ -996,14 +996,14 @@
       }
 
       .verification-grid {
-        grid-template-columns: 160px 1fr;
+        grid-template-columns: 170px 1fr;
         gap: 18px;
       }
 
       .member-photo,
       .photo-placeholder {
-        width: 160px;
-        height: 190px;
+        width: 170px;
+        height: 198px;
       }
 
       .verification-summary {
@@ -1590,15 +1590,12 @@
     function renderUserToUI(user){
       if (!user) return;
 
-      const revealSensitive = canRevealSensitiveDetails();
       const firstName = normalizeText(user.name).split(" ")[0] || "User";
-      const displayName = formatMemberName(user.name, revealSensitive);
-      const displayCard = revealSensitive ? normalizeText(user.CNo) : maskCardNumber(user.CNo);
 
       if (usernameText)  usernameText.innerText  = `Welcome, ${firstName}`;
-      if (userFullName)  userFullName.innerText  = `Welcome, ${displayName}`;
-      if (userCard)      userCard.innerText       = `Card Number: ${displayCard}`;
-      if (userDesg)      userDesg.innerText       = `Designation: ${user.Desg}`;
+      if (userFullName)  userFullName.innerText  = `Welcome, ${normalizeText(user.name) || "Unknown Member"}`;
+      if (userCard)      userCard.innerText       = `Card Number: ${normalizeText(user.CNo) || "-"}`;
+      if (userDesg)      userDesg.innerText       = `Designation: ${user.Desg || "-"}`;
       if (userBlood)     userBlood.innerText      = `Blood Group: ${user.BG || "Not available"}`;
       if (userMobile)    userMobile.innerText     = `Registered Mobile: ${user.mobile || "Not available"}`;
 
@@ -1606,7 +1603,7 @@
 
       const vcBtn = document.getElementById("viewCardBtn");
       if (vcBtn){
-        if (revealSensitive){
+        if (currentUser){
           vcBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`;
           vcBtn.target = "_blank";
           vcBtn.rel = "noopener noreferrer";
@@ -1682,6 +1679,7 @@
     function renderVerification(card){
       const statusInfo = getStatusInfo(card.Status);
       const photoSrc   = `${PHOTOS_BASE}${encodeURIComponent(String(card.CNo))}.png`;
+
       const revealSensitive = canRevealSensitiveDetails();
 
       const safeName     = escapeHTML(formatMemberName(card.name || "Unknown Member", revealSensitive));
@@ -1695,9 +1693,9 @@
 
       verifyBody.innerHTML = `
         <div class="verification-intro">
-          <div class="verification-title">Member Identity Verification</div>
+          <div class="verification-title">Membership Verification Summary</div>
           <div class="verification-note">
-            Please review the details below to confirm the authenticity, membership standing, and profile record associated with this QR-linked card.
+            Review the official record below to confirm the current membership status, identity details, and profile information associated with this QR-linked card.
           </div>
         </div>
 
@@ -1720,15 +1718,15 @@
               <i class="fa-solid fa-user"></i>
             </div>
             <div class="member-frame-caption">
-              Official photo linked to the member record.
+              Official profile image associated with this record.
             </div>
           </div>
 
           <div class="info-col">
             <p class="verified-stmt">
-              This page confirms that the card issued under <strong>${safeName}</strong> is currently marked as
+              This verification confirms that the card issued under <strong>${safeName}</strong> is currently marked as
               <strong>${statusInfo.cls === "active" ? "ACTIVE" : "NOT ACTIVE"}</strong>.
-              The information shown here is drawn directly from the committee record.
+              All displayed details are sourced directly from the committee database.
             </p>
 
             <div class="verification-summary">
