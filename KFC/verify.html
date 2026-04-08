@@ -78,7 +78,6 @@
       box-shadow: var(--shadow-dark);
     }
 
-    /* ─── Floating circles ─── */
     .floating-circles {
       position: fixed;
       top: 0; left: 0;
@@ -115,7 +114,6 @@
       100% { transform: translate(50px,20px) scale(1.1); }
     }
 
-    /* ─── Header ─── */
     .top-header {
       display: flex;
       justify-content: space-between;
@@ -233,7 +231,6 @@
 
     .translate-toggle-btn.active i { color: #ff6ec4; }
 
-    /* ─── Banner ─── */
     .info-banner {
       background: rgba(167,199,203,0.15);
       backdrop-filter: blur(15px);
@@ -274,7 +271,6 @@
       background: rgba(255,255,255,0.06);
     }
 
-    /* ─── Dropdowns ─── */
     .user-dropdown {
       position: fixed;
       top: calc(var(--header-h) + 2px);
@@ -353,7 +349,6 @@
 
     #viewPhotoBtn:hover { background: var(--accent); color: #fff; }
 
-    /* ─── Login overlay ─── */
     .login-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -430,7 +425,6 @@
 
     .welcome-popup.show { display: block; }
 
-    /* ─── Layout ─── */
     .dashboard-container {
       display: flex;
       flex-direction: row;
@@ -487,7 +481,6 @@
       padding: 20px;
     }
 
-    /* ─── Headings ─── */
     h1, h2, h3 {
       background: linear-gradient(90deg, #0d3c91, #0d3c91);
       display: inline-block;
@@ -505,7 +498,6 @@
       -webkit-text-fill-color: transparent;
     }
 
-    /* ─── Footer ─── */
     .footer {
       text-align: center;
       padding: 10px;
@@ -516,7 +508,6 @@
 
     body.dark-mode .footer { background: var(--glass-dark); }
 
-    /* ─── Photo overlay ─── */
     .overlay {
       position: fixed;
       top: 0; left: 0;
@@ -556,7 +547,6 @@
 
     .leaders-header i:hover { color: #ff4d4d; transform: scale(1.2); }
 
-    /* ─── Translate host ─── */
     .translate-host {
       position: absolute;
       left: -9999px; top: 0;
@@ -564,7 +554,6 @@
       overflow: hidden;
     }
 
-    /* ─── Page load animation ─── */
     body * {
       opacity: 0;
       transform: translateY(-40px);
@@ -581,13 +570,12 @@
     .verify-section  { transition-delay: 0.3s; }
     .footer          { transition-delay: 0.5s; }
 
-    /* ─── Verification Card Styles ─── */
     .verify-section {
       padding: 20px;
     }
 
     .verification-card {
-      width: min(640px, 100%);
+      width: min(720px, 100%);
       margin: 0 auto;
       background: var(--glass-light);
       backdrop-filter: blur(18px);
@@ -609,7 +597,7 @@
     }
 
     .verify-header {
-      padding: 22px 24px 16px;
+      padding: 24px 24px 18px;
       text-align: center;
       border-bottom: 1px solid rgba(0,0,0,0.06);
     }
@@ -619,7 +607,7 @@
     }
 
     .verify-header .logo-img {
-      width: 76px;
+      width: 78px;
       display: block;
       margin: 0 auto 12px;
       animation: float 3s ease-in-out infinite;
@@ -630,22 +618,55 @@
       50%      { transform: translateY(-8px); }
     }
 
-    .verify-header p {
+    .verify-header h2 {
+      font-size: 22px;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .verify-header .verify-subtitle {
       font-size: 13px;
       color: var(--soft-light);
       margin-top: 4px;
+      letter-spacing: 0.2px;
     }
 
-    body.dark-mode .verify-header p { color: var(--soft-dark); }
+    body.dark-mode .verify-header .verify-subtitle { color: var(--soft-dark); }
 
     .verify-body {
       padding: 22px 24px 24px;
     }
 
-    /* Status pill */
+    .verification-intro {
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .verification-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 6px;
+      -webkit-text-fill-color: unset;
+    }
+
+    body.dark-mode .verification-title {
+      color: #9bc2ff;
+    }
+
+    .verification-note {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--soft-light);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    body.dark-mode .verification-note { color: var(--soft-dark); }
+
     .status-wrap {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .status-pill {
@@ -680,18 +701,23 @@
       box-shadow: 0 0 0 4px rgba(255,255,255,0.4);
     }
 
-    /* Member layout */
-    .member-layout {
+    .verification-grid {
       display: grid;
-      grid-template-columns: 160px 1fr;
+      grid-template-columns: 180px 1fr;
       gap: 20px;
       align-items: start;
     }
 
-    .photo-col { width: 160px; }
+    .photo-col {
+      width: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
     .member-photo {
-      width: 160px; height: 190px;
+      width: 180px;
+      height: 210px;
       border-radius: 18px;
       object-fit: cover;
       background: rgba(200,220,255,0.3);
@@ -705,7 +731,8 @@
     }
 
     .photo-placeholder {
-      width: 160px; height: 190px;
+      width: 180px;
+      height: 210px;
       border-radius: 18px;
       background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(200,220,255,0.2));
       border: 1px dashed rgba(0,0,0,0.15);
@@ -722,12 +749,25 @@
       color: var(--soft-dark);
     }
 
-    /* Info column */
-    .info-col { min-width: 0; }
+    .member-frame-caption {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--soft-light);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    body.dark-mode .member-frame-caption {
+      color: var(--soft-dark);
+    }
+
+    .info-col {
+      min-width: 0;
+    }
 
     .verified-stmt {
       font-size: 15px;
-      line-height: 1.65;
+      line-height: 1.7;
       margin-bottom: 16px;
       color: var(--soft-light);
     }
@@ -740,6 +780,49 @@
     }
 
     body.dark-mode .verified-stmt strong { color: #9bc2ff; }
+
+    .verification-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .summary-chip {
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(120,115,245,0.08);
+      border: 1px solid rgba(120,115,245,0.13);
+      text-align: center;
+      min-width: 0;
+    }
+
+    body.dark-mode .summary-chip {
+      background: rgba(155,194,255,0.07);
+      border-color: rgba(155,194,255,0.12);
+    }
+
+    .summary-chip .chip-label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--soft-light);
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    body.dark-mode .summary-chip .chip-label { color: var(--soft-dark); }
+
+    .summary-chip .chip-value {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-light);
+      word-break: break-word;
+    }
+
+    body.dark-mode .summary-chip .chip-value { color: var(--text-dark); }
 
     .details-grid {
       display: grid;
@@ -754,7 +837,7 @@
 
     .detail-row {
       display: grid;
-      grid-template-columns: 120px 1fr;
+      grid-template-columns: 130px 1fr;
       gap: 8px;
       font-size: 14px;
       line-height: 1.45;
@@ -775,7 +858,6 @@
 
     body.dark-mode .detail-value { color: var(--text-dark); }
 
-    /* Urdu block */
     .urdu-block {
       margin-top: 18px;
       font-family: 'UrduFont', sans-serif;
@@ -796,9 +878,8 @@
       color: var(--text-dark);
     }
 
-    /* Loading / error states */
     .loading-state, .error-state {
-      padding: 32px;
+      padding: 34px 20px;
       text-align: center;
       color: var(--soft-light);
     }
@@ -806,10 +887,20 @@
     body.dark-mode .loading-state,
     body.dark-mode .error-state { color: var(--soft-dark); }
 
+    .loading-state .loading-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(120,115,245,0.08);
+      border: 1px solid rgba(120,115,245,0.12);
+    }
+
     .loading-state i {
-      font-size: 32px;
+      font-size: 26px;
       color: var(--accent);
-      margin-bottom: 12px;
       animation: spin 1.2s linear infinite;
     }
 
@@ -818,26 +909,37 @@
       to   { transform: rotate(360deg); }
     }
 
+    .loading-state strong,
+    .error-state strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 6px;
+      color: #0d3c91;
+    }
+
+    body.dark-mode .loading-state strong,
+    body.dark-mode .error-state strong {
+      color: #9bc2ff;
+    }
+
     .error-state i {
       font-size: 32px;
       color: #d64545;
       margin-bottom: 12px;
     }
 
-    .error-state strong {
-      display: block;
-      font-size: 16px;
-      margin-bottom: 6px;
-      color: #d64545;
+    .error-state p {
+      font-size: 14px;
+      line-height: 1.6;
     }
 
-    /* Verify footer */
     .verify-footer {
       padding: 14px 24px 20px;
       border-top: 1px solid rgba(0,0,0,0.06);
       text-align: center;
       font-size: 12px;
       color: var(--soft-light);
+      line-height: 1.6;
     }
 
     body.dark-mode .verify-footer {
@@ -845,14 +947,12 @@
       color: var(--soft-dark);
     }
 
-    /* ─── Google Translate ─── */
     .goog-te-banner-frame.skiptranslate,
     .goog-te-balloon-frame,
     #goog-gt-tt { display: none !important; }
 
     body { top: 0 !important; }
 
-    /* ─── RTL ─── */
     body.page-rtl { direction: rtl; }
 
     body.page-rtl .top-header,
@@ -872,7 +972,6 @@
       animation: scrollBannerRtl 25s linear infinite;
     }
 
-    /* ─── Responsive ─── */
     @media (max-width: 1024px) {
       .dashboard-container { flex-direction: column; }
 
@@ -895,22 +994,80 @@
         font-size: 13px;
         border-radius: 15px;
       }
+
+      .verification-grid {
+        grid-template-columns: 160px 1fr;
+        gap: 18px;
+      }
+
+      .member-photo,
+      .photo-placeholder {
+        width: 160px;
+        height: 190px;
+      }
+
+      .verification-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 640px) {
-      .member-layout {
+      .verify-section {
+        padding: 14px;
+      }
+
+      .verification-card {
+        border-radius: 22px;
+      }
+
+      .verify-header {
+        padding: 20px 16px 14px;
+      }
+
+      .verify-header .logo-img {
+        width: 70px;
+      }
+
+      .verify-header h2 {
+        font-size: 19px;
+      }
+
+      .verify-body {
+        padding: 18px 16px 18px;
+      }
+
+      .verification-title {
+        font-size: 16px;
+      }
+
+      .verification-note {
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .verification-grid {
         grid-template-columns: 1fr;
         justify-items: center;
       }
 
-      .photo-col { width: 100%; display: flex; justify-content: center; }
-
-      .member-photo, .photo-placeholder {
-        width: min(240px, 100%);
-        height: 280px;
+      .photo-col {
+        width: 100%;
       }
 
-      .verified-stmt { text-align: center; }
+      .member-photo,
+      .photo-placeholder {
+        width: min(260px, 100%);
+        height: 300px;
+      }
+
+      .verification-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .verified-stmt {
+        text-align: center;
+        font-size: 14px;
+      }
 
       .detail-row {
         grid-template-columns: 1fr;
@@ -921,6 +1078,14 @@
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.4px;
+      }
+
+      .detail-value {
+        font-size: 14px;
+      }
+
+      .member-frame-caption {
+        max-width: 260px;
       }
     }
 
@@ -968,6 +1133,11 @@
         padding: 12px;
         max-height: 470px;
       }
+
+      .status-pill {
+        font-size: 13px;
+        padding: 8px 16px;
+      }
     }
   </style>
 </head>
@@ -985,7 +1155,6 @@
     <div class="circle"></div>
   </div>
 
-  <!-- ─── Header ─── -->
   <header class="top-header">
     <div class="logo-area">
       <a href="https://livenews.live/KFC" aria-label="Go to KFC home page">
@@ -1012,14 +1181,12 @@
     </div>
   </header>
 
-  <!-- ─── Banner ─── -->
   <div id="infoBanner" class="info-banner">
     <div class="marquee">
       🕭 Dear members: The Khawrai Falahi Committee can now send personal messages to all members privately. Please log in to your Committee account to view your messages and recent alerts. Stay updated.
     </div>
   </div>
 
-  <!-- ─── User Dropdown ─── -->
   <div id="userDropdown" class="user-dropdown glass">
     <div id="guestView">
       <h3>Welcome Guest</h3>
@@ -1052,7 +1219,6 @@
     </div>
   </div>
 
-  <!-- ─── Photo Overlay ─── -->
   <div id="photoOverlay" class="overlay" aria-hidden="true">
     <div class="photo-viewer-box glass">
       <div class="leaders-header">
@@ -1064,7 +1230,6 @@
     </div>
   </div>
 
-  <!-- ─── Login Overlay ─── -->
   <div id="loginOverlay" class="login-overlay" aria-hidden="true">
     <div class="login-box glass">
       <h2><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Secure Login</h2>
@@ -1075,12 +1240,10 @@
     </div>
   </div>
 
-  <!-- ─── Welcome Popup ─── -->
   <div id="welcomePopup" class="welcome-popup" aria-live="polite">
     <p id="welcomeText"></p>
   </div>
 
-  <!-- ─── Main Layout ─── -->
   <div class="dashboard-container">
     <aside class="sidebar glass">
       <div class="sidebar-header">
@@ -1105,25 +1268,27 @@
           <div class="verify-header">
             <img src="logo.png" alt="KFC Logo" class="logo-img">
             <h2>Khawrai Falahi Committee UAE</h2>
-            <p>e-Card Verification Page</p>
+            <p class="verify-subtitle">Official Membership Verification Portal</p>
           </div>
 
           <div class="verify-body" id="verifyBody">
             <div class="loading-state" id="loadingBox">
-              <i class="fa-solid fa-circle-notch"></i>
-              <p>Loading verification details...</p>
+              <div class="loading-icon">
+                <i class="fa-solid fa-circle-notch"></i>
+              </div>
+              <strong>Verifying member record</strong>
+              <p>Loading the card details and current status...</p>
             </div>
           </div>
 
           <div class="verify-footer">
-            Verify this page by opening the QR link tied to the member record.
+            This page confirms the authenticity and current status of the member record linked to the QR verification code.
           </div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- ─── Footer ─── -->
   <footer class="footer">
     <p>© 2026 Khawrai Falahi Committee United Arab Emirates | All Rights Reserved</p>
   </footer>
@@ -1132,9 +1297,6 @@
 
   <script>
   (() => {
-    /* ════════════════════════════════
-       CONSTANTS
-    ════════════════════════════════ */
     const API_BASE    = "https://livenews.live/KFC";
     const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
     const DEFAULT_PHOTO = `${PHOTOS_BASE}default.png`;
@@ -1144,9 +1306,16 @@
     const THEME_KEY   = "kfcTheme";
     const LANG_KEY    = "kfcPageLanguage";
 
-    /* ════════════════════════════════
-       STATE
-    ════════════════════════════════ */
+    const PRIVILEGED_CARD_NUMBERS = new Set([
+      "746-210-011",
+      "746-210-001",
+      "746-210-040",
+      "746-210-006",
+      "746-210-008",
+      "746-210-021",
+      "746-210-007"
+    ]);
+
     let users = [];
     let currentUser = null;
     let currentPageLanguage = localStorage.getItem(LANG_KEY) === "ur" ? "ur" : "en";
@@ -1156,9 +1325,6 @@
     let translationMutationObserver = null;
     let translationFixRunning = false;
 
-    /* ════════════════════════════════
-       ELEMENT CACHE
-    ════════════════════════════════ */
     const el = id => document.getElementById(id);
 
     const userArea        = el("userArea");
@@ -1193,9 +1359,6 @@
     const translateToggleIcon = el("translateToggleIcon");
     const verifyBody      = el("verifyBody");
 
-    /* ════════════════════════════════
-       UTILITIES
-    ════════════════════════════════ */
     function normalizeText(v){ return (v || "").toString().trim(); }
 
     function escapeHTML(str){
@@ -1255,9 +1418,38 @@
       setImageWithFallback(fullProfileImg, s, null);
     }
 
-    /* ════════════════════════════════
-       THEME
-    ════════════════════════════════ */
+    function isPrivilegedCard(cardNo){
+      return PRIVILEGED_CARD_NUMBERS.has(normalizeText(cardNo));
+    }
+
+    function canRevealSensitiveDetails(){
+      return !!(currentUser && isPrivilegedCard(currentUser.CNo));
+    }
+
+    function maskCardNumber(cardNo){
+      const s = normalizeText(cardNo);
+      if (!s) return "Protected";
+      return s.replace(/\d/g, "•");
+    }
+
+    function maskLastName(name){
+      const parts = normalizeText(name).split(/\s+/).filter(Boolean);
+      if (!parts.length) return "Unknown Member";
+      if (parts.length === 1){
+        const chars = Array.from(parts[0]);
+        return `${chars[0] || ""}${"•".repeat(Math.max(3, chars.length - 1))}`;
+      }
+      const last = parts.pop();
+      const lastChars = Array.from(last);
+      const maskedLast = `${lastChars[0] || ""}${"•".repeat(Math.max(3, lastChars.length - 1))}`;
+      return `${parts.join(" ")} ${maskedLast}`;
+    }
+
+    function formatMemberName(name, reveal){
+      const safe = normalizeText(name) || "Unknown Member";
+      return reveal ? safe : maskLastName(safe);
+    }
+
     function applyTheme(mode){
       const dark = mode === "dark";
       document.body.classList.toggle("dark-mode", dark);
@@ -1277,9 +1469,6 @@
       applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark");
     }
 
-    /* ════════════════════════════════
-       TRANSLATION
-    ════════════════════════════════ */
     function setDocumentDirection(){
       const rtl = currentPageLanguage === "ur";
       document.documentElement.lang = rtl ? "ur" : "en";
@@ -1381,9 +1570,6 @@
       } catch(e){ console.error("Translation error:", e); }
     }
 
-    /* ════════════════════════════════
-       SESSION / AUTH
-    ════════════════════════════════ */
     function saveSession(user){ localStorage.setItem("kfcUser", JSON.stringify(user)); }
     function clearSession(){ localStorage.removeItem("kfcUser"); }
 
@@ -1402,16 +1588,39 @@
 
     function renderUserToUI(user){
       if (!user) return;
+
+      const revealSensitive = canRevealSensitiveDetails();
       const firstName = normalizeText(user.name).split(" ")[0] || "User";
+      const displayName = formatMemberName(user.name, revealSensitive);
+      const displayCard = revealSensitive ? normalizeText(user.CNo) : maskCardNumber(user.CNo);
+
       if (usernameText)  usernameText.innerText  = `Welcome, ${firstName}`;
-      if (userFullName)  userFullName.innerText  = `Welcome, ${user.name}`;
-      if (userCard)      userCard.innerText       = `Card Number: ${user.CNo}`;
+      if (userFullName)  userFullName.innerText  = `Welcome, ${displayName}`;
+      if (userCard)      userCard.innerText       = `Card Number: ${displayCard}`;
       if (userDesg)      userDesg.innerText       = `Designation: ${user.Desg}`;
       if (userBlood)     userBlood.innerText      = `Blood Group: ${user.BG || "Not available"}`;
       if (userMobile)    userMobile.innerText     = `Registered Mobile: ${user.mobile || "Not available"}`;
+
       applyProfileImage(user.CNo);
+
       const vcBtn = document.getElementById("viewCardBtn");
-      if (vcBtn){ vcBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`; vcBtn.target = "_blank"; }
+      if (vcBtn){
+        if (revealSensitive){
+          vcBtn.href = `viewcard.html?card=${btoa(String(user.CNo))}`;
+          vcBtn.target = "_blank";
+          vcBtn.rel = "noopener noreferrer";
+          vcBtn.style.pointerEvents = "auto";
+          vcBtn.style.opacity = "1";
+          vcBtn.removeAttribute("aria-disabled");
+        } else {
+          vcBtn.href = "#";
+          vcBtn.target = "_self";
+          vcBtn.style.pointerEvents = "none";
+          vcBtn.style.opacity = "0.6";
+          vcBtn.setAttribute("aria-disabled", "true");
+        }
+      }
+
       showLoggedInUI();
       scheduleTranslationNormalization();
     }
@@ -1448,9 +1657,6 @@
       } catch(e){ clearSession(); currentUser = null; showLoggedOutUI(); }
     }
 
-    /* ════════════════════════════════
-       LOAD USERS
-    ════════════════════════════════ */
     async function loadUsers(){
       try {
         const r = await fetch(CARDS_API, { cache:"no-store" });
@@ -1458,9 +1664,6 @@
       } catch(e){ console.error("Error loading users:", e); }
     }
 
-    /* ════════════════════════════════
-       VERIFICATION LOGIC
-    ════════════════════════════════ */
     function decodeCard(encoded){
       try { return atob(encoded); } catch(e){ return null; }
     }
@@ -1478,40 +1681,69 @@
     function renderVerification(card){
       const statusInfo = getStatusInfo(card.Status);
       const photoSrc   = `${PHOTOS_BASE}${encodeURIComponent(String(card.CNo))}.png`;
+      const revealSensitive = canRevealSensitiveDetails();
 
-      const safeName     = escapeHTML(card.name     || "Unknown Member");
-      const safeDesg     = escapeHTML(card.Desg     || "-");
-      const safeIssue    = escapeHTML(card.Issue    || "-");
-      const safeMobile   = escapeHTML(card.mobile   || "-");
+      const safeName     = escapeHTML(formatMemberName(card.name || "Unknown Member", revealSensitive));
+      const safeFullName  = escapeHTML(card.name || "Unknown Member");
+      const safeDesg     = escapeHTML(card.Desg || "-");
+      const safeIssue    = escapeHTML(card.Issue || "-");
+      const safeMobile   = escapeHTML(card.mobile || "-");
       const safeUrdu     = escapeHTML(card.urduName || "");
+      const safeCardNo   = escapeHTML(revealSensitive ? String(card.CNo || "-") : maskCardNumber(card.CNo));
+      const safeStatus   = escapeHTML(statusInfo.label);
 
       verifyBody.innerHTML = `
-        <div class="status-wrap">
-          <div class="status-pill ${statusInfo.cls}">
-            <span class="dot"></span>
-            <span>${statusInfo.label}</span>
+        <div class="verification-intro">
+          <div class="verification-title">Member Identity Verification</div>
+          <div class="verification-note">
+            Please review the details below to confirm the authenticity, membership standing, and profile record associated with this QR-linked card.
           </div>
         </div>
 
-        <div class="member-layout">
+        <div class="status-wrap">
+          <div class="status-pill ${statusInfo.cls}">
+            <span class="dot"></span>
+            <span>${safeStatus}</span>
+          </div>
+        </div>
+
+        <div class="verification-grid">
           <div class="photo-col">
             <img
               class="member-photo"
               id="verifyPhoto"
               src="${photoSrc}"
-              alt="${safeName}"
+              alt="${safeFullName}"
             >
             <div class="photo-placeholder" id="verifyPhotoFallback" style="display:none;">
               <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="member-frame-caption">
+              Official photo linked to the member record.
             </div>
           </div>
 
           <div class="info-col">
             <p class="verified-stmt">
-              This is to verify that this card is
-              <strong>${statusInfo.cls === "active" ? "ACTIVE" : "CANCELLED"}</strong>
-              under the name of <strong>${safeName}</strong>.
+              This page confirms that the card issued under <strong>${safeName}</strong> is currently marked as
+              <strong>${statusInfo.cls === "active" ? "ACTIVE" : "NOT ACTIVE"}</strong>.
+              The information shown here is drawn directly from the committee record.
             </p>
+
+            <div class="verification-summary">
+              <div class="summary-chip">
+                <span class="chip-label">Member</span>
+                <span class="chip-value">${safeName}</span>
+              </div>
+              <div class="summary-chip">
+                <span class="chip-label">Card No.</span>
+                <span class="chip-value">${safeCardNo}</span>
+              </div>
+              <div class="summary-chip">
+                <span class="chip-label">Status</span>
+                <span class="chip-value">${safeStatus}</span>
+              </div>
+            </div>
 
             <div class="details-grid">
               <div class="detail-row">
@@ -1527,17 +1759,16 @@
                 <div class="detail-value">${safeIssue}</div>
               </div>
               <div class="detail-row">
-                <div class="detail-label">Mobile</div>
+                <div class="detail-label">Registered Mobile</div>
                 <div class="detail-value">${safeMobile}</div>
               </div>
             </div>
 
-            ${safeUrdu ? `<div class="urdu-block">${safeUrdu}</div>` : ""}
+            ${revealSensitive && safeUrdu ? `<div class="urdu-block">${safeUrdu}</div>` : ""}
           </div>
         </div>
       `;
 
-      // Photo fallback
       const verifyPhoto = document.getElementById("verifyPhoto");
       const verifyFallback = document.getElementById("verifyPhotoFallback");
       if (verifyPhoto && verifyFallback){
@@ -1593,9 +1824,6 @@
       }
     }
 
-    /* ════════════════════════════════
-       EVENT BINDINGS
-    ════════════════════════════════ */
     function bindEvents(){
       if (userArea){
         userArea.addEventListener("click", e => {
@@ -1662,9 +1890,6 @@
       });
     }
 
-    /* ════════════════════════════════
-       INIT
-    ════════════════════════════════ */
     function init(){
       initTheme();
       setDocumentDirection();
@@ -1680,9 +1905,8 @@
       loadUsers().then(() => {
         checkSession();
         scheduleTranslationNormalization();
+        runVerification();
       });
-
-      runVerification();
     }
 
     if (document.readyState === "loading"){
