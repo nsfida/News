@@ -17,16 +17,51 @@
   --page-gap: 15px;
   --brand: #0d3c91;
   --accent: #7873f5;
+  --page-bg-start: #e4fffc;
+  --page-bg-end: #ffffff;
+  --text: #111111;
+  --panel-bg: rgba(255,255,255,0.72);
+  --panel-border: rgba(0,0,0,0.08);
+  --banner-bg: rgba(167,199,203,0.15);
+  --banner-text: #501AB0;
+  --footer-bg: rgba(255,255,255,0.25);
+  --page-btn-bg: #ffffff;
+  --page-btn-text: #1f4f7a;
+  --page-btn-border: #4a90e2;
+  --page-btn-hover: #eaf4ff;
+  --input-bg: #ffffff;
+  --input-text: #111111;
+  --input-border: #c8d8e6;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+
 body{
   margin:0;
   font-family:Calibri,sans-serif;
-  background: linear-gradient(135deg, #e4fffc, #ffffff);
-  color:#111;
+  background: linear-gradient(135deg, var(--page-bg-start), var(--page-bg-end));
+  color:var(--text);
   overflow-x:hidden;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+body.dark-mode {
+  --page-bg-start: #08111f;
+  --page-bg-end: #111827;
+  --text: #e5e7eb;
+  --panel-bg: rgba(17,24,39,0.78);
+  --panel-border: rgba(255,255,255,0.12);
+  --banner-bg: rgba(15,23,42,0.65);
+  --banner-text: #d8c7ff;
+  --footer-bg: rgba(17,24,39,0.55);
+  --page-btn-bg: #0f172a;
+  --page-btn-text: #e5e7eb;
+  --page-btn-border: #334155;
+  --page-btn-hover: #1e293b;
+  --input-bg: #0f172a;
+  --input-text: #e5e7eb;
+  --input-border: #334155;
 }
 
 .floating-circles {
@@ -73,6 +108,10 @@ body{
   justify-content: center;
   background: linear-gradient(135deg, #dffbff, #eef9f6);
   padding: 20px;
+  transition: background 0.35s ease;
+}
+body.dark-mode .lock-screen {
+  background: linear-gradient(135deg, #0f172a, #111827);
 }
 .lock-card {
   width: min(420px, 100%);
@@ -82,26 +121,40 @@ body{
   padding: 28px 22px;
   text-align: center;
   border: 1px solid rgba(0,0,0,0.06);
+  transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+}
+body.dark-mode .lock-card {
+  background: rgba(15,23,42,0.92);
+  border-color: rgba(255,255,255,0.08);
+  color: #e5e7eb;
 }
 .lock-card h1 {
   margin: 0 0 8px 0;
   font-size: 24px;
   color: #1f4f7a;
 }
+body.dark-mode .lock-card h1 {
+  color: #c7d2fe;
+}
 .lock-card p {
   margin: 0 0 18px 0;
   color: #4b6477;
   font-size: 14px;
 }
+body.dark-mode .lock-card p {
+  color: #cbd5e1;
+}
 .lock-input {
   width: 100%;
   padding: 13px 15px;
   font-size: 16px;
-  border: 1px solid #c8d8e6;
+  border: 1px solid var(--input-border);
   border-radius: 12px;
   outline: none;
   margin-bottom: 12px;
   font-family: inherit;
+  background: var(--input-bg);
+  color: var(--input-text);
 }
 .lock-input:focus {
   border-color: #4a90e2;
@@ -140,11 +193,13 @@ body{
   position: sticky;
   top: 0;
   z-index: 200;
-  background: rgba(255,255,255,0.72);
+  background: var(--panel-bg);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 1px solid var(--panel-border);
   gap: 10px;
   min-height: 60px;
+  color: var(--text);
+  transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
 }
 .logo-area {
   display:flex;
@@ -174,6 +229,9 @@ body{
   font-size:11px;
   color: var(--brand);
   font-weight:600;
+}
+body.dark-mode .header-title span:last-child {
+  color: #dbeafe;
 }
 .header-actions {
   display:flex;
@@ -205,8 +263,12 @@ body{
   padding: 0;
   border-radius: 50%;
 }
+body.dark-mode .hdr-btn-icon {
+  border-color: rgba(196,181,253,0.35);
+}
 .hdr-btn-icon i { font-size: 16px; pointer-events: none; }
 .hdr-btn-icon:hover { background: rgba(120,115,245,0.12); }
+body.dark-mode .hdr-btn-icon:hover { background: rgba(196,181,253,0.12); }
 .hdr-btn-save {
   background: linear-gradient(90deg, #ff6ec4, #7873f5);
   color:#fff;
@@ -234,10 +296,10 @@ body{
 .hdr-btn-save.loading .save-label { display:none; }
 
 .info-banner {
-  background: rgba(167,199,203,0.15);
+  background: var(--banner-bg);
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255,255,255,0.3);
-  color: #501AB0;
+  color: var(--banner-text);
   font-weight: bold;
   font-size: 14px;
   padding: 5px 0;
@@ -248,6 +310,7 @@ body{
   width: 100%;
   position: relative;
   z-index: 50;
+  transition: background 0.35s ease, color 0.35s ease;
 }
 .info-banner .marquee {
   display: inline-block;
@@ -364,9 +427,9 @@ body{
   z-index: 2;
 }
 .page-btn {
-  border: 1px solid #4a90e2;
-  background: white;
-  color: #1f4f7a;
+  border: 1px solid var(--page-btn-border);
+  background: var(--page-btn-bg);
+  color: var(--page-btn-text);
   border-radius: 8px;
   padding: 8px 12px;
   min-width: 38px;
@@ -374,16 +437,17 @@ body{
   font-family: Calibri, sans-serif;
   font-size: 14px;
   font-weight: 700;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
 }
-.page-btn:hover { background: #eaf4ff; }
-.page-btn.active { background: #4a90e2; color: white; }
+.page-btn:hover { background: var(--page-btn-hover); }
+.page-btn.active { background: #4a90e2; color: white; border-color: #4a90e2; }
 .page-btn:disabled { opacity: 0.45; cursor: default; }
-.page-ellipsis { padding: 8px 4px; color: #1f4f7a; font-weight: 700; font-size: 14px; }
+.page-ellipsis { padding: 8px 4px; color: var(--page-btn-text); font-weight: 700; font-size: 14px; }
 .page-info {
   width: 100%;
   text-align: center;
   margin-top: 2px;
-  color: #1f4f7a;
+  color: var(--page-btn-text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -412,47 +476,15 @@ body{
   text-align: center;
   padding: 12px;
   margin-top: 20px;
-  background: rgba(255,255,255,0.25);
+  background: var(--footer-bg);
   font-size: 11px;
   color: #3c3c3c;
   position: relative;
   z-index: 2;
+  transition: background 0.35s ease, color 0.35s ease;
 }
-
-.export-shell {
-  position: fixed;
-  top: 0;
-  left: 0;
-  opacity: 0.01;
-  visibility: visible;
-  pointer-events: none;
-  z-index: 1;
-  background: #ffffff;
-  overflow: visible;
-}
-.export-shell .card-grid {
-  max-width: none;
-  width: max-content;
-  padding: 40px;
-  margin: 0;
-  gap: 28px;
-  grid-template-columns: repeat(2, 610px);
-}
-.export-shell .person-wrapper {
-  gap: 18px;
-}
-.export-shell .card-scaler {
-  width: 610px;
-  height: 400px;
-}
-.export-shell .ecard-container {
-  transform: none;
-}
-.export-shell .pagination-wrap,
-.export-shell .info-banner,
-.export-shell .footer,
-.export-shell .no-print {
-  display: none !important;
+body.dark-mode .footer {
+  color: #cbd5e1;
 }
 
 @media (max-width: 700px) {
@@ -543,7 +575,7 @@ body{
       <button class="hdr-btn hdr-btn-icon hdr-btn-mask" id="globalMaskBtn" type="button" aria-label="Mask sensitive info" title="Mask sensitive info">
         <i class="fa-solid fa-eye" id="maskIcon"></i>
       </button>
-      <button class="hdr-btn hdr-btn-save" id="saveImageBtn" type="button" aria-label="Save all cards as JPG" title="Save JPG">
+      <button class="hdr-btn hdr-btn-save" id="saveImageBtn" type="button" aria-label="Save current page as JPG" title="Save JPG">
         <div class="save-spinner"></div>
         <span class="save-label">
           <i class="fa-solid fa-image"></i>
@@ -576,7 +608,6 @@ body{
 </div>
 
 <div class="toast" id="toast"></div>
-<div id="exportShell" class="export-shell" aria-hidden="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -590,7 +621,6 @@ const lockError      = document.getElementById('lockError');
 const pdfArea        = document.getElementById('pdfArea');
 const paginationEl   = document.getElementById('pagination');
 const qrTemp         = document.getElementById('qrTemp');
-const exportShell    = document.getElementById('exportShell');
 const globalMaskBtn  = document.getElementById('globalMaskBtn');
 const maskIcon       = document.getElementById('maskIcon');
 const saveImageBtn   = document.getElementById('saveImageBtn');
@@ -610,17 +640,35 @@ let renderToken    = 0;
 let appStarted     = false;
 let toastTimer;
 
-(function() {
-  if (localStorage.getItem('kfc-dark') === '1') {
-    document.body.classList.add('dark-mode');
-    themeIcon.className = 'fa-solid fa-sun';
-  }
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[ch]);
+}
+
+function applyTheme(isDark) {
+  document.body.classList.toggle('dark-mode', isDark);
+  themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  try {
+    localStorage.setItem('kfc-dark', isDark ? '1' : '0');
+  } catch {}
+  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+}
+
+(function initTheme() {
+  let saved = null;
+  try {
+    saved = localStorage.getItem('kfc-dark');
+  } catch {}
+  applyTheme(saved === '1');
 })();
 
 themeToggleBtn.addEventListener('click', () => {
-  const isDark = document.body.classList.toggle('dark-mode');
-  themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-  localStorage.setItem('kfc-dark', isDark ? '1' : '0');
+  applyTheme(!document.body.classList.contains('dark-mode'));
 });
 
 function showToast(msg, duration = 3000) {
@@ -631,12 +679,12 @@ function showToast(msg, duration = 3000) {
 }
 
 function encodeCard(raw) {
-  return btoa(raw);
+  return btoa(String(raw));
 }
 
 function maskName(name) {
   if (!name) return '';
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
   if (parts.length <= 1) return '***';
   if (parts.length === 2) return '*** ***';
   return ['***', ...parts.slice(1, -1), '***'].join(' ');
@@ -644,12 +692,12 @@ function maskName(name) {
 
 function maskCardNumber(v) {
   if (!v) return '';
-  return v.replace(/(\d{3})(?!.*\d)/, '***');
+  return String(v).replace(/(\d{3})(?!.*\d)/, '***');
 }
 
 function maskMobile(v) {
   if (!v) return '';
-  return v.replace(/(\d{4})(?!.*\d)/, '****');
+  return String(v).replace(/(\d{4})(?!.*\d)/, '****');
 }
 
 async function translateToUrdu(text) {
@@ -688,7 +736,7 @@ function loadQrIntoImage(url, imgEl) {
       const img = qrTemp.querySelector('img');
       if (img) imgEl.src = img.src;
       resolve();
-    }, 0);
+    }, 30);
   });
 }
 
@@ -807,8 +855,8 @@ function getVisuals(card) {
   const defaultSign  = 'static/images/signature.png';
   let stampSrc = defaultStamp;
   let signSrc = defaultSign;
-  if (card.Authority && card.Authority.trim()) {
-    const f = card.Authority.toLowerCase();
+  if (card.Authority && String(card.Authority).trim()) {
+    const f = String(card.Authority).toLowerCase();
     stampSrc = `static/images/photos/${f}/stamp.png`;
     signSrc  = `static/images/photos/${f}/signature.png`;
   }
@@ -829,7 +877,7 @@ function getDisplayFields(card, urduName, masked) {
   };
 }
 
-function buildCardMarkup(card, urduName, masked, exportMode = false) {
+function buildCardMarkup(card, urduName, masked) {
   const visuals = getVisuals(card);
   const d = getDisplayFields(card, urduName, masked);
   const isCancelled = (card.Status || '').toLowerCase() === 'cancel';
@@ -837,8 +885,8 @@ function buildCardMarkup(card, urduName, masked, exportMode = false) {
   const validityText = (card.Validity || 'UAE VISA EXPIRY').toUpperCase();
 
   return `
-    <div class="card-scaler ${exportMode ? 'export-card-scaler' : ''}">
-      <div class="ecard-container ${exportMode ? 'export-ecard-container' : ''}">
+    <div class="card-scaler">
+      <div class="ecard-container">
         <img src="${visuals.bgSrc}" class="bg-img">
         <img src="static/images/watermark.png" class="watermark-img">
         <div class="strip-hole"></div><div class="strip-hole2"></div>
@@ -853,28 +901,28 @@ function buildCardMarkup(card, urduName, masked, exportMode = false) {
         <img src="static/images/logo.png" class="photo-logo">
         <img src="static/images/sticker.png" class="photo-logo2">
         <img src="static/images/shadow.png" class="photo-logo3">
-        <div class="ecard-label">${visuals.labelTxt}</div>
+        <div class="ecard-label">${escapeHtml(visuals.labelTxt)}</div>
         <img src="static/images/qrcode.png" class="qr-code">
         <img src="${visuals.signSrc}" class="signature" onerror="this.src='${visuals.defaultSign}'">
         <div class="text-container">
-          <p class="card-name">Name: ${d.name}</p>
-          <p><span>Urdu Name: </span><span class="card-urdu text-urdu">${d.urduName}</span></p>
-          <p class="designation">Desg: ${card.Desg || ''}</p>
-          <p class="card-no">Card No.: ${d.cardNo}</p>
-          <p>B-Group: ${card.BG || ''}</p>
-          <p class="card-contact">Contact: ${d.mobile}</p>
+          <p class="card-name">Name: ${escapeHtml(d.name)}</p>
+          <p><span>Urdu Name: </span><span class="card-urdu text-urdu">${escapeHtml(d.urduName)}</span></p>
+          <p class="designation">Desg: ${escapeHtml(card.Desg || '')}</p>
+          <p class="card-no">Card No.: ${escapeHtml(d.cardNo)}</p>
+          <p>B-Group: ${escapeHtml(card.BG || '')}</p>
+          <p class="card-contact">Contact: ${escapeHtml(d.mobile)}</p>
           <p class="issuance">Issuance Authority: ___________________</p>
         </div>
         <div class="header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
         <div class="header-text-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
-        <div class="date">ISSUE DATE: ${issueText}</div>
-        <div class="valid-till">VALIDITY: ${validityText}</div>
+        <div class="date">ISSUE DATE: ${escapeHtml(issueText)}</div>
+        <div class="valid-till">VALIDITY: ${escapeHtml(validityText)}</div>
         ${isCancelled ? '<div class="cancel-banner">e-Card CANCELLED</div>' : ''}
       </div>
     </div>
 
-    <div class="card-scaler ${exportMode ? 'export-card-scaler' : ''}">
-      <div class="ecard-container ${exportMode ? 'export-ecard-container' : ''}">
+    <div class="card-scaler">
+      <div class="ecard-container">
         <img src="${visuals.bgSrc}" class="bg-img">
         <img src="static/images/watermark.png" class="watermark-img">
         <img src="static/images/logo.png" class="back-overlay-logo">
@@ -884,7 +932,7 @@ function buildCardMarkup(card, urduName, masked, exportMode = false) {
             <img class="verify-qr-img">
             <div class="qr-mask-emoji">✘</div>
           </div>
-          <div class="verify-name">${d.verifyName}</div>
+          <div class="verify-name">${escapeHtml(d.verifyName)}</div>
           <img src="${visuals.cardPhoto}" class="verify-photo" onerror="this.src='${visuals.fallbackPhoto}'">
         </div>
         <div class="center-text">
@@ -938,24 +986,32 @@ async function renderPage(pageNumber) {
     const personDiv = document.createElement('div');
     personDiv.className = 'person-wrapper';
 
-    let urduName = card.urduName;
-    if (!urduName || !urduName.trim()) urduName = await translateToUrdu(card.name);
-
-    personDiv.innerHTML = buildCardMarkup(card, urduName, globalIsMasked, false);
+    const initialUrdu = (card.urduName && String(card.urduName).trim()) ? card.urduName : (card.name || '');
+    personDiv.innerHTML = buildCardMarkup(card, initialUrdu, globalIsMasked);
     pdfArea.appendChild(personDiv);
 
-    renderedCards.push({
+    const item = {
       data: card,
-      urduName,
+      urduName: initialUrdu,
       nameEl: personDiv.querySelector('.card-name'),
       urduEl: personDiv.querySelector('.card-urdu'),
       noEl: personDiv.querySelector('.card-no'),
       contactEl: personDiv.querySelector('.card-contact'),
       verifyNameEl: personDiv.querySelector('.verify-name'),
       qrMaskEl: personDiv.querySelector('.qr-mask-emoji')
-    });
+    };
+    renderedCards.push(item);
 
-    const url = 'https://livenews.live/KFC/viewcard.html?card=' + encodeCard(card.CNo);
+    if (!card.urduName || !String(card.urduName).trim()) {
+      translateToUrdu(card.name).then(translated => {
+        if (token !== renderToken) return;
+        item.urduName = translated || card.name || '';
+        const displayUrdu = globalIsMasked ? maskName(item.urduName) : item.urduName;
+        if (item.urduEl) item.urduEl.textContent = displayUrdu;
+      });
+    }
+
+    const url = 'https://livenews.live/KFC/verify.html?card=' + encodeCard(card.CNo);
     const qrImgEl = personDiv.querySelector('.verify-qr-img');
     await loadQrIntoImage(url, qrImgEl);
   }
@@ -963,181 +1019,114 @@ async function renderPage(pageNumber) {
   applyMaskState();
 }
 
-async function renderAllCardsIntoExportShell() {
-  exportShell.innerHTML = '';
-  const grid = document.createElement('div');
-  grid.className = 'card-grid';
-  grid.style.maxWidth = 'none';
-  grid.style.width = 'max-content';
-  grid.style.padding = '40px';
-  grid.style.margin = '0';
-  grid.style.gridTemplateColumns = 'repeat(2, 610px)';
-  grid.style.gap = '28px';
-  exportShell.appendChild(grid);
+async function waitForVisiblePageAssets() {
+  await prepareCapture(pdfArea);
+  await new Promise(resolve => setTimeout(resolve, 120));
+  await waitForImages(pdfArea);
+  await waitForNextPaint();
+}
 
-  for (const card of allCards) {
-    const personDiv = document.createElement('div');
-    personDiv.className = 'person-wrapper';
-
-    let urduName = card.urduName;
-    if (!urduName || !urduName.trim()) urduName = await translateToUrdu(card.name);
-
-    personDiv.innerHTML = buildCardMarkup(card, urduName, globalIsMasked, true);
-    grid.appendChild(personDiv);
-
-    const url = 'https://livenews.live/KFC/viewcard.html?card=' + encodeCard(card.CNo);
-    const qrImgEl = personDiv.querySelector('.verify-qr-img');
-    await loadQrIntoImage(url, qrImgEl);
+async function captureVisiblePageToCanvas() {
+  if (typeof html2canvas !== 'function') {
+    throw new Error('html2canvas not loaded');
   }
 
-  await prepareCapture(exportShell);
-}
+  await waitForVisiblePageAssets();
 
-function triggerDownloadHref(href, filename) {
-  const a = document.createElement('a');
-  a.href = href;
-  a.download = filename;
-  a.rel = 'noopener';
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-
-async function captureElementToCanvas(el, scale = 2) {
-  const canvas = await html2canvas(el, {
-    scale,
+  const canvas = await html2canvas(pdfArea, {
+    scale: Math.min(2, window.devicePixelRatio || 1.5),
     useCORS: true,
     allowTaint: false,
     backgroundColor: '#ffffff',
     logging: false,
     scrollX: 0,
     scrollY: 0,
-    width: el.scrollWidth,
-    height: el.scrollHeight,
-    windowWidth: el.scrollWidth,
-    windowHeight: el.scrollHeight,
-    imageTimeout: 15000,
+    width: pdfArea.scrollWidth,
+    height: pdfArea.scrollHeight,
+    windowWidth: pdfArea.scrollWidth,
+    windowHeight: pdfArea.scrollHeight,
+    imageTimeout: 20000,
     onclone: (clonedDoc) => {
-      const shell = clonedDoc.getElementById('exportShell');
-      if (shell) {
-        shell.style.left = '0';
-        shell.style.top = '0';
-        shell.style.opacity = '0.01';
-        shell.style.visibility = 'visible';
-        shell.style.position = 'fixed';
-        shell.style.background = '#ffffff';
-        shell.style.pointerEvents = 'none';
-        shell.style.zIndex = '1';
+      const clonedPdf = clonedDoc.getElementById('pdfArea');
+      if (clonedPdf) {
+        clonedPdf.style.maxWidth = '1100px';
+        clonedPdf.style.width = '100%';
+        clonedPdf.style.background = '#ffffff';
       }
+      const style = clonedDoc.createElement('style');
+      style.textContent = `
+        * {
+          animation: none !important;
+          transition: none !important;
+          caret-color: transparent !important;
+        }
+      `;
+      clonedDoc.head.appendChild(style);
     }
   });
+
   if (!canvas || !canvas.width || !canvas.height) {
     throw new Error('Capture canvas is empty.');
   }
+
   return canvas;
 }
 
-async function buildFinalJpgFromPieces() {
-  await renderAllCardsIntoExportShell();
-  const items = Array.from(exportShell.querySelectorAll('.person-wrapper'));
-  if (!items.length) {
-    throw new Error('No cards available for export.');
-  }
-
-  const captureScale = Math.min(2, window.devicePixelRatio || 1.5);
-  const itemCanvases = [];
-  for (const item of items) {
-    const c = await captureElementToCanvas(item, captureScale);
-    itemCanvases.push(c);
-  }
-
-  const columns = 2;
-  const padding = 40 * captureScale;
-  const gapX = 28 * captureScale;
-  const gapY = 28 * captureScale;
-
-  const colWidths = new Array(columns).fill(0);
-  const rowHeights = [];
-
-  for (let i = 0; i < itemCanvases.length; i++) {
-    const col = i % columns;
-    const row = Math.floor(i / columns);
-    const c = itemCanvases[i];
-    colWidths[col] = Math.max(colWidths[col], c.width);
-    rowHeights[row] = Math.max(rowHeights[row] || 0, c.height);
-  }
-
-  const finalWidth = padding * 2 + colWidths.reduce((a, b) => a + b, 0) + gapX * (columns - 1);
-  const finalHeight = padding * 2 + rowHeights.reduce((a, b) => a + b, 0) + gapY * Math.max(0, rowHeights.length - 1);
-
-  const finalCanvas = document.createElement('canvas');
-  finalCanvas.width = Math.max(1, Math.ceil(finalWidth));
-  finalCanvas.height = Math.max(1, Math.ceil(finalHeight));
-  const ctx = finalCanvas.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-
-  let rowY = padding;
-  const rowCount = Math.ceil(itemCanvases.length / columns);
-  for (let row = 0; row < rowCount; row++) {
-    let colX = padding;
-    for (let col = 0; col < columns; col++) {
-      const index = row * columns + col;
-      const c = itemCanvases[index];
-      if (!c) continue;
-      ctx.drawImage(c, colX, rowY);
-      colX += colWidths[col] + gapX;
-    }
-    rowY += rowHeights[row] + gapY;
-  }
-
-  return finalCanvas;
-}
-
 async function downloadCanvasAsJpg(canvas, filename) {
-  if (!canvas || !canvas.width || !canvas.height) {
-    throw new Error('Canvas is empty.');
-  }
+  const blob = await new Promise(resolve => {
+    try {
+      canvas.toBlob(resolve, 'image/jpeg', 0.96);
+    } catch {
+      resolve(null);
+    }
+  });
 
-  let blob = null;
-  try {
-    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.98));
-  } catch {
-    blob = null;
-  }
-
-  if (blob && blob.size > 1024) {
+  if (blob && blob.size > 0) {
     const url = URL.createObjectURL(blob);
-    triggerDownloadHref(url, filename);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     return;
   }
 
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.98);
-  if (!dataUrl || !dataUrl.startsWith('data:image/jpeg')) {
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.96);
+  if (!dataUrl.startsWith('data:image/jpeg')) {
     throw new Error('Failed to create JPG data URL.');
   }
-  triggerDownloadHref(dataUrl, filename);
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 saveImageBtn.addEventListener('click', async function() {
   if (this.classList.contains('loading')) return;
+  if (!pdfArea.children.length) {
+    showToast('⚠️ Nothing to export yet.');
+    return;
+  }
+
   this.classList.add('loading');
-  showToast('⏳ Generating JPG, please wait…', 8000);
+  showToast('⏳ Generating JPG for the current page…', 8000);
 
   try {
-    await new Promise(r => setTimeout(r, 120));
-    const canvas = await buildFinalJpgFromPieces();
-    const filename = `KFC_All_Cards_Page.jpg`;
+    const canvas = await captureVisiblePageToCanvas();
+    const filename = `KFC_Page_${currentPage}.jpg`;
     await downloadCanvasAsJpg(canvas, filename);
-    showToast(`✅ Saved: ${filename}`);
+    showToast(`✅ Saved current page as JPG`);
   } catch (err) {
     console.error('JPG save error:', err);
     showToast('❌ Failed to generate JPG. Try again.');
   } finally {
     this.classList.remove('loading');
-    exportShell.innerHTML = '';
   }
 });
 
