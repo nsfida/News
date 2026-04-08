@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Khawrai Falahi Committee UAE e-Cards</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <style>
 @font-face {
   font-family: 'UrduFont';
@@ -36,7 +35,6 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-
 body{
   margin:0;
   font-family:Calibri,sans-serif;
@@ -45,7 +43,6 @@ body{
   overflow-x:hidden;
   transition: background 0.35s ease, color 0.35s ease;
 }
-
 body.dark-mode {
   --page-bg-start: #08111f;
   --page-bg-end: #111827;
@@ -66,10 +63,8 @@ body.dark-mode {
 
 .floating-circles {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
@@ -108,7 +103,6 @@ body.dark-mode {
   justify-content: center;
   background: linear-gradient(135deg, #dffbff, #eef9f6);
   padding: 20px;
-  transition: background 0.35s ease;
 }
 body.dark-mode .lock-screen {
   background: linear-gradient(135deg, #0f172a, #111827);
@@ -121,7 +115,6 @@ body.dark-mode .lock-screen {
   padding: 28px 22px;
   text-align: center;
   border: 1px solid rgba(0,0,0,0.06);
-  transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
 }
 body.dark-mode .lock-card {
   background: rgba(15,23,42,0.92);
@@ -133,17 +126,13 @@ body.dark-mode .lock-card {
   font-size: 24px;
   color: #1f4f7a;
 }
-body.dark-mode .lock-card h1 {
-  color: #c7d2fe;
-}
+body.dark-mode .lock-card h1 { color: #c7d2fe; }
 .lock-card p {
   margin: 0 0 18px 0;
   color: #4b6477;
   font-size: 14px;
 }
-body.dark-mode .lock-card p {
-  color: #cbd5e1;
-}
+body.dark-mode .lock-card p { color: #cbd5e1; }
 .lock-input {
   width: 100%;
   padding: 13px 15px;
@@ -184,7 +173,6 @@ body.dark-mode .lock-card p {
   position: relative;
   z-index: 1;
 }
-
 .top-header {
   display:flex;
   justify-content:space-between;
@@ -199,7 +187,6 @@ body.dark-mode .lock-card p {
   gap: 10px;
   min-height: 60px;
   color: var(--text);
-  transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
 }
 .logo-area {
   display:flex;
@@ -230,9 +217,7 @@ body.dark-mode .lock-card p {
   color: var(--brand);
   font-weight:600;
 }
-body.dark-mode .header-title span:last-child {
-  color: #dbeafe;
-}
+body.dark-mode .header-title span:last-child { color: #dbeafe; }
 .header-actions {
   display:flex;
   align-items:center;
@@ -263,9 +248,7 @@ body.dark-mode .header-title span:last-child {
   padding: 0;
   border-radius: 50%;
 }
-body.dark-mode .hdr-btn-icon {
-  border-color: rgba(196,181,253,0.35);
-}
+body.dark-mode .hdr-btn-icon { border-color: rgba(196,181,253,0.35); }
 .hdr-btn-icon i { font-size: 16px; pointer-events: none; }
 .hdr-btn-icon:hover { background: rgba(120,115,245,0.12); }
 body.dark-mode .hdr-btn-icon:hover { background: rgba(196,181,253,0.12); }
@@ -310,7 +293,6 @@ body.dark-mode .hdr-btn-icon:hover { background: rgba(196,181,253,0.12); }
   width: 100%;
   position: relative;
   z-index: 50;
-  transition: background 0.35s ease, color 0.35s ease;
 }
 .info-banner .marquee {
   display: inline-block;
@@ -323,6 +305,7 @@ body.dark-mode .hdr-btn-icon:hover { background: rgba(196,181,253,0.12); }
   100% { transform: translateX(-100%); }
 }
 
+.page-content { position: relative; z-index: 2; }
 .card-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -357,6 +340,7 @@ body.dark-mode .hdr-btn-icon:hover { background: rgba(196,181,253,0.12); }
   overflow: hidden;
   transform: scale(0.5);
   transform-origin: top left;
+  background: #fff;
 }
 .bg-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; }
 .watermark-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0.1; z-index:1; }
@@ -481,11 +465,8 @@ body.dark-mode .hdr-btn-icon:hover { background: rgba(196,181,253,0.12); }
   color: #3c3c3c;
   position: relative;
   z-index: 2;
-  transition: background 0.35s ease, color 0.35s ease;
 }
-body.dark-mode .footer {
-  color: #cbd5e1;
-}
+body.dark-mode .footer { color: #cbd5e1; }
 
 @media (max-width: 700px) {
   .card-grid { grid-template-columns: 1fr; }
@@ -529,10 +510,7 @@ body.dark-mode .footer {
     transform: scale(var(--print-card-scale)) !important;
     transform-origin: top left !important;
   }
-  .global-actions,
-  .pagination-wrap {
-    display: none !important;
-  }
+  .pagination-wrap { display: none !important; }
 }
 </style>
 </head>
@@ -575,11 +553,11 @@ body.dark-mode .footer {
       <button class="hdr-btn hdr-btn-icon hdr-btn-mask" id="globalMaskBtn" type="button" aria-label="Mask sensitive info" title="Mask sensitive info">
         <i class="fa-solid fa-eye" id="maskIcon"></i>
       </button>
-      <button class="hdr-btn hdr-btn-save" id="saveImageBtn" type="button" aria-label="Save current page as JPG" title="Save JPG">
+      <button class="hdr-btn hdr-btn-save" id="savePdfBtn" type="button" aria-label="Save current page as PDF" title="Save PDF">
         <div class="save-spinner"></div>
         <span class="save-label">
-          <i class="fa-solid fa-image"></i>
-          <span class="save-text"> Save JPG</span>
+          <i class="fa-solid fa-file-pdf"></i>
+          <span class="save-text"> Save PDF</span>
         </span>
       </button>
     </div>
@@ -610,8 +588,7 @@ body.dark-mode .footer {
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 const lockScreen     = document.getElementById('lockScreen');
 const appShell       = document.getElementById('appShell');
@@ -623,7 +600,7 @@ const paginationEl   = document.getElementById('pagination');
 const qrTemp         = document.getElementById('qrTemp');
 const globalMaskBtn  = document.getElementById('globalMaskBtn');
 const maskIcon       = document.getElementById('maskIcon');
-const saveImageBtn   = document.getElementById('saveImageBtn');
+const savePdfBtn     = document.getElementById('savePdfBtn');
 const themeToggleBtn = document.getElementById('themeToggleBtn');
 const themeIcon      = document.getElementById('themeIcon');
 const toastEl        = document.getElementById('toast');
@@ -653,17 +630,13 @@ function escapeHtml(value) {
 function applyTheme(isDark) {
   document.body.classList.toggle('dark-mode', isDark);
   themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-  try {
-    localStorage.setItem('kfc-dark', isDark ? '1' : '0');
-  } catch {}
+  try { localStorage.setItem('kfc-dark', isDark ? '1' : '0'); } catch {}
   document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 }
 
 (function initTheme() {
   let saved = null;
-  try {
-    saved = localStorage.getItem('kfc-dark');
-  } catch {}
+  try { saved = localStorage.getItem('kfc-dark'); } catch {}
   applyTheme(saved === '1');
 })();
 
@@ -689,12 +662,10 @@ function maskName(name) {
   if (parts.length === 2) return '*** ***';
   return ['***', ...parts.slice(1, -1), '***'].join(' ');
 }
-
 function maskCardNumber(v) {
   if (!v) return '';
   return String(v).replace(/(\d{3})(?!.*\d)/, '***');
 }
-
 function maskMobile(v) {
   if (!v) return '';
   return String(v).replace(/(\d{4})(?!.*\d)/, '****');
@@ -726,6 +697,7 @@ function loadQrIntoImage(url, imgEl) {
       colorLight: '#0000',
       correctLevel: QRCode.CorrectLevel.H
     });
+
     setTimeout(() => {
       const canvas = qrTemp.querySelector('canvas');
       if (canvas) {
@@ -736,7 +708,7 @@ function loadQrIntoImage(url, imgEl) {
       const img = qrTemp.querySelector('img');
       if (img) imgEl.src = img.src;
       resolve();
-    }, 30);
+    }, 100);
   });
 }
 
@@ -837,9 +809,10 @@ function getPageFromHash() {
 }
 
 function getVisuals(card) {
-  const desg = (card.Desg || '').toLowerCase();
+  const desg = String(card.Desg || '').toLowerCase();
   let bgSrc = 'static/images/background.png';
   let labelTxt = 'e-Card';
+
   if (desg.includes('acting president')) {
     bgSrc = 'static/images/background2.png';
     labelTxt = "Acting President's e-Card";
@@ -854,7 +827,8 @@ function getVisuals(card) {
   const defaultStamp = 'static/images/stamp.png';
   const defaultSign  = 'static/images/signature.png';
   let stampSrc = defaultStamp;
-  let signSrc = defaultSign;
+  let signSrc  = defaultSign;
+
   if (card.Authority && String(card.Authority).trim()) {
     const f = String(card.Authority).toLowerCase();
     stampSrc = `static/images/photos/${f}/stamp.png`;
@@ -880,29 +854,29 @@ function getDisplayFields(card, urduName, masked) {
 function buildCardMarkup(card, urduName, masked) {
   const visuals = getVisuals(card);
   const d = getDisplayFields(card, urduName, masked);
-  const isCancelled = (card.Status || '').toLowerCase() === 'cancel';
+  const isCancelled = String(card.Status || '').toLowerCase() === 'cancel';
   const issueText = card.Issue || '';
-  const validityText = (card.Validity || 'UAE VISA EXPIRY').toUpperCase();
+  const validityText = String(card.Validity || 'UAE VISA EXPIRY').toUpperCase();
 
   return `
     <div class="card-scaler">
       <div class="ecard-container">
-        <img src="${visuals.bgSrc}" class="bg-img">
-        <img src="static/images/watermark.png" class="watermark-img">
+        <img src="${visuals.bgSrc}" class="bg-img" onerror="this.style.display='none'">
+        <img src="static/images/watermark.png" class="watermark-img" onerror="this.style.display='none'">
         <div class="strip-hole"></div><div class="strip-hole2"></div>
-        <img src="static/images/logo1.png" class="logo1">
-        <img src="static/images/logo2.png" class="logo2">
-        <img src="static/images/logo.png" class="logo">
-        <img src="static/images/logo.png" class="center-logo">
+        <img src="static/images/logo1.png" class="logo1" onerror="this.style.display='none'">
+        <img src="static/images/logo2.png" class="logo2" onerror="this.style.display='none'">
+        <img src="static/images/logo.png" class="logo" onerror="this.style.display='none'">
+        <img src="static/images/logo.png" class="center-logo" onerror="this.style.display='none'">
         <img src="${visuals.stampSrc}" class="stamp" onerror="this.src='${visuals.defaultStamp}'">
         <img src="${visuals.cardPhoto}" class="photo" onerror="this.src='${visuals.fallbackPhoto}'">
         <img src="${visuals.cardPhoto}" class="photo-small" onerror="this.src='${visuals.fallbackPhoto}'">
-        <img src="static/images/sticker.png" class="photosticker">
-        <img src="static/images/logo.png" class="photo-logo">
-        <img src="static/images/sticker.png" class="photo-logo2">
-        <img src="static/images/shadow.png" class="photo-logo3">
+        <img src="static/images/sticker.png" class="photosticker" onerror="this.style.display='none'">
+        <img src="static/images/logo.png" class="photo-logo" onerror="this.style.display='none'">
+        <img src="static/images/sticker.png" class="photo-logo2" onerror="this.style.display='none'">
+        <img src="static/images/shadow.png" class="photo-logo3" onerror="this.style.display='none'">
         <div class="ecard-label">${escapeHtml(visuals.labelTxt)}</div>
-        <img src="static/images/qrcode.png" class="qr-code">
+        <img src="static/images/qrcode.png" class="qr-code" onerror="this.style.display='none'">
         <img src="${visuals.signSrc}" class="signature" onerror="this.src='${visuals.defaultSign}'">
         <div class="text-container">
           <p class="card-name">Name: ${escapeHtml(d.name)}</p>
@@ -923,9 +897,9 @@ function buildCardMarkup(card, urduName, masked) {
 
     <div class="card-scaler">
       <div class="ecard-container">
-        <img src="${visuals.bgSrc}" class="bg-img">
-        <img src="static/images/watermark.png" class="watermark-img">
-        <img src="static/images/logo.png" class="back-overlay-logo">
+        <img src="${visuals.bgSrc}" class="bg-img" onerror="this.style.display='none'">
+        <img src="static/images/watermark.png" class="watermark-img" onerror="this.style.display='none'">
+        <img src="static/images/logo.png" class="back-overlay-logo" onerror="this.style.display='none'">
         <div class="verify-box">
           <div>Verification QR</div>
           <div class="verify-qr-wrap">
@@ -952,12 +926,12 @@ function buildCardMarkup(card, urduName, masked) {
 function applyMaskState() {
   renderedCards.forEach(item => {
     const fields = getDisplayFields(item.data, item.urduName, globalIsMasked);
-    item.nameEl.textContent = 'Name: ' + fields.name;
-    item.urduEl.textContent = fields.urduName;
-    item.noEl.textContent = 'Card No.: ' + fields.cardNo;
-    item.contactEl.textContent = 'Contact: ' + fields.mobile;
-    item.verifyNameEl.textContent = fields.verifyName;
-    item.qrMaskEl.style.display = globalIsMasked ? 'flex' : 'none';
+    if (item.nameEl) item.nameEl.textContent = 'Name: ' + fields.name;
+    if (item.urduEl) item.urduEl.textContent = fields.urduName;
+    if (item.noEl) item.noEl.textContent = 'Card No.: ' + fields.cardNo;
+    if (item.contactEl) item.contactEl.textContent = 'Contact: ' + fields.mobile;
+    if (item.verifyNameEl) item.verifyNameEl.textContent = fields.verifyName;
+    if (item.qrMaskEl) item.qrMaskEl.style.display = globalIsMasked ? 'flex' : 'none';
   });
 }
 
@@ -1013,101 +987,55 @@ async function renderPage(pageNumber) {
 
     const url = 'https://livenews.live/KFC/verify.html?card=' + encodeCard(card.CNo);
     const qrImgEl = personDiv.querySelector('.verify-qr-img');
-    await loadQrIntoImage(url, qrImgEl);
+    if (qrImgEl) await loadQrIntoImage(url, qrImgEl);
   }
 
   applyMaskState();
-}
-
-async function waitForVisiblePageAssets() {
-  await prepareCapture(pdfArea);
-  await new Promise(resolve => setTimeout(resolve, 120));
-  await waitForImages(pdfArea);
   await waitForNextPaint();
 }
 
-async function captureVisiblePageToCanvas() {
-  if (typeof html2canvas !== 'function') {
-    throw new Error('html2canvas not loaded');
+function waitForAssetsForPdf() {
+  return prepareCapture(pdfArea);
+}
+
+async function saveCurrentPageAsPdf() {
+  if (typeof html2pdf !== 'function') {
+    throw new Error('html2pdf is not loaded');
   }
 
-  await waitForVisiblePageAssets();
+  await waitForAssetsForPdf();
+  const totalPages = Math.max(1, Math.ceil(allCards.length / cardsPerPage));
+  const displayName = (renderedCards[0]?.data?.name || allCards[(currentPage - 1) * cardsPerPage]?.name || 'KFC_Page').replace(/[\\/:*?"<>|]+/g, '_');
 
-  const canvas = await html2canvas(pdfArea, {
-    scale: Math.min(2, window.devicePixelRatio || 1.5),
-    useCORS: true,
-    allowTaint: false,
-    backgroundColor: '#ffffff',
-    logging: false,
-    scrollX: 0,
-    scrollY: 0,
-    width: pdfArea.scrollWidth,
-    height: pdfArea.scrollHeight,
-    windowWidth: pdfArea.scrollWidth,
-    windowHeight: pdfArea.scrollHeight,
-    imageTimeout: 20000,
-    onclone: (clonedDoc) => {
-      const clonedPdf = clonedDoc.getElementById('pdfArea');
-      if (clonedPdf) {
-        clonedPdf.style.maxWidth = '1100px';
-        clonedPdf.style.width = '100%';
-        clonedPdf.style.background = '#ffffff';
+  const element = pdfArea;
+  const opt = {
+    margin: 0,
+    filename: `${displayName}_Page_${currentPage}.pdf`,
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: {
+      scale: 3,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
+      ignoreElements: function(el) {
+        return el.classList && (el.classList.contains('no-print') || el.id === 'toast' || el.id === 'lockScreen');
       }
-      const style = clonedDoc.createElement('style');
-      style.textContent = `
-        * {
-          animation: none !important;
-          transition: none !important;
-          caret-color: transparent !important;
-        }
-      `;
-      clonedDoc.head.appendChild(style);
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: [180, 270],
+      orientation: 'portrait'
     }
-  });
+  };
 
-  if (!canvas || !canvas.width || !canvas.height) {
-    throw new Error('Capture canvas is empty.');
-  }
-
-  return canvas;
+  await html2pdf().set(opt).from(element).save();
 }
 
-async function downloadCanvasAsJpg(canvas, filename) {
-  const blob = await new Promise(resolve => {
-    try {
-      canvas.toBlob(resolve, 'image/jpeg', 0.96);
-    } catch {
-      resolve(null);
-    }
-  });
-
-  if (blob && blob.size > 0) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    return;
-  }
-
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.96);
-  if (!dataUrl.startsWith('data:image/jpeg')) {
-    throw new Error('Failed to create JPG data URL.');
-  }
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = filename;
-  a.rel = 'noopener';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-
-saveImageBtn.addEventListener('click', async function() {
+savePdfBtn.addEventListener('click', async function() {
   if (this.classList.contains('loading')) return;
   if (!pdfArea.children.length) {
     showToast('⚠️ Nothing to export yet.');
@@ -1115,16 +1043,14 @@ saveImageBtn.addEventListener('click', async function() {
   }
 
   this.classList.add('loading');
-  showToast('⏳ Generating JPG for the current page…', 8000);
+  showToast('⏳ Generating PDF for the current page…', 8000);
 
   try {
-    const canvas = await captureVisiblePageToCanvas();
-    const filename = `KFC_Page_${currentPage}.jpg`;
-    await downloadCanvasAsJpg(canvas, filename);
-    showToast(`✅ Saved current page as JPG`);
+    await saveCurrentPageAsPdf();
+    showToast('✅ Saved current page as PDF');
   } catch (err) {
-    console.error('JPG save error:', err);
-    showToast('❌ Failed to generate JPG. Try again.');
+    console.error('PDF save error:', err);
+    showToast('❌ Failed to generate PDF. Try again.');
   } finally {
     this.classList.remove('loading');
   }
