@@ -158,7 +158,7 @@ body{
 .stamp{ position:absolute; bottom:8px; right:140px; width:135px; z-index:11; }
 .qr-code{ position:absolute; bottom:230px; left:37px; width:80px; z-index:11; }
 .signature{ position:absolute; bottom:8px; left:250px; width:170px; transform:rotate(-15deg); z-index:11; }
-.text-container{ position:absolute; bottom:60px; top:180px; left:40px; font-family:"Courier New", monospace; color:#00427a; font-weight:bold; line-height:1.7; z-index:12; }
+.text-container{ position:absolute; bottom:60px; top:180px; left:40px; font-family:"Courier New", monospace; color:#00427a; font-weight:bold; line-height:1.7; z-index:5; }
 .text-container p{ margin:2px 0; }
 .text-urdu{ font-family:'UrduFont'; font-size:10px; color:#00427a; font-weight:bold; }
 .designation{ color:purple; font-weight:bold; }
@@ -763,7 +763,7 @@ function startApp() {
   appShell.style.display = "block";
   updatePrintScale();
 
-  fetch("https://livenews.live/KFC/card2.json")
+  fetch("https://livenews.live/KFC/cards.json")
     .then(res => res.json())
     .then(async data => {
       allCards = (Array.isArray(data) ? data : []).filter(card => card && card.CNo);
