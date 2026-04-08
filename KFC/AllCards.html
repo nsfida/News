@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Khawrai Falahi Committee UAE e-Cards</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 @font-face {
@@ -14,19 +15,55 @@
 :root {
   --print-card-scale: 0.30;
   --page-gap: 15px;
+  --brand: #0d3c91;
+  --accent: #7873f5;
 }
 
-/* Base */
 * { box-sizing: border-box; }
-
+html { scroll-behavior: smooth; }
 body{
   margin:0;
   font-family:Calibri,sans-serif;
-  background-color:#e4fffc;
+  background: linear-gradient(135deg, #e4fffc, #ffffff);
   color:#111;
+  overflow-x:hidden;
 }
 
-/* Login gate */
+.floating-circles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.floating-circles .circle {
+  position: absolute;
+  border-radius: 50%;
+  animation: floatMove 20s ease-in-out infinite alternate;
+  box-shadow:
+    inset -10px -10px 20px rgba(0,0,0,0.15),
+    inset 10px 10px 20px rgba(255,255,255,0.6),
+    0 10px 25px rgba(0,0,0,0.2);
+}
+.circle:nth-child(1) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,105,180,0.4)); width:180px; height:180px; top:10%; left:15%; filter:blur(3px); }
+.circle:nth-child(2) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(0,191,255,0.4)); width:90px; height:90px; top:50%; left:25%; filter:blur(3px); }
+.circle:nth-child(3) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,20,147,0.4)); width:150px; height:150px; top:30%; left:70%; filter:blur(3px); }
+.circle:nth-child(4) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(30,144,255,0.4)); width:100px; height:100px; top:80%; left:40%; filter:blur(3px); }
+.circle:nth-child(5) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,182,193,0.4)); width:80px; height:80px; top:60%; left:80%; filter:blur(3px); }
+.circle:nth-child(6) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(0,255,200,0.28)); width:110px; height:110px; top:18%; left:55%; filter:blur(3px); }
+.circle:nth-child(7) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,180,0,0.22)); width:70px; height:70px; top:72%; left:12%; filter:blur(2px); }
+.circle:nth-child(8) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(180,110,255,0.24)); width:130px; height:130px; top:8%; left:82%; filter:blur(3px); }
+.circle:nth-child(9) { background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,90,120,0.24)); width:95px; height:95px; top:84%; left:68%; filter:blur(3px); }
+@keyframes floatMove {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(100px,-50px) scale(1.2); }
+  66%  { transform: translate(-80px,120px) scale(0.8); }
+  100% { transform: translate(50px,20px) scale(1.1); }
+}
+
 .lock-screen {
   position: fixed;
   inset: 0;
@@ -37,7 +74,6 @@ body{
   background: linear-gradient(135deg, #dffbff, #eef9f6);
   padding: 20px;
 }
-
 .lock-card {
   width: min(420px, 100%);
   background: rgba(255,255,255,0.9);
@@ -47,19 +83,16 @@ body{
   text-align: center;
   border: 1px solid rgba(0,0,0,0.06);
 }
-
 .lock-card h1 {
   margin: 0 0 8px 0;
   font-size: 24px;
   color: #1f4f7a;
 }
-
 .lock-card p {
   margin: 0 0 18px 0;
   color: #4b6477;
   font-size: 14px;
 }
-
 .lock-input {
   width: 100%;
   padding: 13px 15px;
@@ -70,12 +103,10 @@ body{
   margin-bottom: 12px;
   font-family: inherit;
 }
-
 .lock-input:focus {
   border-color: #4a90e2;
   box-shadow: 0 0 0 3px rgba(74,144,226,0.15);
 }
-
 .lock-btn {
   width: 100%;
   padding: 13px 15px;
@@ -87,9 +118,7 @@ body{
   font-size: 15px;
   cursor: pointer;
 }
-
 .lock-btn:hover { background: #357ab7; }
-
 .lock-error {
   margin-top: 12px;
   color: #b00020;
@@ -97,12 +126,140 @@ body{
   min-height: 20px;
 }
 
-/* App area */
 .app-shell {
   display: none;
+  position: relative;
+  z-index: 1;
 }
 
-/* Main grid */
+.top-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  gap: 10px;
+  min-height: 60px;
+}
+.logo-area {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+.logo-area a { display:flex; align-items:center; }
+.dancing-logo {
+  width:46px;
+  animation: logoZoomFade 3s ease-in-out infinite;
+  cursor:pointer;
+}
+@keyframes logoZoomFade {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(1.15); }
+}
+.header-title { display:flex; flex-direction:column; }
+.header-title span:first-child {
+  font-size:16px;
+  font-weight:800;
+  background: linear-gradient(90deg, #0d3c91, #7873f5);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.header-title span:last-child {
+  font-size:11px;
+  color: var(--brand);
+  font-weight:600;
+}
+.header-actions {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.hdr-btn {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  height:38px;
+  padding:0 14px;
+  border:none;
+  border-radius:50px;
+  font-family:Calibri,sans-serif;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.25s ease;
+  position:relative;
+}
+.hdr-btn-icon {
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid rgba(120,115,245,0.3);
+  width: 38px;
+  padding: 0;
+  border-radius: 50%;
+}
+.hdr-btn-icon i { font-size: 16px; pointer-events: none; }
+.hdr-btn-icon:hover { background: rgba(120,115,245,0.12); }
+.hdr-btn-save {
+  background: linear-gradient(90deg, #ff6ec4, #7873f5);
+  color:#fff;
+  box-shadow:0 4px 14px rgba(120,115,245,0.35);
+}
+.hdr-btn-save:hover { opacity:0.88; transform:translateY(-1px); box-shadow:0 6px 20px rgba(120,115,245,0.45); }
+.hdr-btn-save:active { transform:translateY(0); }
+.hdr-btn-mask {
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid rgba(120,115,245,0.3);
+}
+.hdr-btn-mask:hover { background: rgba(120,115,245,0.1); }
+.save-spinner {
+  display:none;
+  width:14px;
+  height:14px;
+  border:2px solid rgba(255,255,255,0.4);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hdr-btn-save.loading .save-spinner { display:block; }
+.hdr-btn-save.loading .save-label { display:none; }
+
+.info-banner {
+  background: rgba(167,199,203,0.15);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #501AB0;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  position: relative;
+  z-index: 50;
+}
+.info-banner .marquee {
+  display: inline-block;
+  padding-left: 100%;
+  animation: scrollBanner 28s linear infinite;
+}
+.info-banner:hover .marquee { animation-play-state: paused; }
+@keyframes scrollBanner {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -111,23 +268,21 @@ body{
   justify-items: center;
   max-width: 1100px;
   margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
-
 .person-wrapper {
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: center;
 }
-
-/* Scaler container */
 .card-scaler {
   width: 305px;
   height: 200px;
   position: relative;
   overflow: visible;
 }
-
 .ecard-container {
   position: absolute;
   top: 0;
@@ -140,8 +295,6 @@ body{
   transform: scale(0.5);
   transform-origin: top left;
 }
-
-/* Original Card CSS */
 .bg-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; }
 .watermark-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0.1; z-index:1; }
 .logo{ position:absolute; top:10px; right:20px; width:100px; opacity:0.8; z-index:10; }
@@ -168,7 +321,7 @@ body{
 .strip-hole2{ position:absolute; top:10px; left:50%; transform:translateX(-50%); width:70px; height:9.3px; background-color:white; border-radius:5px; z-index:11; }
 .date{ position:absolute; top:150px; right:35px; font-family:"Courier New", monospace; font-size:10px; color:green; font-weight:bold; z-index:12; }
 .valid-till{ position:absolute; top:170px; right:36px; font-family:"Courier New", monospace; font-size:9px; color:red; font-weight:bold; z-index:12; }
-.issuance{ margin-top:10px; font-family:"Courier New", monospace; font-size:15px; color:#00427a; font-weight:bold; line-height:1; }
+.issuance { margin-top:10px; font-family:"Courier New", monospace; font-size:15px; color:#00427a; font-weight:bold; line-height:1; }
 .back-overlay-logo{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:220px; opacity:0.08; z-index:2;}
 .verify-box{ position:absolute; top:30px; left:50%; transform:translateX(-50%); text-align:center; font-size:12px; font-family:Calibri; z-index:10; }
 .verify-box img{ width:70px; margin-top:5px; }
@@ -179,41 +332,12 @@ body{
 .center-text{ position:absolute; top:135px; left:50px; right:50px; text-align:center; font-size:10.5px; font-family:Calibri; color:#222; line-height:1.4; z-index:10; }
 .urdu-text { font-family:'UrduFont', sans-serif; font-size:11px; direction:rtl; line-height:1.5; margin-top:8px; }
 .contacts{ position:absolute; bottom:30px; left:40px; font-size:12px; font-family:Calibri; color:black; line-height:1.6; z-index:10;}
-
 .cancel-banner{
   position:absolute; top:60%; left:0; width:100%; transform:translateY(-50%);
   background:rgba(220,0,0,0.85); color:white; text-align:center; font-size:50px;
   font-weight:bold; padding:50px 0; z-index:999; letter-spacing:2px;
   box-shadow:0 0 10px rgba(0,0,0,0.5); pointer-events:none;
 }
-
-/* Floating actions */
-.global-actions {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  z-index: 1000;
-  display: flex;
-  gap: 10px;
-}
-
-.action-btn {
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  padding: 10px 14px;
-  font-weight: bold;
-  font-size: 18px;
-  box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
-  transition: 0.3s;
-  line-height: 1;
-  min-width: 42px;
-}
-.action-btn:hover { background-color: #357ab7; }
-
-/* QR Mask Overlay */
 .qr-mask-emoji{
   position:absolute;
   inset:0;
@@ -228,7 +352,6 @@ body{
   pointer-events:none;
 }
 
-/* Pagination */
 .pagination-wrap {
   max-width: 1100px;
   margin: 0 auto 20px auto;
@@ -237,8 +360,9 @@ body{
   justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
+  position: relative;
+  z-index: 2;
 }
-
 .page-btn {
   border: 1px solid #4a90e2;
   background: white;
@@ -251,28 +375,10 @@ body{
   font-size: 14px;
   font-weight: 700;
 }
-
-.page-btn:hover {
-  background: #eaf4ff;
-}
-
-.page-btn.active {
-  background: #4a90e2;
-  color: white;
-}
-
-.page-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.page-ellipsis {
-  padding: 8px 4px;
-  color: #1f4f7a;
-  font-weight: 700;
-  font-size: 14px;
-}
-
+.page-btn:hover { background: #eaf4ff; }
+.page-btn.active { background: #4a90e2; color: white; }
+.page-btn:disabled { opacity: 0.45; cursor: default; }
+.page-ellipsis { padding: 8px 4px; color: #1f4f7a; font-weight: 700; font-size: 14px; }
 .page-info {
   width: 100%;
   text-align: center;
@@ -282,25 +388,82 @@ body{
   font-weight: 700;
 }
 
-/* Print break helper */
-.print-page-break {
-  display: none;
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: linear-gradient(90deg, #ff6ec4, #7873f5);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(120,115,245,0.4);
+  z-index: 9999;
+  transition: transform 0.4s cubic-bezier(.34,1.56,.64,1), opacity 0.4s;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+.footer {
+  text-align: center;
+  padding: 12px;
+  margin-top: 20px;
+  background: rgba(255,255,255,0.25);
+  font-size: 11px;
+  color: #3c3c3c;
+  position: relative;
+  z-index: 2;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .card-grid {
-    grid-template-columns: 1fr;
-  }
+.export-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0.01;
+  visibility: visible;
+  pointer-events: none;
+  z-index: 1;
+  background: #ffffff;
+  overflow: visible;
+}
+.export-shell .card-grid {
+  max-width: none;
+  width: max-content;
+  padding: 40px;
+  margin: 0;
+  gap: 28px;
+  grid-template-columns: repeat(2, 610px);
+}
+.export-shell .person-wrapper {
+  gap: 18px;
+}
+.export-shell .card-scaler {
+  width: 610px;
+  height: 400px;
+}
+.export-shell .ecard-container {
+  transform: none;
+}
+.export-shell .pagination-wrap,
+.export-shell .info-banner,
+.export-shell .footer,
+.export-shell .no-print {
+  display: none !important;
 }
 
-/* Print */
+@media (max-width: 700px) {
+  .card-grid { grid-template-columns: 1fr; }
+  .header-title span:last-child { display: none; }
+  .hdr-btn-save span.save-text { display: none; }
+  .hdr-btn-save { width: 38px; padding: 0; border-radius: 50%; }
+}
+
 @media print {
-  @page {
-    size: auto;
-    margin: 6mm;
-  }
-
+  @page { size: auto; margin: 6mm; }
   html, body {
     background: #fff !important;
     margin: 0 !important;
@@ -308,13 +471,9 @@ body{
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-
+  body { display: block; }
   .no-print { display: none !important; }
-
-  .app-shell {
-    display: block !important;
-  }
-
+  .app-shell { display: block !important; }
   .card-grid {
     display: grid !important;
     grid-template-columns: repeat(2, max-content) !important;
@@ -325,11 +484,7 @@ body{
     padding: 0 !important;
     margin: 0 !important;
   }
-
-  .person-wrapper {
-    display: contents !important;
-  }
-
+  .person-wrapper { display: contents !important; }
   .card-scaler {
     width: calc(610px * var(--print-card-scale)) !important;
     height: calc(400px * var(--print-card-scale)) !important;
@@ -338,21 +493,10 @@ body{
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
-
   .ecard-container {
     transform: scale(var(--print-card-scale)) !important;
     transform-origin: top left !important;
   }
-
-  .print-page-break {
-    display: block !important;
-    break-after: page !important;
-    page-break-after: always !important;
-    grid-column: 1 / -1 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-  }
-
   .global-actions,
   .pagination-wrap {
     display: none !important;
@@ -362,7 +506,12 @@ body{
 </head>
 <body>
 
-<!-- Password gate -->
+<div class="floating-circles" aria-hidden="true">
+  <div class="circle"></div><div class="circle"></div><div class="circle"></div>
+  <div class="circle"></div><div class="circle"></div><div class="circle"></div>
+  <div class="circle"></div><div class="circle"></div><div class="circle"></div>
+</div>
+
 <div id="lockScreen" class="lock-screen">
   <div class="lock-card">
     <h1>Enter Password</h1>
@@ -375,77 +524,144 @@ body{
   </div>
 </div>
 
-<!-- App -->
 <div id="appShell" class="app-shell">
-  <div class="global-actions no-print">
-    <button id="globalMaskBtn" class="action-btn" aria-label="Mask all cards" title="Mask all cards">👁</button>
+  <header class="top-header no-print">
+    <div class="logo-area">
+      <a href="https://livenews.live/KFC" aria-label="Home">
+        <img src="logo.png" alt="KFC Logo" class="dancing-logo" onerror="this.style.display='none'">
+      </a>
+      <div class="header-title">
+        <span>Khawrai Falahi Committee UAE</span>
+        <span>Member e-Card Directory</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="hdr-btn hdr-btn-icon" id="themeToggleBtn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+      <button class="hdr-btn hdr-btn-icon hdr-btn-mask" id="globalMaskBtn" type="button" aria-label="Mask sensitive info" title="Mask sensitive info">
+        <i class="fa-solid fa-eye" id="maskIcon"></i>
+      </button>
+      <button class="hdr-btn hdr-btn-save" id="saveImageBtn" type="button" aria-label="Save all cards as JPG" title="Save JPG">
+        <div class="save-spinner"></div>
+        <span class="save-label">
+          <i class="fa-solid fa-image"></i>
+          <span class="save-text"> Save JPG</span>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <div class="info-banner no-print">
+    <div class="marquee">
+      🪪 Khawrai Falahi Committee UAE — Digital e-Card Directory &nbsp;|&nbsp;
+      All member cards are digitally verified. Scan the QR code on the back of any card to verify. &nbsp;|&nbsp;
+      President: Arbab Rizwan (+971 55 735 3212) &nbsp;|&nbsp;
+      Vice President: Salar Khan (+971 58 884 0090) &nbsp;|&nbsp;
+      Acting President: Ahmad Aman (+971 56 803 9690) &nbsp;🪪
+    </div>
   </div>
 
-  <div id="pdfArea" class="card-grid"></div>
-  <div id="pagination" class="pagination-wrap no-print"></div>
-  <div id="qrTemp" style="position:absolute; left:-9999px; top:0; width:200px; height:200px;"></div>
+  <div class="page-content">
+    <div id="pdfArea" class="card-grid"></div>
+    <div id="pagination" class="pagination-wrap no-print"></div>
+  </div>
+
+  <footer class="footer no-print">
+    © 2026 Khawrai Falahi Committee United Arab Emirates | All Rights Reserved
+  </footer>
+
+  <div id="qrTemp" style="position:absolute;left:-9999px;top:0;width:200px;height:200px;"></div>
 </div>
 
+<div class="toast" id="toast"></div>
+<div id="exportShell" class="export-shell" aria-hidden="true"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-const lockScreen = document.getElementById("lockScreen");
-const appShell = document.getElementById("appShell");
-const unlockForm = document.getElementById("unlockForm");
-const passwordInput = document.getElementById("passwordInput");
-const lockError = document.getElementById("lockError");
+const lockScreen     = document.getElementById('lockScreen');
+const appShell       = document.getElementById('appShell');
+const unlockForm     = document.getElementById('unlockForm');
+const passwordInput  = document.getElementById('passwordInput');
+const lockError      = document.getElementById('lockError');
+const pdfArea        = document.getElementById('pdfArea');
+const paginationEl   = document.getElementById('pagination');
+const qrTemp         = document.getElementById('qrTemp');
+const exportShell    = document.getElementById('exportShell');
+const globalMaskBtn  = document.getElementById('globalMaskBtn');
+const maskIcon       = document.getElementById('maskIcon');
+const saveImageBtn   = document.getElementById('saveImageBtn');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const themeIcon      = document.getElementById('themeIcon');
+const toastEl        = document.getElementById('toast');
 
-const pdfArea = document.getElementById("pdfArea");
-const paginationEl = document.getElementById("pagination");
-const qrTemp = document.getElementById("qrTemp");
-const globalMaskBtn = document.getElementById("globalMaskBtn");
+const PASSWORD_B64 = 'MzU2NDI1MDIzNjYzMzM4';
 
-const PASSWORD_B64 = "MzU2NDI1MDIzNjYzMzM4";
-
-let allCards = [];
-let renderedCards = [];
-let urduCache = new Map();
+let allCards       = [];
+let renderedCards  = [];
+let urduCache      = new Map();
 let globalIsMasked = false;
-let currentPage = 1;
-const cardsPerPage = 10; // 4 members per page = 8 card faces per page
-let renderToken = 0;
-let appStarted = false;
+let currentPage    = 1;
+const cardsPerPage = 4;
+let renderToken    = 0;
+let appStarted     = false;
+let toastTimer;
+
+(function() {
+  if (localStorage.getItem('kfc-dark') === '1') {
+    document.body.classList.add('dark-mode');
+    themeIcon.className = 'fa-solid fa-sun';
+  }
+})();
+
+themeToggleBtn.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark-mode');
+  themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  localStorage.setItem('kfc-dark', isDark ? '1' : '0');
+});
+
+function showToast(msg, duration = 3000) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), duration);
+}
 
 function encodeCard(raw) {
   return btoa(raw);
 }
 
 function maskName(name) {
-  if (!name) return "";
+  if (!name) return '';
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length <= 1) return "***";
-  if (parts.length === 2) return "*** ***";
-  return ["***", ...parts.slice(1, -1), "***"].join(" ");
+  if (parts.length <= 1) return '***';
+  if (parts.length === 2) return '*** ***';
+  return ['***', ...parts.slice(1, -1), '***'].join(' ');
 }
 
-function maskCardNumber(cardNoValue) {
-  if (!cardNoValue) return "";
-  return cardNoValue.replace(/(\d{3})(?!.*\d)/, "***");
+function maskCardNumber(v) {
+  if (!v) return '';
+  return v.replace(/(\d{3})(?!.*\d)/, '***');
 }
 
-function maskMobile(mobileValue) {
-  if (!mobileValue) return "";
-  return mobileValue.replace(/(\d{4})(?!.*\d)/, "****");
+function maskMobile(v) {
+  if (!v) return '';
+  return v.replace(/(\d{4})(?!.*\d)/, '****');
 }
 
 async function translateToUrdu(text) {
-  if (!text) return "";
+  if (!text) return '';
   if (urduCache.has(text)) return urduCache.get(text);
-
   try {
-    const res = await fetch(
-      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`
-    );
+    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`);
     const data = await res.json();
     const translated = data?.[0]?.[0]?.[0] || text;
     urduCache.set(text, translated);
     return translated;
-  } catch (err) {
+  } catch {
     urduCache.set(text, text);
     return text;
   }
@@ -453,157 +669,265 @@ async function translateToUrdu(text) {
 
 function loadQrIntoImage(url, imgEl) {
   return new Promise((resolve) => {
-    qrTemp.innerHTML = "";
+    qrTemp.innerHTML = '';
     new QRCode(qrTemp, {
       text: url,
       width: 200,
       height: 200,
-      colorDark: "#000000",
-      colorLight: "#0000",
+      colorDark: '#000000',
+      colorLight: '#0000',
       correctLevel: QRCode.CorrectLevel.H
     });
-
     setTimeout(() => {
-      const qrCanvas = qrTemp.querySelector("canvas");
-      if (qrCanvas) {
-        imgEl.src = qrCanvas.toDataURL("image/png");
+      const canvas = qrTemp.querySelector('canvas');
+      if (canvas) {
+        imgEl.src = canvas.toDataURL('image/png');
         resolve();
         return;
       }
-
-      const qrImg = qrTemp.querySelector("img");
-      if (qrImg) {
-        imgEl.src = qrImg.src;
-      }
+      const img = qrTemp.querySelector('img');
+      if (img) imgEl.src = img.src;
       resolve();
     }, 0);
   });
 }
 
+function waitForNextPaint() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+async function waitForImages(root) {
+  const imgs = Array.from(root.querySelectorAll('img'));
+  await Promise.all(imgs.map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise(resolve => {
+      const done = () => {
+        img.removeEventListener('load', done);
+        img.removeEventListener('error', done);
+        resolve();
+      };
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    });
+  }));
+}
+
+async function prepareCapture(root) {
+  await waitForImages(root);
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch {}
+  }
+  await waitForNextPaint();
+}
+
 function getVisiblePages(totalPages, page) {
   const pages = [];
-  const add = (p) => {
-    if (!pages.includes(p) && p >= 1 && p <= totalPages) pages.push(p);
-  };
-
+  const add = (p) => { if (!pages.includes(p) && p >= 1 && p <= totalPages) pages.push(p); };
   add(1);
   for (let p = page - 2; p <= page + 2; p++) add(p);
   add(totalPages);
-
   return pages.sort((a, b) => a - b);
 }
 
+function makePageBtn(label, disabled, onClick) {
+  const btn = document.createElement('button');
+  btn.className = 'page-btn';
+  btn.type = 'button';
+  btn.textContent = label;
+  btn.disabled = disabled;
+  btn.addEventListener('click', onClick);
+  return btn;
+}
+
 function renderPagination(totalPages) {
-  paginationEl.innerHTML = "";
+  paginationEl.innerHTML = '';
+  if (totalPages <= 1) return;
 
-  if (totalPages <= 1) {
-    return;
-  }
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:100%;';
 
-  const wrapper = document.createElement("div");
-  wrapper.style.display = "flex";
-  wrapper.style.flexWrap = "wrap";
-  wrapper.style.justifyContent = "center";
-  wrapper.style.gap = "8px";
-  wrapper.style.width = "100%";
+  const prev = makePageBtn('‹', currentPage === 1, () => setPage(currentPage - 1));
+  wrap.appendChild(prev);
 
-  const prevBtn = document.createElement("button");
-  prevBtn.className = "page-btn";
-  prevBtn.type = "button";
-  prevBtn.textContent = "‹";
-  prevBtn.disabled = currentPage === 1;
-  prevBtn.addEventListener("click", () => setPage(currentPage - 1));
-  wrapper.appendChild(prevBtn);
-
-  const visiblePages = getVisiblePages(totalPages, currentPage);
-  let lastShown = 0;
-
-  for (const p of visiblePages) {
-    if (p - lastShown > 1) {
-      const ell = document.createElement("span");
-      ell.className = "page-ellipsis";
-      ell.textContent = "...";
-      wrapper.appendChild(ell);
+  const visible = getVisiblePages(totalPages, currentPage);
+  let last = 0;
+  for (const p of visible) {
+    if (p - last > 1) {
+      const ell = document.createElement('span');
+      ell.className = 'page-ellipsis';
+      ell.textContent = '…';
+      wrap.appendChild(ell);
     }
-
-    const btn = document.createElement("button");
-    btn.className = "page-btn" + (p === currentPage ? " active" : "");
-    btn.type = "button";
-    btn.textContent = String(p);
-    btn.addEventListener("click", () => setPage(p));
-    wrapper.appendChild(btn);
-
-    lastShown = p;
+    const btn = makePageBtn(String(p), false, () => setPage(p));
+    if (p === currentPage) btn.classList.add('active');
+    wrap.appendChild(btn);
+    last = p;
   }
 
-  const nextBtn = document.createElement("button");
-  nextBtn.className = "page-btn";
-  nextBtn.type = "button";
-  nextBtn.textContent = "›";
-  nextBtn.disabled = currentPage === totalPages;
-  nextBtn.addEventListener("click", () => setPage(currentPage + 1));
-  wrapper.appendChild(nextBtn);
+  const next = makePageBtn('›', currentPage === totalPages, () => setPage(currentPage + 1));
+  wrap.appendChild(next);
 
-  const info = document.createElement("div");
-  info.className = "page-info";
-  info.textContent = `Page ${currentPage} of ${totalPages} — ${allCards.length} members total`;
+  const info = document.createElement('div');
+  info.className = 'page-info';
+  info.textContent = `Page ${currentPage} of ${totalPages} — ${allCards.length} members`;
 
-  paginationEl.appendChild(wrapper);
+  paginationEl.appendChild(wrap);
   paginationEl.appendChild(info);
 }
 
 function setPage(page) {
   const totalPages = Math.max(1, Math.ceil(allCards.length / cardsPerPage));
   currentPage = Math.min(Math.max(page, 1), totalPages);
-  history.replaceState(null, "", `#page=${currentPage}`);
+  history.replaceState(null, '', `#page=${currentPage}`);
   renderPage(currentPage);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function getPageFromHash() {
-  const hash = location.hash || "";
-  const match = hash.match(/page=(\d+)/i);
-  if (match) return Math.max(1, parseInt(match[1], 10) || 1);
-  return 1;
+  const match = (location.hash || '').match(/page=(\d+)/i);
+  return match ? Math.max(1, parseInt(match[1], 10) || 1) : 1;
 }
 
-function updatePrintScale() {
-  const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+function getVisuals(card) {
+  const desg = (card.Desg || '').toLowerCase();
+  let bgSrc = 'static/images/background.png';
+  let labelTxt = 'e-Card';
+  if (desg.includes('acting president')) {
+    bgSrc = 'static/images/background2.png';
+    labelTxt = "Acting President's e-Card";
+  } else if (desg.includes('vice president')) {
+    bgSrc = 'static/images/background2.png';
+    labelTxt = "Vice President's e-Card";
+  } else if (desg.includes('president')) {
+    bgSrc = 'static/images/background2.png';
+    labelTxt = "President's e-Card";
+  }
 
-  // Conservative scales so 4 members (8 card faces) fit without clipping
-  const portraitScale = 0.26;
-  const landscapeScale = 0.32;
+  const defaultStamp = 'static/images/stamp.png';
+  const defaultSign  = 'static/images/signature.png';
+  let stampSrc = defaultStamp;
+  let signSrc = defaultSign;
+  if (card.Authority && card.Authority.trim()) {
+    const f = card.Authority.toLowerCase();
+    stampSrc = `static/images/photos/${f}/stamp.png`;
+    signSrc  = `static/images/photos/${f}/signature.png`;
+  }
 
-  const scale = isPortrait ? portraitScale : landscapeScale;
-  document.documentElement.style.setProperty("--print-card-scale", scale.toFixed(4));
+  const cardPhoto = `static/images/photos/${card.CNo}.png`;
+  const fallbackPhoto = 'static/images/photos/photo.png';
+
+  return { bgSrc, labelTxt, stampSrc, signSrc, cardPhoto, fallbackPhoto, defaultStamp, defaultSign };
 }
 
-function applyMaskStateToRenderedCards() {
+function getDisplayFields(card, urduName, masked) {
+  return {
+    name: masked ? maskName(card.name) : (card.name || ''),
+    urduName: masked ? maskName(urduName || '') : (urduName || ''),
+    cardNo: masked ? maskCardNumber(card.CNo) : (card.CNo || ''),
+    mobile: masked ? maskMobile(card.mobile) : (card.mobile || ''),
+    verifyName: masked ? maskName(card.name) : (card.name || '')
+  };
+}
+
+function buildCardMarkup(card, urduName, masked, exportMode = false) {
+  const visuals = getVisuals(card);
+  const d = getDisplayFields(card, urduName, masked);
+  const isCancelled = (card.Status || '').toLowerCase() === 'cancel';
+  const issueText = card.Issue || '';
+  const validityText = (card.Validity || 'UAE VISA EXPIRY').toUpperCase();
+
+  return `
+    <div class="card-scaler ${exportMode ? 'export-card-scaler' : ''}">
+      <div class="ecard-container ${exportMode ? 'export-ecard-container' : ''}">
+        <img src="${visuals.bgSrc}" class="bg-img">
+        <img src="static/images/watermark.png" class="watermark-img">
+        <div class="strip-hole"></div><div class="strip-hole2"></div>
+        <img src="static/images/logo1.png" class="logo1">
+        <img src="static/images/logo2.png" class="logo2">
+        <img src="static/images/logo.png" class="logo">
+        <img src="static/images/logo.png" class="center-logo">
+        <img src="${visuals.stampSrc}" class="stamp" onerror="this.src='${visuals.defaultStamp}'">
+        <img src="${visuals.cardPhoto}" class="photo" onerror="this.src='${visuals.fallbackPhoto}'">
+        <img src="${visuals.cardPhoto}" class="photo-small" onerror="this.src='${visuals.fallbackPhoto}'">
+        <img src="static/images/sticker.png" class="photosticker">
+        <img src="static/images/logo.png" class="photo-logo">
+        <img src="static/images/sticker.png" class="photo-logo2">
+        <img src="static/images/shadow.png" class="photo-logo3">
+        <div class="ecard-label">${visuals.labelTxt}</div>
+        <img src="static/images/qrcode.png" class="qr-code">
+        <img src="${visuals.signSrc}" class="signature" onerror="this.src='${visuals.defaultSign}'">
+        <div class="text-container">
+          <p class="card-name">Name: ${d.name}</p>
+          <p><span>Urdu Name: </span><span class="card-urdu text-urdu">${d.urduName}</span></p>
+          <p class="designation">Desg: ${card.Desg || ''}</p>
+          <p class="card-no">Card No.: ${d.cardNo}</p>
+          <p>B-Group: ${card.BG || ''}</p>
+          <p class="card-contact">Contact: ${d.mobile}</p>
+          <p class="issuance">Issuance Authority: ___________________</p>
+        </div>
+        <div class="header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
+        <div class="header-text-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
+        <div class="date">ISSUE DATE: ${issueText}</div>
+        <div class="valid-till">VALIDITY: ${validityText}</div>
+        ${isCancelled ? '<div class="cancel-banner">e-Card CANCELLED</div>' : ''}
+      </div>
+    </div>
+
+    <div class="card-scaler ${exportMode ? 'export-card-scaler' : ''}">
+      <div class="ecard-container ${exportMode ? 'export-ecard-container' : ''}">
+        <img src="${visuals.bgSrc}" class="bg-img">
+        <img src="static/images/watermark.png" class="watermark-img">
+        <img src="static/images/logo.png" class="back-overlay-logo">
+        <div class="verify-box">
+          <div>Verification QR</div>
+          <div class="verify-qr-wrap">
+            <img class="verify-qr-img">
+            <div class="qr-mask-emoji">✘</div>
+          </div>
+          <div class="verify-name">${d.verifyName}</div>
+          <img src="${visuals.cardPhoto}" class="verify-photo" onerror="this.src='${visuals.fallbackPhoto}'">
+        </div>
+        <div class="center-text">
+          <p>The Khawrai Falahi Committee UAE was established in December 2016. The purpose of the committee is to address the issues faced by residents of Khawrai in the United Arab Emirates and its surroundings, and to resolve them in a timely and professional manner. The leadership of the committee is committed to serving the residents of Khawrai in the United Arab Emirates and is determined to address and resolve their various issues promptly.</p>
+          <p class="urdu-text">متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے پُرعزم ہے۔</p>
+        </div>
+        <div class="contacts">
+          Arbab Rizwan (President): +971 55 735 3212<br>
+          Salar Khan (Vice President): +971 58 884 0090<br>
+          Ahmad Aman (Acting President): +971 56 803 9690
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function applyMaskState() {
   renderedCards.forEach(item => {
-    if (globalIsMasked) {
-      item.nameEl.textContent = "Name: " + maskName(item.data.name);
-      item.urduEl.textContent = maskName(item.urduName);
-      item.noEl.textContent = "Card No.: " + maskCardNumber(item.data.CNo);
-      item.contactEl.textContent = "Contact: " + maskMobile(item.data.mobile);
-      item.verifyNameEl.textContent = maskName(item.data.name);
-      item.qrMaskEl.style.display = "flex";
-    } else {
-      item.nameEl.textContent = "Name: " + item.data.name;
-      item.urduEl.textContent = item.urduName;
-      item.noEl.textContent = "Card No.: " + item.data.CNo;
-      item.contactEl.textContent = "Contact: " + item.data.mobile;
-      item.verifyNameEl.textContent = item.data.name;
-      item.qrMaskEl.style.display = "none";
-    }
+    const fields = getDisplayFields(item.data, item.urduName, globalIsMasked);
+    item.nameEl.textContent = 'Name: ' + fields.name;
+    item.urduEl.textContent = fields.urduName;
+    item.noEl.textContent = 'Card No.: ' + fields.cardNo;
+    item.contactEl.textContent = 'Contact: ' + fields.mobile;
+    item.verifyNameEl.textContent = fields.verifyName;
+    item.qrMaskEl.style.display = globalIsMasked ? 'flex' : 'none';
   });
 }
 
+globalMaskBtn.addEventListener('click', function() {
+  globalIsMasked = !globalIsMasked;
+  maskIcon.className = globalIsMasked ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+  this.title = globalIsMasked ? 'Unmask cards' : 'Mask sensitive info';
+  applyMaskState();
+  showToast(globalIsMasked ? '🔒 Cards masked' : '👁 Cards unmasked');
+});
+
 async function renderPage(pageNumber) {
   const token = ++renderToken;
-  pdfArea.innerHTML = "";
+  pdfArea.innerHTML = '';
   renderedCards = [];
 
-  const startIndex = (pageNumber - 1) * cardsPerPage;
-  const pageCards = allCards.slice(startIndex, startIndex + cardsPerPage);
+  const start = (pageNumber - 1) * cardsPerPage;
+  const pageCards = allCards.slice(start, start + cardsPerPage);
   const totalPages = Math.max(1, Math.ceil(allCards.length / cardsPerPage));
 
   renderPagination(totalPages);
@@ -611,192 +935,255 @@ async function renderPage(pageNumber) {
   for (const card of pageCards) {
     if (token !== renderToken) return;
 
-    const personDiv = document.createElement("div");
-    personDiv.className = "person-wrapper";
-
-    const desg = (card.Desg || "").toLowerCase();
-    let bgSrc = "static/images/background.png";
-    let labelTxt = "e-Card";
-
-    if (desg.includes("acting president")) {
-      bgSrc = "static/images/background2.png";
-      labelTxt = "Acting President's e-Card";
-    } else if (desg.includes("vice president")) {
-      bgSrc = "static/images/background2.png";
-      labelTxt = "Vice President's e-Card";
-    } else if (desg.includes("president")) {
-      bgSrc = "static/images/background2.png";
-      labelTxt = "President's e-Card";
-    }
+    const personDiv = document.createElement('div');
+    personDiv.className = 'person-wrapper';
 
     let urduName = card.urduName;
-    if (!urduName || urduName.trim() === "") {
-      urduName = await translateToUrdu(card.name);
-    }
+    if (!urduName || !urduName.trim()) urduName = await translateToUrdu(card.name);
 
-    const defaultStamp = "static/images/stamp.png";
-    const defaultSign = "static/images/signature.png";
-    let stampSrc = defaultStamp;
-    let signSrc = defaultSign;
-
-    if (card.Authority && card.Authority.trim() !== "") {
-      const authFolder = card.Authority.toLowerCase();
-      stampSrc = `static/images/photos/${authFolder}/stamp.png`;
-      signSrc = `static/images/photos/${authFolder}/signature.png`;
-    }
-
-    const cardPhoto = `static/images/photos/${card.CNo}.png`;
-    const fallbackPhoto = "static/images/photos/photo.png";
-
-    personDiv.innerHTML = `
-      <div class="card-scaler">
-        <div class="ecard-container">
-          <img src="${bgSrc}" class="bg-img">
-          <img src="static/images/watermark.png" class="watermark-img">
-          <div class="strip-hole"></div><div class="strip-hole2"></div>
-          <img src="static/images/logo1.png" class="logo1">
-          <img src="static/images/logo2.png" class="logo2">
-          <img src="static/images/logo.png" class="logo">
-          <img src="static/images/logo.png" class="center-logo">
-          <img src="${stampSrc}" class="stamp" onerror="this.src='${defaultStamp}'">
-          <img src="${cardPhoto}" class="photo" onerror="this.src='${fallbackPhoto}'">
-          <img src="${cardPhoto}" class="photo-small" onerror="this.src='${fallbackPhoto}'">
-          <img src="static/images/sticker.png" class="photosticker">
-          <img src="static/images/logo.png" class="photo-logo">
-          <img src="static/images/sticker.png" class="photo-logo2">
-          <img src="static/images/shadow.png" class="photo-logo3">
-          <div class="ecard-label">${labelTxt}</div>
-          <img src="static/images/qrcode.png" class="qr-code">
-          <img src="${signSrc}" class="signature" onerror="this.src='${defaultSign}'">
-          <div class="text-container">
-            <p class="card-name">Name: ${card.name}</p>
-            <p><span>Urdu Name: </span><span class="card-urdu text-urdu">${urduName}</span></p>
-            <p class="designation">Desg: ${card.Desg}</p>
-            <p class="card-no">Card No.: ${card.CNo}</p>
-            <p>B-Group: ${card.BG}</p>
-            <p class="card-contact">Contact: ${card.mobile}</p>
-            <p class="issuance">Issuance Authority: ___________________</p>
-          </div>
-          <div class="header-text">KHAWRAI FALAHI COMMITTEE UAE</div>
-          <div class="header-text-urdu">خاورئی فلاحی کمیٹی متحدہ عرب امارات</div>
-          <div class="date">ISSUE DATE: ${card.Issue}</div>
-          <div class="valid-till">VALIDITY: ${(card.Validity || "UAE VISA EXPIRY").toUpperCase()}</div>
-          ${card.Status && card.Status.toLowerCase() === "cancel" ? '<div class="cancel-banner">e-Card CANCELLED</div>' : ''}
-        </div>
-      </div>
-
-      <div class="card-scaler">
-        <div class="ecard-container">
-          <img src="${bgSrc}" class="bg-img">
-          <img src="static/images/watermark.png" class="watermark-img">
-          <img src="static/images/logo.png" class="back-overlay-logo">
-          <div class="verify-box">
-            <div>Verification QR</div>
-            <div class="verify-qr-wrap">
-              <img class="verify-qr-img">
-              <div class="qr-mask-emoji">✘</div>
-            </div>
-            <div class="verify-name">${card.name}</div>
-            <img src="${cardPhoto}" class="verify-photo" onerror="this.src='${fallbackPhoto}'">
-          </div>
-          <div class="center-text">
-            <p>The Khawrai Falahi Committee UAE was established in December 2016. The purpose of the committee is to address the issues faced by residents of Khawrai in the United Arab Emirates and its surroundings, and to resolve them in a timely and professional manner. The leadership of the committee is committed to serving the residents of Khawrai in the United Arab Emirates and is determined to address and resolve their various issues promptly.</p>
-            <p class="urdu-text">متحدہ عرب امارات میں خاورئی فلاحی کمیٹی دسمبر 2016 میں قائم کی گئی تھی۔ کمیٹی کا مقصد متحدہ عرب امارات میں خاورئی اور اس کے گردونواح کے رہائشیوں کو درپیش مسائل کو حل کرنا اور انہیں بروقت اور پیشہ ورانہ انداز میں حل کرنا ہے۔ کمیٹی کی قیادت متحدہ عرب امارات میں خاورئی کے رہائشیوں کی خدمت کے لیے پرعزم ہے اور ان کے مختلف مسائل کو فوری طور پر حل کرنے کے لیے پُرعزم ہے۔</p>
-          </div>
-          <div class="contacts">
-            Arbab Rizwan (President): +971 55 735 3212<br>
-            Salar Khan (Vice President): +971 58 884 0090<br>
-            Ahmad Aman (Acting President): +971 56 803 9690
-          </div>
-        </div>
-      </div>
-    `;
-
+    personDiv.innerHTML = buildCardMarkup(card, urduName, globalIsMasked, false);
     pdfArea.appendChild(personDiv);
 
     renderedCards.push({
       data: card,
-      urduName: urduName,
-      nameEl: personDiv.querySelector(".card-name"),
-      urduEl: personDiv.querySelector(".card-urdu"),
-      noEl: personDiv.querySelector(".card-no"),
-      contactEl: personDiv.querySelector(".card-contact"),
-      verifyNameEl: personDiv.querySelector(".verify-name"),
-      qrMaskEl: personDiv.querySelector(".qr-mask-emoji")
+      urduName,
+      nameEl: personDiv.querySelector('.card-name'),
+      urduEl: personDiv.querySelector('.card-urdu'),
+      noEl: personDiv.querySelector('.card-no'),
+      contactEl: personDiv.querySelector('.card-contact'),
+      verifyNameEl: personDiv.querySelector('.verify-name'),
+      qrMaskEl: personDiv.querySelector('.qr-mask-emoji')
     });
 
-    const encoded = encodeCard(card.CNo);
-    const url = "https://livenews.live/KFC/verify.html?card=" + encoded;
-    const qrImgEl = personDiv.querySelector(".verify-qr-img");
+    const url = 'https://livenews.live/KFC/viewcard.html?card=' + encodeCard(card.CNo);
+    const qrImgEl = personDiv.querySelector('.verify-qr-img');
     await loadQrIntoImage(url, qrImgEl);
   }
 
-  applyMaskStateToRenderedCards();
+  applyMaskState();
 }
 
-globalMaskBtn.addEventListener("click", function() {
-  globalIsMasked = !globalIsMasked;
-  this.textContent = "👁";
-  this.title = globalIsMasked ? "Unmask all cards" : "Mask all cards";
-  this.setAttribute("aria-label", this.title);
-  applyMaskStateToRenderedCards();
+async function renderAllCardsIntoExportShell() {
+  exportShell.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'card-grid';
+  grid.style.maxWidth = 'none';
+  grid.style.width = 'max-content';
+  grid.style.padding = '40px';
+  grid.style.margin = '0';
+  grid.style.gridTemplateColumns = 'repeat(2, 610px)';
+  grid.style.gap = '28px';
+  exportShell.appendChild(grid);
+
+  for (const card of allCards) {
+    const personDiv = document.createElement('div');
+    personDiv.className = 'person-wrapper';
+
+    let urduName = card.urduName;
+    if (!urduName || !urduName.trim()) urduName = await translateToUrdu(card.name);
+
+    personDiv.innerHTML = buildCardMarkup(card, urduName, globalIsMasked, true);
+    grid.appendChild(personDiv);
+
+    const url = 'https://livenews.live/KFC/viewcard.html?card=' + encodeCard(card.CNo);
+    const qrImgEl = personDiv.querySelector('.verify-qr-img');
+    await loadQrIntoImage(url, qrImgEl);
+  }
+
+  await prepareCapture(exportShell);
+}
+
+function triggerDownloadHref(href, filename) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = filename;
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function captureElementToCanvas(el, scale = 2) {
+  const canvas = await html2canvas(el, {
+    scale,
+    useCORS: true,
+    allowTaint: false,
+    backgroundColor: '#ffffff',
+    logging: false,
+    scrollX: 0,
+    scrollY: 0,
+    width: el.scrollWidth,
+    height: el.scrollHeight,
+    windowWidth: el.scrollWidth,
+    windowHeight: el.scrollHeight,
+    imageTimeout: 15000,
+    onclone: (clonedDoc) => {
+      const shell = clonedDoc.getElementById('exportShell');
+      if (shell) {
+        shell.style.left = '0';
+        shell.style.top = '0';
+        shell.style.opacity = '0.01';
+        shell.style.visibility = 'visible';
+        shell.style.position = 'fixed';
+        shell.style.background = '#ffffff';
+        shell.style.pointerEvents = 'none';
+        shell.style.zIndex = '1';
+      }
+    }
+  });
+  if (!canvas || !canvas.width || !canvas.height) {
+    throw new Error('Capture canvas is empty.');
+  }
+  return canvas;
+}
+
+async function buildFinalJpgFromPieces() {
+  await renderAllCardsIntoExportShell();
+  const items = Array.from(exportShell.querySelectorAll('.person-wrapper'));
+  if (!items.length) {
+    throw new Error('No cards available for export.');
+  }
+
+  const captureScale = Math.min(2, window.devicePixelRatio || 1.5);
+  const itemCanvases = [];
+  for (const item of items) {
+    const c = await captureElementToCanvas(item, captureScale);
+    itemCanvases.push(c);
+  }
+
+  const columns = 2;
+  const padding = 40 * captureScale;
+  const gapX = 28 * captureScale;
+  const gapY = 28 * captureScale;
+
+  const colWidths = new Array(columns).fill(0);
+  const rowHeights = [];
+
+  for (let i = 0; i < itemCanvases.length; i++) {
+    const col = i % columns;
+    const row = Math.floor(i / columns);
+    const c = itemCanvases[i];
+    colWidths[col] = Math.max(colWidths[col], c.width);
+    rowHeights[row] = Math.max(rowHeights[row] || 0, c.height);
+  }
+
+  const finalWidth = padding * 2 + colWidths.reduce((a, b) => a + b, 0) + gapX * (columns - 1);
+  const finalHeight = padding * 2 + rowHeights.reduce((a, b) => a + b, 0) + gapY * Math.max(0, rowHeights.length - 1);
+
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = Math.max(1, Math.ceil(finalWidth));
+  finalCanvas.height = Math.max(1, Math.ceil(finalHeight));
+  const ctx = finalCanvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+  let rowY = padding;
+  const rowCount = Math.ceil(itemCanvases.length / columns);
+  for (let row = 0; row < rowCount; row++) {
+    let colX = padding;
+    for (let col = 0; col < columns; col++) {
+      const index = row * columns + col;
+      const c = itemCanvases[index];
+      if (!c) continue;
+      ctx.drawImage(c, colX, rowY);
+      colX += colWidths[col] + gapX;
+    }
+    rowY += rowHeights[row] + gapY;
+  }
+
+  return finalCanvas;
+}
+
+async function downloadCanvasAsJpg(canvas, filename) {
+  if (!canvas || !canvas.width || !canvas.height) {
+    throw new Error('Canvas is empty.');
+  }
+
+  let blob = null;
+  try {
+    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.98));
+  } catch {
+    blob = null;
+  }
+
+  if (blob && blob.size > 1024) {
+    const url = URL.createObjectURL(blob);
+    triggerDownloadHref(url, filename);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    return;
+  }
+
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.98);
+  if (!dataUrl || !dataUrl.startsWith('data:image/jpeg')) {
+    throw new Error('Failed to create JPG data URL.');
+  }
+  triggerDownloadHref(dataUrl, filename);
+}
+
+saveImageBtn.addEventListener('click', async function() {
+  if (this.classList.contains('loading')) return;
+  this.classList.add('loading');
+  showToast('⏳ Generating JPG, please wait…', 8000);
+
+  try {
+    await new Promise(r => setTimeout(r, 120));
+    const canvas = await buildFinalJpgFromPieces();
+    const filename = `KFC_All_Cards_Page.jpg`;
+    await downloadCanvasAsJpg(canvas, filename);
+    showToast(`✅ Saved: ${filename}`);
+  } catch (err) {
+    console.error('JPG save error:', err);
+    showToast('❌ Failed to generate JPG. Try again.');
+  } finally {
+    this.classList.remove('loading');
+    exportShell.innerHTML = '';
+  }
 });
 
-window.addEventListener("hashchange", () => {
+window.addEventListener('hashchange', () => {
   if (!appStarted) return;
-  const page = getPageFromHash();
-  setPage(page);
-});
-
-window.addEventListener("beforeprint", () => {
-  updatePrintScale();
-});
-
-window.addEventListener("orientationchange", () => {
-  updatePrintScale();
+  setPage(getPageFromHash());
 });
 
 function startApp() {
   if (appStarted) return;
   appStarted = true;
+  appShell.style.display = 'block';
 
-  appShell.style.display = "block";
-  updatePrintScale();
-
-  fetch("https://livenews.live/KFC/cards.json")
-    .then(res => res.json())
+  fetch('https://livenews.live/KFC/cards.json')
+    .then(r => r.json())
     .then(async data => {
-      allCards = (Array.isArray(data) ? data : []).filter(card => card && card.CNo);
+      allCards = (Array.isArray(data) ? data : []).filter(c => c && c.CNo);
       const totalPages = Math.max(1, Math.ceil(allCards.length / cardsPerPage));
       const initialPage = Math.min(getPageFromHash(), totalPages);
       currentPage = initialPage;
       await renderPage(currentPage);
-      history.replaceState(null, "", `#page=${currentPage}`);
+      history.replaceState(null, '', `#page=${currentPage}`);
+      requestAnimationFrame(() => document.body.classList.add('loaded'));
     })
     .catch(err => {
       console.error(err);
-      pdfArea.innerHTML = `<div style="padding:20px;color:#b00020;font-weight:bold;">Failed to load card data.</div>`;
+      pdfArea.innerHTML = `<div style="padding:30px;color:#b00020;font-weight:bold;font-size:16px;">⚠️ Failed to load card data. Please check your connection and try again.</div>`;
+      document.body.classList.add('loaded');
     });
 }
 
-unlockForm.addEventListener("submit", function(e) {
+unlockForm.addEventListener('submit', function(e) {
   e.preventDefault();
-  const value = passwordInput.value.trim();
-  const enteredB64 = btoa(value);
-
-  if (enteredB64 === PASSWORD_B64) {
-    lockError.textContent = "";
-    lockScreen.style.display = "none";
+  const val = passwordInput.value.trim();
+  if (btoa(val) === PASSWORD_B64) {
+    lockError.textContent = '';
+    lockScreen.style.display = 'none';
     startApp();
   } else {
-    lockError.textContent = "Incorrect password.";
-    passwordInput.value = "";
+    lockError.textContent = '❌ Incorrect password. Please try again.';
+    passwordInput.value = '';
     passwordInput.focus();
   }
 });
 
 passwordInput.focus();
 </script>
-
 </body>
 </html>
