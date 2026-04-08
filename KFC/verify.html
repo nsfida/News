@@ -1267,7 +1267,8 @@
 
           <div class="verify-header">
             <img src="logo.png" alt="KFC Logo" class="logo-img">
-            <h2>Khawrai Falahi Committee UAE</h2>
+            <h2>KHAWRAI FALAHI COMMITTEE</h2>
+            <p class="verify-subtitle">United Arab Emirates</p>
             <p class="verify-subtitle">Official Membership Verification Portal</p>
           </div>
 
@@ -1796,7 +1797,7 @@
       const encoded = params.get("card");
 
       if (!encoded){
-        renderError("No Verification Code", "Please open this page using a valid member QR code.");
+        renderError("No Verification QR-Code was scanned", "Please open this page using a valid member QR code.");
         return;
       }
 
