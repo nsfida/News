@@ -848,7 +848,7 @@ const labelText = isActingPresident
     if (mobileEl) mobileEl.textContent = "Contact: " + (m ? maskPhone(norm(card.mobile || "")) : norm(card.mobile || ""));
     if (urduEl) urduEl.textContent = m ? maskName(urduName || norm(card.name)) : (urduName || norm(card.name));
     if (vnameEl) vnameEl.textContent = m ? maskName(norm(card.name)) : norm(card.name);
-    if (qrMask) qrMask.style.display = m ? "flex" : "none";
+    if (qrMask) qrMask.style.display = "none";
     if (maskBtn) maskBtn.textContent = m ? "🙈" : "👁";
   };
 
