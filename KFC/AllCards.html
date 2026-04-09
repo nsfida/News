@@ -931,7 +931,7 @@ function applyMaskState() {
     if (item.noEl) item.noEl.textContent = 'Card No.: ' + fields.cardNo;
     if (item.contactEl) item.contactEl.textContent = 'Contact: ' + fields.mobile;
     if (item.verifyNameEl) item.verifyNameEl.textContent = fields.verifyName;
-    if (item.qrMaskEl) item.qrMaskEl.style.display = globalIsMasked ? 'flex' : 'none';
+    if (item.qrMaskEl) item.qrMaskEl.style.display = 'none';
   });
 }
 
