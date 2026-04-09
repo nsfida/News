@@ -728,7 +728,6 @@ const labelText = isActingPresident
         <div>Verification QR</div>
         <div class="card-verify-qr-wrap">
           <img id="${uid}_qr">
-          <div id="${uid}_qrmask" class="card-qr-mask-emoji">✘</div>
         </div>
         <div id="${uid}_vname" class="card-verify-name"></div>
         <img id="${uid}_vphoto" class="card-verify-photo">
@@ -838,7 +837,6 @@ const labelText = isActingPresident
   const nameEl = document.getElementById(`${uid}_name`);
   const cnoEl = document.getElementById(`${uid}_cno`);
   const mobileEl = document.getElementById(`${uid}_mobile`);
-  const qrMask = document.getElementById(`${uid}_qrmask`);
   const maskBtn = document.getElementById(`${uid}_maskBtn`);
 
   const renderMask = () => {
