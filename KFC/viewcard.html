@@ -367,7 +367,7 @@ function renderMaskedState(){
     cardNumberText.textContent = "Card No.: " + maskCardNumber(currentCardData.CNo);
     contactText.textContent = "Contact: " + maskMobile(currentCardData.mobile);
     verifyName.textContent = maskName(currentCardData.name);
-    qrMaskEmoji.style.display = "flex";
+    qrMaskEmoji.style.display = "none";
     toggleMaskBtn.textContent = "🙈";
   } else {
     nameText.textContent = "Name: " + currentCardData.name;
