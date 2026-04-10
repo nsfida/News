@@ -1,7 +1,8 @@
 /* ════════════════════════════════════════════════════════════
    LIVENEWS — script.js
    Powered by Nadeem Shahzad Fida
-   FIXED: Manual Load More button pattern
+   Added: Google Translate Urdu toggle + shareable Urdu URL
+   Uses manual Load More button pattern
    ════════════════════════════════════════════════════════════ */
 
 'use strict';
@@ -14,6 +15,11 @@ let currentCategory = 'all';
 let isLoading = false;
 let isDark = false;
 
+let currentLang = 'en';          // en | ur
+let googleTranslateReady = false;
+let translateComboWatcher = null;
+let languageBtn = null;
+
 let articleImages = [];
 let articleImgIdx = 0;
 let imgSliderTimer = null;
@@ -22,7 +28,7 @@ let heroSliderTimer = null;
 let feedStartIndex = 0;
 let loadMoreBtn = null;
 
-const LOAD_STEP = 3; // loads 2 to 3 items per click, using 3 for a cleaner feed pattern
+const LOAD_STEP = 3; // loads 2-3 items per click
 
 /* ─── JSON SOURCES ────────────────────────────────────────── */
 const DATA_FILES = [
@@ -112,7 +118,6 @@ function parseDate(dateStr) {
 
   const raw = String(dateStr).trim();
 
-  // DD-MM-YYYY or D-M-YYYY
   const dashParts = raw.split('-');
   if (dashParts.length === 3 && dashParts[0].length <= 2 && dashParts[2].length === 4) {
     const dd = dashParts[0].padStart(2, '0');
@@ -203,49 +208,219 @@ function getBookmarks() {
   }
 }
 
-function ensureLoadMoreButton() {
-  if (loadMoreBtn) return loadMoreBtn;
+function getQueryLang() {
+  const params = new URLSearchParams(window.location.search);
+  const lang = params.get('lang');
+  return lang === 'ur' ? 'ur' : 'en';
+}
 
-  loadMoreBtn = $('loadMoreBtn');
-  if (loadMoreBtn) return loadMoreBtn;
+function getCurrentUrlWithLang(lang) {
+  const url = new URL(window.location.href);
+  if (lang === 'ur') {
+    url.searchParams.set('lang', 'ur');
+  } else {
+    url.searchParams.delete('lang');
+  }
+  return url.toString();
+}
 
-  loadMoreBtn = document.createElement('button');
-  loadMoreBtn.id = 'loadMoreBtn';
-  loadMoreBtn.type = 'button';
-  loadMoreBtn.textContent = 'Load More';
-
-  loadMoreBtn.style.display = 'none';
-  loadMoreBtn.style.margin = '18px auto 6px';
-  loadMoreBtn.style.padding = '12px 22px';
-  loadMoreBtn.style.border = 'none';
-  loadMoreBtn.style.borderRadius = '999px';
-  loadMoreBtn.style.fontWeight = '700';
-  loadMoreBtn.style.cursor = 'pointer';
-  loadMoreBtn.style.background = 'var(--accent, #1877f2)';
-  loadMoreBtn.style.color = '#fff';
-  loadMoreBtn.style.boxShadow = '0 10px 24px rgba(24,119,242,.22)';
-  loadMoreBtn.style.display = 'block';
-
-  const wrap = document.createElement('div');
-  wrap.id = 'loadMoreWrap';
-  wrap.style.display = 'flex';
-  wrap.style.justifyContent = 'center';
-  wrap.style.alignItems = 'center';
-  wrap.style.width = '100%';
-  wrap.style.marginTop = '8px';
-  wrap.appendChild(loadMoreBtn);
-
-  if (loader && loader.parentNode) {
-    if (feedEnd && feedEnd.parentNode === loader.parentNode) {
-      loader.parentNode.insertBefore(wrap, feedEnd);
-    } else {
-      loader.parentNode.insertBefore(wrap, loader.nextSibling);
-    }
-  } else if (newsGrid && newsGrid.parentNode) {
-    newsGrid.parentNode.insertBefore(wrap, newsGrid.nextSibling);
+function updateLangUrl(lang, replace = true) {
+  const url = new URL(window.location.href);
+  if (lang === 'ur') {
+    url.searchParams.set('lang', 'ur');
+  } else {
+    url.searchParams.delete('lang');
   }
 
-  return loadMoreBtn;
+  if (replace) {
+    window.history.replaceState({}, '', url.toString());
+  } else {
+    window.location.href = url.toString();
+  }
+}
+
+function setPageDirection(lang) {
+  document.documentElement.lang = lang === 'ur' ? 'ur' : 'en';
+  document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
+
+  if (document.body) {
+    document.body.dir = lang === 'ur' ? 'rtl' : 'ltr';
+    document.body.classList.toggle('rtl-mode', lang === 'ur');
+  }
+
+  if (languageBtn) {
+    languageBtn.textContent = lang === 'ur' ? 'English' : 'اردو';
+    languageBtn.setAttribute('aria-label', lang === 'ur' ? 'Switch to English' : 'Switch to Urdu');
+    languageBtn.title = lang === 'ur' ? 'Switch to English' : 'Translate to Urdu';
+  }
+}
+
+function ensureLanguageButton() {
+  if (languageBtn) return languageBtn;
+
+  const headerActions = document.querySelector('.header-actions, .top-actions, .actions, .right-actions, #headerActions');
+  const target = headerActions || document.querySelector('header') || document.body;
+
+  languageBtn = document.createElement('button');
+  languageBtn.type = 'button';
+  languageBtn.id = 'languageToggle';
+  languageBtn.className = 'lang-btn';
+  languageBtn.textContent = 'اردو';
+  languageBtn.setAttribute('aria-label', 'Switch to Urdu');
+  languageBtn.title = 'Translate to Urdu';
+
+  languageBtn.style.marginLeft = '10px';
+  languageBtn.style.padding = '10px 14px';
+  languageBtn.style.border = 'none';
+  languageBtn.style.borderRadius = '999px';
+  languageBtn.style.cursor = 'pointer';
+  languageBtn.style.fontWeight = '700';
+  languageBtn.style.fontSize = '13px';
+  languageBtn.style.background = 'var(--accent, #1877f2)';
+  languageBtn.style.color = '#fff';
+  languageBtn.style.boxShadow = '0 10px 24px rgba(24,119,242,.22)';
+
+  languageBtn.addEventListener('click', toggleLanguage);
+
+  if (target && target.appendChild) {
+    target.appendChild(languageBtn);
+  }
+
+  return languageBtn;
+}
+
+function ensureTranslateContainer() {
+  let container = $('google_translate_element');
+  if (container) return container;
+
+  container = document.createElement('div');
+  container.id = 'google_translate_element';
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.top = '-9999px';
+  container.style.width = '1px';
+  container.style.height = '1px';
+  container.style.overflow = 'hidden';
+  document.body.appendChild(container);
+  return container;
+}
+
+function syncGoogleTranslateToUrdu() {
+  if (!googleTranslateReady) return;
+
+  const trySelect = () => {
+    const select = document.querySelector('select.goog-te-combo');
+    if (!select) return false;
+
+    const desired = 'ur';
+    if (select.value !== desired) {
+      select.value = desired;
+      select.dispatchEvent(new Event('change'));
+    }
+    return true;
+  };
+
+  if (trySelect()) return;
+
+  let attempts = 0;
+  if (translateComboWatcher) clearInterval(translateComboWatcher);
+
+  translateComboWatcher = setInterval(() => {
+    attempts += 1;
+    if (trySelect() || attempts > 40) {
+      clearInterval(translateComboWatcher);
+      translateComboWatcher = null;
+    }
+  }, 250);
+}
+
+function googleTranslateElementInit() {
+  if (!window.google || !window.google.translate || !window.google.translate.TranslateElement) return;
+
+  ensureTranslateContainer();
+
+  new window.google.translate.TranslateElement(
+    {
+      pageLanguage: 'en',
+      includedLanguages: 'en,ur',
+      autoDisplay: false
+    },
+    'google_translate_element'
+  );
+
+  googleTranslateReady = true;
+  if (currentLang === 'ur') {
+    syncGoogleTranslateToUrdu();
+  }
+}
+
+function loadGoogleTranslateScript() {
+  if (document.getElementById('googleTranslateScript')) return;
+
+  window.googleTranslateElementInit = googleTranslateElementInit;
+
+  const script = document.createElement('script');
+  script.id = 'googleTranslateScript';
+  script.type = 'text/javascript';
+  script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+  script.async = true;
+  document.head.appendChild(script);
+}
+
+function enableUrdu() {
+  currentLang = 'ur';
+  localStorage.setItem('ln-lang', 'ur');
+  setPageDirection('ur');
+  updateLangUrl('ur', true);
+  syncGoogleTranslateToUrdu();
+  showToast('اردو فعال ہوگئی');
+}
+
+function enableEnglish() {
+  currentLang = 'en';
+  localStorage.setItem('ln-lang', 'en');
+  setPageDirection('en');
+  updateLangUrl('en', true);
+
+  if (googleTranslateReady) {
+    const select = document.querySelector('select.goog-te-combo');
+    if (select) {
+      select.value = 'en';
+      select.dispatchEvent(new Event('change'));
+    }
+  }
+
+  showToast('English enabled');
+}
+
+function toggleLanguage() {
+  if (currentLang === 'ur') {
+    enableEnglish();
+  } else {
+    enableUrdu();
+  }
+}
+
+function initLanguage() {
+  const saved = localStorage.getItem('ln-lang');
+  const urlLang = getQueryLang();
+  currentLang = urlLang === 'ur' ? 'ur' : (saved === 'ur' ? 'ur' : 'en');
+
+  ensureLanguageButton();
+  setPageDirection(currentLang);
+  loadGoogleTranslateScript();
+
+  if (currentLang === 'ur') {
+    // Give the widget time to load, then switch the page to Urdu
+    const waitForGoogle = setInterval(() => {
+      if (googleTranslateReady) {
+        clearInterval(waitForGoogle);
+        syncGoogleTranslateToUrdu();
+      }
+    }, 200);
+
+    setTimeout(() => clearInterval(waitForGoogle), 10000);
+  }
 }
 
 /* ─── THEME ───────────────────────────────────────────────── */
@@ -449,8 +624,9 @@ function applyFilters() {
 
   filteredNews = result;
 
-  // Always keep the first item as the hero and load cards after it
-  feedStartIndex = filteredNews.length > 0 ? 1 : 0;
+  const noTextFilter = !q && !(datePicker && datePicker.value);
+  feedStartIndex = (currentCategory === 'all' && noTextFilter && filteredNews.length > 1) ? 1 : 0;
+
   renderedCount = feedStartIndex;
   isLoading = false;
 
@@ -468,15 +644,9 @@ function applyFilters() {
 
   if (filteredNews.length > 0) {
     renderHero(filteredNews[0]);
-  } else {
-    if (feedHero) {
-      feedHero.classList.remove('visible');
-      feedHero.innerHTML = '';
-    }
-  }
-
-  if (filteredNews.length > renderedCount) {
-    btn.style.display = 'block';
+  } else if (feedHero) {
+    feedHero.classList.remove('visible');
+    feedHero.innerHTML = '';
   }
 
   loadMore();
@@ -520,6 +690,50 @@ function renderHero(item) {
 }
 
 /* ─── LOAD MORE BUTTON PATTERN ────────────────────────────── */
+function ensureLoadMoreButton() {
+  if (loadMoreBtn) return loadMoreBtn;
+
+  loadMoreBtn = $('loadMoreBtn');
+  if (loadMoreBtn) return loadMoreBtn;
+
+  loadMoreBtn = document.createElement('button');
+  loadMoreBtn.id = 'loadMoreBtn';
+  loadMoreBtn.type = 'button';
+  loadMoreBtn.textContent = 'Load More';
+
+  loadMoreBtn.style.display = 'none';
+  loadMoreBtn.style.margin = '18px auto 6px';
+  loadMoreBtn.style.padding = '12px 22px';
+  loadMoreBtn.style.border = 'none';
+  loadMoreBtn.style.borderRadius = '999px';
+  loadMoreBtn.style.fontWeight = '700';
+  loadMoreBtn.style.cursor = 'pointer';
+  loadMoreBtn.style.background = 'var(--accent, #1877f2)';
+  loadMoreBtn.style.color = '#fff';
+  loadMoreBtn.style.boxShadow = '0 10px 24px rgba(24,119,242,.22)';
+
+  const wrap = document.createElement('div');
+  wrap.id = 'loadMoreWrap';
+  wrap.style.display = 'flex';
+  wrap.style.justifyContent = 'center';
+  wrap.style.alignItems = 'center';
+  wrap.style.width = '100%';
+  wrap.style.marginTop = '8px';
+  wrap.appendChild(loadMoreBtn);
+
+  if (loader && loader.parentNode) {
+    if (feedEnd && feedEnd.parentNode === loader.parentNode) {
+      loader.parentNode.insertBefore(wrap, feedEnd);
+    } else {
+      loader.parentNode.insertBefore(wrap, loader.nextSibling);
+    }
+  } else if (newsGrid && newsGrid.parentNode) {
+    newsGrid.parentNode.insertBefore(wrap, newsGrid.nextSibling);
+  }
+
+  return loadMoreBtn;
+}
+
 function updateLoadMoreState() {
   const btn = ensureLoadMoreButton();
   if (!btn) return;
@@ -596,8 +810,6 @@ function attachLoadMoreButton() {
 /* ─── CREATE CARD ─────────────────────────────────────────── */
 function createCard(item, idx) {
   const imgs = getImages(item);
-  const catKey = (item.category || '').toLowerCase();
-  const cat = CAT_CONFIG[catKey] || CAT_CONFIG.all;
 
   const card = document.createElement('div');
   card.className = 'news-card fade-in';
@@ -693,7 +905,8 @@ function openArticle(item) {
     ).join('');
   }
 
-  window.history.replaceState({}, '', `?news=${encodeURIComponent(item.urlId)}`);
+  const idLang = currentLang === 'ur' ? '&lang=ur' : '';
+  window.history.replaceState({}, '', `?news=${encodeURIComponent(item.urlId)}${idLang}`);
 
   if (articleOverlay) {
     articleOverlay.classList.add('open');
@@ -732,7 +945,9 @@ function closeArticleView() {
   document.body.style.overflow = '';
   clearInterval(imgSliderTimer);
   imgSliderTimer = null;
-  window.history.replaceState({}, '', window.location.pathname);
+
+  const keepLang = currentLang === 'ur' ? '&lang=ur' : '';
+  window.history.replaceState({}, '', window.location.pathname + (keepLang ? `?lang=ur` : ''));
 }
 
 function changeArticleImg(dir) {
@@ -920,7 +1135,6 @@ if (projectsToggle) {
   });
 }
 
-/* Close dropdowns on outside click */
 document.addEventListener('click', e => {
   if (!e.target.closest('#projectsCtrl') && projectsDropdown) projectsDropdown.classList.remove('open');
   if (!e.target.closest('#dateCtrl') && datePopup) datePopup.classList.remove('open');
@@ -942,83 +1156,6 @@ if (viewList) {
     if (viewGrid) viewGrid.classList.remove('active');
   });
 }
-
-/* ─── LOAD MORE BUTTON CONTROL ────────────────────────────── */
-function updateLoadMoreState() {
-  const btn = ensureLoadMoreButton();
-  if (!btn) return;
-
-  const hasMore = renderedCount < filteredNews.length;
-
-  if (!filteredNews.length) {
-    btn.style.display = 'none';
-    if (feedEnd) feedEnd.style.display = 'none';
-    return;
-  }
-
-  if (hasMore) {
-    btn.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Load More';
-  } else {
-    btn.style.display = 'none';
-    if (feedEnd) feedEnd.style.display = '';
-  }
-}
-
-function loadMore() {
-  if (isLoading) return;
-  if (!filteredNews.length) {
-    updateLoadMoreState();
-    return;
-  }
-
-  if (renderedCount >= filteredNews.length) {
-    updateLoadMoreState();
-    return;
-  }
-
-  isLoading = true;
-
-  const btn = ensureLoadMoreButton();
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Loading...';
-    btn.style.display = 'block';
-  }
-
-  if (loader) loader.classList.add('active');
-
-  setTimeout(() => {
-    const start = renderedCount;
-    const end = Math.min(renderedCount + LOAD_STEP, filteredNews.length);
-    const items = filteredNews.slice(start, end);
-
-    items.forEach((item, idx) => {
-      const card = createCard(item, idx);
-      if (newsGrid) newsGrid.appendChild(card);
-    });
-
-    renderedCount = end;
-    isLoading = false;
-
-    if (loader) loader.classList.remove('active');
-    updateLoadMoreState();
-  }, 180);
-}
-
-function attachLoadMoreButton() {
-  const btn = ensureLoadMoreButton();
-  if (!btn) return;
-
-  btn.addEventListener('click', () => {
-    if (isLoading) return;
-    loadMore();
-  });
-}
-
-/* ─── INFINITE SCROLL REMOVED ─────────────────────────────── */
-/* Manual Load More button is used instead of auto scroll loading */
 
 /* ─── HEADER SCROLL EFFECT ────────────────────────────────── */
 const mainHeader = $('mainHeader');
@@ -1043,5 +1180,6 @@ setInterval(fetchNews, 2 * 60 * 1000);
 
 /* ─── INIT ────────────────────────────────────────────────── */
 initTheme();
+initLanguage();
 attachLoadMoreButton();
 fetchNews();
