@@ -1,8 +1,12 @@
 /* ════════════════════════════════════════════════════════════
    LIVENEWS — script.js
    Powered by Nadeem Shahzad Fida
-   Added: Google Translate Urdu toggle + shareable Urdu URL
-   Uses manual Load More button pattern
+   Features:
+   - Manual Load More button
+   - Hidden Google Translate widget
+   - Urdu URL support (?lang=ur)
+   - Urdu-only font using urdu.ttf
+   - English page remains unchanged
    ════════════════════════════════════════════════════════════ */
 
 'use strict';
@@ -118,6 +122,7 @@ function parseDate(dateStr) {
 
   const raw = String(dateStr).trim();
 
+  // DD-MM-YYYY or D-M-YYYY
   const dashParts = raw.split('-');
   if (dashParts.length === 3 && dashParts[0].length <= 2 && dashParts[2].length === 4) {
     const dd = dashParts[0].padStart(2, '0');
@@ -214,29 +219,23 @@ function getQueryLang() {
   return lang === 'ur' ? 'ur' : 'en';
 }
 
-function getCurrentUrlWithLang(lang) {
+function isUrduPage() {
+  return currentLang === 'ur';
+}
+
+function buildUrl({ newsId = null, lang = currentLang } = {}) {
   const url = new URL(window.location.href);
-  if (lang === 'ur') {
-    url.searchParams.set('lang', 'ur');
-  } else {
-    url.searchParams.delete('lang');
-  }
+  if (newsId) url.searchParams.set('news', newsId);
+  else url.searchParams.delete('news');
+
+  if (lang === 'ur') url.searchParams.set('lang', 'ur');
+  else url.searchParams.delete('lang');
+
   return url.toString();
 }
 
-function updateLangUrl(lang, replace = true) {
-  const url = new URL(window.location.href);
-  if (lang === 'ur') {
-    url.searchParams.set('lang', 'ur');
-  } else {
-    url.searchParams.delete('lang');
-  }
-
-  if (replace) {
-    window.history.replaceState({}, '', url.toString());
-  } else {
-    window.location.href = url.toString();
-  }
+function updateUrl({ newsId = null, lang = currentLang } = {}) {
+  window.history.replaceState({}, '', buildUrl({ newsId, lang }));
 }
 
 function setPageDirection(lang) {
@@ -253,6 +252,9 @@ function setPageDirection(lang) {
     languageBtn.setAttribute('aria-label', lang === 'ur' ? 'Switch to English' : 'Switch to Urdu');
     languageBtn.title = lang === 'ur' ? 'Switch to English' : 'Translate to Urdu';
   }
+
+  applyUrduFontStyle();
+  injectTranslateHidingStyles();
 }
 
 function ensureLanguageButton() {
@@ -301,8 +303,135 @@ function ensureTranslateContainer() {
   container.style.width = '1px';
   container.style.height = '1px';
   container.style.overflow = 'hidden';
+  container.style.pointerEvents = 'none';
   document.body.appendChild(container);
   return container;
+}
+
+function injectTranslateHidingStyles() {
+  let style = $('translateHidingStyles');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'translateHidingStyles';
+    document.head.appendChild(style);
+  }
+
+  style.textContent = `
+    .goog-te-banner-frame.skiptranslate,
+    iframe.goog-te-banner-frame,
+    .goog-te-balloon-frame,
+    .goog-tooltip,
+    .goog-tooltip:hover,
+    .goog-te-gadget,
+    .goog-te-gadget-simple,
+    .goog-te-gadget-icon,
+    .goog-te-combo,
+    .goog-te-banner,
+    .skiptranslate {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0 !important;
+      width: 0 !important;
+      overflow: hidden !important;
+    }
+    body {
+      top: 0 !important;
+    }
+    html.translated-ltr body,
+    html.translated-rtl body {
+      top: 0 !important;
+    }
+    #google_translate_element {
+      position: absolute !important;
+      left: -9999px !important;
+      top: -9999px !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+  `;
+}
+
+function applyUrduFontStyle() {
+  let style = $('urduFontStyle');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'urduFontStyle';
+    document.head.appendChild(style);
+  }
+
+  if (currentLang !== 'ur') {
+    style.textContent = '';
+    return;
+  }
+
+  // Keep Font Awesome intact while forcing all visible text to use urdu.ttf
+  style.textContent = `
+    @font-face {
+      font-family: 'LiveNewsUrdu';
+      src: url('urdu.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body.rtl-mode,
+    body.rtl-mode * {
+      font-family: 'LiveNewsUrdu' !important;
+      font-feature-settings: "kern" 1;
+      text-rendering: optimizeLegibility;
+    }
+
+    body.rtl-mode i.fa,
+    body.rtl-mode i.fas,
+    body.rtl-mode i.far,
+    body.rtl-mode i.fab,
+    body.rtl-mode i.fa-solid,
+    body.rtl-mode i.fa-regular,
+    body.rtl-mode i.fa-brands {
+      font-family: 'Font Awesome 6 Free' !important;
+    }
+
+    body.rtl-mode .fa-brands {
+      font-family: 'Font Awesome 6 Brands' !important;
+    }
+  `;
+}
+
+function googleTranslateElementInit() {
+  if (!window.google || !window.google.translate || !window.google.translate.TranslateElement) return;
+
+  ensureTranslateContainer();
+
+  new window.google.translate.TranslateElement(
+    {
+      pageLanguage: 'en',
+      includedLanguages: 'en,ur',
+      autoDisplay: false
+    },
+    'google_translate_element'
+  );
+
+  googleTranslateReady = true;
+
+  if (currentLang === 'ur') {
+    syncGoogleTranslateToUrdu();
+  }
+}
+
+function loadGoogleTranslateScript() {
+  if (document.getElementById('googleTranslateScript')) return;
+
+  window.googleTranslateElementInit = googleTranslateElementInit;
+
+  const script = document.createElement('script');
+  script.id = 'googleTranslateScript';
+  script.type = 'text/javascript';
+  script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+  script.async = true;
+  document.head.appendChild(script);
 }
 
 function syncGoogleTranslateToUrdu() {
@@ -312,9 +441,8 @@ function syncGoogleTranslateToUrdu() {
     const select = document.querySelector('select.goog-te-combo');
     if (!select) return false;
 
-    const desired = 'ur';
-    if (select.value !== desired) {
-      select.value = desired;
+    if (select.value !== 'ur') {
+      select.value = 'ur';
       select.dispatchEvent(new Event('change'));
     }
     return true;
@@ -334,53 +462,18 @@ function syncGoogleTranslateToUrdu() {
   }, 250);
 }
 
-function googleTranslateElementInit() {
-  if (!window.google || !window.google.translate || !window.google.translate.TranslateElement) return;
-
-  ensureTranslateContainer();
-
-  new window.google.translate.TranslateElement(
-    {
-      pageLanguage: 'en',
-      includedLanguages: 'en,ur',
-      autoDisplay: false
-    },
-    'google_translate_element'
-  );
-
-  googleTranslateReady = true;
-  if (currentLang === 'ur') {
-    syncGoogleTranslateToUrdu();
-  }
-}
-
-function loadGoogleTranslateScript() {
-  if (document.getElementById('googleTranslateScript')) return;
-
-  window.googleTranslateElementInit = googleTranslateElementInit;
-
-  const script = document.createElement('script');
-  script.id = 'googleTranslateScript';
-  script.type = 'text/javascript';
-  script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-  script.async = true;
-  document.head.appendChild(script);
-}
-
 function enableUrdu() {
   currentLang = 'ur';
-  localStorage.setItem('ln-lang', 'ur');
   setPageDirection('ur');
-  updateLangUrl('ur', true);
+  updateUrl({ newsId: new URLSearchParams(window.location.search).get('news'), lang: 'ur' });
   syncGoogleTranslateToUrdu();
   showToast('اردو فعال ہوگئی');
 }
 
 function enableEnglish() {
   currentLang = 'en';
-  localStorage.setItem('ln-lang', 'en');
   setPageDirection('en');
-  updateLangUrl('en', true);
+  updateUrl({ newsId: new URLSearchParams(window.location.search).get('news'), lang: 'en' });
 
   if (googleTranslateReady) {
     const select = document.querySelector('select.goog-te-combo');
@@ -394,24 +487,19 @@ function enableEnglish() {
 }
 
 function toggleLanguage() {
-  if (currentLang === 'ur') {
-    enableEnglish();
-  } else {
-    enableUrdu();
-  }
+  if (currentLang === 'ur') enableEnglish();
+  else enableUrdu();
 }
 
 function initLanguage() {
-  const saved = localStorage.getItem('ln-lang');
-  const urlLang = getQueryLang();
-  currentLang = urlLang === 'ur' ? 'ur' : (saved === 'ur' ? 'ur' : 'en');
+  currentLang = getQueryLang();
 
   ensureLanguageButton();
   setPageDirection(currentLang);
+  injectTranslateHidingStyles();
   loadGoogleTranslateScript();
 
   if (currentLang === 'ur') {
-    // Give the widget time to load, then switch the page to Urdu
     const waitForGoogle = setInterval(() => {
       if (googleTranslateReady) {
         clearInterval(waitForGoogle);
@@ -503,6 +591,10 @@ async function fetchNews() {
     renderBreaking(allNews);
     applyFilters();
     openNewsFromURL();
+
+    if (currentLang === 'ur') {
+      setTimeout(syncGoogleTranslateToUrdu, 350);
+    }
   } catch (err) {
     console.error('LiveNews fetch error:', err);
     if (newsGrid) {
@@ -651,6 +743,10 @@ function applyFilters() {
 
   loadMore();
   updateLoadMoreState();
+
+  if (currentLang === 'ur') {
+    setTimeout(syncGoogleTranslateToUrdu, 250);
+  }
 }
 
 /* ─── HERO ────────────────────────────────────────────────── */
@@ -794,6 +890,10 @@ function loadMore() {
 
     if (loader) loader.classList.remove('active');
     updateLoadMoreState();
+
+    if (currentLang === 'ur') {
+      setTimeout(syncGoogleTranslateToUrdu, 200);
+    }
   }, 180);
 }
 
@@ -905,8 +1005,7 @@ function openArticle(item) {
     ).join('');
   }
 
-  const idLang = currentLang === 'ur' ? '&lang=ur' : '';
-  window.history.replaceState({}, '', `?news=${encodeURIComponent(item.urlId)}${idLang}`);
+  updateUrl({ newsId: item.urlId, lang: currentLang });
 
   if (articleOverlay) {
     articleOverlay.classList.add('open');
@@ -922,7 +1021,7 @@ function openArticle(item) {
 
   if (shareBtn) {
     shareBtn.onclick = () => {
-      const url = window.location.href;
+      const url = buildUrl({ newsId: item.urlId, lang: currentLang });
       if (navigator.share) {
         navigator.share({ title: item.title, url }).catch(() => {});
       } else if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -938,6 +1037,10 @@ function openArticle(item) {
   if (hasMultiple) {
     imgSliderTimer = setInterval(() => changeArticleImg(1), 3000);
   }
+
+  if (currentLang === 'ur') {
+    setTimeout(syncGoogleTranslateToUrdu, 200);
+  }
 }
 
 function closeArticleView() {
@@ -945,9 +1048,11 @@ function closeArticleView() {
   document.body.style.overflow = '';
   clearInterval(imgSliderTimer);
   imgSliderTimer = null;
+  updateUrl({ newsId: null, lang: currentLang });
 
-  const keepLang = currentLang === 'ur' ? '&lang=ur' : '';
-  window.history.replaceState({}, '', window.location.pathname + (keepLang ? `?lang=ur` : ''));
+  if (currentLang === 'ur') {
+    setTimeout(syncGoogleTranslateToUrdu, 200);
+  }
 }
 
 function changeArticleImg(dir) {
@@ -1175,11 +1280,18 @@ function openNewsFromURL() {
   if (item) openArticle(item);
 }
 
+/* ─── LOAD MORE BUTTON INITIALIZATION ─────────────────────── */
+function initializeLoadMoreControls() {
+  ensureLoadMoreButton();
+  attachLoadMoreButton();
+  updateLoadMoreState();
+}
+
 /* ─── AUTO REFRESH ────────────────────────────────────────── */
 setInterval(fetchNews, 2 * 60 * 1000);
 
 /* ─── INIT ────────────────────────────────────────────────── */
 initTheme();
 initLanguage();
-attachLoadMoreButton();
+initializeLoadMoreControls();
 fetchNews();
