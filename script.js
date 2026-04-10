@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════════════
    LIVENEWS — script.js
    Powered by Nadeem Shahzad Fida
-   FIXED: Infinite scrolling / page scrolling reliability
+   FIXED: Manual Load More button pattern
    ════════════════════════════════════════════════════════════ */
 
 'use strict';
@@ -19,10 +19,10 @@ let articleImgIdx = 0;
 let imgSliderTimer = null;
 let heroSliderTimer = null;
 
-let feedStartIndex = 0;      // 0 = show from first card, 1 = skip hero story in feed
-let scrollRafPending = false;
+let feedStartIndex = 0;
+let loadMoreBtn = null;
 
-const LOAD_STEP = 8;
+const LOAD_STEP = 3; // loads 2 to 3 items per click, using 3 for a cleaner feed pattern
 
 /* ─── JSON SOURCES ────────────────────────────────────────── */
 const DATA_FILES = [
@@ -82,7 +82,6 @@ const shareBtn = $('shareBtn');
 const bookmarkBtn = $('bookmarkBtn');
 const projectsToggle = $('projectsToggle');
 const projectsDropdown = $('projectsDropdown');
-const dateCtrl = $('dateCtrl');
 const trendingList = $('trendingList');
 const latestList = $('latestList');
 const sidebarCategories = $('sidebarCategories');
@@ -97,11 +96,12 @@ const msoClose = $('msoClose');
 const navScrollRight = $('navScrollRight');
 const categoryList = $('categoryList');
 
-/* ─── UTILS ───────────────────────────────────────────────── */
+/* ─── UTILITIES ───────────────────────────────────────────── */
 function generateHash(str) {
   let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
+  const s = String(str || '');
+  for (let i = 0; i < s.length; i++) {
+    h = (h << 5) - h + s.charCodeAt(i);
     h |= 0;
   }
   return Math.abs(h).toString(36).substring(0, 6);
@@ -122,7 +122,6 @@ function parseDate(dateStr) {
     if (!isNaN(d)) return d;
   }
 
-  // Fallback
   const d = new Date(raw);
   if (!isNaN(d)) return d;
 
@@ -204,6 +203,51 @@ function getBookmarks() {
   }
 }
 
+function ensureLoadMoreButton() {
+  if (loadMoreBtn) return loadMoreBtn;
+
+  loadMoreBtn = $('loadMoreBtn');
+  if (loadMoreBtn) return loadMoreBtn;
+
+  loadMoreBtn = document.createElement('button');
+  loadMoreBtn.id = 'loadMoreBtn';
+  loadMoreBtn.type = 'button';
+  loadMoreBtn.textContent = 'Load More';
+
+  loadMoreBtn.style.display = 'none';
+  loadMoreBtn.style.margin = '18px auto 6px';
+  loadMoreBtn.style.padding = '12px 22px';
+  loadMoreBtn.style.border = 'none';
+  loadMoreBtn.style.borderRadius = '999px';
+  loadMoreBtn.style.fontWeight = '700';
+  loadMoreBtn.style.cursor = 'pointer';
+  loadMoreBtn.style.background = 'var(--accent, #1877f2)';
+  loadMoreBtn.style.color = '#fff';
+  loadMoreBtn.style.boxShadow = '0 10px 24px rgba(24,119,242,.22)';
+  loadMoreBtn.style.display = 'block';
+
+  const wrap = document.createElement('div');
+  wrap.id = 'loadMoreWrap';
+  wrap.style.display = 'flex';
+  wrap.style.justifyContent = 'center';
+  wrap.style.alignItems = 'center';
+  wrap.style.width = '100%';
+  wrap.style.marginTop = '8px';
+  wrap.appendChild(loadMoreBtn);
+
+  if (loader && loader.parentNode) {
+    if (feedEnd && feedEnd.parentNode === loader.parentNode) {
+      loader.parentNode.insertBefore(wrap, feedEnd);
+    } else {
+      loader.parentNode.insertBefore(wrap, loader.nextSibling);
+    }
+  } else if (newsGrid && newsGrid.parentNode) {
+    newsGrid.parentNode.insertBefore(wrap, newsGrid.nextSibling);
+  }
+
+  return loadMoreBtn;
+}
+
 /* ─── THEME ───────────────────────────────────────────────── */
 function initTheme() {
   const saved = localStorage.getItem('ln-theme');
@@ -235,8 +279,6 @@ function renderBreaking(data) {
   breakingTicker.innerHTML = '';
   const items = data.slice(0, 12);
   const sourceItems = items.length ? items : [{ title: 'No breaking news available right now.' }];
-
-  // Duplicate items inside the same track for a smooth marquee loop
   const allItems = [...sourceItems, ...sourceItems];
 
   allItems.forEach(n => {
@@ -244,10 +286,8 @@ function renderBreaking(data) {
     span.className = 'tick-item';
     span.textContent = n.title || 'Untitled';
     span.addEventListener('click', () => {
-      if (n.hash || n.urlId || n.title) {
-        const item = allNews.find(x => x.hash === n.hash || x.urlId === n.urlId || x.title === n.title);
-        if (item) openArticle(item);
-      }
+      const item = allNews.find(x => x.title === n.title);
+      if (item) openArticle(item);
     });
     breakingTicker.appendChild(span);
   });
@@ -316,6 +356,8 @@ function showSkeletons() {
       <div class="skeleton skeleton-text shorter" style="margin-bottom:14px;"></div>
     </div>
   `).join('');
+
+  if (loadMoreBtn) loadMoreBtn.style.display = 'none';
 }
 
 /* ─── SIDEBAR WIDGETS ─────────────────────────────────────── */
@@ -361,7 +403,7 @@ function renderSidebars() {
                onerror="this.src='https://via.placeholder.com/60x50/1a1d23/444'">
           <div class="latest-info">
             <div class="latest-title">${escHtml(item.title)}</div>
-            <div class="latest-date">${escHtml(timeAgo(item.date))}</div>
+            <div class="latest-date">${timeAgo(item.date)}</div>
           </div>
         </div>
       `;
@@ -394,7 +436,7 @@ function applyFilters() {
   }
 
   if (datePicker && datePicker.value) {
-    const picked = datePicker.value; // YYYY-MM-DD
+    const picked = datePicker.value;
     result = result.filter(n => {
       const d = n._date;
       if (!d || isNaN(d)) return false;
@@ -407,15 +449,18 @@ function applyFilters() {
 
   filteredNews = result;
 
-  // Show hero story only when there is no search/date filter and category is all
-  const noTextFilter = !q && !(datePicker && datePicker.value);
-  feedStartIndex = (currentCategory === 'all' && noTextFilter && filteredNews.length > 1) ? 1 : 0;
-
+  // Always keep the first item as the hero and load cards after it
+  feedStartIndex = filteredNews.length > 0 ? 1 : 0;
   renderedCount = feedStartIndex;
   isLoading = false;
 
   if (newsGrid) newsGrid.innerHTML = '';
   if (feedEnd) feedEnd.style.display = 'none';
+
+  const btn = ensureLoadMoreButton();
+  btn.style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = 'Load More';
 
   if (feedCount) {
     feedCount.innerHTML = `Showing <strong>${filteredNews.length}</strong> stories`;
@@ -430,7 +475,12 @@ function applyFilters() {
     }
   }
 
+  if (filteredNews.length > renderedCount) {
+    btn.style.display = 'block';
+  }
+
   loadMore();
+  updateLoadMoreState();
 }
 
 /* ─── HERO ────────────────────────────────────────────────── */
@@ -453,7 +503,6 @@ function renderHero(item) {
   feedHero.classList.add('visible');
   feedHero.onclick = () => openArticle(item);
 
-  // keep hero image cycling if multiple images
   if (heroSliderTimer) clearInterval(heroSliderTimer);
   if (imgs.length > 1) {
     let idx = 0;
@@ -470,49 +519,78 @@ function renderHero(item) {
   }
 }
 
-/* ─── LOAD MORE ───────────────────────────────────────────── */
-function loadMore() {
-  if (isLoading) return;
+/* ─── LOAD MORE BUTTON PATTERN ────────────────────────────── */
+function updateLoadMoreState() {
+  const btn = ensureLoadMoreButton();
+  if (!btn) return;
+
+  const hasMore = renderedCount < filteredNews.length;
+
   if (!filteredNews.length) {
-    if (loader) loader.classList.remove('active');
+    btn.style.display = 'none';
     if (feedEnd) feedEnd.style.display = 'none';
     return;
   }
 
-  if (renderedCount >= filteredNews.length) {
-    if (loader) loader.classList.remove('active');
+  if (hasMore) {
+    btn.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Load More';
+  } else {
+    btn.style.display = 'none';
     if (feedEnd) feedEnd.style.display = '';
+  }
+}
+
+function loadMore() {
+  if (isLoading) return;
+  if (!filteredNews.length) {
+    updateLoadMoreState();
+    return;
+  }
+
+  if (renderedCount >= filteredNews.length) {
+    updateLoadMoreState();
     return;
   }
 
   isLoading = true;
+
+  const btn = ensureLoadMoreButton();
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+    btn.style.display = 'block';
+  }
+
   if (loader) loader.classList.add('active');
 
-  // Small delay for smoother UI
   setTimeout(() => {
     const start = renderedCount;
     const end = Math.min(renderedCount + LOAD_STEP, filteredNews.length);
     const items = filteredNews.slice(start, end);
 
     items.forEach((item, idx) => {
-      const card = createCard(item, idx, false);
+      const card = createCard(item, idx);
       if (newsGrid) newsGrid.appendChild(card);
     });
 
     renderedCount = end;
-
-    if (loader) loader.classList.remove('active');
     isLoading = false;
 
-    if (renderedCount >= filteredNews.length && feedEnd) {
-      feedEnd.style.display = '';
-    }
+    if (loader) loader.classList.remove('active');
+    updateLoadMoreState();
   }, 180);
 }
 
-function showFeedEndIfNeeded() {
-  if (!feedEnd) return;
-  feedEnd.style.display = (renderedCount >= filteredNews.length && filteredNews.length > 0) ? '' : 'none';
+function attachLoadMoreButton() {
+  const btn = ensureLoadMoreButton();
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    if (isLoading) return;
+    loadMore();
+  });
 }
 
 /* ─── CREATE CARD ─────────────────────────────────────────── */
@@ -522,7 +600,7 @@ function createCard(item, idx) {
   const cat = CAT_CONFIG[catKey] || CAT_CONFIG.all;
 
   const card = document.createElement('div');
-  card.className = `news-card fade-in`;
+  card.className = 'news-card fade-in';
   card.style.animationDelay = `${Math.min(idx * 0.04, 0.3)}s`;
 
   const dotsHtml = imgs.length > 1
@@ -559,7 +637,6 @@ function createCard(item, idx) {
     });
   }
 
-  // Multi-image slider
   if (imgs.length > 1 && imgEl) {
     const dots = card.querySelectorAll('.img-dot');
     let sliderIdx = 0;
@@ -572,7 +649,7 @@ function createCard(item, idx) {
         dots.forEach((d, i) => d.classList.toggle('active', i === sliderIdx));
       }, 250);
     }, 2200);
-    // keep timer reference so it can be cleaned if needed later
+
     card._timer = timer;
   }
 
@@ -866,37 +943,82 @@ if (viewList) {
   });
 }
 
-/* ─── INFINITE SCROLL FIX ─────────────────────────────────── */
-/*
-  The old observer approach could fail when the loader was hidden.
-  This version checks the viewport position on scroll and resize,
-  which is much more reliable.
-*/
-function checkInfiniteScroll() {
-  if (isLoading) return;
-  if (!filteredNews.length) return;
+/* ─── LOAD MORE BUTTON CONTROL ────────────────────────────── */
+function updateLoadMoreState() {
+  const btn = ensureLoadMoreButton();
+  if (!btn) return;
 
-  const threshold = 260;
-  const scrollBottom = window.innerHeight + window.scrollY;
-  const pageBottom = document.documentElement.scrollHeight;
+  const hasMore = renderedCount < filteredNews.length;
 
-  if (scrollBottom >= pageBottom - threshold) {
-    loadMore();
+  if (!filteredNews.length) {
+    btn.style.display = 'none';
+    if (feedEnd) feedEnd.style.display = 'none';
+    return;
+  }
+
+  if (hasMore) {
+    btn.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Load More';
+  } else {
+    btn.style.display = 'none';
+    if (feedEnd) feedEnd.style.display = '';
   }
 }
 
-function onScrollHandler() {
-  if (scrollRafPending) return;
+function loadMore() {
+  if (isLoading) return;
+  if (!filteredNews.length) {
+    updateLoadMoreState();
+    return;
+  }
 
-  scrollRafPending = true;
-  requestAnimationFrame(() => {
-    checkInfiniteScroll();
-    scrollRafPending = false;
+  if (renderedCount >= filteredNews.length) {
+    updateLoadMoreState();
+    return;
+  }
+
+  isLoading = true;
+
+  const btn = ensureLoadMoreButton();
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+    btn.style.display = 'block';
+  }
+
+  if (loader) loader.classList.add('active');
+
+  setTimeout(() => {
+    const start = renderedCount;
+    const end = Math.min(renderedCount + LOAD_STEP, filteredNews.length);
+    const items = filteredNews.slice(start, end);
+
+    items.forEach((item, idx) => {
+      const card = createCard(item, idx);
+      if (newsGrid) newsGrid.appendChild(card);
+    });
+
+    renderedCount = end;
+    isLoading = false;
+
+    if (loader) loader.classList.remove('active');
+    updateLoadMoreState();
+  }, 180);
+}
+
+function attachLoadMoreButton() {
+  const btn = ensureLoadMoreButton();
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    if (isLoading) return;
+    loadMore();
   });
 }
 
-window.addEventListener('scroll', onScrollHandler, { passive: true });
-window.addEventListener('resize', onScrollHandler);
+/* ─── INFINITE SCROLL REMOVED ─────────────────────────────── */
+/* Manual Load More button is used instead of auto scroll loading */
 
 /* ─── HEADER SCROLL EFFECT ────────────────────────────────── */
 const mainHeader = $('mainHeader');
@@ -921,4 +1043,5 @@ setInterval(fetchNews, 2 * 60 * 1000);
 
 /* ─── INIT ────────────────────────────────────────────────── */
 initTheme();
+attachLoadMoreButton();
 fetchNews();
