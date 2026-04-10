@@ -37,7 +37,8 @@ let userArea, usernameSpan, userDropdown,
   searchField, searchInput, searchButton, printButton,
   generateButton, englishConstitution, urduConstitution,
   resultContainer,
-  ecardOverlay, ecardOverlayBox, ecardCloseBtn, ecardSpinner, ecardInner;
+  ecardOverlay, ecardOverlayBox, ecardCloseBtn, ecardSpinner, ecardInner,
+  searchAllRadio, searchActiveRadio;
 
 function cacheDOM() {
   userArea = document.getElementById("userArea");
@@ -83,6 +84,9 @@ function cacheDOM() {
   ecardCloseBtn = document.getElementById("ecardCloseBtn");
   ecardSpinner = document.getElementById("ecardSpinner");
   ecardInner = document.getElementById("ecardInner");
+
+  searchAllRadio = document.getElementById("searchModeAll");
+  searchActiveRadio = document.getElementById("searchModeActive");
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -142,6 +146,90 @@ function isCancelled(status) {
 
 function isFullAccess(cardNo) {
   return ALLOWED_FULL_ACCESS.includes(norm(cardNo));
+}
+
+function isActiveStatus(item) {
+  return norm(item?.Status).toLowerCase() === "active";
+}
+
+function getSearchMode() {
+  if (searchActiveRadio?.checked) return "active";
+  if (searchAllRadio?.checked) return "all";
+
+  const checkedByName =
+    document.querySelector('input[type="radio"][name="memberFilter"]:checked') ||
+    document.querySelector('input[type="radio"][name="searchMode"]:checked');
+
+  if (checkedByName) {
+    return norm(checkedByName.value).toLowerCase() === "active" ? "active" : "all";
+  }
+
+  return "all";
+}
+
+function syncDefaultSearchMode() {
+  const groupChecked =
+    document.querySelector('input[type="radio"][name="memberFilter"]:checked') ||
+    document.querySelector('input[type="radio"][name="searchMode"]:checked');
+
+  if (!groupChecked) {
+    if (searchAllRadio) {
+      searchAllRadio.checked = true;
+      return;
+    }
+
+    const anyAll =
+      document.querySelector('input[type="radio"][name="memberFilter"][value="all"]') ||
+      document.querySelector('input[type="radio"][name="searchMode"][value="all"]') ||
+      document.querySelector('input[type="radio"][value="all"]');
+
+    if (anyAll) anyAll.checked = true;
+  }
+}
+
+function ensureSearchModeUI() {
+  if (searchAllRadio || searchActiveRadio) return;
+
+  const anchor =
+    searchInput?.closest(".db-field-wrap") ||
+    searchField?.closest(".db-field-wrap") ||
+    searchInput?.parentElement ||
+    searchField?.parentElement ||
+    document.querySelector(".db-search-controls") ||
+    document.querySelector(".db-search-panel");
+
+  if (!anchor) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "db-search-row";
+  wrapper.id = "searchModeRow";
+  wrapper.innerHTML = `
+    <div class="db-field-wrap" style="grid-column:1 / -1;">
+      <label>Search Members</label>
+      <div id="searchModeGroup" style="display:flex; gap:18px; align-items:center; flex-wrap:wrap; padding:6px 2px;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px;">
+          <input type="radio" name="memberFilter" id="searchModeAll" value="all" checked>
+          <span>All</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px;">
+          <input type="radio" name="memberFilter" id="searchModeActive" value="active">
+          <span>Active</span>
+        </label>
+      </div>
+    </div>
+  `;
+
+  const insertBeforeNode = searchField?.closest(".db-search-row") || searchInput?.closest(".db-search-row");
+  if (insertBeforeNode?.parentElement) {
+    insertBeforeNode.parentElement.insertBefore(wrapper, insertBeforeNode);
+  } else if (anchor.parentElement) {
+    anchor.parentElement.insertBefore(wrapper, anchor);
+  } else {
+    anchor.appendChild(wrapper);
+  }
+
+  searchAllRadio = document.getElementById("searchModeAll");
+  searchActiveRadio = document.getElementById("searchModeActive");
 }
 
 /* Profile image with fallback */
@@ -264,12 +352,12 @@ function updateButtonAccess() {
     generateButton.title = fullAcc ? "" : "Full Access members only";
     generateButton.style.cursor = fullAcc ? "pointer" : "not-allowed";
   }
-const allCards = document.getElementById("allCards");
-if (allCards) {
-  allCards.disabled = !fullAcc;
-  allCards.title = fullAcc ? "" : "Full Access members only";
-  allCards.style.cursor = fullAcc ? "pointer" : "not-allowed";
-}
+  const allCards = document.getElementById("allCards");
+  if (allCards) {
+    allCards.disabled = !fullAcc;
+    allCards.title = fullAcc ? "" : "Full Access members only";
+    allCards.style.cursor = fullAcc ? "pointer" : "not-allowed";
+  }
 }
 
 /* ─── welcome popup ─────────────────────────────────────────────── */
@@ -364,6 +452,7 @@ function renderTable() {
 
   const term = norm(searchInput?.value).toLowerCase();
   const field = searchField?.value || "name";
+  const mode = getSearchMode();
 
   if (!allData.length || term === "") {
     resultContainer.innerHTML = "";
@@ -372,7 +461,9 @@ function renderTable() {
   }
 
   let results = allData.filter(item =>
-    item[field] && item[field].toString().toLowerCase().includes(term)
+    item[field] &&
+    item[field].toString().toLowerCase().includes(term) &&
+    (mode !== "active" || isActiveStatus(item))
   );
 
   if (!results.length) {
@@ -654,23 +745,23 @@ window.openCardOverlay = async function (encodedCard) {
   const BASE = API_BASE + "/static/images/";
 
   /* determine background based on designation */
-const desg = norm(card.Desg).toLowerCase();
+  const desg = norm(card.Desg).toLowerCase();
 
-const isActingPresident = desg.includes("acting president");
-const isVicePresident = desg.includes("vice president");
-const isPresident = desg.includes("president") && !isVicePresident && !isActingPresident;
+  const isActingPresident = desg.includes("acting president");
+  const isVicePresident = desg.includes("vice president");
+  const isPresident = desg.includes("president") && !isVicePresident && !isActingPresident;
 
-const bgSrc = (isPresident || isActingPresident || isVicePresident)
-  ? `${BASE}background2.png`
-  : `${BASE}background.png`;
+  const bgSrc = (isPresident || isActingPresident || isVicePresident)
+    ? `${BASE}background2.png`
+    : `${BASE}background.png`;
 
-const labelText = isActingPresident
-  ? "Acting President's e-Card"
-  : isPresident
-  ? "President's e-Card"
-  : isVicePresident
-  ? "Vice President's e-Card"
-  : "e-Card";
+  const labelText = isActingPresident
+    ? "Acting President's e-Card"
+    : isPresident
+    ? "President's e-Card"
+    : isVicePresident
+    ? "Vice President's e-Card"
+    : "e-Card";
 
   /* Photo */
   const photoCNo = encodeURIComponent(norm(card.CNo));
@@ -1020,6 +1111,20 @@ function bindEvents() {
   if (searchField) searchField.addEventListener("change", handleSearch);
   if (searchButton) searchButton.addEventListener("click", handleSearch);
 
+  const radioTargets = [
+    searchAllRadio,
+    searchActiveRadio,
+    ...document.querySelectorAll('input[type="radio"][name="memberFilter"]'),
+    ...document.querySelectorAll('input[type="radio"][name="searchMode"]')
+  ].filter(Boolean);
+
+  radioTargets.forEach(radio => {
+    radio.addEventListener("change", () => {
+      syncDefaultSearchMode();
+      handleSearch();
+    });
+  });
+
   /* print */
   if (printButton) printButton.addEventListener("click", doPrint);
 
@@ -1060,16 +1165,20 @@ function bindEvents() {
 async function init() {
   cacheDOM();
   initTheme();
+  ensureSearchModeUI();
+  syncDefaultSearchMode();
   bindEvents();
   await loadData();
   checkSession();
-const allCards = document.getElementById("allCards");
-if (allCards) {
-  allCards.addEventListener("click", () => {
-    if (!currentUser || !isFullAccess(currentUser.CNo)) return;
-    window.location.href = "AllCards.html";
-  });
-}}
+
+  const allCards = document.getElementById("allCards");
+  if (allCards) {
+    allCards.addEventListener("click", () => {
+      if (!currentUser || !isFullAccess(currentUser.CNo)) return;
+      window.location.href = "AllCards.html";
+    });
+  }
+}
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
