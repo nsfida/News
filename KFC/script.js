@@ -392,7 +392,6 @@ function renderTable() {
   }
 
   const fullAcc = isFullAccess(currentUser.CNo);
-  const loggedUsername = genUsername(currentUser.name);
 
   /* print header (hidden on screen, visible on print) */
   let html = `
@@ -413,8 +412,7 @@ function renderTable() {
   html += `<th class="no-print">VIEW CARD</th></tr></thead><tbody>`;
 
   results.forEach((item, idx) => {
-    const rowUsername = genUsername(item.name);
-    const isOwnRow = loggedUsername === rowUsername;
+    const isOwnRow = norm(item.CNo) === norm(currentUser.CNo);
     const canView = fullAcc || (norm(item.CNo) === norm(currentUser.CNo));
 
     html += "<tr>";
@@ -640,6 +638,15 @@ window.openCardOverlay = async function (encodedCard) {
   const card = allData.find(c => norm(c.CNo) === norm(cardNo));
   if (!card) {
     ecardSpinner.style.display = "none";
+    return;
+  }
+
+  /* Security: logged-in member can only open his own card unless full access */
+  const fullAcc = currentUser && isFullAccess(currentUser.CNo);
+  if (!currentUser || (!fullAcc && norm(card.CNo) !== norm(currentUser.CNo))) {
+    ecardSpinner.style.display = "none";
+    ecardOverlay.classList.remove("show");
+    ecardOverlay.setAttribute("aria-hidden", "true");
     return;
   }
 
