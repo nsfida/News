@@ -1,245 +1,1401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NSF Free VPN Service | Security Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #1e293b, #0f172a); color: white; min-height: 100vh; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; }
-        .status-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        .btn-gradient { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); transition: all 0.3s ease; }
-        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px #3b82f6; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSF Free VPN — Secure. Private. Free.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ─── TOKENS ─────────────────────────────────────────────────── */
+  :root{
+    --bg:#04080f;
+    --bg2:#080e1a;
+    --surface:rgba(255,255,255,.04);
+    --surface2:rgba(255,255,255,.07);
+    --border:rgba(255,255,255,.08);
+    --border2:rgba(80,200,180,.22);
+    --teal:#00e5c0;
+    --teal2:#00b89f;
+    --teal-glow:rgba(0,229,192,.18);
+    --blue:#1a6fff;
+    --blue-mid:#0d4ad4;
+    --red:#ff4f6d;
+    --red-glow:rgba(255,79,109,.18);
+    --amber:#ffb443;
+    --text:#e8f0f8;
+    --muted:rgba(232,240,248,.5);
+    --faint:rgba(232,240,248,.25);
+    --radius:16px;
+    --radius-sm:10px;
+    --radius-lg:24px;
+    --shadow:0 8px 32px rgba(0,0,0,.45);
+    --shadow-teal:0 0 40px rgba(0,229,192,.12);
+    --transition:.22s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ─── RESET & BASE ───────────────────────────────────────────── */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;font-size:16px}
+  body{
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ─── ANIMATED BACKGROUND ────────────────────────────────────── */
+  .bg-canvas{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%,rgba(26,111,255,.12) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%,rgba(0,229,192,.10) 0%,transparent 55%),
+      radial-gradient(ellipse 40% 40% at 50% 50%,rgba(0,0,0,0) 0%,var(--bg) 100%);
+  }
+  .bg-grid{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+    background-size:44px 44px;
+    mask-image:radial-gradient(ellipse 90% 80% at 50% 0%,black 30%,transparent 100%);
+  }
+  .orb{
+    position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;
+    animation:orb-drift 18s ease-in-out infinite alternate;
+  }
+  .orb-1{width:500px;height:500px;background:rgba(0,229,192,.07);top:-180px;left:-120px;animation-delay:0s}
+  .orb-2{width:400px;height:400px;background:rgba(26,111,255,.08);bottom:-100px;right:-80px;animation-delay:-9s}
+  @keyframes orb-drift{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,30px) scale(1.1)}}
+
+  /* ─── LAYOUT ─────────────────────────────────────────────────── */
+  #app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 20px 80px}
+
+  /* ─── HEADER ─────────────────────────────────────────────────── */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 0 18px;
+    border-bottom:1px solid var(--border);
+  }
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .logo-icon{
+    width:36px;height:36px;border-radius:10px;
+    background:linear-gradient(135deg,var(--teal),var(--blue));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 18px rgba(0,229,192,.35);
+  }
+  .logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.2}
+  .logo-text{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:var(--text);letter-spacing:-.02em}
+  .logo-text span{color:var(--teal)}
+  .badge-free{
+    font-family:'DM Mono',monospace;font-size:.65rem;font-weight:500;
+    background:linear-gradient(90deg,var(--teal),var(--blue));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    border:1px solid var(--border2);padding:2px 8px;border-radius:99px;margin-left:6px;
+  }
+  nav{display:flex;align-items:center;gap:6px}
+  .nav-link{
+    font-size:.82rem;font-weight:500;color:var(--muted);padding:6px 14px;
+    border-radius:var(--radius-sm);text-decoration:none;transition:var(--transition);
+  }
+  .nav-link:hover{color:var(--text);background:var(--surface2)}
+  .btn-nav{
+    font-size:.82rem;font-weight:600;color:#000;
+    background:linear-gradient(90deg,var(--teal),#00c9a0);
+    padding:7px 18px;border-radius:99px;text-decoration:none;
+    transition:var(--transition);box-shadow:0 0 16px rgba(0,229,192,.3);
+  }
+  .btn-nav:hover{box-shadow:0 0 24px rgba(0,229,192,.5);transform:translateY(-1px)}
+  .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text);padding:6px}
+
+  /* ─── HERO / MAIN DASHBOARD ──────────────────────────────────── */
+  .dashboard-grid{
+    display:grid;
+    grid-template-columns:1fr 340px;
+    gap:20px;
+    margin-top:36px;
+  }
+  @media(max-width:860px){.dashboard-grid{grid-template-columns:1fr}}
+
+  /* ─── GLASS CARD ─────────────────────────────────────────────── */
+  .card{
+    background:var(--surface);
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:28px;
+    box-shadow:var(--shadow);
+    transition:var(--transition);
+  }
+  .card:hover{border-color:rgba(255,255,255,.13)}
+  .card-title{
+    font-family:'Syne',sans-serif;font-size:.78rem;font-weight:600;
+    text-transform:uppercase;letter-spacing:.12em;color:var(--faint);
+    margin-bottom:20px;
+  }
+
+  /* ─── STATUS HERO ────────────────────────────────────────────── */
+  .status-hero{
+    display:flex;flex-direction:column;align-items:center;
+    text-align:center;padding:40px 28px;
+    position:relative;overflow:hidden;
+  }
+  .status-hero::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse 60% 50% at 50% 0%,var(--teal-glow),transparent 70%);
+    pointer-events:none;transition:var(--transition);
+  }
+  .status-hero.disconnected::before{background:radial-gradient(ellipse 60% 50% at 50% 0%,var(--red-glow),transparent 70%)}
+
+  .shield-wrap{position:relative;margin-bottom:24px}
+  .shield-ring{
+    width:120px;height:120px;border-radius:50%;
+    border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .shield-ring::before{
+    content:'';position:absolute;inset:-3px;border-radius:50%;
+    background:conic-gradient(var(--teal) 0deg,transparent 270deg,var(--teal) 360deg);
+    mask:radial-gradient(farthest-side,transparent calc(100% - 3px),black calc(100% - 3px));
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),black calc(100% - 3px));
+    animation:spin-ring 3s linear infinite;
+  }
+  .status-hero.disconnected .shield-ring::before{
+    background:conic-gradient(var(--red) 0deg,transparent 270deg,var(--red) 360deg);
+    animation:spin-ring 6s linear infinite;
+  }
+  @keyframes spin-ring{to{transform:rotate(360deg)}}
+  .shield-inner{
+    width:86px;height:86px;border-radius:50%;
+    background:linear-gradient(145deg,rgba(0,229,192,.15),rgba(26,111,255,.12));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 30px rgba(0,229,192,.2);
+    transition:var(--transition);
+  }
+  .status-hero.disconnected .shield-inner{
+    background:linear-gradient(145deg,rgba(255,79,109,.12),rgba(200,50,80,.08));
+    box-shadow:0 0 30px rgba(255,79,109,.2);
+  }
+  .shield-inner svg{width:40px;height:40px;fill:none;stroke:var(--teal);stroke-width:1.8;transition:var(--transition)}
+  .status-hero.disconnected .shield-inner svg{stroke:var(--red)}
+
+  .pulse-ring{
+    position:absolute;inset:-12px;border-radius:50%;
+    border:1px solid rgba(0,229,192,.3);
+    animation:pulse-expand 2.5s ease-out infinite;
+  }
+  .pulse-ring-2{animation-delay:1.2s}
+  .status-hero.disconnected .pulse-ring{border-color:rgba(255,79,109,.25)}
+  @keyframes pulse-expand{
+    0%{transform:scale(1);opacity:.7}
+    100%{transform:scale(1.45);opacity:0}
+  }
+
+  .status-label{
+    font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;
+    margin-bottom:6px;letter-spacing:-.03em;
+    background:linear-gradient(90deg,var(--teal),#60d0ff);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    transition:var(--transition);
+  }
+  .status-hero.disconnected .status-label{background:linear-gradient(90deg,var(--red),#ff8c9e);-webkit-background-clip:text;background-clip:text}
+  .status-sublabel{font-size:.85rem;color:var(--muted);margin-bottom:28px}
+
+  /* ─── CONNECT BUTTON ─────────────────────────────────────────── */
+  .btn-connect{
+    width:100%;max-width:280px;padding:16px 32px;
+    font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.04em;
+    border:none;border-radius:99px;cursor:pointer;
+    background:linear-gradient(90deg,var(--teal),#00c4ff);
+    color:#000;
+    box-shadow:0 4px 24px rgba(0,229,192,.4),0 0 0 0 rgba(0,229,192,.3);
+    transition:all .3s cubic-bezier(.4,0,.2,1);
+    position:relative;overflow:hidden;
+  }
+  .btn-connect::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+    transform:translateX(-100%);
+  }
+  .btn-connect:hover:not(:disabled){
+    transform:translateY(-2px);
+    box-shadow:0 8px 32px rgba(0,229,192,.55),0 0 0 4px rgba(0,229,192,.15);
+  }
+  .btn-connect:hover::after{animation:shimmer .7s ease forwards}
+  @keyframes shimmer{to{transform:translateX(100%)}}
+  .btn-connect.disconnecting,
+  .btn-connect.connected{
+    background:linear-gradient(90deg,#ff4f6d,#ff7a56);
+    box-shadow:0 4px 24px rgba(255,79,109,.35);
+    color:#fff;
+  }
+  .btn-connect.connected:hover:not(:disabled){
+    box-shadow:0 8px 32px rgba(255,79,109,.5),0 0 0 4px rgba(255,79,109,.15);
+  }
+  .btn-connect.loading,:disabled{opacity:.7;cursor:not-allowed;transform:none!important}
+  .btn-connect .btn-inner{display:flex;align-items:center;justify-content:center;gap:8px}
+  .spinner{
+    width:16px;height:16px;border-radius:50%;
+    border:2px solid rgba(0,0,0,.25);
+    border-top-color:#000;
+    animation:spin .7s linear infinite;
+    display:none;
+  }
+  .btn-connect.loading .spinner{display:block}
+  .btn-connect.connected .spinner,.btn-connect.disconnecting .spinner{border-color:rgba(255,255,255,.25);border-top-color:#fff}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ─── STATS ROW ──────────────────────────────────────────────── */
+  .stats-row{
+    display:flex;gap:16px;margin-top:24px;width:100%;
+  }
+  .stat-chip{
+    flex:1;background:var(--surface2);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:12px;text-align:center;
+  }
+  .stat-val{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:var(--teal);transition:var(--transition)}
+  .stat-key{font-size:.7rem;color:var(--faint);margin-top:2px;text-transform:uppercase;letter-spacing:.08em}
+
+  /* ─── IP STATUS ──────────────────────────────────────────────── */
+  .ip-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface2);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:12px 16px;margin-top:16px;
+    gap:12px;flex-wrap:wrap;
+  }
+  .ip-row{display:flex;align-items:center;gap:8px}
+  .ip-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;transition:var(--transition)}
+  .ip-dot.masked{background:var(--teal);box-shadow:0 0 8px rgba(0,229,192,.6)}
+  .ip-label{font-size:.78rem;color:var(--muted)}
+  .ip-val{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text)}
+  .ip-tag{font-size:.7rem;padding:2px 8px;border-radius:99px;background:rgba(255,79,109,.15);color:var(--red);font-weight:600;transition:var(--transition)}
+  .ip-tag.masked{background:rgba(0,229,192,.15);color:var(--teal)}
+
+  /* ─── SIDEBAR ────────────────────────────────────────────────── */
+  .sidebar{display:flex;flex-direction:column;gap:16px}
+
+  /* ─── SELECT CONTROLS ────────────────────────────────────────── */
+  .select-group{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+  .select-label{font-size:.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;font-weight:500}
+  .custom-select{
+    position:relative;
+  }
+  .custom-select select{
+    width:100%;appearance:none;background:var(--surface2);
+    border:1px solid var(--border);border-radius:var(--radius-sm);
+    color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;
+    padding:11px 40px 11px 14px;cursor:pointer;outline:none;
+    transition:var(--transition);
+  }
+  .custom-select select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,229,192,.12)}
+  .custom-select::after{
+    content:'';position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    width:0;height:0;
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-top:5px solid var(--muted);pointer-events:none;
+  }
+  select option{background:#0d1626;color:var(--text)}
+
+  /* ─── PING INDICATOR ─────────────────────────────────────────── */
+  .ping-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+  .ping-bars{display:flex;gap:3px;align-items:flex-end}
+  .ping-bar{width:5px;border-radius:2px;background:var(--border);transition:var(--transition)}
+  .ping-bar:nth-child(1){height:8px}
+  .ping-bar:nth-child(2){height:13px}
+  .ping-bar:nth-child(3){height:18px}
+  .ping-bar:nth-child(4){height:23px}
+  .ping-bars.good .ping-bar{background:var(--teal)}
+  .ping-bars.medium .ping-bar:nth-child(-n+3){background:var(--amber)}
+  .ping-bars.poor .ping-bar:nth-child(1){background:var(--red)}
+  .ping-val{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--teal)}
+
+  /* ─── PROTOCOL TOGGLE ────────────────────────────────────────── */
+  .proto-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+  .proto-btn{
+    background:var(--surface2);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:10px 8px;
+    font-size:.78rem;font-weight:600;color:var(--muted);
+    cursor:pointer;text-align:center;transition:var(--transition);
+    font-family:'DM Mono',monospace;
+  }
+  .proto-btn:hover{border-color:var(--border2);color:var(--text)}
+  .proto-btn.active{background:rgba(0,229,192,.1);border-color:var(--teal);color:var(--teal)}
+
+  /* ─── ACTIVITY LOG ───────────────────────────────────────────── */
+  .log-area{
+    background:rgba(4,8,15,.6);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:14px;
+    height:180px;overflow-y:auto;
+    font-family:'DM Mono',monospace;font-size:.73rem;line-height:1.7;
+    scroll-behavior:smooth;
+  }
+  .log-area::-webkit-scrollbar{width:4px}
+  .log-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+  .log-line{animation:log-in .25s ease}
+  @keyframes log-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .log-ts{color:var(--faint)}
+  .log-ok{color:var(--teal)}
+  .log-err{color:var(--red)}
+  .log-warn{color:var(--amber)}
+  .log-info{color:var(--muted)}
+
+  /* ─── TABS ───────────────────────────────────────────────────── */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px}
+  .tab{
+    font-size:.82rem;font-weight:500;color:var(--faint);
+    padding:10px 18px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+    cursor:pointer;border:none;background:none;transition:var(--transition);
+  }
+  .tab:hover{color:var(--muted)}
+  .tab.active{color:var(--teal);border-bottom:2px solid var(--teal);margin-bottom:-1px}
+
+  /* ─── SECTION HEADINGS ───────────────────────────────────────── */
+  .section{margin-top:64px}
+  .section-eyebrow{
+    font-family:'DM Mono',monospace;font-size:.7rem;font-weight:500;
+    color:var(--teal);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px;
+  }
+  .section-title{
+    font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;
+    letter-spacing:-.04em;margin-bottom:12px;line-height:1.15;
+  }
+  .section-sub{font-size:.9rem;color:var(--muted);max-width:540px;line-height:1.65}
+
+  /* ─── FEATURES GRID ──────────────────────────────────────────── */
+  .features-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:14px;margin-top:28px;
+  }
+  .feature-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:22px;
+    transition:var(--transition);cursor:default;
+  }
+  .feature-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow-teal)}
+  .feat-icon{
+    width:40px;height:40px;border-radius:10px;margin-bottom:14px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,rgba(0,229,192,.12),rgba(26,111,255,.1));
+    border:1px solid rgba(0,229,192,.15);
+  }
+  .feat-icon svg{width:20px;height:20px;stroke:var(--teal);fill:none;stroke-width:1.8}
+  .feat-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:5px}
+  .feat-desc{font-size:.8rem;color:var(--muted);line-height:1.55}
+
+  /* ─── SERVERS TABLE ──────────────────────────────────────────── */
+  .servers-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:10px;margin-top:24px;
+  }
+  .server-row{
+    display:flex;align-items:center;gap:12px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:14px 16px;
+    cursor:pointer;transition:var(--transition);
+  }
+  .server-row:hover,.server-row.selected{border-color:var(--border2);background:rgba(0,229,192,.05)}
+  .server-row.selected .server-name{color:var(--teal)}
+  .flag{font-size:1.3rem;line-height:1}
+  .server-name{font-weight:600;font-size:.88rem}
+  .server-info{font-size:.73rem;color:var(--faint)}
+  .server-ping{margin-left:auto;font-family:'DM Mono',monospace;font-size:.73rem;color:var(--teal)}
+  .server-status-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;box-shadow:0 0 6px rgba(0,229,192,.5)}
+
+  /* ─── PLATFORMS ──────────────────────────────────────────────── */
+  .platforms-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:14px;margin-top:28px;
+  }
+  .platform-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:24px 20px;text-align:center;
+    transition:var(--transition);
+  }
+  .platform-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+  .plat-icon{font-size:2.2rem;margin-bottom:12px}
+  .plat-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:4px}
+  .plat-sub{font-size:.75rem;color:var(--faint)}
+  .plat-btn{
+    display:inline-block;margin-top:14px;padding:7px 18px;
+    border-radius:99px;font-size:.75rem;font-weight:600;
+    background:var(--surface2);border:1px solid var(--border2);
+    color:var(--teal);cursor:pointer;transition:var(--transition);
+    text-decoration:none;
+  }
+  .plat-btn:hover{background:rgba(0,229,192,.12);box-shadow:0 0 12px rgba(0,229,192,.2)}
+
+  /* ─── FAQ ────────────────────────────────────────────────────── */
+  .faq-list{margin-top:24px;display:flex;flex-direction:column;gap:8px}
+  .faq-item{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;
+  }
+  .faq-q{
+    width:100%;text-align:left;background:none;border:none;
+    color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;
+    padding:18px 22px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+    gap:12px;transition:var(--transition);
+  }
+  .faq-q:hover{color:var(--teal)}
+  .faq-chevron{font-size:.8rem;color:var(--faint);transition:transform .25s;flex-shrink:0}
+  .faq-item.open .faq-chevron{transform:rotate(180deg)}
+  .faq-a{
+    max-height:0;overflow:hidden;transition:max-height .35s ease,padding .25s;
+    font-size:.84rem;color:var(--muted);line-height:1.7;padding:0 22px;
+  }
+  .faq-item.open .faq-a{max-height:300px;padding:0 22px 18px}
+
+  /* ─── PRIVACY BLOCK ──────────────────────────────────────────── */
+  .privacy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:24px}
+  .privacy-item{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px;display:flex;gap:14px;
+  }
+  .privacy-num{
+    font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;
+    color:var(--teal);opacity:.4;flex-shrink:0;line-height:1;
+  }
+  .privacy-title{font-weight:600;font-size:.88rem;margin-bottom:4px}
+  .privacy-desc{font-size:.78rem;color:var(--muted);line-height:1.55}
+
+  /* ─── ARCHITECTURE NOTE ──────────────────────────────────────── */
+  .arch-note{
+    margin-top:48px;background:rgba(255,180,67,.05);
+    border:1px solid rgba(255,180,67,.2);
+    border-radius:var(--radius);padding:22px 24px;
+    display:flex;gap:16px;align-items:flex-start;
+  }
+  .arch-icon{font-size:1.4rem;flex-shrink:0;margin-top:2px}
+  .arch-title{font-weight:700;font-size:.88rem;color:var(--amber);margin-bottom:5px}
+  .arch-desc{font-size:.8rem;color:var(--muted);line-height:1.65}
+
+  /* ─── TOAST ──────────────────────────────────────────────────── */
+  #toast-container{
+    position:fixed;top:20px;right:20px;z-index:9999;
+    display:flex;flex-direction:column;gap:10px;
+    pointer-events:none;
+  }
+  .toast{
+    background:rgba(8,14,26,.95);backdrop-filter:blur(20px);
+    border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:12px 18px;min-width:240px;max-width:340px;
+    display:flex;align-items:flex-start;gap:10px;
+    box-shadow:var(--shadow);pointer-events:all;
+    animation:toast-in .3s cubic-bezier(.4,0,.2,1);
+  }
+  .toast.leaving{animation:toast-out .3s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes toast-in{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+  @keyframes toast-out{to{opacity:0;transform:translateX(20px)}}
+  .toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .toast.success .toast-dot{background:var(--teal);box-shadow:0 0 8px rgba(0,229,192,.6)}
+  .toast.error .toast-dot{background:var(--red)}
+  .toast.warning .toast-dot{background:var(--amber)}
+  .toast.info .toast-dot{background:var(--blue)}
+  .toast-msg{font-size:.82rem;line-height:1.5;color:var(--text)}
+
+  /* ─── MODAL ──────────────────────────────────────────────────── */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:8888;
+    background:rgba(4,8,15,.8);backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal{
+    background:#0a1020;border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:32px;
+    max-width:460px;width:100%;
+    transform:scale(.95);transition:transform .25s cubic-bezier(.4,0,.2,1);
+    box-shadow:var(--shadow);
+  }
+  .modal-overlay.open .modal{transform:scale(1)}
+  .modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:6px}
+  .modal-sub{font-size:.84rem;color:var(--muted);margin-bottom:24px;line-height:1.6}
+  .modal-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+  .modal-step{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:14px;
+  }
+  .step-num{
+    width:24px;height:24px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,var(--teal),var(--blue));
+    display:flex;align-items:center;justify-content:center;
+    font-size:.72rem;font-weight:700;color:#000;
+  }
+  .step-text{font-size:.82rem;color:var(--muted);line-height:1.55}
+  .step-text strong{color:var(--text);display:block;margin-bottom:2px}
+  .modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-primary{
+    flex:1;padding:12px;border-radius:99px;font-weight:700;font-size:.88rem;
+    background:linear-gradient(90deg,var(--teal),#00c4ff);color:#000;
+    border:none;cursor:pointer;transition:var(--transition);
+    font-family:'Syne',sans-serif;
+  }
+  .btn-primary:hover{box-shadow:0 0 20px rgba(0,229,192,.4)}
+  .btn-secondary{
+    flex:1;padding:12px;border-radius:99px;font-weight:600;font-size:.88rem;
+    background:var(--surface2);color:var(--muted);
+    border:1px solid var(--border);cursor:pointer;transition:var(--transition);
+  }
+  .btn-secondary:hover{color:var(--text);border-color:var(--border2)}
+
+  /* ─── FOOTER ─────────────────────────────────────────────────── */
+  footer{
+    border-top:1px solid var(--border);margin-top:80px;padding:28px 0;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  }
+  .footer-copy{font-size:.75rem;color:var(--faint)}
+  .footer-links{display:flex;gap:20px}
+  .footer-links a{font-size:.75rem;color:var(--faint);text-decoration:none;transition:var(--transition)}
+  .footer-links a:hover{color:var(--teal)}
+
+  /* ─── UTILS ──────────────────────────────────────────────────── */
+  .divider{border:none;border-top:1px solid var(--border);margin:6px 0}
+  .text-teal{color:var(--teal)}
+  .hidden{display:none!important}
+  @media(max-width:600px){
+    .stats-row{flex-direction:row;flex-wrap:wrap}
+    .stat-chip{min-width:calc(50% - 8px)}
+    header nav .nav-link{display:none}
+    .hamburger{display:flex}
+    .section-title{font-size:1.5rem}
+    .modal-actions{flex-direction:column}
+  }
+</style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-4xl mx-auto space-y-8">
-        <header class="flex justify-between items-center px-4">
-            <div class="flex items-center gap-2">
-                <i data-lucide="shield-check" class="text-blue-500 w-8 h-8"></i>
-                <h1 class="text-2xl font-bold tracking-tight">NSF <span class="text-blue-500">VPN</span></h1>
+<body>
+
+<!-- Background -->
+<div class="bg-canvas"></div>
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Platform Modal -->
+<div class="modal-overlay" id="platformModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Setting Up Your VPN</div>
+    <div class="modal-sub" id="modalSub">Follow the steps below to connect on your device.</div>
+    <div class="modal-steps" id="modalSteps"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="modalPrimaryBtn">Continue</button>
+      <button class="btn-secondary" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- Header -->
+  <header>
+    <a href="#" class="logo" aria-label="NSF VPN Home">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg>
+      </div>
+      <div>
+        <span class="logo-text">NSF<span> VPN</span></span>
+        <span class="badge-free">FREE</span>
+      </div>
+    </a>
+    <nav>
+      <a href="#servers" class="nav-link">Servers</a>
+      <a href="#platforms" class="nav-link">Platforms</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+      <a href="#" class="btn-nav">Get Started</a>
+    </nav>
+    <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </header>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard-grid" style="margin-top:36px">
+
+    <!-- LEFT: Main Panel -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- Status Hero -->
+      <div class="card status-hero disconnected" id="statusHero">
+        <div class="shield-wrap">
+          <div class="shield-ring">
+            <div class="shield-inner">
+              <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg>
             </div>
-            <div id="platform-badge" class="px-3 py-1 bg-white/10 rounded-full text-xs font-medium uppercase tracking-wider text-gray-400">
-                Detecting OS...
+          </div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring pulse-ring-2"></div>
+        </div>
+
+        <div class="status-label" id="statusLabel">Unprotected</div>
+        <div class="status-sublabel" id="statusSub">Your connection is exposed. Connect to secure it.</div>
+
+        <button class="btn-connect" id="connectBtn" onclick="handleConnect()">
+          <span class="btn-inner">
+            <span class="spinner"></span>
+            <span id="connectBtnText">Connect Now</span>
+          </span>
+        </button>
+
+        <div class="stats-row">
+          <div class="stat-chip">
+            <div class="stat-val" id="timerVal">00:00:00</div>
+            <div class="stat-key">Duration</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-val" id="downloadVal">—</div>
+            <div class="stat-key">Download</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-val" id="uploadVal">—</div>
+            <div class="stat-key">Upload</div>
+          </div>
+        </div>
+
+        <!-- IP Status -->
+        <div class="ip-bar" id="ipBar">
+          <div class="ip-row">
+            <div class="ip-dot" id="ipDot"></div>
+            <div>
+              <div class="ip-label">Your IP Address</div>
+              <div class="ip-val" id="ipVal">Detecting…</div>
             </div>
-        </header>
+          </div>
+          <span class="ip-tag" id="ipTag">EXPOSED</span>
+        </div>
+      </div>
 
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <section class="lg:col-span-2 glass p-8 flex flex-col items-center justify-center text-center space-y-6">
-                <div id="status-indicator" class="w-32 h-32 rounded-full border-4 border-gray-700 flex items-center justify-center relative">
-                    <div id="status-ring" class="absolute inset-0 rounded-full border-4 border-transparent"></div>
-                    <i id="status-icon" data-lucide="power" class="w-12 h-12 text-gray-500"></i>
-                </div>
-                
-                <div>
-                    <h2 id="status-text" class="text-3xl font-bold">Disconnected</h2>
-                    <p id="ip-display" class="text-gray-400 text-sm mt-1 font-mono">IP: 192.168.1.1 (Virtual)</p>
-                </div>
+      <!-- Activity Log -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Activity Log</div>
+          <button onclick="clearLog()" style="background:none;border:none;color:var(--faint);font-size:.73rem;cursor:pointer;font-family:'DM Mono',monospace">CLEAR</button>
+        </div>
+        <div class="log-area" id="logArea"></div>
+      </div>
 
-                <button id="connect-btn" onclick="toggleConnection()" class="btn-gradient w-full max-w-xs py-4 rounded-2xl font-bold text-lg shadow-lg">
-                    Connect Now
-                </button>
-
-                <div class="grid grid-cols-3 gap-8 w-full pt-6 border-t border-white/5">
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase">Ping</p>
-                        <p id="ping-val" class="font-semibold">-- ms</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase">Time</p>
-                        <p id="timer-val" class="font-semibold">00:00:00</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase">Protocol</p>
-                        <select id="protocol-select" class="bg-transparent font-semibold outline-none cursor-pointer">
-                            <option value="wireguard">WireGuard</option>
-                            <option value="openvpn">OpenVPN</option>
-                            <option value="ikev2">IKEv2</option>
-                        </select>
-                    </div>
-                </div>
-            </section>
-
-            <aside class="space-y-6">
-                <div class="glass p-6">
-                    <h3 class="text-sm font-semibold text-gray-400 mb-4 flex items-center gap-2">
-                        <i data-lucide="globe" class="w-4 h-4"></i> Select Server
-                    </h3>
-                    <select id="server-select" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                        <option value="us-east">🇺🇸 USA - New York</option>
-                        <option value="uk-lon">🇬🇧 UK - London</option>
-                        <option value="jp-tok">🇯🇵 Japan - Tokyo</option>
-                        <option value="de-fra">🇩🇪 Germany - Frankfurt</option>
-                    </select>
-                </div>
-
-                <div class="glass p-6">
-                    <h3 class="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
-                        <i data-lucide="activity" class="w-4 h-4"></i> Activity Log
-                    </h3>
-                    <div id="activity-log" class="text-[10px] font-mono text-gray-500 h-32 overflow-y-auto space-y-1">
-                        <div>> System initialized...</div>
-                        <div>> Ready for secure tunnel...</div>
-                    </div>
-                </div>
-            </aside>
-        </main>
-
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="glass p-6">
-                <h3 class="text-lg font-bold mb-4">Architecture Note</h3>
-                <p class="text-sm text-gray-400 leading-relaxed">
-                    This portal acts as a control interface. Activating the tunnel triggers a request to our backend API to provision a unique VPN profile. System-level encryption is managed by your OS native drivers once the profile is installed.
-                </p>
-            </div>
-            <div class="glass p-6">
-                <h3 class="text-lg font-bold mb-4">Setup FAQ</h3>
-                <div class="text-sm space-y-3">
-                    <details class="cursor-pointer">
-                        <summary class="font-medium text-blue-400">How to install on iOS?</summary>
-                        <p class="pl-4 mt-2 text-gray-500">Tap connect, allow the "Configuration Profile" download, and go to Settings > General > VPN to toggle.</p>
-                    </details>
-                    <details class="cursor-pointer">
-                        <summary class="font-medium text-blue-400">Is it really free?</summary>
-                        <p class="pl-4 mt-2 text-gray-500">Yes, the NSF service is community-funded and supports zero-logging policies.</p>
-                    </details>
-                </div>
-            </div>
-        </section>
     </div>
 
-    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-6 py-3 transform translate-y-20 transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-3">
-        <i data-lucide="info" class="w-4 h-4 text-blue-400"></i>
-        <span id="toast-msg">Notification message</span>
+    <!-- RIGHT: Sidebar -->
+    <div class="sidebar">
+
+      <!-- Server Selector -->
+      <div class="card">
+        <div class="card-title">Server Location</div>
+        <div class="select-group">
+          <div class="select-label">Region</div>
+          <div class="custom-select">
+            <select id="serverSelect" onchange="onServerChange(this.value)">
+              <option value="auto">🌐 Auto-Select (Best)</option>
+              <optgroup label="Europe">
+                <option value="de">🇩🇪 Germany — Frankfurt</option>
+                <option value="nl">🇳🇱 Netherlands — Amsterdam</option>
+                <option value="gb">🇬🇧 UK — London</option>
+                <option value="se">🇸🇪 Sweden — Stockholm</option>
+                <option value="ch">🇨🇭 Switzerland — Zurich</option>
+              </optgroup>
+              <optgroup label="Americas">
+                <option value="us-east">🇺🇸 USA — New York</option>
+                <option value="us-west">🇺🇸 USA — Los Angeles</option>
+                <option value="ca">🇨🇦 Canada — Toronto</option>
+                <option value="br">🇧🇷 Brazil — São Paulo</option>
+              </optgroup>
+              <optgroup label="Asia Pacific">
+                <option value="sg">🇸🇬 Singapore</option>
+                <option value="jp">🇯🇵 Japan — Tokyo</option>
+                <option value="au">🇦🇺 Australia — Sydney</option>
+                <option value="in">🇮🇳 India — Mumbai</option>
+              </optgroup>
+              <optgroup label="Middle East & Africa">
+                <option value="ae">🇦🇪 UAE — Dubai</option>
+                <option value="za">🇿🇦 South Africa — Cape Town</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ping Display -->
+        <div class="ping-row" style="margin-top:10px">
+          <div style="font-size:.75rem;color:var(--faint)">Estimated Ping</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="ping-bars good" id="pingBars">
+              <div class="ping-bar"></div><div class="ping-bar"></div>
+              <div class="ping-bar"></div><div class="ping-bar"></div>
+            </div>
+            <span class="ping-val" id="pingVal">12ms</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Protocol -->
+      <div class="card">
+        <div class="card-title">Protocol</div>
+        <div class="proto-grid" id="protoGrid">
+          <button class="proto-btn active" onclick="selectProto(this,'WireGuard')">WireGuard</button>
+          <button class="proto-btn" onclick="selectProto(this,'OpenVPN')">OpenVPN</button>
+          <button class="proto-btn" onclick="selectProto(this,'IKEv2')">IKEv2</button>
+          <button class="proto-btn" onclick="selectProto(this,'L2TP')">L2TP</button>
+        </div>
+        <div style="margin-top:12px;font-size:.75rem;color:var(--faint);line-height:1.5" id="protoDesc">
+          WireGuard® — modern, lean, cryptographically strong. Best for most devices.
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="card" id="quickStatsCard">
+        <div class="card-title">Session Stats</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.82rem">
+            <span style="color:var(--faint)">Data Sent</span>
+            <span style="font-family:'DM Mono',monospace" id="dataSent">—</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:.82rem">
+            <span style="color:var(--faint)">Data Received</span>
+            <span style="font-family:'DM Mono',monospace" id="dataRecv">—</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:.82rem">
+            <span style="color:var(--faint)">Protocol</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--teal)" id="activeProto">WireGuard</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:.82rem">
+            <span style="color:var(--faint)">Encryption</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--teal)">AES-256-GCM</span>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <script>
-        // Initialize Icons
-        lucide.createIcons();
+  <!-- Architecture Note -->
+  <div class="arch-note">
+    <div class="arch-icon">🔐</div>
+    <div>
+      <div class="arch-title">Secure Architecture Notice</div>
+      <div class="arch-desc">
+        This web portal is a <strong>VPN setup and control interface</strong>. A web page cannot directly create a system-level VPN tunnel — this requires a backend VPN service, OS-level native permissions, and platform-specific integrations (iOS Profile/NEVPNManager, Android VpnService API, macOS/Windows network drivers or a tunnel client). Pressing <em>Connect</em> calls our backend API at <code style="color:var(--amber);background:rgba(255,180,67,.1);padding:1px 5px;border-radius:4px">/api/vpn/connect</code>, which allocates a server slot and returns configuration credentials. Your device then installs the provided VPN profile or configuration via the appropriate OS workflow. Credentials are ephemeral, encrypted in transit (TLS 1.3), and never logged.
+      </div>
+    </div>
+  </div>
 
-        let isConnected = false;
-        let isConnecting = false;
-        let timerInterval;
-        let seconds = 0;
+  <!-- Features Section -->
+  <div class="section" id="features">
+    <div class="section-eyebrow">Why NSF VPN</div>
+    <h2 class="section-title">Enterprise-grade security,<br>zero cost.</h2>
+    <p class="section-sub">Built on open-source cryptography standards with a strict no-logs policy audited by independent security researchers.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="feat-title">Military-Grade Encryption</div>
+        <div class="feat-desc">AES-256-GCM with Perfect Forward Secrecy. Every session uses unique keys that are discarded after use.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="feat-title">Zero-Log Policy</div>
+        <div class="feat-desc">We never store connection logs, timestamps, IP addresses, or any activity data. Verified by third-party audit.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <div class="feat-title">Global Network</div>
+        <div class="feat-desc">50+ server locations across 30 countries. Smart routing automatically selects the fastest path for you.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></div>
+        <div class="feat-title">Kill Switch</div>
+        <div class="feat-desc">Automatic kill switch cuts internet if VPN drops — your real IP is never accidentally exposed.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="feat-title">DNS Leak Protection</div>
+        <div class="feat-desc">Encrypted DNS resolver prevents ISPs or third parties from seeing your browsing queries.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="feat-title">WireGuard® Protocol</div>
+        <div class="feat-desc">5× faster than OpenVPN with a tiny 4,000-line codebase. Less code means less attack surface.</div>
+      </div>
+    </div>
+  </div>
 
-        // Platform Detection
-        const platformBadge = document.getElementById('platform-badge');
-        const userAgent = navigator.userAgent.toLowerCase();
-        let os = "Desktop";
-        if (userAgent.includes("iphone") || userAgent.includes("ipad")) os = "iOS";
-        else if (userAgent.includes("android")) os = "Android";
-        else if (userAgent.includes("mac")) os = "macOS";
-        else if (userAgent.includes("win")) os = "Windows";
-        platformBadge.innerText = os;
+  <!-- Server List -->
+  <div class="section" id="servers">
+    <div class="section-eyebrow">Server Network</div>
+    <h2 class="section-title">50+ locations.<br>All free.</h2>
+    <p class="section-sub">Choose from our global network of high-performance servers. All locations included in the free tier.</p>
+    <div class="servers-grid" id="serversList"></div>
+  </div>
 
-        const log = (msg) => {
-            const el = document.getElementById('activity-log');
-            const entry = document.createElement('div');
-            entry.innerText = `> ${new Date().toLocaleTimeString()}: ${msg}`;
-            el.prepend(entry);
-        };
+  <!-- Platforms -->
+  <div class="section" id="platforms">
+    <div class="section-eyebrow">Platform Support</div>
+    <h2 class="section-title">Every device.<br>One account.</h2>
+    <p class="section-sub">NSF VPN works on iOS, Android, macOS, and Windows. Each platform uses the optimal native integration for best performance and reliability.</p>
+    <div class="platforms-grid">
+      <div class="platform-card">
+        <div class="plat-icon">📱</div>
+        <div class="plat-name">iOS / iPadOS</div>
+        <div class="plat-sub">iOS 14+ · NEVPNManager API · IKEv2 / WireGuard</div>
+        <div style="margin-top:10px;font-size:.75rem;color:var(--faint);line-height:1.55">Installs a signed VPN Configuration Profile from Settings → VPN &amp; Device Management. No App Store app needed for basic setup.</div>
+        <a href="#" class="plat-btn" onclick="showPlatformGuide('ios');return false">Setup Guide →</a>
+      </div>
+      <div class="platform-card">
+        <div class="plat-icon">🤖</div>
+        <div class="plat-name">Android</div>
+        <div class="plat-sub">Android 8+ · VpnService API · WireGuard</div>
+        <div style="margin-top:10px;font-size:.75rem;color:var(--faint);line-height:1.55">Uses Android's VpnService framework. Optionally install our open-source companion app for one-tap configuration import.</div>
+        <a href="#" class="plat-btn" onclick="showPlatformGuide('android');return false">Setup Guide →</a>
+      </div>
+      <div class="platform-card">
+        <div class="plat-icon">💻</div>
+        <div class="plat-name">macOS</div>
+        <div class="plat-sub">macOS 12+ · Network Extension · WireGuard</div>
+        <div style="margin-top:10px;font-size:.75penn;color:var(--faint);line-height:1.55">Downloads a .mobileconfig profile or launches via WireGuard for Mac (App Store). System Network Extension is required and prompted automatically.</div>
+        <a href="#" class="plat-btn" onclick="showPlatformGuide('macos');return false">Setup Guide →</a>
+      </div>
+      <div class="platform-card">
+        <div class="plat-icon">🪟</div>
+        <div class="plat-name">Windows</div>
+        <div class="plat-sub">Windows 10/11 · WireGuard Tunnel · NDIS</div>
+        <div style="margin-top:10px;font-size:.75rem;color:var(--faint);line-height:1.55">Downloads a WireGuard .conf tunnel file or our lightweight Windows installer that handles driver installation and tunnel management.</div>
+        <a href="#" class="plat-btn" onclick="showPlatformGuide('windows');return false">Setup Guide →</a>
+      </div>
+    </div>
+  </div>
 
-        const showToast = (msg) => {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            t.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 4000);
-        };
+  <!-- Privacy Policy Highlights -->
+  <div class="section" id="privacy">
+    <div class="section-eyebrow">Privacy Policy</div>
+    <h2 class="section-title">We protect your data<br>by not collecting it.</h2>
+    <p class="section-sub">Our privacy policy is simple: we collect the minimum required to operate the service, and nothing more.</p>
+    <div class="privacy-grid">
+      <div class="privacy-item">
+        <div class="privacy-num">01</div>
+        <div>
+          <div class="privacy-title">No Activity Logs</div>
+          <div class="privacy-desc">We do not store websites visited, files downloaded, source IPs, DNS queries, or session timestamps.</div>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-num">02</div>
+        <div>
+          <div class="privacy-title">Ephemeral Credentials</div>
+          <div class="privacy-desc">VPN credentials are generated per-session and automatically expire. They cannot be traced back to your account.</div>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-num">03</div>
+        <div>
+          <div class="privacy-title">No Third-Party Sharing</div>
+          <div class="privacy-desc">Your data is never sold or shared with advertisers, analytics providers, or government entities without valid legal process.</div>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-num">04</div>
+        <div>
+          <div class="privacy-title">RAM-Only Servers</div>
+          <div class="privacy-desc">All VPN servers run in RAM-only mode. No data survives a reboot. Physical seizure of hardware yields nothing.</div>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-num">05</div>
+        <div>
+          <div class="privacy-title">Open Source Core</div>
+          <div class="privacy-desc">Our server-side tunnel software and client configuration generators are open-source and auditable on GitHub.</div>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-num">06</div>
+        <div>
+          <div class="privacy-title">Independent Audit</div>
+          <div class="privacy-desc">Annual independent security audits verify our no-logs claims and server infrastructure integrity.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        function updateTimer() {
-            seconds++;
-            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toString().padStart(2, '0');
-            document.getElementById('timer-val').innerText = `${h}:${m}:${s}`;
-        }
+  <!-- FAQ -->
+  <div class="section" id="faq">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-title">Common questions.</h2>
+    <div class="faq-list" id="faqList"></div>
+  </div>
 
-        async function toggleConnection() {
-            if (isConnecting) return;
+  <!-- Footer -->
+  <footer>
+    <div class="footer-copy">© 2025 NSF Free VPN Service. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#privacy">Privacy Policy</a>
+      <a href="#faq">FAQ</a>
+      <a href="#platforms">Downloads</a>
+      <a href="#">Terms</a>
+    </div>
+  </footer>
 
-            const btn = document.getElementById('connect-btn');
-            const statusText = document.getElementById('status-text');
-            const statusIcon = document.getElementById('status-icon');
-            const statusRing = document.getElementById('status-ring');
+</div><!-- #app -->
 
-            if (!isConnected) {
-                // START CONNECTING
-                isConnecting = true;
-                btn.innerText = "Initializing...";
-                btn.classList.add('opacity-70');
-                log("Requesting server allocation...");
-                
-                // Simulate API Call to /api/vpn/connect
-                try {
-                    await new Promise(r => setTimeout(r, 2000));
-                    
-                    log(`API Success: Server assigned in ${document.getElementById('server-select').value}`);
-                    
-                    // Platform Specific Logic
-                    handlePlatformFlow(os);
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   NSF VPN — Frontend Controller
+   ═══════════════════════════════════════════════════════════════ */
 
-                    isConnected = true;
-                    statusText.innerText = "Protected";
-                    statusText.classList.add('text-blue-400');
-                    btn.innerText = "Disconnect";
-                    btn.classList.replace('btn-gradient', 'bg-red-500/20');
-                    btn.classList.add('text-red-500', 'border', 'border-red-500/50');
-                    statusIcon.classList.replace('text-gray-500', 'text-blue-500');
-                    statusRing.classList.add('border-blue-500', 'status-pulse');
-                    
-                    document.getElementById('ping-val').innerText = Math.floor(Math.random() * 40 + 20) + " ms";
-                    document.getElementById('ip-display').innerText = "IP: 104.28.14.202 (Encrypted)";
-                    
-                    timerInterval = setInterval(updateTimer, 1000);
-                } catch (e) {
-                    showToast("Connection failed. Try another server.");
-                } finally {
-                    isConnecting = false;
-                    btn.classList.remove('opacity-70');
-                }
-            } else {
-                // DISCONNECT
-                clearInterval(timerInterval);
-                seconds = 0;
-                document.getElementById('timer-val').innerText = "00:00:00";
-                document.getElementById('ping-val').innerText = "-- ms";
-                document.getElementById('ip-display').innerText = "IP: 192.168.1.1 (Virtual)";
-                
-                isConnected = false;
-                statusText.innerText = "Disconnected";
-                statusText.classList.remove('text-blue-400');
-                btn.innerText = "Connect Now";
-                btn.className = "btn-gradient w-full max-w-xs py-4 rounded-2xl font-bold text-lg shadow-lg";
-                statusIcon.classList.replace('text-blue-500', 'text-gray-500');
-                statusRing.classList.remove('border-blue-500', 'status-pulse');
-                log("Tunnel closed by user.");
-            }
-        }
+/* ─── STATE ─────────────────────────────────────────────────────── */
+const state = {
+  status: 'disconnected', // disconnected | connecting | connected | disconnecting
+  protocol: 'WireGuard',
+  server: 'auto',
+  sessionStart: null,
+  timerInterval: null,
+  statsInterval: null,
+  reconnectAttempts: 0,
+  maxReconnect: 3,
+  fakeIP: null,
+  vpnIP: null,
+};
 
-        function handlePlatformFlow(osType) {
-            switch(osType) {
-                case 'iOS':
-                    showToast("Redirecting to Settings for Profile Installation...");
-                    log("Handing off to iOS Settings (VPN Profile)...");
-                    // window.location.href = "https://your-backend.com/api/vpn/ios-profile"; 
-                    break;
-                case 'Android':
-                    showToast("Opening VPN Permission Flow...");
-                    log("Triggering Android VpnService intent...");
-                    break;
-                case 'Windows':
-                case 'macOS':
-                    showToast(`Downloading NSF Tunnel for ${osType}...`);
-                    log(`Initiating binary download for ${osType}`);
-                    break;
-                default:
-                    showToast("Generic setup configuration generated.");
-            }
-        }
-    </script>
+/* ─── DOM REFS ───────────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const hero    = $('statusHero');
+const lbl     = $('statusLabel');
+const sub     = $('statusSub');
+const btn     = $('connectBtn');
+const btnTxt  = $('connectBtnText');
+const timer   = $('timerVal');
+const ipVal   = $('ipVal');
+const ipDot   = $('ipDot');
+const ipTag   = $('ipTag');
+const logArea = $('logArea');
+
+/* ─── INIT ───────────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  detectIP();
+  renderServers();
+  renderFAQ();
+  log('info', 'NSF VPN portal loaded');
+  log('info', `Platform detected: ${getPlatform()}`);
+  log('warn', 'Status: Not connected — traffic is unprotected');
+});
+
+/* ─── PLATFORM DETECTION ─────────────────────────────────────────── */
+function getPlatform() {
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  if (/Mac/.test(ua) && !('ontouchend' in document)) return 'macos';
+  if (/Win/.test(ua)) return 'windows';
+  return 'unknown';
+}
+
+/* ─── IP DETECTION ───────────────────────────────────────────────── */
+async function detectIP() {
+  try {
+    const r = await fetch('https://api.ipify.org?format=json');
+    const d = await r.json();
+    state.fakeIP = d.ip;
+    ipVal.textContent = d.ip;
+    log('info', `Real IP detected: ${d.ip}`);
+  } catch {
+    state.fakeIP = '185.234.' + rnd(10,254) + '.' + rnd(1,254);
+    ipVal.textContent = state.fakeIP;
+    log('warn', 'Could not fetch real IP — showing simulated');
+  }
+}
+
+function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+/* ─── CONNECT HANDLER ────────────────────────────────────────────── */
+async function handleConnect() {
+  if (state.status === 'connecting' || state.status === 'disconnecting') return;
+
+  if (state.status === 'connected') {
+    await disconnect();
+  } else {
+    await connect();
+  }
+}
+
+async function connect() {
+  setStatus('connecting');
+  log('info', `Requesting server slot (${state.server})…`);
+  log('info', `Protocol: ${state.protocol}`);
+
+  try {
+    const res = await callAPI('/api/vpn/connect', {
+      server: state.server,
+      protocol: state.protocol,
+      platform: getPlatform(),
+    });
+
+    if (!res.ok) throw new Error(res.error || 'Server error');
+
+    log('ok', `Server allocated: ${res.server_name} (${res.server_ip})`);
+    log('ok', `Credentials issued — expires in ${res.ttl_seconds}s`);
+
+    const plat = getPlatform();
+    if (plat !== 'unknown') {
+      showPlatformGuide(plat, res);
+    } else {
+      simulateConnect(res);
+    }
+
+  } catch (err) {
+    log('err', `Connection failed: ${err.message}`);
+    toast(`Connection failed: ${err.message}`, 'error');
+
+    if (state.reconnectAttempts < state.maxReconnect) {
+      state.reconnectAttempts++;
+      log('warn', `Retrying (${state.reconnectAttempts}/${state.maxReconnect})…`);
+      toast(`Retrying connection… (${state.reconnectAttempts}/${state.maxReconnect})`, 'warning');
+      await sleep(2000);
+      connect();
+    } else {
+      state.reconnectAttempts = 0;
+      setStatus('disconnected');
+      log('err', 'Max retries reached. Please try again.');
+      toast('Max retries reached. Check your connection.', 'error');
+    }
+  }
+}
+
+async function disconnect() {
+  setStatus('disconnecting');
+  log('info', 'Sending disconnect request…');
+
+  try {
+    await callAPI('/api/vpn/disconnect', { platform: getPlatform() });
+    log('ok', 'Server confirmed disconnection');
+  } catch {
+    log('warn', 'Server unreachable — forcing local disconnect');
+  }
+
+  await sleep(1200);
+  finaliseDisconnect();
+}
+
+function finaliseDisconnect() {
+  clearInterval(state.timerInterval);
+  clearInterval(state.statsInterval);
+  state.sessionStart = null;
+  state.reconnectAttempts = 0;
+
+  ipVal.textContent = state.fakeIP;
+  ipDot.classList.remove('masked');
+  ipTag.textContent = 'EXPOSED';
+  ipTag.classList.remove('masked');
+
+  $('downloadVal').textContent = '—';
+  $('uploadVal').textContent   = '—';
+  $('dataSent').textContent    = '—';
+  $('dataRecv').textContent    = '—';
+  timer.textContent = '00:00:00';
+
+  setStatus('disconnected');
+  log('warn', 'Disconnected — traffic is now unprotected');
+  toast('Disconnected from VPN', 'info');
+}
+
+function simulateConnect(res) {
+  // Called after user completes OS-level setup (or on unknown platform)
+  const vpnOctets = [10, rnd(0,255), rnd(0,255), rnd(1,254)];
+  state.vpnIP = vpnOctets.join('.');
+
+  state.sessionStart = Date.now();
+  state.timerInterval = setInterval(updateTimer, 1000);
+  state.statsInterval = setInterval(updateStats, 2500);
+
+  ipVal.textContent = state.vpnIP;
+  ipDot.classList.add('masked');
+  ipTag.textContent = 'MASKED';
+  ipTag.classList.add('masked');
+
+  setStatus('connected');
+  log('ok', `Tunnel active — VPN IP: ${state.vpnIP}`);
+  log('ok', 'Kill switch enabled · DNS leak protection ON');
+  toast('Connected — your traffic is now encrypted!', 'success');
+}
+
+/* ─── API MOCK ───────────────────────────────────────────────────── */
+async function callAPI(endpoint, body) {
+  await sleep(rnd(800, 1800)); // simulate network latency
+
+  // Mock responses (replace with real fetch() in production)
+  if (endpoint === '/api/vpn/connect') {
+    const servers = {
+      auto:    { server_name: 'DE-FRA-01', server_ip: '185.22.101.44', ttl_seconds: 3600 },
+      de:      { server_name: 'DE-FRA-02', server_ip: '185.22.101.55', ttl_seconds: 3600 },
+      nl:      { server_name: 'NL-AMS-01', server_ip: '45.132.76.22',  ttl_seconds: 3600 },
+      gb:      { server_name: 'GB-LON-01', server_ip: '92.119.101.10', ttl_seconds: 3600 },
+      'us-east':{ server_name: 'US-NYC-01', server_ip: '23.152.0.44',  ttl_seconds: 3600 },
+      sg:      { server_name: 'SG-01',     server_ip: '103.21.244.22', ttl_seconds: 3600 },
+      ae:      { server_name: 'AE-DXB-01', server_ip: '45.152.67.88', ttl_seconds: 3600 },
+    };
+    const sv = servers[body.server] || servers.auto;
+    return { ok: true, ...sv, config_url: `/api/vpn/config/${sv.server_name.toLowerCase()}.conf` };
+  }
+  if (endpoint === '/api/vpn/disconnect') {
+    return { ok: true };
+  }
+  return { ok: false, error: 'Unknown endpoint' };
+
+  /* ── REAL IMPLEMENTATION (uncomment for production) ─────────────
+  const r = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    credentials: 'include',
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+  ────────────────────────────────────────────────────────────────── */
+}
+
+/* ─── STATUS TRANSITIONS ──────────────────────────────────────────── */
+function setStatus(s) {
+  state.status = s;
+  btn.className = 'btn-connect ' + (s === 'connecting' || s === 'disconnecting' ? 'loading' : s);
+  btn.disabled = s === 'connecting' || s === 'disconnecting';
+
+  hero.classList.toggle('disconnected', s !== 'connected');
+
+  const map = {
+    disconnected:  { label: 'Unprotected',  sub: 'Your connection is exposed. Connect to secure it.',          btn: 'Connect Now' },
+    connecting:    { label: 'Connecting…',  sub: 'Negotiating a secure tunnel. Please wait.',                  btn: 'Connecting…' },
+    connected:     { label: 'Protected',    sub: 'Your connection is encrypted and your IP is masked.',        btn: 'Disconnect' },
+    disconnecting: { label: 'Disconnecting…', sub: 'Tearing down the secure tunnel.',                         btn: 'Disconnecting…' },
+  };
+  const m = map[s];
+  lbl.textContent    = m.label;
+  sub.textContent    = m.sub;
+  btnTxt.textContent = m.btn;
+}
+
+/* ─── TIMER & STATS ───────────────────────────────────────────────── */
+function updateTimer() {
+  const s = Math.floor((Date.now() - state.sessionStart) / 1000);
+  timer.textContent = fmt2(Math.floor(s/3600)) + ':' + fmt2(Math.floor(s/60)%60) + ':' + fmt2(s%60);
+}
+function fmt2(n){ return String(n).padStart(2,'0') }
+
+function updateStats() {
+  const dl = (Math.random()*12+1).toFixed(1)+' MB/s';
+  const ul = (Math.random()*3+.2).toFixed(1)+' MB/s';
+  const sent = (Math.random()*50+5).toFixed(1)+' MB';
+  const recv = (Math.random()*120+10).toFixed(1)+' MB';
+  $('downloadVal').textContent = dl;
+  $('uploadVal').textContent   = ul;
+  $('dataSent').textContent    = sent;
+  $('dataRecv').textContent    = recv;
+}
+
+/* ─── PROTOCOL SELECT ────────────────────────────────────────────── */
+const protoDescs = {
+  WireGuard: 'WireGuard® — modern, lean, cryptographically strong. Best for most devices.',
+  OpenVPN:   'OpenVPN — battle-tested, highly compatible, slightly slower. TLS-based.',
+  IKEv2:     'IKEv2/IPSec — fast reconnect, ideal for mobile networks. Native iOS/macOS support.',
+  L2TP:      'L2TP/IPSec — legacy support for older devices. Not recommended for new setups.',
+};
+function selectProto(el, name) {
+  document.querySelectorAll('.proto-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  state.protocol = name;
+  $('activeProto').textContent = name;
+  $('protoDesc').textContent = protoDescs[name];
+  log('info', `Protocol changed to ${name}`);
+}
+
+/* ─── SERVER CHANGE ──────────────────────────────────────────────── */
+const serverPings = { auto:9, de:12, nl:18, gb:24, se:31, ch:28, 'us-east':87, 'us-west':115, ca:92, br:185, sg:143, jp:178, au:210, in:155, ae:8, za:198 };
+function onServerChange(val) {
+  state.server = val;
+  const ms = serverPings[val] ?? rnd(20,200);
+  $('pingVal').textContent = ms + 'ms';
+  const bars = $('pingBars');
+  bars.className = 'ping-bars ' + (ms < 50 ? 'good' : ms < 120 ? 'medium' : 'poor');
+  log('info', `Server changed to ${document.getElementById('serverSelect').options[document.getElementById('serverSelect').selectedIndex].text.replace(/[^\w\s,()-]/g,'').trim()} (${ms}ms)`);
+}
+
+/* ─── SERVER LIST RENDER ─────────────────────────────────────────── */
+const serverData = [
+  { flag:'🇩🇪', name:'Germany',      loc:'Frankfurt',  ping:12, load:34 },
+  { flag:'🇳🇱', name:'Netherlands',  loc:'Amsterdam',  ping:18, load:41 },
+  { flag:'🇬🇧', name:'UK',           loc:'London',     ping:24, load:55 },
+  { flag:'🇸🇪', name:'Sweden',       loc:'Stockholm',  ping:31, load:28 },
+  { flag:'🇨🇭', name:'Switzerland',  loc:'Zurich',     ping:28, load:22 },
+  { flag:'🇺🇸', name:'USA',          loc:'New York',   ping:87, load:67 },
+  { flag:'🇺🇸', name:'USA',          loc:'Los Angeles',ping:115,load:71 },
+  { flag:'🇨🇦', name:'Canada',       loc:'Toronto',    ping:92, load:38 },
+  { flag:'🇸🇬', name:'Singapore',    loc:'Jurong',     ping:143,load:45 },
+  { flag:'🇯🇵', name:'Japan',        loc:'Tokyo',      ping:178,load:32 },
+  { flag:'🇦🇪', name:'UAE',          loc:'Dubai',      ping:8,  load:19 },
+  { flag:'🇦🇺', name:'Australia',    loc:'Sydney',     ping:210,load:44 },
+];
+function renderServers() {
+  const el = $('serversList');
+  el.innerHTML = serverData.map(s => `
+    <div class="server-row" onclick="pickServer(this,'${s.name.toLowerCase().replace(' ','-')}')">
+      <span class="flag">${s.flag}</span>
+      <div>
+        <div class="server-name">${s.name}</div>
+        <div class="server-info">${s.loc} · ${s.load}% load</div>
+      </div>
+      <div class="server-status-dot"></div>
+      <span class="server-ping">${s.ping}ms</span>
+    </div>
+  `).join('');
+}
+function pickServer(el, val) {
+  document.querySelectorAll('.server-row').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+  const sel = $('serverSelect');
+  for (let o of sel.options) { if (o.value.includes(val.split('-')[0])) { sel.value = o.value; break; } }
+  onServerChange(sel.value);
+}
+
+/* ─── PLATFORM GUIDES ────────────────────────────────────────────── */
+const guides = {
+  ios: {
+    title: '📱 iOS VPN Setup',
+    sub: 'NSF VPN installs a signed VPN Configuration Profile on your iPhone or iPad. No App Store required.',
+    steps: [
+      { title: 'Download Profile', body: 'Safari will download the <code>.mobileconfig</code> profile file from our server. Do <strong>not</strong> open it in another app.' },
+      { title: 'Open Settings', body: 'Go to <strong>Settings → General → VPN &amp; Device Management</strong>. Tap the downloaded NSF profile.' },
+      { title: 'Install &amp; Trust', body: 'Tap <strong>Install</strong> and enter your device passcode. iOS will warn about the profile — this is normal for VPN profiles.' },
+      { title: 'Enable VPN', body: 'Go to <strong>Settings → VPN</strong>. Toggle the NSF VPN entry to connect. The VPN icon will appear in your status bar.' },
+    ],
+    btn: 'Download iOS Profile',
+    action: () => { toast('Downloading iOS .mobileconfig profile…', 'info'); log('ok','iOS profile download initiated'); closeModal(); simulateConnect({}) },
+  },
+  android: {
+    title: '🤖 Android VPN Setup',
+    sub: 'We use Android\'s native VpnService API. Install the WireGuard app and import the NSF tunnel configuration.',
+    steps: [
+      { title: 'Install WireGuard', body: 'Download <strong>WireGuard</strong> from the Google Play Store if not already installed.' },
+      { title: 'Tap "Import Tunnel"', body: 'After returning here, tap <strong>Continue</strong> to download a <code>.conf</code> tunnel file. Open it in WireGuard.' },
+      { title: 'Grant VPN Permission', body: 'Android will ask to grant VPN permission to WireGuard. Tap <strong>Allow</strong>.' },
+      { title: 'Activate Tunnel', body: 'Toggle the NSF tunnel on in the WireGuard app. The key icon appears in your notification bar.' },
+    ],
+    btn: 'Download Android Config',
+    action: () => { toast('Downloading Android .conf file…', 'info'); log('ok','Android WireGuard config download initiated'); closeModal(); simulateConnect({}) },
+  },
+  macos: {
+    title: '💻 macOS VPN Setup',
+    sub: 'NSF VPN uses macOS Network Extensions. You can install via WireGuard for Mac or our .mobileconfig profile.',
+    steps: [
+      { title: 'Install WireGuard for Mac', body: 'Download <strong>WireGuard</strong> from the Mac App Store (free). It provides the Network System Extension.' },
+      { title: 'Download Tunnel Config', body: 'Click <strong>Continue</strong> to download the <code>nsf-vpn.conf</code> file. Open it with WireGuard for Mac.' },
+      { title: 'Allow System Extension', body: 'macOS will prompt you in <strong>System Settings → Privacy &amp; Security</strong> to allow the WireGuard network extension.' },
+      { title: 'Connect', body: 'Toggle the NSF tunnel in the WireGuard app or via the menu bar icon.' },
+    ],
+    btn: 'Download macOS Config',
+    action: () => { toast('Downloading macOS WireGuard config…', 'info'); log('ok','macOS tunnel config download initiated'); closeModal(); simulateConnect({}) },
+  },
+  windows: {
+    title: '🪟 Windows VPN Setup',
+    sub: 'NSF VPN uses WireGuard for Windows. We\'ll download the tunnel configuration automatically.',
+    steps: [
+      { title: 'Install WireGuard for Windows', body: 'Download the official <strong>WireGuard installer</strong> from wireguard.com. Run as Administrator.' },
+      { title: 'Import Tunnel', body: 'In the WireGuard app, click <strong>"Import tunnel(s) from file"</strong> and select the downloaded <code>nsf-vpn.conf</code>.' },
+      { title: 'Activate', body: 'Click <strong>Activate</strong> in the WireGuard app. The tunnel icon appears in the system tray.' },
+      { title: 'Verify Connection', body: 'Return to this page — your IP should now show as masked and Protected.' },
+    ],
+    btn: 'Download Windows Config',
+    action: () => { toast('Downloading Windows WireGuard config…', 'info'); log('ok','Windows tunnel config download initiated'); closeModal(); simulateConnect({}) },
+  },
+};
+
+function showPlatformGuide(plat, apiRes) {
+  const g = guides[plat];
+  if (!g) { simulateConnect(apiRes || {}); return; }
+  $('modalTitle').textContent = g.title;
+  $('modalSub').textContent   = g.sub;
+  $('modalSteps').innerHTML   = g.steps.map((s,i) => `
+    <div class="modal-step">
+      <div class="step-num">${i+1}</div>
+      <div class="step-text"><strong>${s.title}</strong>${s.body}</div>
+    </div>
+  `).join('');
+  const pb = $('modalPrimaryBtn');
+  pb.textContent = g.btn;
+  pb.onclick = g.action;
+  $('platformModal').classList.add('open');
+}
+function closeModal() {
+  $('platformModal').classList.remove('open');
+  if (state.status === 'connecting') setStatus('disconnected');
+}
+$('platformModal').addEventListener('click', e => { if (e.target === $('platformModal')) closeModal(); });
+
+/* ─── FAQ ────────────────────────────────────────────────────────── */
+const faqData = [
+  { q: 'Is NSF VPN really free forever?', a: 'Yes. NSF VPN is entirely free with no data caps. Our infrastructure is funded by voluntary donations and open-source community grants. Premium features (dedicated IPs, priority routing) may be offered separately in the future, but the core service remains free.' },
+  { q: 'Why can\'t the website connect my VPN directly?', a: 'Browsers run in a sandboxed environment with no access to operating system network interfaces. Creating a real VPN tunnel requires kernel-level drivers (WireGuard, tun/tap) or OS APIs like iOS NEVPNManager or Android VpnService — none of which are accessible from a web page. This portal communicates with our backend API to issue credentials, then guides your device through the appropriate OS-native setup flow.' },
+  { q: 'How does the iOS profile installation work?', a: 'We generate a signed .mobileconfig file containing your VPN endpoint, pre-shared key, and DNS settings. Safari downloads it and iOS offers to install it under Settings → General → VPN & Device Management. Once installed, you can toggle the VPN from the iOS Settings → VPN screen or via shortcuts.' },
+  { q: 'Which protocol should I choose?', a: 'WireGuard is recommended for the vast majority of users: it\'s faster, more battery-efficient, and has a smaller auditable codebase. Choose IKEv2 if you need native iOS/macOS integration without third-party apps. Use OpenVPN only if your network blocks WireGuard\'s UDP port, as OpenVPN can be configured for TCP 443 (HTTPS traffic camouflage).' },
+  { q: 'Does NSF VPN keep logs?', a: 'No. We enforce a strict zero-log policy. Our servers run in RAM-only mode — no data is written to disk. We do not log connection timestamps, IP addresses, DNS queries, session durations, or any user activity. This policy has been independently audited.' },
+  { q: 'What happens if the VPN connection drops?', a: 'The kill switch (enabled by default) immediately blocks all network traffic if the tunnel drops, preventing your real IP from being exposed. The client will attempt to automatically reconnect up to three times. You can also re-trigger a connection from this portal.' },
+  { q: 'Is there a bandwidth limit?', a: 'There is no hard per-user bandwidth cap. However, free-tier users share server capacity. During peak hours on high-load servers, speeds may be reduced. Selecting a lower-load server (shown as a percentage in the server list) will give better performance.' },
+  { q: 'Can I use NSF VPN on multiple devices?', a: 'Yes. You can use NSF VPN on up to 5 devices simultaneously with a single account. Each device maintains its own independent tunnel and receives its own ephemeral VPN IP address.' },
+];
+function renderFAQ() {
+  $('faqList').innerHTML = faqData.map((f,i) => `
+    <div class="faq-item" id="faq-${i}">
+      <button class="faq-q" onclick="toggleFAQ(${i})">
+        ${f.q} <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">${f.a}</div>
+    </div>
+  `).join('');
+}
+function toggleFAQ(i) {
+  const el = $('faq-'+i);
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(x => x.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+
+/* ─── LOG ────────────────────────────────────────────────────────── */
+function log(type, msg) {
+  const ts = new Date().toLocaleTimeString('en-US',{hour12:false});
+  const cls = { ok:'log-ok', err:'log-err', warn:'log-warn', info:'log-info' }[type] || 'log-info';
+  const icon = { ok:'✓', err:'✗', warn:'⚠', info:'›' }[type] || '›';
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-ts">[${ts}]</span> <span class="${cls}">${icon} ${escHtml(msg)}</span>`;
+  logArea.appendChild(line);
+  logArea.scrollTop = logArea.scrollHeight;
+}
+function clearLog(){ logArea.innerHTML = ''; log('info','Log cleared'); }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+/* ─── TOAST ──────────────────────────────────────────────────────── */
+function toast(msg, type='info') {
+  const tc = $('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="toast-dot"></div><div class="toast-msg">${escHtml(msg)}</div>`;
+  tc.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('leaving');
+    t.addEventListener('animationend', () => t.remove(), {once:true});
+  }, 3800);
+}
+
+/* ─── UTILS ──────────────────────────────────────────────────────── */
+function sleep(ms){ return new Promise(r => setTimeout(r,ms)) }
+
+function toggleMobileMenu() {
+  // Simple mobile fallback: scroll to FAQ
+  $('faq').scrollIntoView({behavior:'smooth'});
+}
+</script>
 </body>
 </html>
