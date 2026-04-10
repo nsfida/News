@@ -3,136 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LiveNews</title>
+<meta name="description" content="LiveNews — Global News Network. Real-time breaking news, politics, business, technology and more.">
+<title>LiveNews — Global News Network</title>
 
-<link rel="stylesheet" href="style.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- FONTS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 
-<!-- PREMIUM ICONS -->
+<!-- ICONS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- BREAKING BAR -->
-<div class="breaking-bar">
-    <div class="breaking-label">BREAKING</div>
+<!-- ═══════════════════════════════════════════ -->
+<!-- BREAKING NEWS TICKER                        -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="breaking-bar" id="breakingBar">
+  <div class="breaking-label">
+    <i class="fa-solid fa-bolt"></i>
+    <span>BREAKING</span>
+  </div>
+  <div class="breaking-track">
     <div class="breaking-ticker" id="breakingTicker"></div>
+  </div>
+  <button class="breaking-close" id="breakingClose" aria-label="Close breaking news bar">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
 </div>
 
-<!-- HEADER -->
-<header class="header glass">
+<!-- ═══════════════════════════════════════════ -->
+<!-- TOP HEADER                                  -->
+<!-- ═══════════════════════════════════════════ -->
+<header class="header" id="mainHeader">
+  <div class="header-inner">
 
-    <div class="header-left">
-        <img src="logo.png" class="logo" alt="LiveNews Logo">
+    <!-- LEFT: LOGO -->
+    <div class="header-logo">
+      <a href="/" class="logo-link">
+        <img src="logo.png" alt="LiveNews" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="logo-text-fallback" style="display:none;">
+          <span class="logo-live">LIVE</span><span class="logo-news">NEWS</span>
+        </div>
+      </a>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span>LIVE</span>
+      </div>
     </div>
 
-    <!-- PREMIUM SEARCH -->
-    <div class="header-center">
-        <div class="search-wrapper">
-            <div class="search-icon" id="searchToggle">
-                <i class="fa-solid fa-magnifying-glass"></i>
+    <!-- CENTER: SEARCH -->
+    <div class="header-search-area">
+      <div class="search-bar" id="searchBar">
+        <i class="fa-solid fa-magnifying-glass search-bar-icon"></i>
+        <input type="text" id="searchInput" placeholder="Search news, topics, people...">
+        <button class="search-clear" id="searchClear" aria-label="Clear search">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: CONTROLS -->
+    <div class="header-controls">
+
+      <!-- DATE PICKER -->
+      <div class="ctrl-btn date-ctrl" id="dateCtrl">
+        <button class="ctrl-icon-btn" id="jumpDateBtn" title="Jump to date">
+          <i class="fa-regular fa-calendar-days"></i>
+        </button>
+        <div class="date-popup" id="datePopup">
+          <label>Jump to date</label>
+          <input type="date" id="datePicker">
+          <button id="clearDate">Clear</button>
+        </div>
+      </div>
+
+      <!-- DARK MODE -->
+      <button class="ctrl-icon-btn" id="themeToggle" title="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+
+      <!-- PROJECTS MENU -->
+      <div class="ctrl-btn projects-ctrl" id="projectsCtrl">
+        <button class="ctrl-icon-btn projects-btn" id="projectsToggle" title="Other Projects">
+          <i class="fa-solid fa-grid-2"></i>
+        </button>
+        <div class="projects-dropdown" id="projectsDropdown">
+          <div class="dropdown-header">Other Projects</div>
+          <a href="https://livenews.live/KFC" class="project-item" target="_blank">
+            <img src="https://livenews.live/KFC/logo.png" alt="KFC" onerror="this.src='https://via.placeholder.com/32'">
+            <div class="project-info">
+              <strong>Khawrai Falahi Committee</strong>
+              <span>Community News</span>
             </div>
-            <input type="text" id="searchInput" placeholder="Search global news...">
-        </div>
-    </div>
-
-    <div class="header-right">
-
-        <div class="live-indicator">
-            <span></span>LIVE
-        </div>
-
-        <!-- JUMP TO DATE -->
-        <div class="jump-date-wrapper">
-            <button id="jumpDateBtn">
-                <i class="fa-regular fa-calendar"></i>
-            </button>
-            <input type="date" id="datePicker">
-        </div>
-
-        <!-- PROJECTS -->
-        <div class="projects-menu-wrapper">
-            <div class="projects-icon" id="projectsToggle">☰</div>
-
-            <div class="projects-dropdown glass" id="projectsDropdown">
-                <div class="projects-header">Other Projects</div>
-
-                <a href="https://livenews.live/KFC" class="project-item">
-                    <img src="https://livenews.live/KFC/logo.png" alt="KFC Logo">
-                    <span>Khawrai Falahi Committee</span>
-                </a>
-
-                <a href="https://livenews.live/NSFClix" class="project-item">
-                    <img src="https://livenews.live/NSFClix/logo.png" class="nsf-logo" alt="NSF Clix Logo">
-                    <span>NSF Clix</span>
-                </a>
+          </a>
+          <a href="https://livenews.live/NSFClix" class="project-item" target="_blank">
+            <img src="https://livenews.live/NSFClix/logo.png" alt="NSFClix" class="nsf-logo" onerror="this.src='https://via.placeholder.com/32'">
+            <div class="project-info">
+              <strong>NSF Clix</strong>
+              <span>Media Platform</span>
             </div>
+          </a>
         </div>
+      </div>
 
     </div>
+  </div>
+
+  <!-- CATEGORY NAVBAR -->
+  <nav class="category-nav" id="categoryNav">
+    <div class="category-nav-inner">
+      <ul class="category-list" id="categoryList">
+        <li class="cat-item active" data-category="all"><i class="fa-solid fa-house-chimney"></i> All News</li>
+        <li class="cat-item cat-war" data-category="war"><i class="fa-solid fa-explosion"></i> US-IRAN</li>
+        <li class="cat-item" data-category="world"><i class="fa-solid fa-globe"></i> World</li>
+        <li class="cat-item" data-category="politics"><i class="fa-solid fa-landmark"></i> Politics</li>
+        <li class="cat-item" data-category="business"><i class="fa-solid fa-briefcase"></i> Business</li>
+        <li class="cat-item" data-category="technology"><i class="fa-solid fa-microchip"></i> Technology</li>
+        <li class="cat-item" data-category="economy"><i class="fa-solid fa-chart-line"></i> Economy</li>
+        <li class="cat-item" data-category="energy"><i class="fa-solid fa-bolt"></i> Energy</li>
+      </ul>
+      <button class="nav-scroll-btn nav-scroll-right" id="navScrollRight">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
 </header>
 
-<!-- NAVBAR -->
-<nav class="navbar glass">
-    <ul>
-        <li data-category="war">US-IRAN Conflict</li>
-        <li class="active" data-category="all">All</li>
-        <li data-category="world">World</li>
-        <li data-category="politics">Politics</li>
-        <li data-category="business">Business</li>
-        <li data-category="technology">Technology</li>
-        <li data-category="economy">Economy</li>
-        <li data-category="energy">Energy</li>
-    </ul>
+<!-- ═══════════════════════════════════════════ -->
+<!-- PAGE LAYOUT                                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="page-wrapper">
+
+  <!-- SIDEBAR LEFT -->
+  <aside class="sidebar sidebar-left" id="sidebarLeft">
+    <div class="sidebar-sticky">
+
+      <div class="widget widget-trending">
+        <div class="widget-title">
+          <i class="fa-solid fa-fire-flame-curved"></i>
+          <span>Trending Now</span>
+        </div>
+        <ol class="trending-list" id="trendingList">
+          <!-- JS populated -->
+        </ol>
+      </div>
+
+      <div class="widget widget-categories">
+        <div class="widget-title">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Categories</span>
+        </div>
+        <div class="category-pills" id="sidebarCategories">
+          <!-- JS populated -->
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- MAIN FEED -->
+  <main class="feed-area" id="feedArea">
+
+    <!-- FEED HERO (top story) -->
+    <div class="feed-hero" id="feedHero"></div>
+
+    <!-- FEED TOOLBAR -->
+    <div class="feed-toolbar">
+      <div class="feed-count" id="feedCount">Loading news...</div>
+      <div class="feed-view-toggle">
+        <button class="view-btn active" id="viewGrid" title="Grid view"><i class="fa-solid fa-grip"></i></button>
+        <button class="view-btn" id="viewList" title="List view"><i class="fa-solid fa-list"></i></button>
+      </div>
+    </div>
+
+    <!-- NEWS GRID / FEED -->
+    <section class="news-feed" id="newsGrid"></section>
+
+    <!-- INFINITE SCROLL LOADER -->
+    <div class="feed-loader" id="loader">
+      <div class="loader-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <p>Loading more stories...</p>
+    </div>
+
+    <!-- END OF FEED -->
+    <div class="feed-end" id="feedEnd" style="display:none;">
+      <i class="fa-solid fa-check-circle"></i>
+      <p>You're all caught up!</p>
+    </div>
+
+  </main>
+
+  <!-- SIDEBAR RIGHT -->
+  <aside class="sidebar sidebar-right" id="sidebarRight">
+    <div class="sidebar-sticky">
+
+      <div class="widget widget-latest">
+        <div class="widget-title">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Latest Updates</span>
+        </div>
+        <div class="latest-list" id="latestList">
+          <!-- JS populated -->
+        </div>
+      </div>
+
+      <div class="widget widget-powered">
+        <div class="widget-title">
+          <i class="fa-solid fa-code"></i>
+          <span>Powered By</span>
+        </div>
+        <div class="powered-card">
+          <div class="powered-avatar">NS</div>
+          <div class="powered-info">
+            <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" rel="noopener" class="powered-name">Nadeem Shahzad Fida</a>
+            <span class="powered-role">Developer & Founder</span>
+          </div>
+          <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" class="powered-fb">
+            <i class="fa-brands fa-facebook"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ARTICLE MODAL (Expanded View)               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="article-overlay" id="articleOverlay">
+  <div class="article-modal" id="articleModal">
+
+    <!-- MODAL HEADER -->
+    <div class="modal-topbar">
+      <button class="modal-back-btn" id="closeExpanded">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Back to Feed</span>
+      </button>
+      <div class="modal-actions">
+        <button class="modal-action-btn" id="shareBtn" title="Share">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+        <button class="modal-action-btn" id="bookmarkBtn" title="Bookmark">
+          <i class="fa-regular fa-bookmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ARTICLE HERO IMAGE -->
+    <div class="article-hero-img" id="articleHeroImg">
+      <img id="expandedImage" src="" alt="Article Image">
+      <div class="article-img-overlay"></div>
+      <!-- IMAGE NAV for multiple images -->
+      <button class="img-nav img-prev" id="imgPrev"><i class="fa-solid fa-chevron-left"></i></button>
+      <button class="img-nav img-next" id="imgNext"><i class="fa-solid fa-chevron-right"></i></button>
+      <div class="img-counter" id="imgCounter"></div>
+    </div>
+
+    <!-- ARTICLE BODY -->
+    <div class="article-body">
+
+      <div class="article-meta-top">
+        <span class="article-cat-badge" id="expandedCategory"></span>
+        <span class="article-date" id="expandedDate">
+          <i class="fa-regular fa-clock"></i>
+          <span></span>
+        </span>
+      </div>
+
+      <h1 class="article-headline" id="expandedTitle"></h1>
+
+      <div class="article-divider"></div>
+
+      <div class="article-text" id="expandedContent"></div>
+
+      <!-- ARTICLE FOOTER -->
+      <div class="article-footer">
+        <div class="article-tags" id="articleTags"></div>
+        <div class="article-share-row">
+          <span>Share this story:</span>
+          <button class="share-pill" onclick="navigator.clipboard && navigator.clipboard.writeText(window.location.href)">
+            <i class="fa-solid fa-link"></i> Copy Link
+          </button>
+        </div>
+        <div class="article-powered-footer">
+          Reported by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">LiveNews</a> • Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank">Nadeem Shahzad Fida</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- MOBILE BOTTOM NAV                           -->
+<!-- ═══════════════════════════════════════════ -->
+<nav class="mobile-bottom-nav">
+  <button class="mbn-btn active" data-category="all">
+    <i class="fa-solid fa-house"></i>
+    <span>Home</span>
+  </button>
+  <button class="mbn-btn" data-category="war">
+    <i class="fa-solid fa-explosion"></i>
+    <span>US-IRAN</span>
+  </button>
+  <button class="mbn-btn mbn-search-btn" id="mbnSearch">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span>Search</span>
+  </button>
+  <button class="mbn-btn" data-category="world">
+    <i class="fa-solid fa-globe"></i>
+    <span>World</span>
+  </button>
+  <button class="mbn-btn" data-category="technology">
+    <i class="fa-solid fa-microchip"></i>
+    <span>Tech</span>
+  </button>
 </nav>
 
-<!-- MAIN -->
-<main class="main-container">
+<!-- MOBILE SEARCH OVERLAY -->
+<div class="mobile-search-overlay" id="mobileSearchOverlay">
+  <div class="mso-inner">
+    <input type="text" id="mobileSearchInput" placeholder="Search news...">
+    <button id="msoClose"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</div>
 
-    <section class="news-grid" id="newsGrid"></section>
-
-    <!-- EXPANDED VIEW -->
-    <section class="news-expanded" id="newsExpanded">
-
-        <div class="expanded-container glass" id="expandedContainer">
-
-            <div class="expanded-header">
-                <h1 id="expandedTitle"></h1>
-                <div class="expanded-meta">
-                    <span id="expandedDate"></span>
-                    <span id="expandedCategory"></span>
-                </div>
-            </div>
-
-            <div class="expanded-image">
-                <img id="expandedImage" src="" alt="News Image">
-            </div>
-
-            <div class="expanded-content" id="expandedContent"></div>
-
-            <div class="expanded-actions">
-                <button class="close-btn" id="closeExpanded">Close</button>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- LOADER -->
-    <div id="loader" style="text-align:center; padding:20px; display:none;">
-        Loading more news...
+<!-- ═══════════════════════════════════════════ -->
+<!-- FOOTER                                      -->
+<!-- ═══════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo-txt"><span class="logo-live">LIVE</span><span class="logo-news">NEWS</span></div>
+      <p>Your trusted source for global news and analysis, delivered in real-time around the clock.</p>
     </div>
-
-</main>
-
-<!-- FOOTER -->
-<footer class="footer glass">
-    <div class="footer-content">
-        <p>© 2026 LiveNews. Global News Network. All rights reserved.</p>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Categories</h4>
+        <a href="#" onclick="filterByCategory('world')">World</a>
+        <a href="#" onclick="filterByCategory('politics')">Politics</a>
+        <a href="#" onclick="filterByCategory('business')">Business</a>
+        <a href="#" onclick="filterByCategory('technology')">Technology</a>
+      </div>
+      <div class="footer-col">
+        <h4>More</h4>
+        <a href="#" onclick="filterByCategory('economy')">Economy</a>
+        <a href="#" onclick="filterByCategory('energy')">Energy</a>
+        <a href="#" onclick="filterByCategory('war')">US-IRAN Conflict</a>
+      </div>
     </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 LiveNews Global Network. All rights reserved. Powered by
+      <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" rel="noopener">Nadeem Shahzad Fida</a>
+    </p>
+  </div>
 </footer>
 
-<script src="script.js"></script>
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
 
+<script src="script.js"></script>
 </body>
 </html>
