@@ -839,6 +839,9 @@ function bindEvents() {
   allCardsBtn?.addEventListener("click", () => {
     if (!allCardsBtn.disabled) window.location.href = "AllCards.html";
   });
+  emirates?.addEventListener("click", () => {
+    if (!emirates.disabled) window.location.href = "EmiratesID.html";
+  });
 
   /* e-Card overlay close */
   ecardCloseBtn?.addEventListener("click", closeCardOverlay);
