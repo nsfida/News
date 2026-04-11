@@ -203,6 +203,155 @@
       color: #c9d5ea;
     }
 
+    /* ── Access Gate Banners ── */
+    .eid-access-gate {
+      border-radius: 20px;
+      padding: 40px 28px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: fadeInUp 0.45s ease both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .eid-access-gate .gate-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin-bottom: 4px;
+    }
+
+    .eid-access-gate.gate-login .gate-icon {
+      background: linear-gradient(135deg, rgba(120,115,245,0.15), rgba(255,110,196,0.15));
+      color: #7873f5;
+      border: 2px solid rgba(120,115,245,0.3);
+    }
+
+    .eid-access-gate.gate-denied .gate-icon {
+      background: linear-gradient(135deg, rgba(229,62,62,0.12), rgba(255,110,196,0.12));
+      color: #e53e3e;
+      border: 2px solid rgba(229,62,62,0.25);
+    }
+
+    .eid-access-gate h3 {
+      font-size: 19px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .eid-access-gate.gate-login h3 {
+      background: linear-gradient(90deg, #0d3c91, #7873f5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    body.dark-mode .eid-access-gate.gate-login h3 {
+      background: linear-gradient(90deg, #9bc2ff, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .eid-access-gate.gate-denied h3 {
+      color: #c53030;
+    }
+
+    body.dark-mode .eid-access-gate.gate-denied h3 {
+      color: #fc8181;
+    }
+
+    .eid-access-gate p {
+      font-size: 14px;
+      color: #666;
+      max-width: 420px;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    body.dark-mode .eid-access-gate p {
+      color: #c9d5ea;
+    }
+
+    .gate-signin-btn {
+      margin-top: 6px;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(90deg, #7873f5, #ff6ec4);
+      color: #fff;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      transition: opacity 0.3s, transform 0.2s;
+      box-shadow: 0 4px 18px rgba(120,115,245,0.35);
+    }
+
+    .gate-signin-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    /* denied badge strip */
+    .gate-denied-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 30px;
+      background: rgba(229,62,62,0.08);
+      border: 1px solid rgba(229,62,62,0.22);
+      font-size: 13px;
+      font-weight: bold;
+      color: #c53030;
+    }
+
+    body.dark-mode .gate-denied-strip {
+      background: rgba(229,62,62,0.14);
+      color: #fc8181;
+    }
+
+    /* Top access status indicator bar */
+    #eidAccessBar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 18px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      font-weight: 600;
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    #eidAccessBar.bar-allowed {
+      background: rgba(56,161,105,0.1);
+      border: 1px solid rgba(56,161,105,0.28);
+      color: #276749;
+      display: flex;
+    }
+
+    #eidAccessBar.bar-denied {
+      background: rgba(229,62,62,0.09);
+      border: 1px solid rgba(229,62,62,0.25);
+      color: #c53030;
+      display: flex;
+    }
+
+    body.dark-mode #eidAccessBar.bar-allowed { color: #68d391; background: rgba(56,161,105,0.14); }
+    body.dark-mode #eidAccessBar.bar-denied  { color: #fc8181; background: rgba(229,62,62,0.16); }
+
     /* ── Password Modal ── */
     .pwd-overlay {
       position: fixed;
@@ -612,7 +761,7 @@
 </head>
 <body>
 
-  <!-- ── Floating background circles (identical to main page) ── -->
+  <!-- ── Floating background circles ── -->
   <div class="floating-circles" aria-hidden="true">
     <div class="circle"></div>
     <div class="circle"></div>
@@ -843,6 +992,10 @@
 
       <!-- Search Section -->
       <section class="glass" style="padding:22px; margin-bottom:22px;">
+
+        <!-- Access Status Bar (shown after login) -->
+        <div id="eidAccessBar" role="status" aria-live="polite"></div>
+
         <div class="eid-search-wrapper">
 
           <!-- Tab selector -->
@@ -878,6 +1031,7 @@
 
         <!-- Results -->
         <div class="eid-results-area" id="eidResultsArea" aria-live="polite"></div>
+
       </section>
 
     </main>
@@ -889,17 +1043,12 @@
 
   <div id="google_translate_element" class="translate-host" aria-hidden="true"></div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       zip.js — full build with AES-256 encryption support.
-       Replaces JSZip which only supports the legacy ZipCrypto cipher
-       and throws "Encrypted zip are not supported" on AES archives.
-  ══════════════════════════════════════════════════════════════ -->
+  <!-- zip.js — full build with AES-256 encryption support -->
   <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.52/dist/zip-full.min.js"></script>
 
   <script>
   /* ════════════════════════════════════════════════════════
      SECTION 1 — Shared constants & utilities
-     (Matches main.js exactly)
   ════════════════════════════════════════════════════════ */
 
   const API_BASE      = "https://livenews.live/KFC";
@@ -911,15 +1060,26 @@
   const THEME_STORAGE_KEY       = "kfcTheme";
   const TRANSLATION_STORAGE_KEY = "kfcPageLanguage";
 
+  /* ── Authorised card numbers that may use Emirates ID Search ── */
+  const EID_ALLOWED_CARDS = new Set([
+    "746-210-001",
+    "746-210-011",
+    "746-210-006",
+    "746-210-040",
+    "746-210-008",
+    "746-210-007",
+    "746-210-021"
+  ]);
+
   let users       = [];
   let currentUser = null;
 
-  let currentPageLanguage        = localStorage.getItem(TRANSLATION_STORAGE_KEY) === "ur" ? "ur" : "en";
-  let googleTranslateLoadPromise = null;
-  let translatePending           = null;
-  let translationRefreshTimer    = null;
-  let translationMutationObserver= null;
-  let translationFixRunning      = false;
+  let currentPageLanguage         = localStorage.getItem(TRANSLATION_STORAGE_KEY) === "ur" ? "ur" : "en";
+  let googleTranslateLoadPromise  = null;
+  let translatePending            = null;
+  let translationRefreshTimer     = null;
+  let translationMutationObserver = null;
+  let translationFixRunning       = false;
 
   /* ── Cached Elements ── */
   let userArea, usernameText, dropdown, guestView, userView,
@@ -1216,6 +1376,8 @@
     if (vcb) { vcb.href = `viewcard.html?card=${btoa(String(user.CNo))}`; vcb.target = "_blank"; }
     showLoggedInUI();
     refreshTranslatedView();
+    /* Refresh access UI whenever login state changes */
+    updateEidAccessUI();
   }
 
   function showWelcome(name) {
@@ -1247,12 +1409,13 @@
 
   function checkSession() {
     const saved = localStorage.getItem("kfcUser");
-    if (!saved) { currentUser = null; showLoggedOutUI(); return; }
+    if (!saved) { currentUser = null; showLoggedOutUI(); updateEidAccessUI(); return; }
     try {
       const p = JSON.parse(saved);
       if (p && !isCancelledStatus(p.Status)) { currentUser = p; renderUserToUI(p); }
       else { clearSession(); currentUser = null; showLoggedOutUI(); }
     } catch(e) { clearSession(); currentUser = null; showLoggedOutUI(); }
+    updateEidAccessUI();
   }
 
   async function loadUsers() {
@@ -1408,7 +1571,55 @@
   }
 
   /* ════════════════════════════════════════════════════════
-     SECTION 2 — Emirates ID Search
+     SECTION 2 — Emirates ID Access Control
+  ════════════════════════════════════════════════════════ */
+
+  /**
+   * Returns one of three access states:
+   *   "guest"   — no user is logged in
+   *   "allowed" — user is logged in AND their card number is in the allowed list
+   *   "denied"  — user is logged in BUT their card number is NOT in the allowed list
+   */
+  function getEidAccessState() {
+    if (!currentUser) return "guest";
+    const card = normalizeText(currentUser.CNo);
+    return EID_ALLOWED_CARDS.has(card) ? "allowed" : "denied";
+  }
+
+  /**
+   * Updates the access status bar above the search UI and clears
+   * the results area whenever the access state changes.
+   */
+  function updateEidAccessUI() {
+    const bar         = document.getElementById("eidAccessBar");
+    const resultsArea = document.getElementById("eidResultsArea");
+    const state       = getEidAccessState();
+
+    /* Reset bar classes */
+    if (bar) {
+      bar.className = "";
+      bar.innerHTML = "";
+
+      if (state === "allowed") {
+        bar.className = "bar-allowed";
+        bar.innerHTML =
+          `<i class="fa-solid fa-circle-check" style="font-size:16px;"></i>
+           Access granted — you are authorised to search Emirates IDs.`;
+      } else if (state === "denied") {
+        bar.className = "bar-denied";
+        bar.innerHTML =
+          `<i class="fa-solid fa-ban" style="font-size:16px;"></i>
+           Access restricted — your account is not authorised to use this section.`;
+      }
+      /* "guest" state — bar stays hidden (no class, no content) */
+    }
+
+    /* Clear any existing results whenever access state refreshes */
+    if (resultsArea) resultsArea.innerHTML = "";
+  }
+
+  /* ════════════════════════════════════════════════════════
+     SECTION 3 — Emirates ID Search
   ════════════════════════════════════════════════════════ */
 
   let eidSearchMode  = "name";   /* "name" | "card" */
@@ -1461,10 +1672,69 @@
     eidSearchInput.focus();
   }
 
+  /**
+   * Renders an access gate in the results area and stops the search.
+   * Returns true if access should be blocked, false if search may proceed.
+   */
+  function checkAndRenderAccessGate() {
+    const state = getEidAccessState();
+
+    if (state === "guest") {
+      eidResultsArea.innerHTML = `
+        <div class="eid-access-gate gate-login glass">
+          <div class="gate-icon">
+            <i class="fa-solid fa-user-lock"></i>
+          </div>
+          <h3>Sign In Required</h3>
+          <p>
+            You need to be signed in to search Emirates IDs.
+            Please log in with your registered account to continue.
+          </p>
+          <button class="gate-signin-btn" id="gateSignInBtn" type="button">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In to Continue
+          </button>
+        </div>`;
+      /* Wire the inline sign-in button to open the login overlay */
+      const gateBtn = document.getElementById("gateSignInBtn");
+      if (gateBtn && loginOverlay) {
+        gateBtn.addEventListener("click", () => loginOverlay.classList.add("show"));
+      }
+      return true; /* block search */
+    }
+
+    if (state === "denied") {
+      const firstName = normalizeText(currentUser.name).split(" ")[0] || "User";
+      eidResultsArea.innerHTML = `
+        <div class="eid-access-gate gate-denied glass">
+          <div class="gate-icon">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3>Access Not Permitted</h3>
+          <p>
+            Hello <strong>${escapeHTML(firstName)}</strong>, your account
+            (<strong>${escapeHTML(normalizeText(currentUser.CNo))}</strong>) does not have
+            permission to access the Emirates ID search. This section is restricted to
+            authorised committee members only.
+          </p>
+          <div class="gate-denied-strip">
+            <i class="fa-solid fa-ban"></i>
+            Your card is not on the approved access list.
+          </div>
+        </div>`;
+      return true; /* block search */
+    }
+
+    return false; /* access allowed — proceed with search */
+  }
+
   /* Perform search and render results */
   function performSearch() {
-    const q = normalizeText(eidSearchInput.value).toLowerCase();
     eidResultsArea.innerHTML = "";
+
+    /* ── Access gate check — must pass before any search logic runs ── */
+    if (checkAndRenderAccessGate()) return;
+
+    const q = normalizeText(eidSearchInput.value).toLowerCase();
 
     if (q.length < 2) {
       eidResultsArea.innerHTML = buildEidInfoBox(
@@ -1566,7 +1836,7 @@
   /* Toggle password visibility */
   pwdEyeBtn.addEventListener("click", () => {
     const hidden = pwdInput.type === "password";
-    pwdInput.type      = hidden ? "text" : "password";
+    pwdInput.type        = hidden ? "text" : "password";
     pwdEyeIcon.className = hidden ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
   });
 
@@ -1584,16 +1854,7 @@
   pwdSubmitBtn.addEventListener("click", attemptUnlock);
 
   /* ════════════════════════════════════════════════════════
-     FIX — AES-encrypted ZIP decryption via zip.js
-     ────────────────────────────────────────────────────────
-     JSZip only supports the legacy ZipCrypto (stream cipher)
-     and throws "Encrypted zip are not supported" whenever it
-     encounters an AES-128 or AES-256 entry — the standard
-     produced by 7-Zip, WinRAR, macOS Archive Utility, etc.
-
-     zip.js (@zip.js/zip.js) ships its own AES-256 WebCrypto
-     implementation and handles both ZipCrypto and AES
-     transparently once you pass { password } to ZipReader.
+     AES-encrypted ZIP decryption via zip.js
   ════════════════════════════════════════════════════════ */
 
   async function attemptUnlock() {
@@ -1621,13 +1882,9 @@
         cachedZipBlob = await res.blob();
       }
 
-      /* ── Step 2: Open the ZIP with zip.js (AES-256 supported) ──
-         zip.js exposes its classes on the global `zip` object when
-         loaded via the UMD bundle (zip-full.min.js).               */
+      /* ── Step 2: Open the ZIP with zip.js (AES-256 supported) ── */
       const { ZipReader, BlobReader, BlobWriter } = zip;
 
-      /* Pass the password here — zip.js auto-detects the encryption
-         method (ZipCrypto or AES) per entry and decrypts accordingly. */
       const zipReader = new ZipReader(
         new BlobReader(cachedZipBlob),
         { password }
@@ -1643,20 +1900,16 @@
 
       /* ── Step 3: Locate the member's image inside the ZIP ── */
       const lowerCard = cardNo.toLowerCase();
-
       const IMAGE_EXTS = ["jpg", "jpeg", "png"];
 
-      /* Build a lookup: normalised filename → entry */
       const entryMap = new Map();
       for (const entry of entries) {
         if (!entry.directory) {
-          /* Use only the basename (strip any folder prefix) */
           const base = entry.filename.split("/").pop().toLowerCase();
           entryMap.set(base, entry);
         }
       }
 
-      /* Try exact name matches first, then fallback to case-insensitive scan */
       let targetEntry = null;
       let targetExt   = "jpg";
 
@@ -1669,8 +1922,6 @@
         }
       }
 
-      /* Fallback: scan every entry whose base name (without extension)
-         matches the card number — handles mixed-case file names.       */
       if (!targetEntry) {
         for (const [base, entry] of entryMap) {
           const dotIdx = base.lastIndexOf(".");
@@ -1692,15 +1943,13 @@
         );
       }
 
-      /* ── Step 4: Decrypt + decompress → Blob ──
-         If the password is wrong, zip.js rejects the getData() promise. */
+      /* ── Step 4: Decrypt + decompress → Blob ── */
       let imageBlob;
       try {
         const mimeType = targetExt === "png" ? "image/png" : "image/jpeg";
         imageBlob = await targetEntry.getData(new BlobWriter(mimeType), { password });
       } catch (decryptErr) {
         await zipReader.close().catch(() => {});
-        /* zip.js throws a generic error on bad password — surface a clear message. */
         const msg = (decryptErr && decryptErr.message) ? decryptErr.message.toLowerCase() : "";
         if (msg.includes("password") || msg.includes("decrypt") || msg.includes("invalid") || msg.includes("wrong")) {
           throw new Error("Incorrect password. Please try again.");
@@ -1717,7 +1966,6 @@
 
     } catch (err) {
       pwdError.textContent = err.message || "An unexpected error occurred. Please try again.";
-      /* Reset the cached blob so a corrupted/incomplete download is retried */
       cachedZipBlob = null;
     } finally {
       pwdSubmitBtn.innerHTML = `<i class="fa-solid fa-unlock"></i> Unlock &amp; View ID`;
@@ -1790,7 +2038,7 @@
   });
 
   /* ════════════════════════════════════════════════════════
-     SECTION 3 — Event Bindings
+     SECTION 4 — Event Bindings
   ════════════════════════════════════════════════════════ */
 
   function bindEvents() {
@@ -1868,7 +2116,16 @@
     });
 
     if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => { clearSession(); currentUser = null; location.reload(); });
+      logoutBtn.addEventListener("click", () => {
+        clearSession();
+        currentUser = null;
+        /* Update access UI immediately on logout without full page reload */
+        showLoggedOutUI();
+        updateEidAccessUI();
+        if (eidResultsArea) eidResultsArea.innerHTML = "";
+        if (eidSearchInput) eidSearchInput.value = "";
+        closeAllDropdowns();
+      });
     }
 
     if (openLoginBtn) {
@@ -1913,7 +2170,7 @@
   }
 
   /* ════════════════════════════════════════════════════════
-     SECTION 4 — Initialise
+     SECTION 5 — Initialise
   ════════════════════════════════════════════════════════ */
 
   async function init() {
