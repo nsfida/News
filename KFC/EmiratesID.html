@@ -3,616 +3,339 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Emirates ID Search - Khawrai Falahi Committee UAE</title>
+  <title>Khawrai Falahi Committee UAE - Emirates ID Search</title>
+
   <link rel="stylesheet" href="main.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    /* ── Emirates ID page-specific styles ── */
+    .search-shell {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
 
-    .eid-search-wrapper {
+    .search-panel,
+    .results-panel,
+    .zip-status-panel {
+      padding: 18px;
+    }
+
+    .search-panel h2,
+    .results-panel h2,
+    .zip-status-panel h2 {
+      margin-bottom: 12px;
+    }
+
+    .search-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
       width: 100%;
-      max-width: 700px;
-      margin: 0 auto 28px;
     }
 
-    .eid-tab-row {
+    .search-controls-top {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .search-toggle {
       display: flex;
       gap: 10px;
-      margin-bottom: 16px;
       flex-wrap: wrap;
-    }
-
-    .eid-tab {
-      flex: 1;
-      min-width: 130px;
-      padding: 11px 14px;
-      border: 2px solid transparent;
-      border-radius: 30px;
-      background: rgba(255,255,255,0.18);
-      backdrop-filter: blur(10px);
-      color: #0d3c91;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: center;
-      display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 8px;
-    }
-
-    body.dark-mode .eid-tab {
-      color: #9bc2ff;
-      background: rgba(10,18,33,0.45);
-    }
-
-    .eid-tab.active,
-    .eid-tab:hover {
-      background: linear-gradient(90deg, #ff6ec4, #7873f5);
-      color: #fff;
-      border-color: transparent;
-    }
-
-    .eid-search-box {
-      display: flex;
-      gap: 10px;
       align-items: center;
-      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
-    .eid-search-input {
-      flex: 1;
-      min-width: 180px;
-      padding: 12px 18px;
-      border: 1.5px solid rgba(120,115,245,0.35);
-      border-radius: 30px;
-      font-size: 15px;
-      background: rgba(255,255,255,0.55);
-      backdrop-filter: blur(10px);
-      color: #1a1a1a;
-      outline: none;
-      transition: border-color 0.3s;
-    }
-
-    body.dark-mode .eid-search-input {
-      background: rgba(10,18,33,0.55);
-      color: #eef4ff;
-      border-color: rgba(120,115,245,0.45);
-    }
-
-    .eid-search-input:focus {
-      border-color: #7873f5;
-      box-shadow: 0 0 0 3px rgba(120,115,245,0.15);
-    }
-
-    .eid-search-btn {
-      padding: 12px 26px;
-      border: none;
-      border-radius: 30px;
-      background: linear-gradient(90deg, #ff6ec4, #7873f5);
-      color: #fff;
-      font-weight: bold;
-      font-size: 15px;
+    .search-toggle label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.35);
       cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      user-select: none;
+    }
+
+    body.dark-mode .search-toggle label {
+      background: rgba(12, 19, 34, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #eef4ff;
+    }
+
+    .search-toggle input {
+      accent-color: var(--accent);
+    }
+
+    .search-input,
+    .password-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.82);
+      color: #111;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark-mode .search-input,
+    body.dark-mode .password-input {
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+    }
+
+    .search-btn,
+    .unlock-btn,
+    .close-preview-btn,
+    .clear-btn {
+      border: none;
+      outline: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      box-shadow: 0 8px 18px rgba(120, 115, 245, 0.18);
+      transition: transform 0.2s ease, opacity 0.2s ease;
       white-space: nowrap;
-      transition: opacity 0.3s, transform 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
-    .eid-search-btn:hover {
-      opacity: 0.9;
+    .search-btn:hover,
+    .unlock-btn:hover,
+    .close-preview-btn:hover,
+    .clear-btn:hover {
       transform: translateY(-2px);
+      opacity: 0.95;
     }
 
-    .eid-results-area {
-      margin-top: 24px;
+    .clear-btn {
+      background: linear-gradient(90deg, #0d3c91, #4facfe);
     }
 
-    .eid-result-card {
-      background: rgba(255,255,255,0.28);
-      backdrop-filter: blur(18px);
-      border: 1px solid rgba(255,255,255,0.35);
-      border-radius: 18px;
-      padding: 18px 22px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
-      transition: transform 0.3s, box-shadow 0.3s;
+    .search-hint {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--soft-light);
+      line-height: 1.6;
     }
 
-    body.dark-mode .eid-result-card {
-      background: rgba(10,18,33,0.58);
-      border: 1px solid rgba(255,255,255,0.1);
+    body.dark-mode .search-hint {
+      color: var(--soft-dark);
     }
 
-    .eid-result-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 32px rgba(0,0,0,0.13);
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      width: 100%;
+      margin-top: 8px;
     }
 
-    .eid-result-info {
+    .eid-result {
       display: flex;
       flex-direction: column;
-      gap: 5px;
-    }
-
-    .eid-result-name {
-      font-size: 17px;
-      font-weight: bold;
-      color: #0d3c91;
-    }
-
-    body.dark-mode .eid-result-name {
-      color: #9bc2ff;
-    }
-
-    .eid-result-meta {
-      font-size: 13px;
-      color: #555;
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    body.dark-mode .eid-result-meta {
-      color: #c9d5ea;
-    }
-
-    .eid-result-meta span {
-      display: flex;
+      gap: 8px;
       align-items: center;
-      gap: 5px;
+      justify-content: center;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.36);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+      text-align: center;
     }
 
-    .eid-view-btn {
-      padding: 10px 22px;
+    body.dark-mode .eid-result {
+      background: rgba(12, 19, 34, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .eid-result h3 {
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .eid-result p {
+      font-size: 13px;
+      color: var(--soft-light);
+      line-height: 1.6;
+    }
+
+    body.dark-mode .eid-result p {
+      color: var(--soft-dark);
+    }
+
+    .eid-result .view-btn {
+      width: 100%;
       border: none;
-      border-radius: 25px;
+      border-radius: 999px;
+      padding: 11px 14px;
       background: linear-gradient(90deg, #ff6ec4, #7873f5);
       color: #fff;
-      font-weight: bold;
-      font-size: 14px;
       cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.3s, transform 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-weight: 700;
     }
 
-    .eid-view-btn:hover {
-      opacity: 0.88;
-      transform: translateY(-2px);
+    .eid-result .view-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
     }
 
-    .eid-no-results {
+    .empty-state {
       text-align: center;
-      padding: 35px 20px;
-      color: #888;
-      font-size: 15px;
+      padding: 18px 10px;
+      color: var(--soft-light);
+      font-size: 14px;
+      line-height: 1.7;
     }
 
-    body.dark-mode .eid-no-results {
-      color: #c9d5ea;
+    body.dark-mode .empty-state {
+      color: var(--soft-dark);
     }
 
-    /* ── Password Modal ── */
-    .pwd-overlay {
+    .search-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--soft-light);
+    }
+
+    body.dark-mode .search-meta {
+      color: var(--soft-dark);
+    }
+
+    .search-chip {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    body.dark-mode .search-chip {
+      background: rgba(12, 19, 34, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .password-overlay,
+    .preview-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(8px);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 4000;
+      padding: 16px;
     }
 
-    .pwd-overlay.show {
+    .password-overlay.show,
+    .preview-overlay.show {
       display: flex;
     }
 
-    .pwd-box {
-      width: 90%;
-      max-width: 380px;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.5);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
-      padding: 32px 28px;
-      text-align: center;
-      position: relative;
-    }
-
-    body.dark-mode .pwd-box {
-      background: rgba(10,22,40,0.92);
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .pwd-box-icon {
-      font-size: 42px;
-      margin-bottom: 14px;
-      color: #7873f5;
-    }
-
-    .pwd-box h3 {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 6px;
-      background: linear-gradient(90deg, #0d3c91, #7873f5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .pwd-box p {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    body.dark-mode .pwd-box p {
-      color: #c9d5ea;
-    }
-
-    .pwd-input-row {
-      position: relative;
-      margin-bottom: 14px;
-    }
-
-    .pwd-input {
-      width: 100%;
-      padding: 12px 46px 12px 18px;
-      border: 1.5px solid rgba(120,115,245,0.4);
-      border-radius: 25px;
-      font-size: 15px;
-      background: rgba(255,255,255,0.7);
-      color: #1a1a1a;
-      outline: none;
-      box-sizing: border-box;
-      transition: border-color 0.3s;
-    }
-
-    body.dark-mode .pwd-input {
-      background: rgba(10,18,33,0.7);
-      color: #eef4ff;
-      border-color: rgba(120,115,245,0.45);
-    }
-
-    .pwd-input:focus {
-      border-color: #7873f5;
-      box-shadow: 0 0 0 3px rgba(120,115,245,0.15);
-    }
-
-    .pwd-eye-btn {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #7873f5;
-      font-size: 16px;
-      padding: 0;
-    }
-
-    .pwd-submit-btn {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 25px;
-      background: linear-gradient(90deg, #ff6ec4, #7873f5);
-      color: #fff;
-      font-weight: bold;
-      font-size: 15px;
-      cursor: pointer;
-      margin-top: 4px;
-      transition: opacity 0.3s, transform 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .pwd-submit-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-
-    .pwd-error {
-      color: #e53e3e;
-      font-size: 13px;
-      margin-top: 10px;
-      min-height: 18px;
-    }
-
-    .pwd-close-btn {
-      position: absolute;
-      top: 14px;
-      right: 18px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #0d3c91;
-      line-height: 1;
-      transition: color 0.3s, transform 0.2s;
-    }
-
-    body.dark-mode .pwd-close-btn {
-      color: #9bc2ff;
-    }
-
-    .pwd-close-btn:hover {
-      color: #ff4d4d;
-      transform: scale(1.2);
-    }
-
-    /* ── Emirates ID Viewer Overlay ── */
-    .eid-viewer-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255,255,255,0.18);
-      backdrop-filter: blur(12px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 5000;
-    }
-
-    body.dark-mode .eid-viewer-overlay {
-      background: rgba(0,0,0,0.55);
-    }
-
-    .eid-viewer-overlay.show {
-      display: flex;
-    }
-
-    .eid-viewer-box {
-      width: 92%;
-      max-width: 600px;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.55);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    .password-box,
+    .preview-box {
+      width: min(92vw, 460px);
       padding: 22px;
-      position: relative;
-      max-height: 88vh;
-      overflow-y: auto;
+      border-radius: 28px;
     }
 
-    body.dark-mode .eid-viewer-box {
-      background: rgba(10,22,40,0.94);
-      border: 1px solid rgba(255,255,255,0.12);
+    .password-box h2,
+    .preview-box h2 {
+      margin-bottom: 10px;
     }
 
-    .eid-viewer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .eid-viewer-header h2 {
-      background: linear-gradient(90deg, #0d3c91, #7873f5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-size: 18px;
-    }
-
-    body.dark-mode .eid-viewer-header h2 {
-      background: linear-gradient(90deg, #9bc2ff, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .eid-viewer-close {
-      color: #0d3c91;
-      font-size: 22px;
-      cursor: pointer;
-      transition: color 0.3s, transform 0.2s;
-    }
-
-    body.dark-mode .eid-viewer-close {
-      color: #9bc2ff;
-    }
-
-    .eid-viewer-close:hover {
-      color: #ff4d4d;
-      transform: scale(1.2);
-    }
-
-    .eid-viewer-member-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-      padding: 14px 16px;
-      background: rgba(120,115,245,0.08);
-      border-radius: 14px;
-      border: 1px solid rgba(120,115,245,0.18);
-    }
-
-    .eid-viewer-member-info i {
-      font-size: 28px;
-      color: #7873f5;
-    }
-
-    .eid-viewer-member-info .info-text h4 {
-      font-size: 16px;
-      font-weight: bold;
-      color: #0d3c91;
-      margin: 0 0 3px;
-      -webkit-text-fill-color: #0d3c91;
-      background: none;
-    }
-
-    body.dark-mode .eid-viewer-member-info .info-text h4 {
-      color: #9bc2ff;
-      -webkit-text-fill-color: #9bc2ff;
-    }
-
-    .eid-viewer-member-info .info-text p {
+    .password-box p,
+    .preview-box p {
+      margin-bottom: 14px;
       font-size: 13px;
-      color: #555;
-      margin: 0;
-    }
-
-    body.dark-mode .eid-viewer-member-info .info-text p {
-      color: #c9d5ea;
-    }
-
-    #eidImageContainer {
-      width: 100%;
+      line-height: 1.7;
+      color: var(--soft-light);
       text-align: center;
     }
 
-    #eidImageContainer img {
-      width: 100%;
-      border-radius: 14px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.14);
+    body.dark-mode .password-box p,
+    body.dark-mode .preview-box p {
+      color: var(--soft-dark);
     }
 
-    .eid-loading-spinner {
+    .password-actions,
+    .preview-actions {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-      padding: 35px;
-      color: #7873f5;
-    }
-
-    .eid-loading-spinner i {
-      font-size: 36px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    .eid-load-error {
-      text-align: center;
-      padding: 30px;
-      color: #e53e3e;
-      font-size: 15px;
-    }
-
-    /* ── Page hero banner ── */
-    .eid-hero {
-      padding: 22px;
-      margin-bottom: 22px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
+      gap: 10px;
+      margin-top: 12px;
+      justify-content: center;
       flex-wrap: wrap;
     }
 
-    .eid-hero-icon {
-      width: 60px;
-      height: 60px;
+    .password-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .preview-image {
+      width: 100%;
+      max-height: 72vh;
+      object-fit: contain;
       border-radius: 18px;
-      background: linear-gradient(135deg, #ff6ec4, #7873f5);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .preview-head {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
-    .eid-hero-icon i {
-      font-size: 28px;
-      color: #fff;
-    }
-
-    .eid-hero-text h2 {
-      font-size: 20px;
-      text-align: left;
-    }
-
-    .eid-hero-text p {
-      font-size: 13px;
-      color: #555;
-      margin-top: 5px;
-      line-height: 1.5;
-    }
-
-    body.dark-mode .eid-hero-text p {
-      color: #c9d5ea;
-    }
-
-    /* ── Download button inside viewer ── */
-    .eid-download-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 16px;
-      padding: 10px 22px;
-      border: none;
-      border-radius: 25px;
-      background: linear-gradient(90deg, #ff6ec4, #7873f5);
-      color: #fff;
-      font-weight: bold;
-      font-size: 14px;
+    .preview-head i {
       cursor: pointer;
-      transition: opacity 0.3s, transform 0.2s;
+      font-size: 20px;
     }
 
-    .eid-download-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-
-    /* ── Spinner on view button ── */
-    .btn-spinner {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    /* ── Responsive tweaks ── */
-    @media (max-width: 500px) {
-      .eid-result-card {
-        flex-direction: column;
-        align-items: flex-start;
+    @media (max-width: 700px) {
+      .search-controls {
+        grid-template-columns: 1fr;
       }
 
-      .eid-view-btn {
+      .search-controls-top {
+        grid-template-columns: 1fr;
+      }
+
+      .password-row {
+        grid-template-columns: 1fr;
+      }
+
+      .search-btn,
+      .clear-btn {
         width: 100%;
-        justify-content: center;
-      }
-
-      .eid-tab-row {
-        flex-direction: column;
-      }
-
-      .eid-search-box {
-        flex-direction: column;
-      }
-
-      .eid-search-btn {
-        width: 100%;
-        justify-content: center;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- ── Floating background circles (identical to main page) ── -->
   <div class="floating-circles" aria-hidden="true">
     <div class="circle"></div>
     <div class="circle"></div>
@@ -625,7 +348,6 @@
     <div class="circle"></div>
   </div>
 
-  <!-- ── Top Header ── -->
   <header class="top-header">
     <div class="logo-area">
       <a href="https://livenews.live/KFC" aria-label="Go to KFC home page">
@@ -635,15 +357,12 @@
     </div>
 
     <div class="user-area" id="userArea">
-      <button class="notification-wrapper theme-toggle-btn" id="themeToggleBtn" type="button"
-        aria-label="Toggle dark mode" title="Toggle dark mode">
+      <button class="notification-wrapper theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
         <i class="fa-solid fa-moon" id="themeToggleIcon" aria-hidden="true"></i>
       </button>
-      <button class="notification-wrapper translate-toggle-btn" id="translateToggleBtn" type="button"
-        aria-label="Translate page to Urdu" title="Translate page to Urdu">
+      <button class="notification-wrapper translate-toggle-btn" id="translateToggleBtn" type="button" aria-label="Translate page to Urdu" title="Translate page to Urdu">
         <i class="fa-solid fa-language" id="translateToggleIcon" aria-hidden="true"></i>
       </button>
-
       <div class="notification-wrapper" id="msgBtn">
         <i class="fa-solid fa-envelope" aria-hidden="true"></i>
         <span class="notification-badge" id="msgBadge" style="display:none;">!</span>
@@ -667,23 +386,27 @@
       </div>
 
       <div class="header-profile-img-container">
-        <img id="headerProfileImg" src="https://livenews.live/KFC/static/images/photos/default.png"
-          alt="User" class="header-profile-img" style="display:none;">
+        <img
+          id="headerProfileImg"
+          src="https://livenews.live/KFC/static/images/photos/default.png"
+          alt="User"
+          class="header-profile-img"
+          style="display:none;"
+        >
         <i class="fa-solid fa-user-circle" id="headerUserIcon" aria-hidden="true"></i>
       </div>
+
       <span id="username">Welcome, Guest</span>
       <i class="fa-solid fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
     </div>
   </header>
 
-  <!-- ── Info Marquee Banner ── -->
   <div id="infoBanner" class="info-banner">
     <div class="marquee">
-      🪪 Emirates ID Search — Look up any member's Emirates ID securely. A password is required to view the ID image. Please ensure you have the correct authorization before proceeding.
+      🕭 Dear members: Search Emirates ID by name or card number. If the archive is password protected, you will be asked for the password before the image opens.
     </div>
   </div>
 
-  <!-- ── User Dropdown ── -->
   <div id="userDropdown" class="user-dropdown glass">
     <div id="guestView">
       <h3>Welcome Guest</h3>
@@ -692,17 +415,21 @@
         <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Sign In
       </button>
     </div>
+
     <div id="userView" style="display:none; flex-direction:column; align-items:center; gap:6px;">
       <div class="dropdown-photo-area">
         <img id="dropdownProfileImg" src="" alt="Profile Photo" class="dropdown-profile-img">
       </div>
+
       <h3 id="userFullName"></h3>
+
       <div class="user-info">
         <p id="userCard"></p>
         <p id="userDesg"></p>
         <p id="userBlood"></p>
         <p id="userMobile"></p>
       </div>
+
       <div class="user-buttons" style="display:flex; flex-direction:column; gap:8px; width:100%; align-items:center;">
         <button id="viewPhotoBtn" type="button">
           <i class="fa-solid fa-image" aria-hidden="true"></i> View Photo
@@ -715,19 +442,21 @@
     </div>
   </div>
 
-  <!-- ── Profile Photo Overlay ── -->
   <div id="photoOverlay" class="overlay" aria-hidden="true">
     <div class="photo-viewer-box glass">
       <div class="leaders-header">
         <h2>Profile Photo</h2>
         <i class="fa-solid fa-xmark" id="closePhotoOverlay" aria-hidden="true"></i>
       </div>
-      <img id="fullProfileImg" src="" alt="User Photo"
-        style="width:100%; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
+      <img
+        id="fullProfileImg"
+        src=""
+        alt="User Photo"
+        style="width:100%; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);"
+      >
     </div>
   </div>
 
-  <!-- ── Login Overlay ── -->
   <div id="loginOverlay" class="login-overlay" aria-hidden="true">
     <div class="login-box glass">
       <h2><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Secure Login</h2>
@@ -738,148 +467,130 @@
     </div>
   </div>
 
-  <!-- ── Welcome Popup ── -->
   <div id="welcomePopup" class="welcome-popup" aria-live="polite">
     <p id="welcomeText"></p>
   </div>
 
-  <!-- ── Leaders Overlay ── -->
-  <div id="leadersOverlay" class="overlay" aria-hidden="true">
-    <div class="leaders-box glass">
-      <div class="leaders-header">
-        <h2>Committee Leaders</h2>
-        <i class="fa-solid fa-xmark" id="closeLeaders" aria-hidden="true"></i>
-      </div>
-      <div id="leadersList" class="leaders-list"></div>
-    </div>
-  </div>
-
-  <!-- ── Password Modal ── -->
-  <div id="pwdOverlay" class="pwd-overlay" role="dialog" aria-modal="true" aria-labelledby="pwdTitle">
-    <div class="pwd-box">
-      <button class="pwd-close-btn" id="pwdCloseBtn" type="button" aria-label="Close password dialog">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <div class="pwd-box-icon">
-        <i class="fa-solid fa-lock"></i>
-      </div>
-      <h3 id="pwdTitle">Protected Archive</h3>
-      <p>Enter the password to unlock the Emirates ID archive and view the image.</p>
-      <div class="pwd-input-row">
-        <input type="password" id="pwdInput" class="pwd-input"
-          placeholder="Enter archive password" autocomplete="off">
-        <button class="pwd-eye-btn" id="pwdEyeBtn" type="button" aria-label="Toggle password visibility">
-          <i class="fa-solid fa-eye" id="pwdEyeIcon"></i>
-        </button>
-      </div>
-      <button class="pwd-submit-btn" id="pwdSubmitBtn" type="button">
-        <i class="fa-solid fa-unlock"></i>
-        Unlock &amp; View ID
-      </button>
-      <p class="pwd-error" id="pwdError" aria-live="polite"></p>
-    </div>
-  </div>
-
-  <!-- ── Emirates ID Viewer Overlay ── -->
-  <div id="eidViewerOverlay" class="eid-viewer-overlay" aria-hidden="true">
-    <div class="eid-viewer-box glass">
-      <div class="eid-viewer-header">
-        <h2><i class="fa-solid fa-id-card"></i>&nbsp; Emirates ID</h2>
-        <i class="fa-solid fa-xmark eid-viewer-close" id="eidViewerClose" aria-hidden="true"></i>
-      </div>
-      <div class="eid-viewer-member-info" id="eidViewerMemberInfo">
-        <i class="fa-solid fa-user-circle"></i>
-        <div class="info-text">
-          <h4 id="eidViewerName">—</h4>
-          <p id="eidViewerCard">—</p>
-        </div>
-      </div>
-      <div id="eidImageContainer">
-        <!-- image or spinner injected here -->
-      </div>
-      <div style="text-align:center;">
-        <button class="eid-download-btn" id="eidDownloadBtn" style="display:none;" type="button">
-          <i class="fa-solid fa-download"></i> Download Image
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Main Layout ── -->
   <div class="dashboard-container">
     <aside class="sidebar glass">
       <div class="sidebar-header">
         <h2>Main Menu</h2>
         <i class="fa-solid fa-bars" id="sidebarToggle" aria-hidden="true"></i>
       </div>
+
       <nav class="sidebar-nav" aria-label="Primary navigation">
-        <a href="https://livenews.live/KFC"><i class="fa-solid fa-house" aria-hidden="true"></i> Dashboard</a>
+        <a href="index.html"><i class="fa-solid fa-house" aria-hidden="true"></i> Dashboard</a>
         <a href="https://livenews.live/KFC/message/president.html"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> President's Message</a>
         <a href="https://livenews.live/KFC/message/alerts.html"><i class="fa-solid fa-bell" aria-hidden="true"></i> Alerts</a>
         <a href="https://livenews.live/KFC/database.html"><i class="fa-solid fa-database" aria-hidden="true"></i> Member Database</a>
         <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users" aria-hidden="true"></i> Cabinet Members</a>
         <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images" aria-hidden="true"></i> Gallery</a>
-        <a href="#" class="active" style="background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;">
-          <i class="fa-solid fa-id-card" aria-hidden="true"></i> Emirates ID
-        </a>
       </nav>
     </aside>
 
     <main class="main-content">
-
-      <!-- Hero Banner -->
-      <section class="eid-hero glass">
-        <div class="eid-hero-icon">
-          <i class="fa-solid fa-id-card"></i>
-        </div>
-        <div class="eid-hero-text">
-          <h2>Emirates ID Search</h2>
+      <section class="welcome-section glass">
+        <div class="welcome-text">
+          <h2>Emirates ID Search Portal</h2>
           <p>
-            Search for any registered member's Emirates ID by their full name or card number.
-            A secure password is required to unlock and view the Emirates ID image from the protected archive.
+            Search member records by name or card number, then open the Emirates ID image directly from the protected archive.
+            The page keeps the same committee theme, login system, notifications, and member messages.
           </p>
+          <p>
+            Use the search box below to locate a member. When you press the view button, the page will ask for the ZIP password,
+            verify it, and then display the matching Emirates ID image from <strong>emirates.zip</strong>.
+          </p>
+        </div>
+
+        <div class="welcome-image">
+          <img src="logo.png" alt="KFC Logo">
         </div>
       </section>
 
-      <!-- Search Section -->
-      <section class="glass" style="padding:22px; margin-bottom:22px;">
-        <div class="eid-search-wrapper">
+      <section class="stats-section">
+        <div class="stat glass">
+          <h3>👤 Total Members</h3>
+          <p id="totalMembers">Loading...</p>
+        </div>
 
-          <!-- Tab selector -->
-          <div class="eid-tab-row" role="tablist">
-            <button class="eid-tab active" id="tabByName" role="tab" aria-selected="true" type="button">
-              <i class="fa-solid fa-user"></i> Search by Name
-            </button>
-            <button class="eid-tab" id="tabByCard" role="tab" aria-selected="false" type="button">
-              <i class="fa-solid fa-id-badge"></i> Search by Card Number
-            </button>
+        <div class="stat glass">
+          <h3>✔ Active Members</h3>
+          <p id="activeMembers">Loading...</p>
+        </div>
+
+        <div class="stat glass">
+          <h3 id="leadersBtn" class="clickable">🤴🏻 Committee Leaders</h3>
+          <p id="leadersCount">Loading...</p>
+        </div>
+      </section>
+
+      <section class="search-shell">
+        <div class="search-panel glass">
+          <h2>Search Emirates ID</h2>
+
+          <div class="search-toggle" role="radiogroup" aria-label="Search category">
+            <label>
+              <input type="radio" name="searchMode" value="name" checked>
+              Search by Name
+            </label>
+            <label>
+              <input type="radio" name="searchMode" value="card">
+              Search by Card Number
+            </label>
           </div>
 
-          <!-- Search input row -->
-          <div class="eid-search-box">
+          <div class="search-controls-top">
             <input
               type="text"
-              id="eidSearchInput"
-              class="eid-search-input"
-              placeholder="Enter full name to search..."
+              id="searchInput"
+              class="search-input"
+              placeholder="Type a member name"
               autocomplete="off"
-              aria-label="Search input"
             >
-            <button class="eid-search-btn" id="eidSearchBtn" type="button">
+            <button id="searchBtn" class="search-btn" type="button">
               <i class="fa-solid fa-magnifying-glass"></i> Search
             </button>
           </div>
 
-          <!-- Hint text -->
-          <p id="eidSearchHint" style="font-size:12px; color:#888; margin-top:9px; padding-left:4px;">
-            Tip: Enter at least 2 characters to search by name.
-          </p>
+          <div class="search-controls">
+            <div class="search-meta">
+              <span class="search-chip" id="searchCountChip">0 results</span>
+              <span class="search-chip" id="zipChip">ZIP: not loaded</span>
+              <span class="search-chip" id="passwordChip">Password: locked</span>
+            </div>
+            <button id="clearSearchBtn" class="clear-btn" type="button">
+              <i class="fa-solid fa-broom"></i> Clear
+            </button>
+          </div>
+
+          <div class="search-hint">
+            Search works from the same <strong>cards.json</strong> file used by the dashboard.
+          </div>
         </div>
 
-        <!-- Results -->
-        <div class="eid-results-area" id="eidResultsArea" aria-live="polite"></div>
+        <div class="results-panel glass">
+          <h2>Search Results</h2>
+          <div id="resultsContainer" class="result-grid">
+            <div class="empty-state">Search for a member to see matching records here.</div>
+          </div>
+        </div>
+
+        <div class="zip-status-panel glass">
+          <h2>Archive Status</h2>
+          <div id="zipStatus" class="empty-state">
+            Waiting to load <strong>emirates.zip</strong>.
+          </div>
+        </div>
       </section>
 
+      <section class="info-section glass">
+        <h2>How it works</h2>
+        <p>
+          The page loads member records from the committee database, filters by the search category you select, and shows the exact
+          name and card number with a view button. The image file is searched inside the protected ZIP archive using the card number
+          as the filename, for example <strong>746-210-011.jpg</strong> or <strong>746-210-011.png</strong>.
+        </p>
+      </section>
     </main>
   </div>
 
@@ -889,1043 +600,400 @@
 
   <div id="google_translate_element" class="translate-host" aria-hidden="true"></div>
 
-  <!-- JSZip for reading password-protected zip -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <div id="passwordOverlay" class="password-overlay" aria-hidden="true">
+    <div class="password-box glass">
+      <h2><i class="fa-solid fa-lock"></i> ZIP Password</h2>
+      <p>
+        Enter the password for <strong>emirates.zip</strong>. After the password is verified, the matching Emirates ID image will open.
+      </p>
+      <div class="password-row">
+        <input id="zipPasswordInput" class="password-input" type="password" placeholder="Enter ZIP password" autocomplete="current-password">
+        <button id="unlockZipBtn" class="unlock-btn" type="button">Unlock</button>
+      </div>
+      <div class="password-actions">
+        <button id="cancelZipBtn" class="clear-btn" type="button">Cancel</button>
+      </div>
+      <p id="zipPasswordError" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div id="previewOverlay" class="preview-overlay" aria-hidden="true">
+    <div class="preview-box glass">
+      <div class="preview-head">
+        <h2 id="previewTitle">Emirates ID</h2>
+        <i class="fa-solid fa-xmark" id="closePreviewBtn" aria-hidden="true"></i>
+      </div>
+      <p id="previewSubtitle"></p>
+      <img id="previewImage" class="preview-image" alt="Emirates ID Preview">
+      <div class="preview-actions">
+        <button id="openNewTabBtn" class="search-btn" type="button">Open in New Tab</button>
+        <button id="closePreviewBtn2" class="clear-btn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js/dist/zip.min.js"></script>
+  <script src="main.js"></script>
 
   <script>
-  /* ════════════════════════════════════════════════════════
-     SECTION 1 — Shared constants & utilities
-     (Matches main.js exactly)
-  ════════════════════════════════════════════════════════ */
+    (() => {
+      const API_BASE = "https://livenews.live/KFC";
+      const PHOTOS_BASE = `${API_BASE}/static/images/photos/`;
+      const CARD_JSON_URL = `${API_BASE}/cards.json`;
+      const EMIRATES_ZIP_URL = `emirates.zip`;
 
-  const API_BASE      = "https://livenews.live/KFC";
-  const PHOTOS_BASE   = `${API_BASE}/static/images/photos/`;
-  const DEFAULT_PHOTO = `${PHOTOS_BASE}default.png`;
-  const CARD_LOGO     = "logo.png";
-  const EMIRATES_ZIP  = `emirates.zip`;
+      const searchInput = document.getElementById("searchInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const clearSearchBtn = document.getElementById("clearSearchBtn");
+      const resultsContainer = document.getElementById("resultsContainer");
+      const searchCountChip = document.getElementById("searchCountChip");
+      const zipChip = document.getElementById("zipChip");
+      const passwordChip = document.getElementById("passwordChip");
+      const zipStatus = document.getElementById("zipStatus");
+      const passwordOverlay = document.getElementById("passwordOverlay");
+      const zipPasswordInput = document.getElementById("zipPasswordInput");
+      const unlockZipBtn = document.getElementById("unlockZipBtn");
+      const cancelZipBtn = document.getElementById("cancelZipBtn");
+      const zipPasswordError = document.getElementById("zipPasswordError");
+      const previewOverlay = document.getElementById("previewOverlay");
+      const previewTitle = document.getElementById("previewTitle");
+      const previewSubtitle = document.getElementById("previewSubtitle");
+      const previewImage = document.getElementById("previewImage");
+      const openNewTabBtn = document.getElementById("openNewTabBtn");
+      const closePreviewBtn = document.getElementById("closePreviewBtn");
+      const closePreviewBtn2 = document.getElementById("closePreviewBtn2");
 
-  const THEME_STORAGE_KEY       = "kfcTheme";
-  const TRANSLATION_STORAGE_KEY = "kfcPageLanguage";
+      const searchModeInputs = Array.from(document.querySelectorAll('input[name="searchMode"]'));
 
-  let users       = [];
-  let currentUser = null;
+      let records = [];
+      let filteredRecords = [];
+      let zipBlob = null;
+      let zipLoaded = false;
+      let zipLoadingPromise = null;
+      let currentTargetCard = null;
+      let currentImageUrl = "";
+      let rememberedPassword = "";
 
-  let currentPageLanguage       = localStorage.getItem(TRANSLATION_STORAGE_KEY) === "ur" ? "ur" : "en";
-  let googleTranslateLoadPromise = null;
-  let translatePending           = null;
-  let translationRefreshTimer    = null;
-  let translationMutationObserver= null;
-  let translationFixRunning      = false;
-
-  /* ── Cached Elements ── */
-  let userArea, usernameText, dropdown, guestView, userView,
-      openLoginBtn, loginOverlay, loginBtn, loginUsername, loginPassword,
-      loginError, logoutBtn, userFullName, userCard, userDesg, userBlood,
-      userMobile, welcomePopup, welcomeText,
-      headerProfileImg, headerUserIcon, dropdownProfileImg,
-      viewPhotoBtn, photoOverlay, fullProfileImg, closePhotoOverlay,
-      notificationBtn, notiDropdown, notiBadge, notiList,
-      msgBtn, msgDropdown, msgBadge, msgList,
-      leadersOverlay, closeLeaders, leadersList,
-      themeToggleBtn, themeToggleIcon,
-      translateToggleBtn, translateToggleIcon, translateHost;
-
-  function cacheElements() {
-    userArea          = document.getElementById("userArea");
-    usernameText      = document.getElementById("username");
-    dropdown          = document.getElementById("userDropdown");
-    guestView         = document.getElementById("guestView");
-    userView          = document.getElementById("userView");
-    openLoginBtn      = document.getElementById("openLoginBtn");
-    loginOverlay      = document.getElementById("loginOverlay");
-    loginBtn          = document.getElementById("loginBtn");
-    loginUsername     = document.getElementById("loginUsername");
-    loginPassword     = document.getElementById("loginPassword");
-    loginError        = document.getElementById("loginError");
-    logoutBtn         = document.getElementById("logoutBtn");
-    userFullName      = document.getElementById("userFullName");
-    userCard          = document.getElementById("userCard");
-    userDesg          = document.getElementById("userDesg");
-    userBlood         = document.getElementById("userBlood");
-    userMobile        = document.getElementById("userMobile");
-    welcomePopup      = document.getElementById("welcomePopup");
-    welcomeText       = document.getElementById("welcomeText");
-    headerProfileImg  = document.getElementById("headerProfileImg");
-    headerUserIcon    = document.getElementById("headerUserIcon");
-    dropdownProfileImg= document.getElementById("dropdownProfileImg");
-    viewPhotoBtn      = document.getElementById("viewPhotoBtn");
-    photoOverlay      = document.getElementById("photoOverlay");
-    fullProfileImg    = document.getElementById("fullProfileImg");
-    closePhotoOverlay = document.getElementById("closePhotoOverlay");
-    notificationBtn   = document.getElementById("notificationBtn");
-    notiDropdown      = document.getElementById("notiDropdown");
-    notiBadge         = document.getElementById("notiBadge");
-    notiList          = document.getElementById("notiList");
-    msgBtn            = document.getElementById("msgBtn");
-    msgDropdown       = document.getElementById("msgDropdown");
-    msgBadge          = document.getElementById("msgBadge");
-    msgList           = document.getElementById("msgList");
-    leadersOverlay    = document.getElementById("leadersOverlay");
-    closeLeaders      = document.getElementById("closeLeaders");
-    leadersList       = document.getElementById("leadersList");
-    themeToggleBtn    = document.getElementById("themeToggleBtn");
-    themeToggleIcon   = document.getElementById("themeToggleIcon");
-    translateToggleBtn  = document.getElementById("translateToggleBtn");
-    translateToggleIcon = document.getElementById("translateToggleIcon");
-    translateHost       = document.getElementById("google_translate_element");
-  }
-
-  /* ── Helpers ── */
-  function normalizeText(v) { return (v || "").toString().trim(); }
-
-  function isCancelledStatus(s) {
-    const v = normalizeText(s).toLowerCase();
-    return v === "cancel" || v === "cancelled";
-  }
-
-  function generateUsername(name) {
-    const parts = normalizeText(name).toLowerCase().split(/\s+/).filter(Boolean);
-    if (parts.length < 2) return normalizeText(name).toLowerCase();
-    return (parts[0] + parts[parts.length - 1]).replace(/\s/g, "");
-  }
-
-  function generatePassword(card) {
-    if (!card) return "";
-    const parts = String(card).split("-");
-    return parts[parts.length - 1] || "";
-  }
-
-  function escapeHTML(str) {
-    return String(str || "")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;")
-      .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-  }
-
-  function formatDateValue(v) { return normalizeText(v) || "No date"; }
-
-  function buildCenteredInfoMessage(text) {
-    return `<p style="text-align:center;padding:20px;color:#888;">${escapeHTML(text)}</p>`;
-  }
-
-  function safeCardNo(c) { return encodeURIComponent(String(c || "")); }
-
-  function getCardImageCandidates(cardNo) {
-    const c = safeCardNo(cardNo);
-    return [`${PHOTOS_BASE}${c}.png`, `${PHOTOS_BASE}${c}.jpg`, DEFAULT_PHOTO];
-  }
-
-  function setImageWithFallback(img, sources, fallbackIconEl) {
-    if (!img) return;
-    let idx = 0;
-    img.onerror = () => { tryNext(); };
-    img.onload  = () => {
-      img.style.display = "block";
-      if (fallbackIconEl) fallbackIconEl.style.display = "none";
-    };
-    function tryNext() {
-      if (idx >= sources.length) {
-        img.style.display = "none";
-        if (fallbackIconEl) fallbackIconEl.style.display = "block";
-        return;
+      function normalizeText(value) {
+        return String(value || "").trim();
       }
-      img.src = sources[idx++];
-    }
-    tryNext();
-  }
 
-  function applyProfileImage(cardNo) {
-    const s = getCardImageCandidates(cardNo);
-    setImageWithFallback(headerProfileImg, s, headerUserIcon);
-    setImageWithFallback(dropdownProfileImg, s, null);
-    setImageWithFallback(fullProfileImg, s, null);
-  }
-
-  /* ── Theme ── */
-  function applyTheme(mode) {
-    const dark = mode === "dark";
-    document.body.classList.toggle("dark-mode", dark);
-    localStorage.setItem(THEME_STORAGE_KEY, dark ? "dark" : "light");
-    if (themeToggleIcon)
-      themeToggleIcon.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
-  }
-
-  function initTheme() {
-    const saved = localStorage.getItem(THEME_STORAGE_KEY);
-    if (saved === "dark" || saved === "light") { applyTheme(saved); return; }
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)").matches;
-    applyTheme(prefersDark ? "dark" : "light");
-  }
-
-  function toggleTheme() {
-    applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark");
-  }
-
-  /* ── Translation (Google Translate) ── */
-  function setDocumentDirection() {
-    const rtl = currentPageLanguage === "ur";
-    document.documentElement.lang = rtl ? "ur" : "en";
-    document.documentElement.dir  = rtl ? "rtl" : "ltr";
-    document.body.classList.toggle("page-rtl", rtl);
-    if (translateToggleBtn) {
-      translateToggleBtn.classList.toggle("active", rtl);
-      translateToggleBtn.setAttribute("aria-label", rtl ? "Switch to English" : "Translate page to Urdu");
-      translateToggleBtn.title = rtl ? "Switch to English" : "Translate page to Urdu";
-    }
-  }
-
-  function setPageLanguage(lang) {
-    currentPageLanguage = lang === "ur" ? "ur" : "en";
-    localStorage.setItem(TRANSLATION_STORAGE_KEY, currentPageLanguage);
-    setDocumentDirection();
-    scheduleTranslationNormalization();
-  }
-
-  function applyTranslationFixes(root = document.body) {
-    if (!root || translationFixRunning) return;
-    translationFixRunning = true;
-    try {
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-      const replacements = currentPageLanguage === "ur"
-        ? [["Khawrai Falahi Committee","خاورئی فلاحی کمیٹی"],["Khawarai Welfare Committee","خاورئی فلاحی کمیٹی"],
-           ["Khawrai","خاورئی"],["Constitution","دستور"]]
-        : [["Khawarai Welfare Committee","Khawrai Falahi Committee"],
-           ["Khawarai Welfare Committee UAE","Khawrai Falahi Committee UAE"],
-           ["Recipe (English)","Constitution (English)"],["Order (Translated)","Constitution (Translated)"]];
-      const nodes = [];
-      while (walker.nextNode()) nodes.push(walker.currentNode);
-      nodes.forEach(n => {
-        let t = n.nodeValue; if (!t) return;
-        let u = t;
-        replacements.forEach(([f,r]) => { if (u.includes(f)) u = u.split(f).join(r); });
-        if (u !== t) n.nodeValue = u;
-      });
-    } finally {
-      setTimeout(() => { translationFixRunning = false; }, 0);
-    }
-  }
-
-  function scheduleTranslationNormalization() {
-    clearTimeout(translationRefreshTimer);
-    translationRefreshTimer = setTimeout(() => applyTranslationFixes(document.body), 120);
-  }
-
-  function refreshTranslatedView() { scheduleTranslationNormalization(); }
-
-  function startTranslationObserver() {
-    if (translationMutationObserver || !window.MutationObserver || !document.body) return;
-    translationMutationObserver = new MutationObserver(() => {
-      if (!translationFixRunning) scheduleTranslationNormalization();
-    });
-    translationMutationObserver.observe(document.body, { subtree:true, childList:true, characterData:true });
-  }
-
-  function applyGoogleTranslation(lang) {
-    const combo = document.querySelector(".goog-te-combo");
-    if (!combo) return false;
-    combo.value = lang;
-    combo.dispatchEvent(new Event("change"));
-    setPageLanguage(lang);
-    return true;
-  }
-
-  function applyGoogleTranslationWithRetry(lang, attempt = 0) {
-    if (applyGoogleTranslation(lang)) {
-      setTimeout(() => applyTranslationFixes(document.body), 250);
-      return;
-    }
-    if (attempt < 20) setTimeout(() => applyGoogleTranslationWithRetry(lang, attempt + 1), 200);
-    else translatePending = lang;
-  }
-
-  function ensureGoogleTranslateWidget() {
-    if (googleTranslateLoadPromise) return googleTranslateLoadPromise;
-    googleTranslateLoadPromise = new Promise((resolve, reject) => {
-      if (window.google && window.google.translate && document.querySelector(".goog-te-combo")) {
-        resolve(); return;
+      function escapeHTML(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
-      window.googleTranslateElementInit = function () {
+
+      function getSearchMode() {
+        const selected = searchModeInputs.find(input => input.checked);
+        return selected ? selected.value : "name";
+      }
+
+      function updatePlaceholder() {
+        const mode = getSearchMode();
+        searchInput.placeholder = mode === "card" ? "Type a card number" : "Type a member name";
+      }
+
+      function setZipChip(text, ok = false) {
+        zipChip.textContent = text;
+        zipChip.style.borderColor = ok ? "rgba(72, 187, 120, 0.5)" : "";
+      }
+
+      function setPasswordChip(text, ok = false) {
+        passwordChip.textContent = text;
+        passwordChip.style.borderColor = ok ? "rgba(72, 187, 120, 0.5)" : "";
+      }
+
+      function showPasswordOverlay(cardNo) {
+        currentTargetCard = cardNo;
+        zipPasswordError.textContent = "";
+        zipPasswordInput.value = rememberedPassword || "";
+        passwordOverlay.classList.add("show");
+        setTimeout(() => zipPasswordInput.focus(), 50);
+      }
+
+      function hidePasswordOverlay() {
+        passwordOverlay.classList.remove("show");
+        zipPasswordError.textContent = "";
+      }
+
+      function showPreview(title, subtitle, objectUrl) {
+        previewTitle.textContent = title;
+        previewSubtitle.textContent = subtitle;
+        currentImageUrl = objectUrl;
+        previewImage.src = objectUrl;
+        previewOverlay.classList.add("show");
+      }
+
+      function hidePreview() {
+        previewOverlay.classList.remove("show");
+        previewImage.removeAttribute("src");
+        if (currentImageUrl) {
+          URL.revokeObjectURL(currentImageUrl);
+          currentImageUrl = "";
+        }
+      }
+
+      function cardMatchesQuery(record, query, mode) {
+        const q = normalizeText(query).toLowerCase();
+        if (!q) return true;
+
+        const name = normalizeText(record.name).toLowerCase();
+        const card = normalizeText(record.CNo).toLowerCase();
+
+        if (mode === "card") {
+          return card.includes(q);
+        }
+
+        return name.includes(q);
+      }
+
+      function renderResults(list) {
+        resultsContainer.innerHTML = "";
+        searchCountChip.textContent = `${list.length} result${list.length === 1 ? "" : "s"}`;
+
+        if (!list.length) {
+          resultsContainer.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              No matching record found. Try a different name or card number.
+            </div>
+          `;
+          return;
+        }
+
+        list.forEach(record => {
+          const card = normalizeText(record.CNo);
+          const name = normalizeText(record.name);
+          const designation = normalizeText(record.Desg) || "Member";
+          const mobile = normalizeText(record.mobile) || "Not available";
+          const status = normalizeText(record.Status) || "Unknown";
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "eid-result";
+          wrapper.innerHTML = `
+            <h3>${escapeHTML(name)}</h3>
+            <p><strong>Card:</strong> ${escapeHTML(card)}</p>
+            <p><strong>Designation:</strong> ${escapeHTML(designation)}</p>
+            <p><strong>Status:</strong> ${escapeHTML(status)}</p>
+            <p><strong>Mobile:</strong> ${escapeHTML(mobile)}</p>
+          `;
+
+          const btn = document.createElement("button");
+          btn.className = "view-btn";
+          btn.type = "button";
+          btn.innerHTML = '<i class="fa-solid fa-id-card"></i> View Emirates ID';
+          btn.addEventListener("click", () => showPasswordOverlay(card));
+
+          wrapper.appendChild(btn);
+          resultsContainer.appendChild(wrapper);
+        });
+      }
+
+      function filterAndRender() {
+        const query = searchInput.value;
+        const mode = getSearchMode();
+        filteredRecords = records.filter(record => cardMatchesQuery(record, query, mode));
+        renderResults(filteredRecords);
+      }
+
+      async function loadRecords() {
         try {
-          if (translateHost) translateHost.innerHTML = "";
-          new google.translate.TranslateElement(
-            { pageLanguage:"en", includedLanguages:"ur,en", autoDisplay:false },
-            "google_translate_element"
+          const response = await fetch(CARD_JSON_URL, { cache: "no-store" });
+          records = await response.json();
+          filterAndRender();
+        } catch (error) {
+          console.error("Failed to load cards.json:", error);
+          resultsContainer.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              Unable to load the member database.
+            </div>
+          `;
+        }
+      }
+
+      async function loadZipBlob() {
+        if (zipBlob) return zipBlob;
+        if (zipLoadingPromise) return zipLoadingPromise;
+
+        zipLoadingPromise = (async () => {
+          setZipChip("ZIP: loading...");
+          const response = await fetch(EMIRATES_ZIP_URL, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`ZIP request failed with ${response.status}`);
+          }
+          const blob = await response.blob();
+          zipBlob = blob;
+          zipLoaded = true;
+          setZipChip("ZIP: loaded", true);
+          if (zipStatus) {
+            zipStatus.innerHTML = "Protected archive loaded successfully.";
+          }
+          return blob;
+        })().catch(error => {
+          console.error("ZIP load error:", error);
+          setZipChip("ZIP: failed");
+          if (zipStatus) {
+            zipStatus.innerHTML = "Could not load <strong>emirates.zip</strong>. Check the file path and server availability.";
+          }
+          throw error;
+        }).finally(() => {
+          zipLoadingPromise = null;
+        });
+
+        return zipLoadingPromise;
+      }
+
+      async function openEmiratesId(cardNo, password) {
+        if (!window.zip || !zip.ZipReader || !zip.BlobReader || !zip.BlobWriter) {
+          throw new Error("zip.js is not available.");
+        }
+
+        const archiveBlob = await loadZipBlob();
+        const reader = new zip.ZipReader(new zip.BlobReader(archiveBlob), { password });
+        try {
+          const entries = await reader.getEntries();
+          const base = normalizeText(cardNo).toLowerCase();
+          const targets = [
+            `${base}.jpg`,
+            `${base}.jpeg`,
+            `${base}.png`
+          ];
+
+          const entry = entries.find(item => {
+            const cleanName = String(item.filename || item.name || "").replaceAll("\\", "/").toLowerCase();
+            return targets.some(target => cleanName.endsWith(target));
+          });
+
+          if (!entry) {
+            throw new Error(`No Emirates ID image found for card ${cardNo}.`);
+          }
+
+          const blob = await entry.getData(new zip.BlobWriter(), { password });
+          const objectUrl = URL.createObjectURL(blob);
+          return objectUrl;
+        } finally {
+          await reader.close().catch(() => {});
+        }
+      }
+
+      async function verifyPasswordAndOpen() {
+        const password = normalizeText(zipPasswordInput.value);
+        if (!password) {
+          zipPasswordError.textContent = "Enter the ZIP password first.";
+          return;
+        }
+        if (!currentTargetCard) {
+          zipPasswordError.textContent = "No member is selected.";
+          return;
+        }
+
+        zipPasswordError.textContent = "Checking password...";
+        unlockZipBtn.disabled = true;
+        cancelZipBtn.disabled = true;
+
+        try {
+          const objectUrl = await openEmiratesId(currentTargetCard, password);
+          rememberedPassword = password;
+          setPasswordChip("Password: unlocked", true);
+          hidePasswordOverlay();
+          showPreview(
+            `Emirates ID - ${currentTargetCard}`,
+            `Matching file found inside emirates.zip for card number ${currentTargetCard}.`,
+            objectUrl
           );
-          resolve();
-          if (translatePending) {
-            const p = translatePending; translatePending = null;
-            setTimeout(() => applyGoogleTranslationWithRetry(p), 250);
+        } catch (error) {
+          console.error(error);
+          if (String(error && error.message || "").includes("INVALID_PASSWORD")) {
+            zipPasswordError.textContent = "Wrong password. Please try again.";
+          } else {
+            zipPasswordError.textContent = error.message || "Unable to open the Emirates ID image.";
           }
-        } catch(e) { reject(e); }
-      };
-      if (document.getElementById("kfc-google-translate-script")) return;
-      const s = document.createElement("script");
-      s.id    = "kfc-google-translate-script";
-      s.src   = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-      s.async = true;
-      s.onerror = () => reject(new Error("Translator unavailable"));
-      document.head.appendChild(s);
-    });
-    return googleTranslateLoadPromise;
-  }
-
-  async function toggleTranslation() {
-    const target = currentPageLanguage === "ur" ? "en" : "ur";
-    translatePending = target;
-    try {
-      await ensureGoogleTranslateWidget();
-      applyGoogleTranslationWithRetry(target);
-    } catch(e) { console.error("Translation error:", e); }
-  }
-
-  /* ── Session & Login ── */
-  function saveSession(u) { localStorage.setItem("kfcUser", JSON.stringify(u)); }
-  function clearSession()  { localStorage.removeItem("kfcUser"); }
-
-  function showLoggedOutUI() {
-    if (msgBtn) msgBtn.style.display = "none";
-    if (notificationBtn) notificationBtn.style.display = "none";
-    if (headerProfileImg) headerProfileImg.style.display = "none";
-    if (headerUserIcon) headerUserIcon.style.display = "block";
-    if (guestView) guestView.style.display = "block";
-    if (userView) userView.style.display = "none";
-    if (usernameText) usernameText.innerText = "Welcome, Guest";
-  }
-
-  function showLoggedInUI() {
-    if (msgBtn) msgBtn.style.display = "flex";
-    if (notificationBtn) notificationBtn.style.display = "flex";
-    if (guestView) guestView.style.display = "none";
-    if (userView) userView.style.display = "flex";
-  }
-
-  function renderUserToUI(user) {
-    if (!user) return;
-    const firstName = normalizeText(user.name).split(" ")[0] || "User";
-    if (usernameText) usernameText.innerText = `Welcome, ${firstName}`;
-    if (userFullName) userFullName.innerText = `Welcome, ${user.name}`;
-    if (userCard)     userCard.innerText  = `Card Number: ${user.CNo}`;
-    if (userDesg)     userDesg.innerText  = `Designation: ${user.Desg}`;
-    if (userBlood)    userBlood.innerText = `Blood Group: ${user.BG || "Not available"}`;
-    if (userMobile)   userMobile.innerText= `Registered Mobile: ${user.mobile || "Not available"}`;
-    applyProfileImage(user.CNo);
-    const vcb = document.getElementById("viewCardBtn");
-    if (vcb) { vcb.href = `viewcard.html?card=${btoa(String(user.CNo))}`; vcb.target = "_blank"; }
-    showLoggedInUI();
-    refreshTranslatedView();
-  }
-
-  function showWelcome(name) {
-    if (!welcomePopup || !welcomeText) return;
-    welcomeText.innerText = `Welcome, ${name} 👋`;
-    welcomePopup.classList.add("show");
-    setTimeout(() => welcomePopup.classList.remove("show"), 2500);
-  }
-
-  function login() {
-    if (loginError) loginError.innerText = "";
-    const uname = normalizeText(loginUsername?.value).toLowerCase();
-    const pass  = normalizeText(loginPassword?.value);
-    if (!uname || !pass) { if (loginError) loginError.innerText = "Enter username and password"; return; }
-    const user = users.find(u => {
-      return generateUsername(u.name) === uname && generatePassword(u.CNo) === pass;
-    });
-    if (!user) { if (loginError) loginError.innerText = "Invalid credentials"; return; }
-    if (isCancelledStatus(user.Status)) {
-      if (loginError) loginError.innerText = "This account cannot log in because the card is cancelled";
-      return;
-    }
-    currentUser = user;
-    saveSession(user);
-    renderUserToUI(user);
-    showWelcome(user.name);
-    if (loginOverlay) loginOverlay.classList.remove("show");
-  }
-
-  function checkSession() {
-    const saved = localStorage.getItem("kfcUser");
-    if (!saved) { currentUser = null; showLoggedOutUI(); return; }
-    try {
-      const p = JSON.parse(saved);
-      if (p && !isCancelledStatus(p.Status)) { currentUser = p; renderUserToUI(p); }
-      else { clearSession(); currentUser = null; showLoggedOutUI(); }
-    } catch(e) { clearSession(); currentUser = null; showLoggedOutUI(); }
-  }
-
-  async function loadUsers() {
-    try {
-      const r = await fetch(`${API_BASE}/cards.json`, { cache:"no-store" });
-      users = await r.json();
-    } catch(e) { console.error("Error loading users:", e); }
-  }
-
-  /* ── Notifications / Alerts ── */
-  function createCardTopStripe() {
-    const d = document.createElement("div");
-    d.style.cssText = "background-color:#0d3c91;height:6px;";
-    return d;
-  }
-
-  function createCardBackgroundLogo() {
-    const img = document.createElement("img");
-    img.src  = CARD_LOGO;
-    img.alt  = "";
-    img.setAttribute("aria-hidden","true");
-    img.style.cssText = "position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;opacity:0.08;z-index:1;pointer-events:none;user-select:none;";
-    return img;
-  }
-
-  async function fetchAlerts() {
-    try {
-      const res    = await fetch(`${API_BASE}/message/alerts.json`, { cache:"no-store" });
-      const alerts = await res.json();
-      if (!notiList) return;
-      notiList.innerHTML = "";
-      if (!Array.isArray(alerts) || alerts.length === 0) {
-        notiList.innerHTML = buildCenteredInfoMessage("No alerts found.");
-        return;
+        } finally {
+          unlockZipBtn.disabled = false;
+          cancelZipBtn.disabled = false;
+        }
       }
-      const sorted = [...alerts].reverse();
-      sorted.slice(0,3).forEach(a => {
-        const item = document.createElement("div");
-        item.className = "noti-item";
-        item.style.cssText = "position:relative;background:#fff;border:1px solid #e0e0e0;border-radius:8px;margin-bottom:10px;overflow:hidden;";
-        item.appendChild(createCardTopStripe());
-        item.appendChild(createCardBackgroundLogo());
-        const top = document.createElement("div");
-        top.className = "noti-top-row";
-        top.style.cssText = "padding:12px 15px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;cursor:pointer;";
-        const t = document.createElement("span");
-        t.style.cssText = "font-weight:bold;color:#0d3c91;font-size:15px;";
-        t.textContent = normalizeText(a.title_en || a.title || "Alert");
-        const ds = document.createElement("span");
-        ds.style.cssText = "font-size:11px;color:#888;";
-        ds.textContent = formatDateValue(a.date);
-        top.appendChild(t); top.appendChild(ds);
-        const body = document.createElement("div");
-        body.className = "noti-body";
-        body.style.cssText = "display:none;padding:15px;border-top:1px dashed #eee;white-space:pre-line;position:relative;z-index:2;font-size:14px;line-height:1.8;color:#333;";
-        body.textContent = normalizeText(a.body_en || a.body || "");
-        item.appendChild(top); item.appendChild(body);
-        item.addEventListener("click", () => {
-          const vis = body.style.display === "block";
-          document.querySelectorAll(".noti-body").forEach(b => b.style.display = "none");
-          if (!vis) body.style.display = "block";
+
+      searchBtn.addEventListener("click", filterAndRender);
+      clearSearchBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        updatePlaceholder();
+        filterAndRender();
+        searchInput.focus();
+      });
+
+      searchInput.addEventListener("input", filterAndRender);
+      searchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          filterAndRender();
+        }
+      });
+
+      searchModeInputs.forEach(input => {
+        input.addEventListener("change", () => {
+          updatePlaceholder();
+          filterAndRender();
         });
-        notiList.appendChild(item);
       });
-      const btn = document.createElement("div");
-      btn.style.cssText = "margin-top:12px;text-align:center;";
-      btn.innerHTML = `<button onclick="window.location.href='${API_BASE}/message/alerts.html'"
-        style="width:100%;padding:10px 14px;border:none;border-radius:999px;background:linear-gradient(90deg,#ff6ec4,#7873f5);color:#fff;font-weight:bold;cursor:pointer;font-size:13px;">
-        Click here to see all alerts</button>`;
-      notiList.appendChild(btn);
-    } catch(e) {
-      if (notiList) notiList.innerHTML = buildCenteredInfoMessage("Error loading alerts.");
-    }
-  }
 
-  async function fetchPersonalMessages() {
-    try {
-      const res  = await fetch(`${API_BASE}/messages.json`, { cache:"no-store" });
-      const msgs = await res.json();
-      if (!msgList) return;
-      msgList.innerHTML = "";
-      if (!currentUser) {
-        msgList.innerHTML = buildCenteredInfoMessage("Please sign in to view your messages");
-        return;
-      }
-      const mine = (Array.isArray(msgs) ? msgs : []).filter(m => {
-        const c = normalizeText(m.cardNumber).toLowerCase();
-        return c === normalizeText(currentUser.CNo).toLowerCase() || c === "all";
+      unlockZipBtn.addEventListener("click", verifyPasswordAndOpen);
+      cancelZipBtn.addEventListener("click", () => {
+        hidePasswordOverlay();
+        currentTargetCard = null;
       });
-      if (mine.length === 0) { msgList.innerHTML = buildCenteredInfoMessage("No messages found."); return; }
-      mine.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-      mine.forEach(msg => {
-        const item = document.createElement("div");
-        item.className = "noti-item msg-item";
-        item.style.cssText = "position:relative;background:#fff;border:1px solid #e0e0e0;border-radius:8px;margin-bottom:10px;overflow:hidden;cursor:pointer;";
-        item.appendChild(createCardTopStripe());
-        item.appendChild(createCardBackgroundLogo());
-        const top = document.createElement("div");
-        top.style.cssText = "padding:12px 15px;display:flex;flex-direction:column;gap:4px;position:relative;z-index:2;";
-        const ds = document.createElement("span");
-        ds.style.cssText = "font-size:11px;color:#888;";
-        ds.textContent = formatDateValue(msg.date);
-        const tt = document.createElement("strong");
-        tt.style.cssText = "color:#0d3c91;font-size:15px;";
-        tt.textContent = normalizeText(msg.title_en || msg.title || "Message");
-        top.appendChild(ds); top.appendChild(tt);
-        const body = document.createElement("div");
-        body.style.cssText = "display:none;padding:15px;border-top:1px dashed #ccc;position:relative;z-index:2;font-size:13px;color:#444;line-height:1.8;white-space:pre-line;";
-        body.textContent = normalizeText(msg.body_en || msg.body || "");
-        item.appendChild(top); item.appendChild(body);
-        item.addEventListener("click", () => {
-          const vis = body.style.display === "block";
-          document.querySelectorAll(".msg-body").forEach(b => b.style.display="none");
-          if (!vis) body.style.display = "block";
-        });
-        msgList.appendChild(item);
-      });
-    } catch(e) {
-      if (msgList) msgList.innerHTML = buildCenteredInfoMessage("Error loading messages.");
-    }
-  }
 
-  /* ── Leaders ── */
-  function showLeaders() {
-    if (!leadersList) return;
-    leadersList.innerHTML = "";
-    const roles = ["president","acting president","vice president","committee guardian",
-      "committee guardian (ex-pr)","general secretary","finance manager",
-      "joint finance secretary","media manager"];
-    const leaders = users
-      .filter(u => u.Desg && roles.includes(normalizeText(u.Desg).toLowerCase()))
-      .sort((a,b) => roles.indexOf(normalizeText(a.Desg).toLowerCase()) -
-                     roles.indexOf(normalizeText(b.Desg).toLowerCase()));
-    if (!leaders.length) {
-      leadersList.innerHTML = `<p style="text-align:center;color:#888;padding:15px;">No leaders found.</p>`;
-      return;
-    }
-    leaders.forEach(l => {
-      const d = document.createElement("div");
-      d.className = "leader-item";
-      d.innerHTML = `<h4>${escapeHTML(l.name||"")}</h4>
-        <p>${escapeHTML(l.Desg||"")}</p>
-        <p class="leader-phone"><i class="fa-solid fa-phone"></i> ${escapeHTML(l.mobile||"Not available")}</p>`;
-      leadersList.appendChild(d);
-    });
-  }
-
-  /* ── Close all dropdowns ── */
-  function closeAllDropdowns() {
-    if (dropdown)    dropdown.classList.remove("show");
-    if (notiDropdown)notiDropdown.classList.remove("show");
-    if (msgDropdown) msgDropdown.classList.remove("show");
-  }
-
-  /* ════════════════════════════════════════════════════════
-     SECTION 2 — Emirates ID Search
-  ════════════════════════════════════════════════════════ */
-
-  let eidSearchMode   = "name";  /* "name" | "card" */
-  let eidPendingUser  = null;    /* member awaiting password unlock */
-  let cachedZipData   = null;    /* ArrayBuffer of emirates.zip once fetched */
-
-  const tabByName       = document.getElementById("tabByName");
-  const tabByCard       = document.getElementById("tabByCard");
-  const eidSearchInput  = document.getElementById("eidSearchInput");
-  const eidSearchBtn    = document.getElementById("eidSearchBtn");
-  const eidSearchHint   = document.getElementById("eidSearchHint");
-  const eidResultsArea  = document.getElementById("eidResultsArea");
-
-  const pwdOverlay      = document.getElementById("pwdOverlay");
-  const pwdInput        = document.getElementById("pwdInput");
-  const pwdEyeBtn       = document.getElementById("pwdEyeBtn");
-  const pwdEyeIcon      = document.getElementById("pwdEyeIcon");
-  const pwdSubmitBtn    = document.getElementById("pwdSubmitBtn");
-  const pwdError        = document.getElementById("pwdError");
-  const pwdCloseBtn     = document.getElementById("pwdCloseBtn");
-
-  const eidViewerOverlay    = document.getElementById("eidViewerOverlay");
-  const eidViewerClose      = document.getElementById("eidViewerClose");
-  const eidViewerName       = document.getElementById("eidViewerName");
-  const eidViewerCard       = document.getElementById("eidViewerCard");
-  const eidImageContainer   = document.getElementById("eidImageContainer");
-  const eidDownloadBtn      = document.getElementById("eidDownloadBtn");
-
-  /* Switch tabs */
-  function setSearchMode(mode) {
-    eidSearchMode = mode;
-    eidSearchInput.value = "";
-    eidResultsArea.innerHTML = "";
-
-    if (mode === "name") {
-      tabByName.classList.add("active");
-      tabByCard.classList.remove("active");
-      tabByName.setAttribute("aria-selected","true");
-      tabByCard.setAttribute("aria-selected","false");
-      eidSearchInput.placeholder = "Enter full name to search…";
-      eidSearchHint.textContent  = "Tip: Enter at least 2 characters to search by name.";
-    } else {
-      tabByCard.classList.add("active");
-      tabByName.classList.remove("active");
-      tabByCard.setAttribute("aria-selected","true");
-      tabByName.setAttribute("aria-selected","false");
-      eidSearchInput.placeholder = "Enter card number e.g. 746-210-011";
-      eidSearchHint.textContent  = "Tip: Enter the full or partial card number.";
-    }
-    eidSearchInput.focus();
-  }
-
-  /* Perform search and render results */
-  function performSearch() {
-    const q = normalizeText(eidSearchInput.value).toLowerCase();
-    eidResultsArea.innerHTML = "";
-
-    if (q.length < 2) {
-      eidResultsArea.innerHTML = buildEidInfoBox(
-        "fa-circle-info", "#7873f5",
-        "Please enter at least 2 characters to search."
-      );
-      return;
-    }
-
-    let results = [];
-
-    if (eidSearchMode === "name") {
-      results = users.filter(u =>
-        normalizeText(u.name).toLowerCase().includes(q)
-      );
-    } else {
-      results = users.filter(u =>
-        normalizeText(u.CNo).toLowerCase().includes(q)
-      );
-    }
-
-    if (results.length === 0) {
-      eidResultsArea.innerHTML = buildEidInfoBox(
-        "fa-user-slash", "#e53e3e",
-        "No member found matching your search. Please check the input and try again."
-      );
-      return;
-    }
-
-    /* Show results count */
-    const countBadge = document.createElement("p");
-    countBadge.style.cssText = "font-size:13px;color:#888;margin-bottom:12px;padding-left:4px;";
-    countBadge.textContent = `${results.length} result${results.length !== 1 ? "s" : ""} found`;
-    eidResultsArea.appendChild(countBadge);
-
-    results.forEach(member => {
-      const card = buildResultCard(member);
-      eidResultsArea.appendChild(card);
-    });
-  }
-
-  function buildEidInfoBox(icon, color, text) {
-    return `
-      <div class="eid-no-results">
-        <i class="fa-solid ${escapeHTML(icon)}" style="font-size:36px;color:${escapeHTML(color)};margin-bottom:10px;display:block;"></i>
-        <p>${escapeHTML(text)}</p>
-      </div>`;
-  }
-
-  function buildResultCard(member) {
-    const card = document.createElement("div");
-    card.className = "eid-result-card";
-
-    /* Left: info */
-    const info = document.createElement("div");
-    info.className = "eid-result-info";
-
-    const name = document.createElement("div");
-    name.className = "eid-result-name";
-    name.innerHTML = `<i class="fa-solid fa-user" style="margin-right:7px;color:#7873f5;font-size:14px;"></i>${escapeHTML(member.name || "—")}`;
-
-    const meta = document.createElement("div");
-    meta.className = "eid-result-meta";
-
-    const cardSpan = document.createElement("span");
-    cardSpan.innerHTML = `<i class="fa-solid fa-id-badge" style="color:#7873f5;"></i> ${escapeHTML(member.CNo || "—")}`;
-
-    const desgSpan = document.createElement("span");
-    desgSpan.innerHTML = `<i class="fa-solid fa-briefcase" style="color:#ff6ec4;"></i> ${escapeHTML(member.Desg || "—")}`;
-
-    const statusSpan = document.createElement("span");
-    const isActive = normalizeText(member.Status).toLowerCase() === "active";
-    statusSpan.innerHTML = `<i class="fa-solid fa-circle" style="font-size:9px;color:${isActive ? "#38a169" : "#e53e3e"};"></i> ${escapeHTML(member.Status || "—")}`;
-
-    meta.appendChild(cardSpan);
-    meta.appendChild(desgSpan);
-    meta.appendChild(statusSpan);
-
-    info.appendChild(name);
-    info.appendChild(meta);
-
-    /* Right: View button */
-    const btn = document.createElement("button");
-    btn.className = "eid-view-btn";
-    btn.type = "button";
-    btn.innerHTML = `<i class="fa-solid fa-id-card"></i> View Emirates ID`;
-    btn.addEventListener("click", () => openPasswordModal(member));
-
-    card.appendChild(info);
-    card.appendChild(btn);
-    return card;
-  }
-
-  /* ── Password Modal ── */
-  function openPasswordModal(member) {
-    eidPendingUser    = member;
-    pwdInput.value    = "";
-    pwdError.textContent = "";
-    pwdOverlay.classList.add("show");
-    setTimeout(() => pwdInput.focus(), 100);
-    closeAllDropdowns();
-  }
-
-  function closePwdModal() {
-    pwdOverlay.classList.remove("show");
-    eidPendingUser = null;
-    pwdInput.value = "";
-    pwdError.textContent = "";
-  }
-
-  /* Toggle password visibility */
-  pwdEyeBtn.addEventListener("click", () => {
-    const hidden = pwdInput.type === "password";
-    pwdInput.type = hidden ? "text" : "password";
-    pwdEyeIcon.className = hidden ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
-  });
-
-  pwdCloseBtn.addEventListener("click", closePwdModal);
-
-  pwdOverlay.addEventListener("click", e => {
-    if (e.target === pwdOverlay) closePwdModal();
-  });
-
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") {
-      closePwdModal();
-      closeEidViewer();
-    }
-    if (e.key === "Enter" && pwdOverlay.classList.contains("show")) {
-      attemptUnlock();
-    }
-  });
-
-  pwdSubmitBtn.addEventListener("click", attemptUnlock);
-
-  /* ── Attempt to unlock emirates.zip and load the image ── */
-  async function attemptUnlock() {
-    if (!eidPendingUser) return;
-
-    const password = normalizeText(pwdInput.value);
-    if (!password) {
-      pwdError.textContent = "Please enter the password.";
-      return;
-    }
-
-    /* Show spinner on button */
-    pwdSubmitBtn.innerHTML = `<span class="btn-spinner"></span> Unlocking…`;
-    pwdSubmitBtn.disabled  = true;
-    pwdError.textContent   = "";
-
-    const member = eidPendingUser;
-    const cardNo = normalizeText(member.CNo);
-
-    try {
-      /* Step 1: Fetch the zip (cache after first download) */
-      if (!cachedZipData) {
-        const res = await fetch(EMIRATES_ZIP, { cache: "no-store" });
-        if (!res.ok) throw new Error(`Could not download the archive (HTTP ${res.status}).`);
-        cachedZipData = await res.arrayBuffer();
-      }
-
-      /* Step 2: Load zip with JSZip */
-      const zip = await JSZip.loadAsync(cachedZipData);
-
-      /* Step 3: Find the image inside the zip
-         Try: cardnumber.jpg, cardnumber.png (case-insensitive) */
-      const possibleNames = [
-        `${cardNo}.jpg`, `${cardNo}.png`,
-        `${cardNo}.JPG`, `${cardNo}.PNG`,
-        `${cardNo}.jpeg`, `${cardNo}.JPEG`
-      ];
-
-      let foundFile = null;
-      let foundExt  = "jpg";
-
-      /* Also scan all files in the zip to find a match */
-      const allFiles = Object.keys(zip.files);
-      for (const name of possibleNames) {
-        if (zip.files[name] && !zip.files[name].dir) {
-          foundFile = zip.files[name];
-          foundExt  = name.split(".").pop().toLowerCase();
-          break;
+      zipPasswordInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          verifyPasswordAndOpen();
         }
-      }
-
-      /* Fallback: case-insensitive scan */
-      if (!foundFile) {
-        const lowerCard = cardNo.toLowerCase();
-        for (const fname of allFiles) {
-          const base = fname.split("/").pop().toLowerCase();
-          const nameNoExt = base.replace(/\.(jpg|jpeg|png)$/, "");
-          if (nameNoExt === lowerCard && !zip.files[fname].dir) {
-            foundFile = zip.files[fname];
-            foundExt  = base.split(".").pop();
-            break;
-          }
+        if (e.key === "Escape") {
+          hidePasswordOverlay();
         }
-      }
-
-      if (!foundFile) {
-        throw new Error(
-          `No Emirates ID image found for card ${cardNo} inside the archive. ` +
-          `Expected: ${cardNo}.jpg or ${cardNo}.png`
-        );
-      }
-
-      /* Step 4: Decrypt with password and extract as blob */
-      let imageBlob;
-      try {
-        const uint8 = await foundFile.async("uint8array", { password });
-        const mimeType = (foundExt === "png") ? "image/png" : "image/jpeg";
-        imageBlob = new Blob([uint8], { type: mimeType });
-      } catch (decryptErr) {
-        /* JSZip throws on wrong password */
-        throw new Error("Incorrect password. Please try again.");
-      }
-
-      /* Step 5: Create object URL and show viewer */
-      const objectURL = URL.createObjectURL(imageBlob);
-
-      closePwdModal();
-      openEidViewer(member, objectURL, foundExt);
-
-    } catch(err) {
-      pwdError.textContent = err.message || "An error occurred. Please try again.";
-      cachedZipData = null; /* reset cache so next attempt re-downloads */
-    } finally {
-      pwdSubmitBtn.innerHTML = `<i class="fa-solid fa-unlock"></i> Unlock &amp; View ID`;
-      pwdSubmitBtn.disabled  = false;
-    }
-  }
-
-  /* ── Emirates ID Viewer ── */
-  let currentObjectURL = null;
-
-  function openEidViewer(member, objectURL, ext) {
-    /* Release previous blob URL to free memory */
-    if (currentObjectURL) URL.revokeObjectURL(currentObjectURL);
-    currentObjectURL = objectURL;
-
-    /* Update member info strip */
-    eidViewerName.textContent = member.name || "—";
-    eidViewerCard.textContent = `Card No: ${member.CNo || "—"} · ${member.Desg || "—"}`;
-
-    /* Show loading state */
-    eidImageContainer.innerHTML = `
-      <div class="eid-loading-spinner">
-        <i class="fa-solid fa-spinner"></i>
-        <p>Loading Emirates ID image…</p>
-      </div>`;
-    eidDownloadBtn.style.display = "none";
-
-    eidViewerOverlay.classList.add("show");
-
-    /* Load image */
-    const img = document.createElement("img");
-    img.alt = `Emirates ID of ${member.name}`;
-    img.style.cssText = "width:100%;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.14);display:block;";
-
-    img.onload = () => {
-      eidImageContainer.innerHTML = "";
-      eidImageContainer.appendChild(img);
-      eidDownloadBtn.style.display = "inline-flex";
-    };
-
-    img.onerror = () => {
-      eidImageContainer.innerHTML = `
-        <div class="eid-load-error">
-          <i class="fa-solid fa-triangle-exclamation" style="font-size:36px;margin-bottom:10px;display:block;"></i>
-          <p>Failed to display the image. The file may be corrupted.</p>
-        </div>`;
-    };
-
-    img.src = objectURL;
-
-    /* Wire download button */
-    eidDownloadBtn.onclick = () => {
-      const a = document.createElement("a");
-      a.href     = objectURL;
-      a.download = `EmiratesID_${normalizeText(member.CNo)}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    };
-  }
-
-  function closeEidViewer() {
-    eidViewerOverlay.classList.remove("show");
-    if (currentObjectURL) {
-      URL.revokeObjectURL(currentObjectURL);
-      currentObjectURL = null;
-    }
-    eidImageContainer.innerHTML = "";
-    eidDownloadBtn.style.display = "none";
-  }
-
-  eidViewerClose.addEventListener("click", closeEidViewer);
-  eidViewerOverlay.addEventListener("click", e => {
-    if (e.target === eidViewerOverlay) closeEidViewer();
-  });
-
-  /* ════════════════════════════════════════════════════════
-     SECTION 3 — Event Bindings
-  ════════════════════════════════════════════════════════ */
-
-  function bindEvents() {
-    /* Header user area dropdown */
-    if (userArea) {
-      userArea.addEventListener("click", e => {
-        e.stopPropagation();
-        if (notiDropdown) notiDropdown.classList.remove("show");
-        if (msgDropdown)  msgDropdown.classList.remove("show");
-        if (dropdown)     dropdown.classList.toggle("show");
       });
-    }
 
-    /* Theme toggle */
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener("click", e => { e.stopPropagation(); toggleTheme(); });
-    }
-
-    /* Translate toggle */
-    if (translateToggleBtn) {
-      translateToggleBtn.addEventListener("click", e => { e.stopPropagation(); toggleTranslation(); });
-    }
-
-    /* Bell (alerts) */
-    if (notificationBtn) {
-      notificationBtn.addEventListener("click", e => {
-        e.stopPropagation();
-        if (dropdown)    dropdown.classList.remove("show");
-        if (msgDropdown) msgDropdown.classList.remove("show");
-        if (notiDropdown)notiDropdown.classList.toggle("show");
-        if (!currentUser) {
-          if (notiList) notiList.innerHTML = buildCenteredInfoMessage("Please sign in to view recent alerts");
-          if (notiBadge) notiBadge.style.display = "none";
-          return;
+      passwordOverlay.addEventListener("click", e => {
+        if (e.target === passwordOverlay) {
+          hidePasswordOverlay();
         }
-        fetchAlerts();
-        if (notiBadge) notiBadge.style.display = "none";
       });
-    }
 
-    /* Envelope (messages) */
-    if (msgBtn) {
-      msgBtn.addEventListener("click", e => {
-        e.stopPropagation();
-        if (dropdown)     dropdown.classList.remove("show");
-        if (notiDropdown) notiDropdown.classList.remove("show");
-        if (msgDropdown)  msgDropdown.classList.toggle("show");
-        if (!currentUser) {
-          if (msgList) msgList.innerHTML = buildCenteredInfoMessage("Please sign in to view your messages");
-          if (msgBadge) msgBadge.style.display = "none";
-          return;
+      closePreviewBtn.addEventListener("click", hidePreview);
+      closePreviewBtn2.addEventListener("click", hidePreview);
+      previewOverlay.addEventListener("click", e => {
+        if (e.target === previewOverlay) {
+          hidePreview();
         }
-        fetchPersonalMessages();
       });
-    }
 
-    /* View profile photo */
-    if (viewPhotoBtn) {
-      viewPhotoBtn.addEventListener("click", () => {
-        if (photoOverlay) photoOverlay.classList.add("show");
-        if (dropdown) dropdown.classList.remove("show");
+      openNewTabBtn.addEventListener("click", () => {
+        if (currentImageUrl) {
+          window.open(currentImageUrl, "_blank", "noopener,noreferrer");
+        }
       });
-    }
 
-    if (closePhotoOverlay) {
-      closePhotoOverlay.addEventListener("click", () => {
-        if (photoOverlay) photoOverlay.classList.remove("show");
+      window.addEventListener("keydown", e => {
+        if (e.key === "Escape") {
+          hidePasswordOverlay();
+          hidePreview();
+        }
       });
-    }
 
-    if (photoOverlay) {
-      photoOverlay.addEventListener("click", e => {
-        if (e.target === photoOverlay) photoOverlay.classList.remove("show");
-      });
-    }
+      function initPage() {
+        updatePlaceholder();
+        setZipChip("ZIP: loading...");
+        setPasswordChip("Password: locked");
+        loadRecords();
+        loadZipBlob().catch(() => {});
+      }
 
-    /* Click-outside closes all dropdowns */
-    document.addEventListener("click", () => closeAllDropdowns());
-
-    [dropdown, notiDropdown, msgDropdown].forEach(box => {
-      if (box) box.addEventListener("click", e => e.stopPropagation());
-    });
-
-    /* Logout */
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => { clearSession(); currentUser = null; location.reload(); });
-    }
-
-    /* Open login */
-    if (openLoginBtn) {
-      openLoginBtn.addEventListener("click", () => { if (loginOverlay) loginOverlay.classList.add("show"); });
-    }
-
-    /* Close login on backdrop */
-    if (loginOverlay) {
-      loginOverlay.addEventListener("click", e => { if (e.target === loginOverlay) loginOverlay.classList.remove("show"); });
-    }
-
-    if (loginBtn) loginBtn.addEventListener("click", login);
-
-    document.addEventListener("keydown", e => {
-      if (e.key === "Enter" && loginOverlay && loginOverlay.classList.contains("show")) login();
-    });
-
-    /* Leaders overlay */
-    if (leadersOverlay && closeLeaders && leadersList) {
-      closeLeaders.addEventListener("click", e => { e.stopPropagation(); leadersOverlay.classList.remove("show"); });
-      leadersOverlay.addEventListener("click", e => { if (e.target === leadersOverlay) leadersOverlay.classList.remove("show"); });
-    }
-
-    /* ── Emirates ID search bindings ── */
-    tabByName.addEventListener("click", () => setSearchMode("name"));
-    tabByCard.addEventListener("click", () => setSearchMode("card"));
-
-    eidSearchBtn.addEventListener("click", performSearch);
-
-    eidSearchInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") performSearch();
-    });
-
-    /* Live search as user types (debounced) */
-    let liveTimer = null;
-    eidSearchInput.addEventListener("input", () => {
-      clearTimeout(liveTimer);
-      liveTimer = setTimeout(() => {
-        if (eidSearchInput.value.trim().length >= 2) performSearch();
-        else eidResultsArea.innerHTML = "";
-      }, 320);
-    });
-
-    /* Page load animation */
-    window.addEventListener("load", () => document.body.classList.add("loaded"));
-  }
-
-  /* ════════════════════════════════════════════════════════
-     SECTION 4 — Initialise
-  ════════════════════════════════════════════════════════ */
-
-  async function init() {
-    cacheElements();
-    initTheme();
-    setDocumentDirection();
-    bindEvents();
-    startTranslationObserver();
-
-    if (currentPageLanguage === "ur") {
-      ensureGoogleTranslateWidget()
-        .then(() => applyGoogleTranslationWithRetry("ur"))
-        .catch(e => console.error("Translator init error:", e));
-    }
-
-    await loadUsers();
-    checkSession();
-    scheduleTranslationNormalization();
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+      document.addEventListener("DOMContentLoaded", initPage);
+    })();
   </script>
 </body>
 </html>
