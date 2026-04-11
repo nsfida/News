@@ -231,6 +231,7 @@ button:hover{ background-color:#357ab7; }
     </div>
 
     <div class="action-buttons no-print">
+      <button id="homeBtn" class="icon-btn" type="button" title="Home">🏠</button>
       <button id="toggleMaskBtn" class="icon-btn" type="button">👁</button>
       <button id="saveBtn" class="icon-btn" type="button" title="Save PDF">💾</button>
     </div>
@@ -307,6 +308,7 @@ const stampImg = document.getElementById("stampImg");
 const signatureImg = document.getElementById("signatureImg");
 const toggleMaskBtn = document.getElementById("toggleMaskBtn");
 const qrMaskEmoji = document.getElementById("qrMaskEmoji");
+const homeBtn = document.getElementById("homeBtn");
 
 const qrTemp = document.createElement("div");
 qrTemp.style.position = "absolute";
@@ -383,6 +385,10 @@ function renderMaskedState(){
 toggleMaskBtn.addEventListener("click", function(){
   isMasked = !isMasked;
   renderMaskedState();
+});
+
+homeBtn.addEventListener("click", function(){
+  window.location.href = "https://livenews.live/KFC";
 });
 
 async function translateToUrdu(text){
