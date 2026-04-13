@@ -164,6 +164,28 @@
         <a href="https://livenews.live/KFC/message/cabinet.html"><i class="fa-solid fa-users" aria-hidden="true"></i> Cabinet Members</a>
         <a href="https://livenews.live/KFC/message/Gallery/gallery.html"><i class="fa-solid fa-images" aria-hidden="true"></i> Gallery</a>
       </nav>
+
+      <div class="sidebar-app-links">
+        <h3>Mobile Apps</h3>
+
+        <a class="sidebar-app-link" href="https://livenews.live/KFC/Apps/Khawrai.apk" download="Khawrai.apk" target="_blank" rel="noopener noreferrer">
+          <i class="fa-brands fa-android" aria-hidden="true"></i>
+          <span>
+            <strong>Android App</strong>
+            <small>Download APK</small>
+          </span>
+          <i class="fa-solid fa-download sidebar-link-download" aria-hidden="true"></i>
+        </a>
+
+        <a class="sidebar-app-link" href="https://livenews.live/KFC/Apps/KhawraiFalahi.mobileconfig" download="KhawraiFalahi.mobileconfig" target="_blank" rel="noopener noreferrer">
+          <i class="fa-brands fa-apple" aria-hidden="true"></i>
+          <span>
+            <strong>iOS App</strong>
+            <small>Download Profile</small>
+          </span>
+          <i class="fa-solid fa-download sidebar-link-download" aria-hidden="true"></i>
+        </a>
+      </div>
     </aside>
 
     <main class="main-content">
@@ -302,6 +324,63 @@
           statistics, and a mobile-friendly interface.
         </p>
       </section>
+
+      <section class="apps-section glass" id="appsDownloadSection">
+        <h2>📱 Mobile App Downloads</h2>
+        <p class="apps-intro">
+          Scan the QR code or use the download button for Android and iPhone installation files.
+        </p>
+
+        <div class="apps-grid">
+          <div class="app-download-card glass">
+            <div class="app-download-head">
+              <i class="fa-brands fa-android" aria-hidden="true"></i>
+              <div class="app-download-head-text">
+                <h3>Android App</h3>
+                <p>Khawrai.apk</p>
+              </div>
+            </div>
+
+            <div id="androidQrMain" class="qr-box" aria-label="Android app QR code"></div>
+
+            <a
+              id="androidMainDownload"
+              class="app-download-btn"
+              href="https://livenews.live/KFC/Apps/Khawrai.apk"
+              download="Khawrai.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i class="fa-solid fa-download" aria-hidden="true"></i>
+              Download Android App
+            </a>
+          </div>
+
+          <div class="app-download-card glass">
+            <div class="app-download-head">
+              <i class="fa-brands fa-apple" aria-hidden="true"></i>
+              <div class="app-download-head-text">
+                <h3>iOS App</h3>
+                <p>KhawraiFalahi.mobileconfig</p>
+              </div>
+            </div>
+
+            <div id="iosQrMain" class="qr-box" aria-label="iOS app QR code"></div>
+
+            <a
+              id="iosMainDownload"
+              class="app-download-btn"
+              href="https://livenews.live/KFC/Apps/KhawraiFalahi.mobileconfig"
+              download="KhawraiFalahi.mobileconfig"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i class="fa-solid fa-download" aria-hidden="true"></i>
+              Download iOS App
+            </a>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -312,6 +391,7 @@
   <div id="google_translate_element" class="translate-host" aria-hidden="true"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="main.js"></script>
 
   <div id="leadersOverlay" class="overlay" aria-hidden="true">
