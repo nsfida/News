@@ -383,6 +383,86 @@ body.dark-mode .sidebar-nav a{
     color:#fff;
 }
 
+.sidebar-app-links{
+    margin-top:16px;
+    padding:14px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.18);
+    border:1px solid rgba(255,255,255,0.25);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+body.dark-mode .sidebar-app-links{
+    background:rgba(10,18,33,0.34);
+    border:1px solid rgba(255,255,255,0.12);
+}
+
+.sidebar-app-links h3{
+    font-size:15px;
+    margin-bottom:2px;
+}
+
+.sidebar-app-link{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    padding:10px 12px;
+    border-radius:16px;
+    background:rgba(255,255,255,0.28);
+    border:1px solid rgba(255,255,255,0.22);
+    color:inherit;
+    transition:0.3s;
+}
+
+body.dark-mode .sidebar-app-link{
+    background:rgba(12,19,34,0.42);
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+.sidebar-app-link:hover{
+    transform:translateY(-1px);
+    background:linear-gradient(90deg,#ff6ec4,#7873f5);
+    color:#fff;
+}
+
+.sidebar-app-link i{
+    font-size:20px;
+    color:var(--accent);
+    min-width:20px;
+}
+
+.sidebar-app-link:hover i{
+    color:#fff;
+}
+
+.sidebar-app-link span{
+    display:flex;
+    flex-direction:column;
+    line-height:1.1;
+    flex:1;
+    min-width:0;
+}
+
+.sidebar-app-link strong{
+    font-size:14px;
+    color:inherit;
+}
+
+.sidebar-app-link small{
+    font-size:11px;
+    opacity:0.9;
+    color:inherit;
+}
+
+.sidebar-link-download{
+    font-size:14px !important;
+    color:inherit !important;
+    min-width:14px;
+}
+
 .main-content{
     flex:1;
     padding:20px;
@@ -490,6 +570,110 @@ body.dark-mode .card p{
     box-shadow:0 10px 22px rgba(0,0,0,0.12);
 }
 
+.apps-section{
+    padding:18px;
+    margin-bottom:20px;
+}
+
+.apps-section h2{
+    margin-bottom:10px;
+}
+
+.apps-intro{
+    font-size:13px;
+    line-height:1.6;
+    color:var(--soft-light);
+    margin-bottom:16px;
+    text-align:center;
+}
+
+body.dark-mode .apps-intro{
+    color:var(--soft-dark);
+}
+
+.apps-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:14px;
+    width:100%;
+}
+
+.app-download-card{
+    padding:16px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    min-height:100%;
+}
+
+.app-download-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    justify-content:center;
+}
+
+.app-download-head i{
+    font-size:28px;
+    color:var(--accent);
+}
+
+.app-download-head-text h3{
+    margin-bottom:3px;
+}
+
+.app-download-head-text p{
+    font-size:12px;
+    color:var(--soft-light);
+}
+
+body.dark-mode .app-download-head-text p{
+    color:var(--soft-dark);
+}
+
+.qr-box{
+    width:130px;
+    max-width:100%;
+    aspect-ratio:1/1;
+    background:#fff;
+    border-radius:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px;
+    overflow:hidden;
+    box-shadow:0 8px 24px rgba(0,0,0,0.08);
+}
+
+.qr-box canvas,
+.qr-box img{
+    width:100% !important;
+    height:100% !important;
+}
+
+.app-download-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    text-decoration:none;
+    padding:10px 16px;
+    border-radius:999px;
+    background:linear-gradient(90deg,#ff6ec4,#7873f5);
+    color:#fff;
+    font-weight:bold;
+    font-size:13px;
+    width:100%;
+    max-width:260px;
+}
+
+.app-download-btn:hover{
+    opacity:0.92;
+    transform:translateY(-1px);
+}
+
 .info-section{
     padding:15px;
     margin-bottom:15px;
@@ -525,7 +709,8 @@ body.dark-mode .footer{
 
 .stats-section .stat,
 .cards-section .card,
-.info-section{
+.info-section,
+.app-download-card{
     text-align:center;
     display:flex;
     flex-direction:column;
@@ -1115,6 +1300,11 @@ body{
     .welcome-image img{
         width:100px;
     }
+
+    .sidebar-app-links{
+        min-width:290px;
+        margin-top:0;
+    }
 }
 
 @media(max-width:600px){
@@ -1302,6 +1492,14 @@ body{
     .dropdown-arrow{
         font-size:12px;
     }
+
+    .apps-grid{
+        grid-template-columns:1fr;
+    }
+
+    .qr-box{
+        width:120px;
+    }
 }
 
 @media(max-width:420px){
@@ -1373,5 +1571,13 @@ body{
     .leaders-box{
         width:95%;
         padding:16px;
+    }
+
+    .sidebar-app-links{
+        min-width:260px;
+    }
+
+    .qr-box{
+        width:110px;
     }
 }
