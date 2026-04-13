@@ -21,6 +21,9 @@ const CORRECT_ENGLISH_CONSTITUTION = "Constitution (English)";
 const WRONG_ENGLISH_TRANSLATED = "Order (Translated)";
 const CORRECT_ENGLISH_TRANSLATED = "Constitution (Translated)";
 
+const ANDROID_APP_URL = "https://livenews.live/KFC/Apps/Khawrai.apk";
+const IOS_APP_URL = "https://livenews.live/KFC/Apps/KhawraiFalahi.mobileconfig";
+
 let currentPageLanguage = localStorage.getItem(TRANSLATION_STORAGE_KEY) === "ur" ? "ur" : "en";
 let googleTranslateLoadPromise = null;
 let translatePending = null;
@@ -73,7 +76,11 @@ let userArea,
     themeToggleIcon,
     translateToggleBtn,
     translateToggleIcon,
-    translateHost;
+    translateHost,
+    androidQrMain,
+    iosQrMain,
+    androidMainDownload,
+    iosMainDownload;
 
 function cacheElements() {
     userArea = document.getElementById("userArea");
@@ -126,6 +133,11 @@ function cacheElements() {
     translateToggleBtn = document.getElementById("translateToggleBtn");
     translateToggleIcon = document.getElementById("translateToggleIcon");
     translateHost = document.getElementById("google_translate_element");
+
+    androidQrMain = document.getElementById("androidQrMain");
+    iosQrMain = document.getElementById("iosQrMain");
+    androidMainDownload = document.getElementById("androidMainDownload");
+    iosMainDownload = document.getElementById("iosMainDownload");
 }
 
 function isCancelledStatus(status) {
@@ -586,6 +598,46 @@ function translateTextValue(...values) {
         if (text) return text;
     }
     return "";
+}
+
+function renderQRCode(element, text) {
+    if (!element) return;
+
+    element.innerHTML = "";
+
+    if (typeof QRCode === "undefined") {
+        const fallback = document.createElement("a");
+        fallback.href = text;
+        fallback.textContent = text;
+        fallback.target = "_blank";
+        fallback.rel = "noopener noreferrer";
+        fallback.style.cssText = "word-break:break-all; text-align:center; font-size:12px;";
+        element.appendChild(fallback);
+        return;
+    }
+
+    new QRCode(element, {
+        text,
+        width: 120,
+        height: 120,
+        colorDark: "#111111",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+    });
+}
+
+function renderAppQRCodes() {
+    renderQRCode(androidQrMain, ANDROID_APP_URL);
+    renderQRCode(iosQrMain, IOS_APP_URL);
+
+    if (androidMainDownload) {
+        androidMainDownload.href = ANDROID_APP_URL;
+        androidMainDownload.setAttribute("download", "Khawrai.apk");
+    }
+    if (iosMainDownload) {
+        iosMainDownload.href = IOS_APP_URL;
+        iosMainDownload.setAttribute("download", "KhawraiFalahi.mobileconfig");
+    }
 }
 
 async function loadUsers() {
@@ -1273,6 +1325,7 @@ function init() {
     initTheme();
     setDocumentDirection();
     bindEvents();
+    renderAppQRCodes();
     startTranslationObserver();
 
     if (currentPageLanguage === "ur") {
