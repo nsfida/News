@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aether Signal</title>
+  <meta name="color-scheme" content="dark light" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.8.26/dist/zip-full.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+  <div class="bg-grid"></div>
+
+  <div id="authOverlay" class="auth-overlay" aria-hidden="false">
+    <div class="auth-card glass">
+      <div class="brand-lock">
+        <span class="brand-mark">A</span>
+        <div>
+          <p class="eyebrow">Encrypted workspace</p>
+          <h1>Aether Signal</h1>
+        </div>
+      </div>
+      <p class="auth-copy">Unlock the live intelligence dashboard to load the private data bundle from the encrypted ZIP archive.</p>
+      <form id="unlockForm" class="auth-form">
+        <label class="field-label" for="passwordInput">Access password</label>
+        <div class="password-row">
+          <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Enter password" />
+          <button id="togglePassword" class="ghost-btn icon-btn" type="button" aria-label="Show password">👁</button>
+        </div>
+        <label class="remember-row">
+          <input id="rememberSession" type="checkbox" checked />
+          <span>Remember this session on this device</span>
+        </label>
+        <button id="unlockButton" class="primary-btn" type="submit">
+          <span class="btn-label">Unlock dashboard</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+      <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+      <div class="auth-footer">
+        <span>Demo password: <strong>Aether-947</strong></span>
+        <span>Client-side ZIP decryption</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="appShell" class="app-shell hidden">
+    <aside class="sidebar glass">
+      <div class="brand-lock compact">
+        <span class="brand-mark">A</span>
+        <div>
+          <p class="eyebrow">Aether Signal</p>
+          <h2>Command console</h2>
+        </div>
+      </div>
+      <nav class="side-nav" aria-label="Primary">
+        <button class="nav-item active" data-jump="overview">Overview</button>
+        <button class="nav-item" data-jump="reports">Reports</button>
+        <button class="nav-item" data-jump="signals">Signals</button>
+        <button class="nav-item" data-jump="team">Team</button>
+        <button class="nav-item" data-jump="audit">Audit trail</button>
+      </nav>
+      <div class="side-card">
+        <p class="side-card-label">Coverage status</p>
+        <strong id="coverageValue">124 territories</strong>
+        <span id="refreshValue">Refreshes every 4 minutes</span>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar glass">
+        <div>
+          <p class="eyebrow">Premium risk intelligence</p>
+          <h1 id="productTitle">Aether Signal</h1>
+        </div>
+        <div class="topbar-actions">
+          <label class="search-shell">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="Search reports, tags, regions..." />
+          </label>
+          <button id="themeToggle" class="ghost-btn" type="button" aria-label="Toggle theme">Theme</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section id="overview" class="hero grid-2 glass">
+          <div>
+            <p class="eyebrow">Live briefing</p>
+            <h2 id="heroTitle">Operational clarity for teams that live on tight margins.</h2>
+            <p id="heroSubtitle" class="hero-copy">A compact command layer for high-value risk, logistics, and executive monitoring.</p>
+            <div class="hero-badges">
+              <span class="badge badge-live">Live</span>
+              <span class="badge" id="heroCoverage">124 territories</span>
+              <span class="badge" id="heroRefresh">Refreshes every 4 minutes</span>
+            </div>
+          </div>
+          <div class="hero-side">
+            <div class="mini-stat glass-soft">
+              <span>Risk index</span>
+              <strong id="riskIndexBig">68</strong>
+              <small id="riskDeltaBig">+7.2% since yesterday</small>
+            </div>
+            <div class="mini-stat glass-soft">
+              <span>Confidence</span>
+              <strong id="confidenceBig">93.4%</strong>
+              <small>Signal consistency across feeds</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="Key metrics">
+          <article class="kpi-card glass skeleton-target">
+            <span>Active alerts</span>
+            <strong id="metricAlerts">12</strong>
+            <small>Critical and watch items</small>
+          </article>
+          <article class="kpi-card glass skeleton-target">
+            <span>Open reports</span>
+            <strong id="metricReports">28</strong>
+            <small>Published in the last cycle</small>
+          </article>
+          <article class="kpi-card glass skeleton-target">
+            <span>Watchlist entities</span>
+            <strong id="metricWatchlist">47</strong>
+            <small>Under structured monitoring</small>
+          </article>
+          <article class="kpi-card glass skeleton-target">
+            <span>Response time</span>
+            <strong id="metricResponse">14m</strong>
+            <small>Median analyst turnaround</small>
+          </article>
+        </section>
+
+        <section id="signals" class="analytics-layout">
+          <article class="chart-card glass">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Composite risk index</p>
+                <h3>Seven-day pressure curve</h3>
+              </div>
+              <span class="section-pill" id="regionsUnderReview">9 regions under review</span>
+            </div>
+            <div class="chart-wrap">
+              <svg id="trendChart" viewBox="0 0 760 240" preserveAspectRatio="none" aria-label="Risk trend chart"></svg>
+            </div>
+          </article>
+
+          <aside class="region-card glass">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Regional pulse</p>
+                <h3>Highest pressure zones</h3>
+              </div>
+            </div>
+            <div id="regionList" class="region-list"></div>
+          </aside>
+        </section>
+
+        <section id="reports" class="reports-layout">
+          <article class="reports-panel glass">
+            <div class="section-head stack-on-mobile">
+              <div>
+                <p class="eyebrow">Reports</p>
+                <h3>Briefings and notes</h3>
+              </div>
+              <div class="filters">
+                <select id="sortSelect" class="select">
+                  <option value="latest">Newest first</option>
+                  <option value="severity">Highest severity</option>
+                  <option value="confidence">Highest confidence</option>
+                </select>
+              </div>
+            </div>
+            <div id="categoryChips" class="chip-row"></div>
+            <div id="reportsGrid" class="reports-grid"></div>
+          </article>
+
+          <aside class="detail-panel glass">
+            <div id="reportDetail"></div>
+          </aside>
+        </section>
+
+        <section id="team" class="lower-grid">
+          <article class="glass panel-block">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Profiles</p>
+                <h3>Team workspace</h3>
+              </div>
+            </div>
+            <div id="profileList" class="profile-list"></div>
+          </article>
+
+          <article class="glass panel-block">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Notifications</p>
+                <h3>Recent system activity</h3>
+              </div>
+            </div>
+            <div id="notificationList" class="notification-list"></div>
+          </article>
+
+          <article id="audit" class="glass panel-block">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Audit trail</p>
+                <h3>Latest actions</h3>
+              </div>
+            </div>
+            <div id="activityList" class="activity-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

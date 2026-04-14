@@ -1,0 +1,466 @@
+{
+  "meta": {
+    "product": "Aether Signal",
+    "subtitle": "Operational intelligence workspace for risk, logistics, and executive teams.",
+    "version": "3.4.1",
+    "generatedAt": "2026-04-14T06:30:00Z",
+    "timezone": "Asia/Dubai",
+    "sourceLock": "Encrypted data delivered inside data-secure.zip"
+  },
+  "organization": {
+    "name": "Aether Signal",
+    "tagline": "See disruption before it hardens into cost.",
+    "domain": "global risk operations",
+    "coverage": "124 territories",
+    "refreshInterval": "4 minutes",
+    "primaryColor": "#78f0d7",
+    "secondaryColor": "#8aa7ff"
+  },
+  "stats": {
+    "riskIndex": 68,
+    "riskDelta": 7.2,
+    "activeAlerts": 12,
+    "openReports": 28,
+    "watchlistEntities": 47,
+    "confidence": 93.4,
+    "responseTimeMinutes": 14,
+    "regionsUnderReview": 9
+  },
+  "timeline": [
+    {
+      "date": "2026-04-08",
+      "score": 54
+    },
+    {
+      "date": "2026-04-09",
+      "score": 57
+    },
+    {
+      "date": "2026-04-10",
+      "score": 59
+    },
+    {
+      "date": "2026-04-11",
+      "score": 63
+    },
+    {
+      "date": "2026-04-12",
+      "score": 61
+    },
+    {
+      "date": "2026-04-13",
+      "score": 66
+    },
+    {
+      "date": "2026-04-14",
+      "score": 68
+    }
+  ],
+  "users": [
+    {
+      "id": "u-01",
+      "name": "Maya Rahman",
+      "role": "Lead Intelligence Analyst",
+      "team": "Risk Monitoring",
+      "status": "online",
+      "avatar": "MR",
+      "location": "Dubai",
+      "lastActive": "2026-04-14T05:58:00Z"
+    },
+    {
+      "id": "u-02",
+      "name": "Daniel Okafor",
+      "role": "Maritime Risk Editor",
+      "team": "Trade Routes",
+      "status": "reviewing",
+      "avatar": "DO",
+      "location": "Lagos",
+      "lastActive": "2026-04-14T05:41:00Z"
+    },
+    {
+      "id": "u-03",
+      "name": "Sana El-Masry",
+      "role": "Energy Systems Lead",
+      "team": "Infrastructure Watch",
+      "status": "online",
+      "avatar": "SE",
+      "location": "Cairo",
+      "lastActive": "2026-04-14T05:48:00Z"
+    },
+    {
+      "id": "u-04",
+      "name": "Kenji Mori",
+      "role": "Automation & Data Lead",
+      "team": "Signal Engineering",
+      "status": "offline",
+      "avatar": "KM",
+      "location": "Singapore",
+      "lastActive": "2026-04-13T22:12:00Z"
+    }
+  ],
+  "alerts": [
+    {
+      "id": "al-11",
+      "severity": "critical",
+      "title": "Suez diversion pressure is reshaping container lead times",
+      "region": "Red Sea Corridor",
+      "category": "maritime",
+      "status": "active",
+      "updatedAt": "2026-04-14T05:44:00Z",
+      "summary": "Carrier schedules are compressing around alternate transits, raising cost-to-serve for time-sensitive cargo."
+    },
+    {
+      "id": "al-12",
+      "severity": "high",
+      "title": "Southern Iberia grid demand is outpacing reserve margin",
+      "region": "Spain / Portugal",
+      "category": "energy",
+      "status": "active",
+      "updatedAt": "2026-04-14T04:56:00Z",
+      "summary": "Peak load is nearing planning thresholds while maintenance windows remain constrained."
+    },
+    {
+      "id": "al-13",
+      "severity": "high",
+      "title": "Port dwell times have widened across the eastern trade spine",
+      "region": "South China Sea",
+      "category": "logistics",
+      "status": "active",
+      "updatedAt": "2026-04-14T04:20:00Z",
+      "summary": "Container turnover is slower at two anchor ports, creating a ripple effect into feeder capacity."
+    },
+    {
+      "id": "al-14",
+      "severity": "medium",
+      "title": "Hydration demand advisory issued for interior districts",
+      "region": "North Africa",
+      "category": "weather",
+      "status": "watch",
+      "updatedAt": "2026-04-13T21:40:00Z",
+      "summary": "Heat index trends have crossed the upper action band for field operations and outdoor crews."
+    }
+  ],
+  "notifications": [
+    {
+      "id": "nt-01",
+      "type": "report",
+      "message": "New analyst brief added for Red Sea transit variance.",
+      "time": "18m ago",
+      "read": false
+    },
+    {
+      "id": "nt-02",
+      "type": "mention",
+      "message": "Maya tagged you in the Iberia energy margin review.",
+      "time": "44m ago",
+      "read": false
+    },
+    {
+      "id": "nt-03",
+      "type": "system",
+      "message": "Daily risk snapshot refreshed across all watchlists.",
+      "time": "2h ago",
+      "read": true
+    },
+    {
+      "id": "nt-04",
+      "type": "trend",
+      "message": "Three regions crossed the elevated threshold in the last six hours.",
+      "time": "3h ago",
+      "read": true
+    }
+  ],
+  "activity": [
+    {
+      "id": "ac-01",
+      "who": "Maya Rahman",
+      "action": "finalized the Red Sea corridor summary",
+      "time": "12 minutes ago"
+    },
+    {
+      "id": "ac-02",
+      "who": "Sana El-Masry",
+      "action": "pushed a revised reserve margin forecast",
+      "time": "29 minutes ago"
+    },
+    {
+      "id": "ac-03",
+      "who": "Daniel Okafor",
+      "action": "added port dwell observations from the overnight feed",
+      "time": "1 hour ago"
+    },
+    {
+      "id": "ac-04",
+      "who": "Aether Engine",
+      "action": "recomputed the composite risk index",
+      "time": "2 hours ago"
+    }
+  ],
+  "regions": [
+    {
+      "name": "Red Sea Corridor",
+      "score": 92,
+      "trend": 14,
+      "focus": "maritime",
+      "note": "alternate routing pressure"
+    },
+    {
+      "name": "Iberian Grid",
+      "score": 76,
+      "trend": 8,
+      "focus": "energy",
+      "note": "reserve margin tightening"
+    },
+    {
+      "name": "South China Sea",
+      "score": 71,
+      "trend": 5,
+      "focus": "logistics",
+      "note": "port dwell variability"
+    },
+    {
+      "name": "North Africa",
+      "score": 64,
+      "trend": 3,
+      "focus": "weather",
+      "note": "heat stress advisory"
+    },
+    {
+      "name": "Andean Supply Belt",
+      "score": 52,
+      "trend": -2,
+      "focus": "commodities",
+      "note": "stable for now"
+    }
+  ],
+  "reports": [
+    {
+      "id": "rp-101",
+      "title": "Red Sea transit variance and the new cost floor for premium freight",
+      "category": "maritime",
+      "region": "Red Sea Corridor",
+      "severity": "critical",
+      "confidence": 96,
+      "updatedAt": "2026-04-14T05:38:00Z",
+      "readingTime": 7,
+      "authorId": "u-02",
+      "status": "published",
+      "summary": "Fleet re-routing is no longer a temporary workaround. It is becoming the structural baseline for high-value lanes.",
+      "tags": [
+        "shipping",
+        "routing",
+        "insurance",
+        "lead time"
+      ],
+      "metrics": {
+        "impact": 98,
+        "urgency": 94,
+        "volatility": 86
+      },
+      "findings": [
+        "Transit windows through the main corridor remain inconsistent enough to raise charter planning complexity.",
+        "Premium cargo is now being priced against longer, more predictable alternates rather than shortest-path routing.",
+        "Insurance and war-risk premiums are feeding into a higher baseline cost that procurement teams cannot ignore."
+      ],
+      "actions": [
+        "Lock a 72-hour procurement buffer for all critical cargo lanes.",
+        "Shift exception approval to a senior review path until volatility normalizes.",
+        "Update customer SLA language to reflect alternate transit assumptions."
+      ],
+      "body": [
+        "The latest carrier overlap shows a market that has moved past tactical rerouting and into a more permanent risk-adjusted operating model. Stakeholders are treating the current pattern as a durable cost layer rather than a short-lived disruption.",
+        "The operational consequence is subtle but expensive. Schedules remain serviceable, yet every exception now requires more coordination, more margin, and more tolerance for delay. Teams that still plan against pre-disruption benchmarks are absorbing avoidable cost."
+      ]
+    },
+    {
+      "id": "rp-102",
+      "title": "Southern Iberia reserve margin is narrowing under peak demand pressure",
+      "category": "energy",
+      "region": "Spain / Portugal",
+      "severity": "high",
+      "confidence": 91,
+      "updatedAt": "2026-04-14T04:50:00Z",
+      "readingTime": 5,
+      "authorId": "u-03",
+      "status": "published",
+      "summary": "Maintenance timing and weather-driven load are squeezing the room for error in both national grids.",
+      "tags": [
+        "grid",
+        "load",
+        "maintenance",
+        "outage risk"
+      ],
+      "metrics": {
+        "impact": 84,
+        "urgency": 88,
+        "volatility": 73
+      },
+      "findings": [
+        "Demand is peaking earlier in the day than the seasonal average.",
+        "Maintenance windows are creating narrow contingency margins in two adjacent regions.",
+        "Industrial users should prepare for short-notice demand response signals."
+      ],
+      "actions": [
+        "Pre-stage backup generation for mission-critical sites.",
+        "Reconfirm demand-response contacts with facilities leads.",
+        "Delay non-essential high-load tasks during peak windows."
+      ],
+      "body": [
+        "Grid conditions are still controlled, but the operating margin is visibly thinner than last week. The most relevant signal is the shape of peak demand, which is moving into tighter overlap with planned maintenance activity.",
+        "That overlap does not imply an imminent failure. It does mean, however, that the practical room for a second-order issue is shrinking quickly. The right response is contingency readiness, not panic."
+      ]
+    },
+    {
+      "id": "rp-103",
+      "title": "Eastern port dwell variability is spreading into feeder capacity",
+      "category": "logistics",
+      "region": "South China Sea",
+      "severity": "high",
+      "confidence": 89,
+      "updatedAt": "2026-04-14T03:55:00Z",
+      "readingTime": 6,
+      "authorId": "u-01",
+      "status": "published",
+      "summary": "The bottleneck is no longer isolated at the terminals. It is now affecting onward movement and schedule integrity.",
+      "tags": [
+        "ports",
+        "container",
+        "feeder",
+        "turnaround"
+      ],
+      "metrics": {
+        "impact": 79,
+        "urgency": 83,
+        "volatility": 78
+      },
+      "findings": [
+        "Dwell times are widening across more than one transfer node.",
+        "Feeder rotations are missing ideal sync windows by enough to create propagation delay.",
+        "Shippers with fragile inventory should consider pre-clearing freight where possible."
+      ],
+      "actions": [
+        "Re-sequence replenishment orders for high-turn SKUs.",
+        "Prioritize pre-clearance for the next two sailing windows.",
+        "Alert commercial teams to possible arrival uncertainty."
+      ],
+      "body": [
+        "The newest data indicates a chain effect. What used to be a terminal-specific issue now reaches the feeder layer, where delays compound more quickly. This is the point where operational friction becomes measurable to customers.",
+        "The practical response is to protect the items with the shortest inventory runway and to reduce dependence on tight transfer timing until the schedule regains consistency."
+      ]
+    },
+    {
+      "id": "rp-104",
+      "title": "Heat index escalation across interior districts raises field-work risk",
+      "category": "weather",
+      "region": "North Africa",
+      "severity": "medium",
+      "confidence": 87,
+      "updatedAt": "2026-04-13T21:20:00Z",
+      "readingTime": 4,
+      "authorId": "u-04",
+      "status": "published",
+      "summary": "Not a crisis yet, but enough to alter scheduling, hydration, and exposure planning for outdoor teams.",
+      "tags": [
+        "heat",
+        "operations",
+        "safety",
+        "field teams"
+      ],
+      "metrics": {
+        "impact": 61,
+        "urgency": 69,
+        "volatility": 54
+      },
+      "findings": [
+        "Midday outdoor tasks are showing a higher fatigue curve than expected.",
+        "Vehicle-based work is less exposed, but turnaround timing still needs adjustment.",
+        "Crew rotation and water availability should be checked before long routes."
+      ],
+      "actions": [
+        "Shift field visits earlier in the day where practical.",
+        "Add mandatory hydration checkpoints for mobile crews.",
+        "Keep first-response kits in all transport units."
+      ],
+      "body": [
+        "The signal sits below crisis level, but the trend is persistent enough to matter. Proactive scheduling is the difference between a manageable day and a preventable incident.",
+        "Teams with outdoor dependencies should treat this as an operations issue, not only a weather note."
+      ]
+    },
+    {
+      "id": "rp-105",
+      "title": "Andean commodity channels remain stable despite weaker downstream sentiment",
+      "category": "commodities",
+      "region": "Andean Supply Belt",
+      "severity": "low",
+      "confidence": 82,
+      "updatedAt": "2026-04-13T18:10:00Z",
+      "readingTime": 3,
+      "authorId": "u-02",
+      "status": "published",
+      "summary": "Production and logistics are steady, but market psychology remains softer than the physical supply picture.",
+      "tags": [
+        "metals",
+        "output",
+        "shipment",
+        "sentiment"
+      ],
+      "metrics": {
+        "impact": 42,
+        "urgency": 36,
+        "volatility": 29
+      },
+      "findings": [
+        "Shipment timing is holding close to plan.",
+        "The supply picture is cleaner than trader sentiment suggests.",
+        "Short-term commentary is exaggerating downside risk."
+      ],
+      "actions": [
+        "Keep the existing procurement cadence.",
+        "Avoid overreacting to sentiment-only headlines.",
+        "Monitor for sustained freight rate changes."
+      ],
+      "body": [
+        "The physical network is operating as expected. The softer tone is mainly in market language and should not be confused with a structural interruption.",
+        "At this stage, disciplined monitoring is sufficient."
+      ]
+    },
+    {
+      "id": "rp-106",
+      "title": "Executive watchlist update: three entities crossed elevated thresholds",
+      "category": "watchlist",
+      "region": "Global",
+      "severity": "medium",
+      "confidence": 90,
+      "updatedAt": "2026-04-14T02:14:00Z",
+      "readingTime": 4,
+      "authorId": "u-01",
+      "status": "published",
+      "summary": "The watchlist is still manageable, but it now deserves tighter review cadence.",
+      "tags": [
+        "watchlist",
+        "thresholds",
+        "monitoring",
+        "governance"
+      ],
+      "metrics": {
+        "impact": 58,
+        "urgency": 64,
+        "volatility": 48
+      },
+      "findings": [
+        "Threshold movement is concentrated in a small number of entities.",
+        "No single item currently indicates immediate escalation.",
+        "The pattern supports a more frequent review cadence."
+      ],
+      "actions": [
+        "Move the weekly review to a twice-weekly cadence.",
+        "Assign a named owner for each elevated entity.",
+        "Track secondary signals rather than isolated alerts."
+      ],
+      "body": [
+        "This is a governance problem more than a shock event. The value is in maintaining a clear cadence and not letting the watchlist grow into noise.",
+        "A smaller number of well-owned items will be easier to manage than a long list of loosely monitored names."
+      ]
+    }
+  ]
+}
