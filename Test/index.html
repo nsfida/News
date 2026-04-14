@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Astra Signal — Private Intelligence Workspace</title>
+  <meta name="description" content="A premium static intelligence dashboard with password-locked data extraction powered entirely in the browser." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@zip.js/zip.js/dist/zip.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+  <div class="bg-grid"></div>
+
+  <main class="app-shell">
+    <section id="gate" class="gate-screen">
+      <div class="gate-card glass">
+        <div class="brand-mark">AS</div>
+        <p class="eyebrow">Encrypted data vault</p>
+        <h1>Astra Signal</h1>
+        <p class="hero-copy">Unlock the private intelligence workspace to load live signals, analyst profiles, reports, and response metrics directly from an encrypted archive in your browser.</p>
+
+        <form id="unlockForm" class="unlock-form">
+          <label class="field">
+            <span>Password</span>
+            <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Enter archive password" />
+          </label>
+
+          <label class="remember-row">
+            <input id="rememberToggle" type="checkbox" />
+            <span>Remember this device</span>
+          </label>
+
+          <button id="unlockBtn" class="primary-btn" type="submit">
+            <span>Unlock archive</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </form>
+
+        <div id="gateStatus" class="gate-status"></div>
+        <p class="hint">The site remains fully static. The ZIP is fetched and decrypted in your browser using zip.js.</p>
+      </div>
+    </section>
+
+    <section id="dashboard" class="dashboard hidden">
+      <aside class="sidebar glass">
+        <div class="sidebar-brand">
+          <div class="brand-mark small">AS</div>
+          <div>
+            <strong>Astra Signal</strong>
+            <span>Private intelligence workspace</span>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active" data-target="overview">Overview</button>
+          <button class="nav-item" data-target="signals">Signals</button>
+          <button class="nav-item" data-target="profiles">Profiles</button>
+          <button class="nav-item" data-target="reports">Reports</button>
+          <button class="nav-item" data-target="alerts">Alerts</button>
+        </nav>
+
+        <div class="sidebar-panel">
+          <p class="sidebar-label">Archive status</p>
+          <div id="archiveChip" class="status-chip success">Locked locally</div>
+          <p class="sidebar-copy">Encrypted content is stored in <code>data.zip</code> and unlocked only after password verification.</p>
+        </div>
+
+        <div class="sidebar-panel small-stack">
+          <p class="sidebar-label">Today's briefing</p>
+          <div id="briefingMini" class="mini-brief"></div>
+        </div>
+      </aside>
+
+      <div class="content">
+        <header class="topbar glass">
+          <div>
+            <p class="eyebrow">Launch-ready intelligence service</p>
+            <h2>Operational clarity, delivered in one secure view.</h2>
+          </div>
+
+          <div class="topbar-actions">
+            <div class="search-wrap">
+              <input id="searchInput" type="search" placeholder="Search reports, people, alerts..." />
+            </div>
+            <button id="themeToggle" class="icon-btn" aria-label="Toggle theme">◐</button>
+            <button id="signOutBtn" class="ghost-btn">Clear session</button>
+          </div>
+        </header>
+
+        <section id="overview" class="section-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Overview</p>
+              <h3>Dashboard summary</h3>
+            </div>
+            <div class="filter-row">
+              <button class="chip active" data-filter="all">All</button>
+              <button class="chip" data-filter="Critical">Critical</button>
+              <button class="chip" data-filter="High">High</button>
+              <button class="chip" data-filter="Medium">Medium</button>
+            </div>
+          </div>
+
+          <div id="metricsGrid" class="metrics-grid skeleton-grid"></div>
+
+          <div class="overview-grid">
+            <article class="panel glass">
+              <div class="panel-head">
+                <h4>Trending outlook</h4>
+                <span class="subtle">12-cycle model</span>
+              </div>
+              <div id="trendChart" class="trend-chart"></div>
+            </article>
+
+            <article class="panel glass">
+              <div class="panel-head">
+                <h4>Urgent alerts</h4>
+                <span class="subtle">Live queue</span>
+              </div>
+              <div id="alertsList" class="stack-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="signals" class="section-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Signals</p>
+              <h3>Featured reports</h3>
+            </div>
+            <select id="sortSelect" class="select">
+              <option value="priority">Sort by priority</option>
+              <option value="recent">Most recent</option>
+              <option value="score">Highest confidence</option>
+            </select>
+          </div>
+          <div id="reportsGrid" class="reports-grid skeleton-grid"></div>
+        </section>
+
+        <section class="two-col">
+          <section id="profiles" class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Profiles</p>
+                <h4>Analyst roster</h4>
+              </div>
+              <span class="subtle">Editorial bench</span>
+            </div>
+            <div id="profilesGrid" class="profiles-grid skeleton-grid"></div>
+          </section>
+
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Timeline</p>
+                <h4>Session activity</h4>
+              </div>
+              <span class="subtle">Chronology</span>
+            </div>
+            <div id="timelineList" class="timeline-list"></div>
+          </section>
+        </section>
+
+        <section id="alerts" class="panel glass section-block">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Notifications</p>
+              <h4>Action center</h4>
+            </div>
+            <span class="subtle">Workflow + system messages</span>
+          </div>
+          <div id="notificationsList" class="notifications-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <div id="detailDrawer" class="drawer hidden" aria-hidden="true">
+      <div class="drawer-backdrop" data-close="true"></div>
+      <aside class="drawer-panel glass">
+        <button id="closeDrawerBtn" class="drawer-close" aria-label="Close detail panel">✕</button>
+        <div id="drawerContent"></div>
+      </aside>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
