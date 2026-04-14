@@ -393,41 +393,52 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- zip.js library for password-protected ZIP support -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/zip.js/2.7.45/zip.min.js"></script>
+  <!-- zip.js: full build with password/encryption support, no web workers needed -->
+  <script src="https://unpkg.com/@zip.js/zip.js@2.7.45/dist/zip-no-worker.min.js"></script>
 
-  <!-- Loader: decodes Base64 password, extracts main.js from main.zip, and executes it -->
   <script>
     (async function () {
       try {
         // Base64-encoded password — decodes to: 356425023663338
-        const _e = "MzU2NDI1MDIzNjYzMzM4";
-        const password = atob(_e);
+        const _k = "MzU2NDI1MDIzNjYzMzM4";
+        const pwd = atob(_k);
 
-        const response = await fetch("main.zip");
-        if (!response.ok) throw new Error("Failed to fetch main.zip: " + response.status);
-        const blob = await response.blob();
+        // Disable web workers (already baked into zip-no-worker build, but set explicitly)
+        zip.configure({ useWebWorkers: false });
 
-        const { ZipReader, BlobReader, TextWriter } = zip;
+        const res = await fetch("main.zip");
+        if (!res.ok) throw new Error("Fetch failed: " + res.status);
+        const arrayBuffer = await res.arrayBuffer();
 
-        const zipReader = new ZipReader(new BlobReader(blob), { password: password });
+        const zipReader = new zip.ZipReader(
+          new zip.Uint8ArrayReader(new Uint8Array(arrayBuffer)),
+          { password: pwd, useWebWorkers: false }
+        );
+
         const entries = await zipReader.getEntries();
 
-        const jsEntry = entries.find(function (e) {
-          return e.filename === "main.js";
+        const target = entries.find(function (entry) {
+          return entry.filename === "main.js";
         });
 
-        if (!jsEntry) throw new Error("main.js not found inside main.zip");
+        if (!target) {
+          await zipReader.close();
+          throw new Error("main.js not found in main.zip");
+        }
 
-        const jsText = await jsEntry.getData(new TextWriter(), { password: password });
+        const jsCode = await target.getData(
+          new zip.TextWriter(),
+          { password: pwd, useWebWorkers: false }
+        );
+
         await zipReader.close();
 
-        const script = document.createElement("script");
-        script.textContent = jsText;
-        document.body.appendChild(script);
+        const scriptEl = document.createElement("script");
+        scriptEl.textContent = jsCode;
+        document.body.appendChild(scriptEl);
 
       } catch (err) {
-        console.error("Failed to load main.js from zip:", err);
+        console.error("[ZIP Loader] Error:", err);
       }
     })();
   </script>
