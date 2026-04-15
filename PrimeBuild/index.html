@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Build Construction Chemicals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Nunito+Sans:wght@300;400;600;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── HOME-SPECIFIC ───────────────────────────────────────── */
+.main-hero {
+  position: relative;
+  height: 100vh; min-height:600px;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+  text-align:center;
+}
+
+/* Three-panel video background */
+.hero-videos {
+  position:absolute; inset:0;
+  display:grid; grid-template-columns: repeat(3,1fr);
+  z-index:0;
+}
+.hero-videos video {
+  width:100%; height:100%;
+  object-fit:cover;
+  filter: brightness(.3) saturate(.6);
+}
+
+/* Dark overlay gradient */
+.hero-overlay {
+  position:absolute; inset:0; z-index:1;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 50%, rgba(7,11,18,.3) 0%, rgba(7,11,18,.85) 100%),
+    linear-gradient(180deg, rgba(7,11,18,.2) 0%, rgba(7,11,18,.9) 100%);
+}
+
+/* Diagonal grid lines */
+.hero-grid {
+  position:absolute; inset:0; z-index:2;
+  background-image:
+    linear-gradient(rgba(201,162,82,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,162,82,.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 80% at center, black 20%, transparent 80%);
+}
+
+.hero-content {
+  position:relative; z-index:3;
+  padding:0 40px;
+  max-width:960px;
+}
+
+.hero-eyebrow {
+  font-family: var(--ff-head);
+  font-size:12px; font-weight:600;
+  letter-spacing:.3em; text-transform:uppercase;
+  color: var(--gold);
+  margin-bottom:28px;
+  display:flex; align-items:center; justify-content:center; gap:16px;
+  opacity:0; animation: fadeUp .8s .2s var(--ease) forwards;
+}
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content:''; display:block;
+  width:40px; height:1px; background: var(--gold); opacity:.5;
+}
+
+.hero-title {
+  font-family: var(--ff-head);
+  font-size: clamp(52px, 8.5vw, 120px);
+  font-weight:800;
+  line-height:.88;
+  letter-spacing:.01em;
+  text-transform:uppercase;
+  margin-bottom:28px;
+  opacity:0; animation: fadeUp .9s .4s var(--ease) forwards;
+}
+.hero-title .line-gold {
+  display:block;
+  color: var(--gold);
+  -webkit-text-stroke: 0px;
+}
+.hero-title .line-outline {
+  display:block;
+  -webkit-text-stroke: 1.5px rgba(244,239,232,.3);
+  color: transparent;
+}
+
+.hero-sub {
+  font-size:16px; line-height:1.8;
+  color: rgba(244,239,232,.6);
+  max-width:520px; margin:0 auto 40px;
+  opacity:0; animation: fadeUp .8s .6s var(--ease) forwards;
+}
+
+.hero-actions {
+  display:flex; gap:16px; justify-content:center; flex-wrap:wrap;
+  opacity:0; animation: fadeUp .8s .8s var(--ease) forwards;
+}
+
+/* Hero scroll indicator */
+.hero-scroll {
+  position:absolute; bottom:36px; left:50%;
+  transform:translateX(-50%);
+  z-index:3;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.hero-scroll span {
+  font-family: var(--ff-head);
+  font-size:10px; letter-spacing:.25em;
+  text-transform:uppercase; color: var(--muted);
+}
+.scroll-line {
+  width:1px; height:48px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%,100% { opacity:.3; transform:scaleY(.7); }
+  50% { opacity:1; transform:scaleY(1); }
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(32px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── INTRO STRIP ─────────────────────────────────────────── */
+.intro-strip {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding:56px 80px;
+}
+.intro-inner {
+  max-width:1300px; margin:0 auto;
+  display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;
+  gap:0; align-items:center;
+}
+.intro-stat { text-align:center; padding:0 20px; }
+.intro-divider { width:1px; height:60px; background:var(--border); }
+
+/* ── SERVICES PREVIEW ────────────────────────────────────── */
+.services-bg { background: var(--bg3); }
+
+/* ── CERTIFICATION STRIP ─────────────────────────────────── */
+.cert-strip {
+  background: linear-gradient(135deg, rgba(201,162,82,.06), rgba(201,162,82,.02));
+  border-top:1px solid rgba(201,162,82,.12);
+  border-bottom:1px solid rgba(201,162,82,.12);
+  padding:48px 80px;
+}
+.cert-inner {
+  max-width:1300px; margin:0 auto;
+  display:flex; align-items:center; gap:40px; flex-wrap:wrap; justify-content:center;
+}
+.cert-label {
+  font-family: var(--ff-head);
+  font-size:13px; letter-spacing:.2em;
+  text-transform:uppercase; color: var(--muted);
+  white-space:nowrap;
+}
+.cert-badges { display:flex; gap:16px; flex-wrap:wrap; }
+.cert-pill {
+  font-family: var(--ff-head);
+  font-size:13px; font-weight:700; letter-spacing:.08em;
+  padding:10px 20px;
+  border-radius:6px;
+  border:1px solid rgba(201,162,82,.35);
+  color: var(--gold);
+  background: rgba(201,162,82,.07);
+  display:flex; align-items:center; gap:8px;
+}
+.cert-pill::before {
+  content:''; width:6px; height:6px;
+  border-radius:50%; background: var(--gold);
+}
+
+/* ── CTA SECTION ─────────────────────────────────────────── */
+.cta-section {
+  background: var(--bg);
+  text-align:center; padding:120px 80px;
+}
+.cta-section .section-title { margin-bottom:16px; }
+.cta-section .section-body { margin:0 auto 40px; text-align:center; }
+
+@media (max-width:900px) {
+  .intro-inner { grid-template-columns:1fr 1fr; gap:32px; }
+  .intro-divider { display:none; }
+  .cert-strip, .intro-strip { padding:48px 40px; }
+  .cta-section { padding:80px 40px; }
+}
+@media (max-width:600px) {
+  .hero-title { font-size:clamp(42px,11vw,72px); }
+  .cert-strip, .intro-strip { padding:40px 24px; }
+  .cta-section { padding:60px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor-outer"></div>
+<div class="cursor-inner"></div>
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+<!-- Page Transition -->
+<div id="page-transition"></div>
+
+<!-- ── HEADER ────────────────────────────────────────────── -->
+<header class="at-top">
+  <div class="logo">
+    <img src="logo.png" alt="Prime Build Logo">
+    <div class="logo-text">
+      <span class="en">Prime Build Construction Chemicals</span>
+      <span class="ar">برايم بيلد كونستركشن كيميكالز</span>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="About.html">About Us</a>
+    <a href="Who.html">Who We Are</a>
+    <a href="Services.html">Services</a>
+    <a href="faq.html">FAQ</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- Mobile Drawer -->
+<nav class="nav-drawer">
+  <a href="index.html">Home</a>
+  <a href="About.html">About Us</a>
+  <a href="Who.html">Who We Are</a>
+  <a href="Services.html">Services</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<section class="main-hero">
+  <div class="hero-videos">
+    <video autoplay muted loop playsinline>
+      <source src="vid1.mp4" type="video/mp4">
+    </video>
+    <video autoplay muted loop playsinline>
+      <source src="vid2.mp4" type="video/mp4">
+    </video>
+    <video autoplay muted loop playsinline>
+      <source src="vid3.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Kingdom of Saudi Arabia &mdash; Dammam</div>
+    <h1 class="hero-title">
+      <span class="line-gold">Advanced</span>
+      <span>Waterproofing</span>
+      <span class="line-outline">&amp; Insulation</span>
+    </h1>
+    <p class="hero-sub">
+      High-performance construction chemicals and protective coating systems
+      engineered for long-lasting structural protection.
+    </p>
+    <div class="hero-actions">
+      <a href="Services.html" class="btn btn-solid"><span>Explore Services</span>
+        <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="contact.html" class="btn"><span>Get a Quote</span></a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── STAT STRIP ─────────────────────────────────────────── -->
+<div class="intro-strip">
+  <div class="intro-inner">
+    <div class="intro-stat reveal">
+      <div class="stat-num" data-count="15" data-suffix="+">0+</div>
+      <div class="stat-label">Years Experience</div>
+    </div>
+    <div class="intro-divider"></div>
+    <div class="intro-stat reveal delay-1">
+      <div class="stat-num" data-count="500" data-suffix="+">0+</div>
+      <div class="stat-label">Projects Completed</div>
+    </div>
+    <div class="intro-divider"></div>
+    <div class="intro-stat reveal delay-2">
+      <div class="stat-num" data-count="4" data-suffix="">0</div>
+      <div class="stat-label">Global Brand Partners</div>
+    </div>
+    <div class="intro-divider"></div>
+    <div class="intro-stat reveal delay-3">
+      <div class="stat-num" data-count="3" data-suffix=" ISO">0</div>
+      <div class="stat-label">Certifications Held</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SERVICES PREVIEW ───────────────────────────────────── -->
+<section class="services-bg">
+  <div class="section">
+    <div class="section-label reveal">Our Core Services</div>
+    <div class="split" style="gap:60px;">
+      <div class="reveal-left">
+        <h2 class="section-title">Reliable Protection for <em>Every Structure</em></h2>
+        <p class="section-body">
+          We deliver precision-engineered solutions for waterproofing, thermal insulation,
+          and protective coatings—built to perform in Saudi Arabia's most demanding conditions.
+        </p>
+        <div style="margin-top:32px;">
+          <a href="Services.html" class="btn"><span>View All Services</span>
+            <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="grid-auto reveal-right">
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M2 19c0-3.87 3.13-7 7-7s7 3.13 7 7M12 3l4 4-4 4M15 7H3"/></svg>
+          </div>
+          <h3>Waterproofing</h3>
+          <p>Advanced membrane and liquid systems for roofs, walls, floors, and basements.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3>Thermal Insulation</h3>
+          <p>Spray and injected foam insulation engineered for superior thermal performance.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Protective Coating</h3>
+          <p>Industrial-grade coatings that resist corrosion and extend structural lifespan.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CERTIFICATIONS ─────────────────────────────────────── -->
+<div class="cert-strip">
+  <div class="cert-inner">
+    <div class="cert-label reveal">ISO Certified</div>
+    <div class="cert-badges reveal delay-1">
+      <div class="cert-pill">ISO 9001:2015</div>
+      <div class="cert-pill">ISO 14001:2015</div>
+      <div class="cert-pill">ISO 14001:2018</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ────────────────────────────────────────────────── -->
+<section class="cta-section">
+  <div class="section-label reveal" style="justify-content:center;">Start Your Project</div>
+  <h2 class="section-title reveal delay-1">Ready to <em>Build</em> with Confidence?</h2>
+  <p class="section-body reveal delay-2">
+    Contact our team for a personalised consultation and project quote.
+  </p>
+  <div class="reveal delay-3">
+    <a href="contact.html" class="btn btn-solid"><span>Contact Us Today</span>
+      <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">
+        <img src="logo.png" alt="Prime Build Logo">
+        <div class="logo-text">
+          <span class="en">Prime Build</span>
+          <span class="ar">برايم بيلد</span>
+        </div>
+      </div>
+      <p class="footer-desc">
+        Specialized in advanced waterproofing, thermal insulation,
+        and protective coating systems across the Kingdom of Saudi Arabia.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="About.html">About Us</a></li>
+        <li><a href="Who.html">Who We Are</a></li>
+        <li><a href="Services.html">Services</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="Services.html">Waterproofing</a></li>
+        <li><a href="Services.html">Thermal Insulation</a></li>
+        <li><a href="Services.html">Protective Coating</a></li>
+        <li><a href="Services.html">Spray Foam</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:sales@primebuilds.co">sales@primebuilds.co</a></li>
+        <li><a href="tel:+966544152233">+966 544 152 233</a></li>
+        <li><a href="#">Dammam, Eastern Province, KSA</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Prime Build Construction Chemicals. All Rights Reserved.</p>
+    <div class="footer-certs">
+      <div class="cert-badge">ISO 9001</div>
+      <div class="cert-badge">ISO 14001</div>
+    </div>
+  </div>
+</footer>
+
+<div class="scroll-hint">Scroll to explore</div>
+
+<script src="script.js"></script>
+</body>
+</html>

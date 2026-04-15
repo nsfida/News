@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us | Prime Build Construction Chemicals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Nunito+Sans:wght@300;400;600;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── ABOUT-SPECIFIC ──────────────────────────────────────── */
+.mission-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2px;
+  border-radius: var(--radius-lg);
+  overflow:hidden;
+  margin-top:60px;
+}
+.mission-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding:48px 40px;
+  transition: background .3s;
+}
+.mission-block:hover { background: rgba(255,255,255,.06); }
+.mission-block .num {
+  font-family: var(--ff-head);
+  font-size:13px; font-weight:700;
+  letter-spacing:.2em; color: var(--gold);
+  margin-bottom:20px;
+}
+.mission-block h3 {
+  font-family: var(--ff-head);
+  font-size:28px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.04em;
+  margin-bottom:16px;
+}
+.mission-block p {
+  font-size:15px; line-height:1.9; color: var(--muted);
+}
+
+.about-lead {
+  font-family: var(--ff-head);
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight:600;
+  line-height:1.3;
+  color: var(--white);
+  margin-bottom:28px;
+}
+.about-lead em { font-style:normal; color: var(--gold); }
+
+.about-body-text {
+  font-size:16px; line-height:1.9;
+  color: rgba(244,239,232,.65);
+  margin-bottom:20px;
+}
+
+/* Decorative line */
+.deco-line {
+  width:1px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  height:80px;
+  margin:40px auto;
+}
+
+@media (max-width:768px) {
+  .mission-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-outer"></div>
+<div class="cursor-inner"></div>
+<div id="progress-bar"></div>
+<div id="page-transition"></div>
+
+<!-- ── HEADER ────────────────────────────────────────────── -->
+<header class="scrolled">
+  <div class="logo">
+    <img src="logo.png" alt="Prime Build Logo">
+    <div class="logo-text">
+      <span class="en">Prime Build Construction Chemicals</span>
+      <span class="ar">برايم بيلد كونستركشن كيميكالز</span>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="About.html">About Us</a>
+    <a href="Who.html">Who We Are</a>
+    <a href="Services.html">Services</a>
+    <a href="faq.html">FAQ</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<nav class="nav-drawer">
+  <a href="index.html">Home</a>
+  <a href="About.html">About Us</a>
+  <a href="Who.html">Who We Are</a>
+  <a href="Services.html">Services</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<section class="page-hero">
+  <div class="page-hero-bg" style="background-image:url('img.jpg');"></div>
+  <div class="page-hero-content">
+    <div class="page-hero h1">
+      <h1>About <em>Us</em></h1>
+    </div>
+    <p class="subtitle">Our Story &bull; Our Mission &bull; Our Standards</p>
+  </div>
+</section>
+
+<!-- ── ABOUT CONTENT ──────────────────────────────────────── -->
+<section style="background:var(--bg3);">
+  <div class="section">
+    <div class="split">
+      <div class="reveal-left">
+        <div class="section-label">Who We Are</div>
+        <p class="about-lead">
+          ISO-Certified Specialists in <em>Waterproofing</em>,
+          Insulation &amp; Protective Coatings
+        </p>
+        <p class="about-body-text">
+          <span class="highlight">PRIME BUILD CONSTRUCTION CHEMICALS</span> is an
+          ISO 14001:2018, ISO 14001:2015, and ISO 9001:2015 certified company
+          specialized in delivering high-end construction chemical solutions
+          for the most demanding environments.
+        </p>
+        <p class="about-body-text">
+          Our advanced application systems are engineered for durability,
+          rapid curing, and long-term structural protection. We proudly serve
+          industrial, commercial, and infrastructure projects across the
+          Kingdom of Saudi Arabia.
+        </p>
+        <div class="iso-strip">
+          <div class="iso-badge">
+            <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>ISO 9001:2015</span>
+          </div>
+          <div class="iso-badge">
+            <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>ISO 14001:2015</span>
+          </div>
+          <div class="iso-badge">
+            <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>ISO 14001:2018</span>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-right" style="display:flex; flex-direction:column; gap:24px;">
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3>Rapid Curing</h3>
+          <p>Application systems designed for minimal downtime and fast project turnaround.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 7l9-5 9 5v10l-9 5-9-5V7z"/></svg>
+          </div>
+          <h3>Structural Durability</h3>
+          <p>Solutions engineered to outlast conventional technologies in extreme conditions.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Environmental Compliance</h3>
+          <p>Environmentally responsible products certified to international ISO standards.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FULL DESCRIPTION ────────────────────────────────────── -->
+<section style="background:var(--bg);">
+  <div class="section" style="max-width:900px; text-align:left;">
+    <div class="section-label reveal">Our Expertise</div>
+    <h2 class="section-title reveal delay-1" style="margin-bottom:32px;">Built for <em>Extreme</em> Conditions</h2>
+    <p class="about-body-text reveal delay-2">
+      We are specialized in all forms of Spray &amp; Injected Foam Insulation
+      with a fully trained and fully approved workforce. Our systems are designed
+      for walls, floors, and internal &amp; external roof applications in both
+      commercial and domestic projects.
+    </p>
+    <p class="about-body-text reveal delay-3">
+      Our mission is to provide innovative, environmentally responsible,
+      and cost-effective construction chemical solutions that extend structural life,
+      reduce maintenance costs, and enhance building performance across the
+      Kingdom of Saudi Arabia.
+    </p>
+
+    <div class="deco-line reveal"></div>
+
+    <div class="location-box reveal">
+      <div class="location-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 21s-8-6.75-8-12a8 8 0 1116 0c0 5.25-8 12-8 12z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+      </div>
+      <div>
+        <strong>Office &amp; Workshop</strong>
+        <p>7137, St. 13(A), District Al-Badiyah<br>Dammam City, Eastern Province<br>Kingdom of Saudi Arabia</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MISSION PILLARS ─────────────────────────────────────── -->
+<section style="background:var(--bg2);">
+  <div class="section">
+    <div class="section-label reveal" style="justify-content:center; text-align:center;">Our Pillars</div>
+    <h2 class="section-title reveal delay-1" style="text-align:center; margin-bottom:0;">What Drives <em>Everything</em> We Do</h2>
+    <div class="mission-grid">
+      <div class="mission-block reveal">
+        <div class="num">01</div>
+        <h3>Quality</h3>
+        <p>We apply the highest standards in every project, using premium materials from globally trusted brands including Sika, Bitec, CMCI, and MC.</p>
+      </div>
+      <div class="mission-block reveal delay-1">
+        <div class="num">02</div>
+        <h3>Precision</h3>
+        <p>Our certified workforce delivers precision-applied solutions that consistently outperform traditional coating technologies.</p>
+      </div>
+      <div class="mission-block reveal delay-2">
+        <div class="num">03</div>
+        <h3>Sustainability</h3>
+        <p>We are committed to environmentally responsible practices and ISO-compliant chemical systems that protect people and the planet.</p>
+      </div>
+      <div class="mission-block reveal delay-3">
+        <div class="num">04</div>
+        <h3>Partnership</h3>
+        <p>Long-term relationships with clients built on transparency, accountability, and results that speak for themselves.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">
+        <img src="logo.png" alt="Prime Build Logo">
+        <div class="logo-text">
+          <span class="en">Prime Build</span>
+          <span class="ar">برايم بيلد</span>
+        </div>
+      </div>
+      <p class="footer-desc">ISO-certified specialists in waterproofing, thermal insulation, and protective coating across Saudi Arabia.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="About.html">About Us</a></li>
+        <li><a href="Who.html">Who We Are</a></li>
+        <li><a href="Services.html">Services</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="Services.html">Waterproofing</a></li>
+        <li><a href="Services.html">Thermal Insulation</a></li>
+        <li><a href="Services.html">Protective Coating</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:sales@primebuilds.co">sales@primebuilds.co</a></li>
+        <li><a href="tel:+966544152233">+966 544 152 233</a></li>
+        <li><a href="#">Dammam, KSA</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Prime Build Construction Chemicals. All Rights Reserved.</p>
+    <div class="footer-certs">
+      <div class="cert-badge">ISO 9001</div>
+      <div class="cert-badge">ISO 14001</div>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

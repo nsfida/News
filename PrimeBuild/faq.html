@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ | Prime Build Construction Chemicals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Nunito+Sans:wght@300;400;600;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── FAQ-SPECIFIC ────────────────────────────────────────── */
+.faq-layout {
+  display:grid;
+  grid-template-columns: 1fr 2fr;
+  gap:80px;
+  align-items:start;
+}
+.faq-sidebar {
+  position:sticky; top:calc(var(--header-h) + 32px);
+}
+.faq-sidebar h3 {
+  font-family: var(--ff-head);
+  font-size:clamp(28px,3vw,40px); font-weight:800;
+  text-transform:uppercase; line-height:1;
+  margin-bottom:16px;
+}
+.faq-sidebar h3 em { font-style:normal; color: var(--gold); }
+.faq-sidebar p {
+  font-size:15px; line-height:1.8; color: var(--muted);
+  margin-bottom:32px;
+}
+.faq-categories {
+  display:flex; flex-direction:column; gap:8px;
+}
+.faq-cat-btn {
+  background:none; border:none;
+  text-align:left; cursor:pointer;
+  font-family: var(--ff-head);
+  font-size:15px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
+  color: var(--muted);
+  padding:12px 16px;
+  border-radius:8px;
+  border-left:2px solid transparent;
+  transition: color .2s, border-color .2s, background .2s;
+}
+.faq-cat-btn:hover, .faq-cat-btn.active {
+  color: var(--gold);
+  border-left-color: var(--gold);
+  background: rgba(201,162,82,.07);
+}
+
+/* still-have-questions box */
+.still-questions {
+  margin-top:60px;
+  background: linear-gradient(135deg, rgba(201,162,82,.1), rgba(201,162,82,.04));
+  border:1px solid rgba(201,162,82,.25);
+  border-radius: var(--radius-lg);
+  padding:40px;
+  text-align:center;
+}
+.still-questions h4 {
+  font-family: var(--ff-head);
+  font-size:26px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.04em;
+  margin-bottom:12px;
+}
+.still-questions p {
+  font-size:14px; color: var(--muted);
+  line-height:1.8; margin-bottom:24px;
+}
+
+@media (max-width:900px) {
+  .faq-layout { grid-template-columns:1fr; gap:40px; }
+  .faq-sidebar { position:static; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-outer"></div>
+<div class="cursor-inner"></div>
+<div id="progress-bar"></div>
+<div id="page-transition"></div>
+
+<!-- ── HEADER ────────────────────────────────────────────── -->
+<header class="scrolled">
+  <div class="logo">
+    <img src="logo.png" alt="Prime Build Logo">
+    <div class="logo-text">
+      <span class="en">Prime Build Construction Chemicals</span>
+      <span class="ar">برايم بيلد كونستركشن كيميكالز</span>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="About.html">About Us</a>
+    <a href="Who.html">Who We Are</a>
+    <a href="Services.html">Services</a>
+    <a href="faq.html">FAQ</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<nav class="nav-drawer">
+  <a href="index.html">Home</a>
+  <a href="About.html">About Us</a>
+  <a href="Who.html">Who We Are</a>
+  <a href="Services.html">Services</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<section class="page-hero">
+  <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1600&q=80');"></div>
+  <div class="page-hero-content">
+    <h1>Frequently Asked <em>Questions</em></h1>
+    <p class="subtitle">Everything you need to know</p>
+  </div>
+</section>
+
+<!-- ── FAQ CONTENT ────────────────────────────────────────── -->
+<section style="background:var(--bg);">
+  <div class="section">
+    <div class="faq-layout">
+
+      <!-- Sidebar -->
+      <div class="faq-sidebar reveal-left">
+        <h3>Have a <em>Question?</em></h3>
+        <p>Find answers to our most commonly asked questions below. Can't find what you need? Contact our team directly.</p>
+        <div class="faq-categories">
+          <button class="faq-cat-btn active">All Questions</button>
+          <button class="faq-cat-btn">Services</button>
+          <button class="faq-cat-btn">Certifications</button>
+          <button class="faq-cat-btn">Projects</button>
+          <button class="faq-cat-btn">Pricing</button>
+        </div>
+        <div class="still-questions" style="margin-top:40px;">
+          <h4>Still Need Help?</h4>
+          <p>Our project specialists are ready to answer your specific requirements.</p>
+          <a href="contact.html" class="btn btn-solid"><span>Contact Us</span></a>
+        </div>
+      </div>
+
+      <!-- FAQ List -->
+      <div class="reveal-right">
+
+        <div class="faq-item reveal">
+          <button class="faq-trigger">
+            <span class="faq-q">What services does Prime Build provide?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>We specialize in three core areas: <strong>Waterproofing</strong> (membrane and liquid systems for all structure types), <strong>Thermal Insulation</strong> (spray and injected foam systems), and <strong>Protective Coatings</strong> (anti-corrosion and industrial coatings). We serve industrial, commercial, and residential projects throughout Saudi Arabia.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal delay-1">
+          <button class="faq-trigger">
+            <span class="faq-q">Are your products ISO certified?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>Yes. Prime Build holds ISO 9001:2015 (Quality Management), ISO 14001:2015, and ISO 14001:2018 (Environmental Management) certifications. All our application systems and materials comply fully with these international standards, ensuring consistent quality and environmental responsibility on every project.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal delay-2">
+          <button class="faq-trigger">
+            <span class="faq-q">Do you offer on-site application services?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>Absolutely. Our fully trained and certified workforce provides complete on-site application for all systems — including Spray &amp; Injected Foam Insulation, Waterproofing membranes, and Protective Coatings. We bring all required equipment and manage the application from preparation to sign-off.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal delay-3">
+          <button class="faq-trigger">
+            <span class="faq-q">Can you handle both commercial and residential projects?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>Yes, we handle projects of any scale — from individual residential villas and apartment buildings to large-scale commercial towers, industrial facilities, and infrastructure projects. Our solutions are tailored to the specific requirements of each project type and scale.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal">
+          <button class="faq-trigger">
+            <span class="faq-q">What brands and materials do you use?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>We work exclusively with globally trusted construction chemical manufacturers: <strong>Sika</strong> (global leader in waterproofing and bonding), <strong>Bitec</strong> (premium waterproofing membranes), <strong>CMCI</strong> (high-performance construction chemicals), and <strong>MC</strong> (innovative concrete technology). Using only specification-grade materials ensures long-term performance.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal delay-1">
+          <button class="faq-trigger">
+            <span class="faq-q">Where are you located?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>Our office and workshop are based at 7137, St. 13(A), District Al-Badiyah, Dammam City, Eastern Province, Kingdom of Saudi Arabia. We serve clients across the entire Kingdom of Saudi Arabia.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal delay-2">
+          <button class="faq-trigger">
+            <span class="faq-q">How can I get a project quote?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>Contact us via the Contact page, call us directly on <strong>+966 544 152 233</strong>, or email <strong>project.sales@primebuilds.co</strong>. Our team will review your project details and provide a personalised quote based on project scope, area, and specification requirements — typically within 48 hours.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal delay-3">
+          <button class="faq-trigger">
+            <span class="faq-q">How long do your waterproofing systems last?</span>
+            <div class="faq-icon">
+              <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2v8" stroke-linecap="round"/></svg>
+            </div>
+          </button>
+          <div class="faq-body">
+            <p>With correct surface preparation and application, our waterproofing systems are designed for service lives of 15–25 years depending on the product system and conditions. Spray polyurethane foam insulation systems typically perform for 20+ years. All systems come with manufacturer product warranties and we provide application documentation for your records.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">
+        <img src="logo.png" alt="Prime Build Logo">
+        <div class="logo-text">
+          <span class="en">Prime Build</span>
+          <span class="ar">برايم بيلد</span>
+        </div>
+      </div>
+      <p class="footer-desc">ISO-certified specialists in waterproofing, thermal insulation, and protective coating across Saudi Arabia.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="About.html">About Us</a></li>
+        <li><a href="Who.html">Who We Are</a></li>
+        <li><a href="Services.html">Services</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="Services.html">Waterproofing</a></li>
+        <li><a href="Services.html">Thermal Insulation</a></li>
+        <li><a href="Services.html">Protective Coating</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:sales@primebuilds.co">sales@primebuilds.co</a></li>
+        <li><a href="tel:+966544152233">+966 544 152 233</a></li>
+        <li><a href="#">Dammam, KSA</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Prime Build Construction Chemicals. All Rights Reserved.</p>
+    <div class="footer-certs">
+      <div class="cert-badge">ISO 9001</div>
+      <div class="cert-badge">ISO 14001</div>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
