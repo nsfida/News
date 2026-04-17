@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NSFChat logo">
+  <defs>
+    <linearGradient id="g1" x1="96" y1="96" x2="416" y2="416" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F8CFF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="144" y1="154" x2="372" y2="370" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B1728"/>
+      <stop offset="1" stop-color="#11233D"/>
+    </linearGradient>
+  </defs>
+  <rect x="36" y="36" width="440" height="440" rx="112" fill="url(#g1)"/>
+  <rect x="78" y="78" width="356" height="356" rx="92" fill="url(#g2)" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+  <path d="M170 184C170 158.5 190.5 138 216 138H316C341.5 138 362 158.5 362 184V244C362 269.5 341.5 290 316 290H236L184 338V290H216C190.5 290 170 269.5 170 244V184Z" fill="white" fill-opacity="0.96"/>
+  <circle cx="228" cy="214" r="12" fill="#4F8CFF"/>
+  <circle cx="260" cy="214" r="12" fill="#4F8CFF"/>
+  <circle cx="292" cy="214" r="12" fill="#4F8CFF"/>
+  <path d="M178 358H334" stroke="rgba(255,255,255,0.36)" stroke-width="18" stroke-linecap="round"/>
+  <text x="256" y="392" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700" letter-spacing="1">NSF</text>
+</svg>
