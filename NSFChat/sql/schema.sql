@@ -1,15 +1,17 @@
 -- ============================================================
 -- NSFChat Database Schema
--- Fixed: removes signup-breaking auth trigger
--- Migration-safe: uses IF NOT EXISTS / ADD COLUMN IF NOT EXISTS
+-- Fixes:
+-- - safer signup/profile flow
+-- - direct chat creation via RPC
+-- - RLS policies for profiles, conversations, members, messages
+-- - storage buckets/policies
 -- ============================================================
 
--- Required extensions
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================
--- BASE TABLES
+-- TABLES
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS profiles (
@@ -25,27 +27,15 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS nationality TEXT;
-
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS bio TEXT;
-
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS avatar_url TEXT;
-
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS is_online BOOLEAN DEFAULT FALSE;
-
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ DEFAULT NOW();
-
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
-
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
-
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS username TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS nationality TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_online BOOLEAN DEFAULT FALSE;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 CREATE TABLE IF NOT EXISTS conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -58,15 +48,16 @@ CREATE TABLE IF NOT EXISTS conversations (
   last_message_preview TEXT
 );
 
-ALTER TABLE conversations
-  ADD COLUMN IF NOT EXISTS last_message_preview TEXT;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'direct';
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES profiles(id) ON DELETE SET NULL;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS last_message_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS last_message_preview TEXT;
 
 ALTER TABLE conversations
-  ADD COLUMN IF NOT EXISTS last_message_at TIMESTAMPTZ DEFAULT NOW();
-
-ALTER TABLE conversations
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
-
+  ALTER COLUMN created_by SET DEFAULT auth.uid();
 
 CREATE TABLE IF NOT EXISTS conversation_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -75,7 +66,6 @@ CREATE TABLE IF NOT EXISTS conversation_members (
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(conversation_id, user_id)
 );
-
 
 CREATE TABLE IF NOT EXISTS messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -90,44 +80,23 @@ CREATE TABLE IF NOT EXISTS messages (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE messages
-  ADD COLUMN IF NOT EXISTS file_url TEXT;
-
-ALTER TABLE messages
-  ADD COLUMN IF NOT EXISTS content_type TEXT NOT NULL DEFAULT 'text';
-
-ALTER TABLE messages
-  ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
-
-ALTER TABLE messages
-  ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
-
-ALTER TABLE messages
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
-
-ALTER TABLE messages
-  ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
-
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS content TEXT;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS content_type TEXT NOT NULL DEFAULT 'text';
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_url TEXT;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- ============================================================
 -- INDEXES
 -- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_conversation_members_user_id
-  ON conversation_members (user_id);
-
-CREATE INDEX IF NOT EXISTS idx_conversation_members_conversation_id
-  ON conversation_members (conversation_id);
-
-CREATE INDEX IF NOT EXISTS idx_messages_conversation_created_at
-  ON messages (conversation_id, created_at);
-
-CREATE INDEX IF NOT EXISTS idx_conversations_last_message_at
-  ON conversations (last_message_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_profiles_username
-  ON profiles (username);
-
+CREATE INDEX IF NOT EXISTS idx_profiles_username ON profiles (username);
+CREATE INDEX IF NOT EXISTS idx_conversations_last_message_at ON conversations (last_message_at DESC);
+CREATE INDEX IF NOT EXISTS idx_conversation_members_user_id ON conversation_members (user_id);
+CREATE INDEX IF NOT EXISTS idx_conversation_members_conversation_id ON conversation_members (conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_created_at ON messages (conversation_id, created_at);
 
 -- ============================================================
 -- STORAGE BUCKETS
@@ -145,9 +114,8 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('voice-messages', 'voice-messages', true)
 ON CONFLICT (id) DO NOTHING;
 
-
 -- ============================================================
--- RLS HELPERS
+-- HELPERS
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION is_conversation_member(p_conversation_id UUID)
@@ -180,9 +148,62 @@ AS $$
   );
 $$;
 
+-- Create or return an existing direct conversation with a peer
+CREATE OR REPLACE FUNCTION create_direct_conversation(peer_id UUID)
+RETURNS conversations
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  conv conversations;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  IF peer_id IS NULL THEN
+    RAISE EXCEPTION 'peer_id is required';
+  END IF;
+
+  IF peer_id = auth.uid() THEN
+    RAISE EXCEPTION 'Cannot start a conversation with yourself';
+  END IF;
+
+  -- Return existing direct conversation if one already exists between both users
+  SELECT c.*
+  INTO conv
+  FROM conversations c
+  WHERE c.type = 'direct'
+    AND EXISTS (
+      SELECT 1 FROM conversation_members m1
+      WHERE m1.conversation_id = c.id AND m1.user_id = auth.uid()
+    )
+    AND EXISTS (
+      SELECT 1 FROM conversation_members m2
+      WHERE m2.conversation_id = c.id AND m2.user_id = peer_id
+    )
+  LIMIT 1;
+
+  IF FOUND THEN
+    RETURN conv;
+  END IF;
+
+  INSERT INTO conversations (type, created_by, created_at, updated_at, last_message_at)
+  VALUES ('direct', auth.uid(), NOW(), NOW(), NOW())
+  RETURNING * INTO conv;
+
+  INSERT INTO conversation_members (conversation_id, user_id)
+  VALUES
+    (conv.id, auth.uid()),
+    (conv.id, peer_id);
+
+  RETURN conv;
+END;
+$$;
 
 -- ============================================================
--- ROW LEVEL SECURITY
+-- RLS
 -- ============================================================
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -208,7 +229,7 @@ DROP POLICY IF EXISTS messages_insert ON messages;
 DROP POLICY IF EXISTS messages_update ON messages;
 DROP POLICY IF EXISTS messages_delete ON messages;
 
--- PROFILES
+-- Profiles
 CREATE POLICY profiles_select
 ON profiles
 FOR SELECT
@@ -225,7 +246,7 @@ FOR UPDATE
 USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
 
--- CONVERSATIONS
+-- Conversations
 CREATE POLICY conversations_select
 ON conversations
 FOR SELECT
@@ -234,7 +255,10 @@ USING (is_conversation_member(id));
 CREATE POLICY conversations_insert
 ON conversations
 FOR INSERT
-WITH CHECK (auth.uid() = created_by);
+WITH CHECK (
+  auth.uid() IS NOT NULL
+  AND created_by = auth.uid()
+);
 
 CREATE POLICY conversations_update
 ON conversations
@@ -242,7 +266,7 @@ FOR UPDATE
 USING (is_conversation_member(id))
 WITH CHECK (is_conversation_member(id));
 
--- CONVERSATION MEMBERS
+-- Conversation members
 CREATE POLICY members_select
 ON conversation_members
 FOR SELECT
@@ -254,7 +278,10 @@ USING (
 CREATE POLICY members_insert
 ON conversation_members
 FOR INSERT
-WITH CHECK (is_conversation_creator(conversation_id));
+WITH CHECK (
+  auth.uid() IS NOT NULL
+  AND is_conversation_creator(conversation_id)
+);
 
 CREATE POLICY members_update
 ON conversation_members
@@ -267,7 +294,7 @@ ON conversation_members
 FOR DELETE
 USING (is_conversation_creator(conversation_id));
 
--- MESSAGES
+-- Messages
 CREATE POLICY messages_select
 ON messages
 FOR SELECT
@@ -291,7 +318,6 @@ CREATE POLICY messages_delete
 ON messages
 FOR DELETE
 USING (auth.uid() = sender_id);
-
 
 -- ============================================================
 -- STORAGE POLICIES
@@ -411,7 +437,6 @@ USING (
   AND auth.uid() IS NOT NULL
 );
 
-
 -- ============================================================
 -- TRIGGERS
 -- ============================================================
@@ -477,7 +502,6 @@ AFTER INSERT ON messages
 FOR EACH ROW
 EXECUTE FUNCTION update_conversation_on_message();
 
-
 -- ============================================================
 -- REALTIME
 -- ============================================================
@@ -500,7 +524,7 @@ BEGIN
 END $$;
 
 -- ============================================================
--- REMOVE BROKEN LEGACY AUTH TRIGGER IF IT EXISTS
+-- REMOVE OLD AUTH TRIGGER IF IT EXISTS
 -- ============================================================
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
