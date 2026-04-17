@@ -1,5 +1,7 @@
 /* ============================================================
    NSFChat · app.js — Complete Application Logic
+   Fixed: safer signup/profile flow, better profile checks,
+   realtime conversation refresh, and more defensive helpers.
    ============================================================ */
 
 'use strict';
@@ -7,7 +9,7 @@
 // ════════════════════════════════════════════════════════════
 // 1. CONFIG & SUPABASE INIT
 // ════════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://vfarxizjxvzqvyxefcvx.supabase.co';
+const SUPABASE_URL = 'https://vfarxizjxvzqvyxefcvx.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmYXJ4aXpqeHZ6cXZ5eGVmY3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MjA1MDgsImV4cCI6MjA5MTk5NjUwOH0.ddVlrRdLJY035xGECHHVtytpJmzj7cOYdZaWWaSb8Zo';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -15,51 +17,50 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 // 2. APP STATE
 // ════════════════════════════════════════════════════════════
 let STATE = {
-  user:              null,  // auth user
-  profile:           null,  // profiles row
-  conversations:     [],
-  currentConvId:     null,
-  currentConvPeer:   null,  // the other user's profile
-  messages:          [],
-  msgSubscription:   null,
-  convSubscription:  null,
-  // Voice recording
-  mediaRecorder:     null,
-  audioChunks:       [],
-  isRecording:       false,
-  recordingTimer:    null,
-  recordingSeconds:  0,
-  recordedBlob:      null,
-  recordedDuration:  0,
-  // Image attachment
-  pendingImageFile:  null,
-  pendingImageUrl:   null,
-  // Username check
-  usernameTimer:     null,
-  // Mobile
-  sidebarOpen:       false,
+  user: null,
+  profile: null,
+  conversations: [],
+  currentConvId: null,
+  currentConvPeer: null,
+  messages: [],
+  msgSubscription: null,
+  convSubscription: null,
+
+  mediaRecorder: null,
+  audioChunks: [],
+  isRecording: false,
+  recordingTimer: null,
+  recordingSeconds: 0,
+  recordedBlob: null,
+  recordedDuration: 0,
+
+  pendingImageFile: null,
+  pendingImageUrl: null,
+
+  usernameTimer: null,
+  sidebarOpen: false,
 };
 
 // ════════════════════════════════════════════════════════════
 // 3. SVG ICON HELPERS
 // ════════════════════════════════════════════════════════════
 const icons = {
-  search:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
-  edit:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-  plus:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
-  send:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>`,
-  image:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
-  mic:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
-  play:     `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
-  pause:    `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
-  back:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`,
-  close:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
-  logout:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`,
-  camera:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>`,
-  trash:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
-  chat:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-  check:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-  info:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  send: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>`,
+  image: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
+  mic: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
+  play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+  pause: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
+  back: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`,
+  close: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`,
+  camera: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
+  chat: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  info: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`,
 };
 
 // ════════════════════════════════════════════════════════════
@@ -71,21 +72,21 @@ function qsa(sel, parent = document) { return [...parent.querySelectorAll(sel)];
 function escHtml(s) {
   if (!s) return '';
   return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function formatMsgTime(iso) {
   if (!iso) return '';
   const d = new Date(iso), now = new Date();
   const sameDay = d.toDateString() === now.toDateString();
-  if (sameDay) return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  if (sameDay) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const diff = Math.floor((now - d) / 86400000);
-  if (diff < 7) return d.toLocaleDateString([], {weekday:'short'});
-  return d.toLocaleDateString([], {month:'short', day:'numeric'});
+  if (diff < 7) return d.toLocaleDateString([], { weekday: 'short' });
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
 function formatDateSep(iso) {
@@ -93,24 +94,24 @@ function formatDateSep(iso) {
   if (d.toDateString() === now.toDateString()) return 'Today';
   const diff = Math.floor((now - d) / 86400000);
   if (diff === 1) return 'Yesterday';
-  return d.toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
+  return d.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 function getInitials(name) {
   if (!name) return '?';
-  return name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase();
+  return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
 function avatarHtml(profile, sizeClass = '') {
   if (!profile) return `<div class="avatar ${sizeClass}">?</div>`;
   if (profile.avatar_url) {
-    return `<div class="avatar ${sizeClass}"><img src="${escHtml(profile.avatar_url)}" alt="" onerror="this.parentElement.innerHTML='${getInitials(profile.display_name)}'"/></div>`;
+    return `<div class="avatar ${sizeClass}"><img src="${escHtml(profile.avatar_url)}" alt="" onerror="this.parentElement.innerHTML='${escHtml(getInitials(profile.display_name || profile.username || '?'))}'"/></div>`;
   }
-  return `<div class="avatar ${sizeClass}">${getInitials(profile.display_name || profile.username)}</div>`;
+  return `<div class="avatar ${sizeClass}">${escHtml(getInitials(profile.display_name || profile.username || '?'))}</div>`;
 }
 
 function showScreen(id) {
-  ['loading-screen','auth-screen','profile-setup-screen','app-screen']
+  ['loading-screen', 'auth-screen', 'profile-setup-screen', 'app-screen']
     .forEach(s => {
       const el = qs(`#${s}`);
       if (el) el.classList.toggle('hidden', s !== id);
@@ -119,6 +120,7 @@ function showScreen(id) {
 
 function toast(msg, type = 'info', dur = 3200) {
   const wrap = qs('#toast-container');
+  if (!wrap) return;
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   const ico = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
@@ -142,20 +144,30 @@ function setLoading(btn, loading, text = '') {
 }
 
 function debounce(fn, ms) {
-  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  let t;
+  return (...a) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...a), ms);
+  };
 }
 
 function generateVoiceBars() {
-  const heights = [40,60,80,50,90,70,55,85,65,45,75,60,80,50,70];
+  const heights = [40, 60, 80, 50, 90, 70, 55, 85, 65, 45, 75, 60, 80, 50, 70];
   return heights.map(h => `<div class="voice-bar" style="height:${h}%"></div>`).join('');
+}
+
+function normalizeUsername(value) {
+  return String(value || '').trim().toLowerCase();
 }
 
 // ════════════════════════════════════════════════════════════
 // 5. SUPABASE DATA HELPERS
 // ════════════════════════════════════════════════════════════
 async function fetchProfile(userId) {
-  const { data } = await sb.from('profiles').select('*').eq('id', userId).single();
-  return data;
+  if (!userId) return null;
+  const { data, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (error) throw error;
+  return data || null;
 }
 
 async function loadMyProfile() {
@@ -166,17 +178,29 @@ async function loadMyProfile() {
 }
 
 async function upsertProfile(fields) {
+  if (!STATE.user) throw new Error('Not authenticated');
+  const payload = {
+    id: STATE.user.id,
+    ...fields,
+    updated_at: new Date().toISOString(),
+  };
   const { data, error } = await sb.from('profiles')
-    .upsert({ id: STATE.user.id, ...fields, updated_at: new Date().toISOString() })
-    .select().single();
+    .upsert(payload, { onConflict: 'id' })
+    .select()
+    .single();
   if (error) throw error;
   STATE.profile = data;
   return data;
 }
 
 async function isUsernameAvailable(username) {
-  const { data } = await sb.from('profiles')
-    .select('id').eq('username', username.toLowerCase().trim()).single();
+  const u = normalizeUsername(username);
+  if (!u) return false;
+  const { data, error } = await sb.from('profiles')
+    .select('id')
+    .eq('username', u)
+    .maybeSingle();
+  if (error && error.code !== 'PGRST116') throw error;
   return !data || data.id === STATE.user?.id;
 }
 
@@ -188,22 +212,29 @@ async function uploadFile(bucket, path, file) {
 }
 
 async function fetchConversations() {
-  // Get conversations I'm a member of
-  const { data: memberRows } = await sb.from('conversation_members')
-    .select('conversation_id').eq('user_id', STATE.user.id);
+  if (!STATE.user) return [];
+  const { data: memberRows, error: memberError } = await sb.from('conversation_members')
+    .select('conversation_id')
+    .eq('user_id', STATE.user.id);
+  if (memberError) throw memberError;
   if (!memberRows?.length) return [];
 
   const convIds = memberRows.map(r => r.conversation_id);
-  const { data: convs } = await sb.from('conversations')
-    .select('*').in('id', convIds)
+
+  const { data: convs, error: convError } = await sb.from('conversations')
+    .select('*')
+    .in('id', convIds)
     .order('last_message_at', { ascending: false });
 
-  if (!convs) return [];
+  if (convError) throw convError;
+  if (!convs?.length) return [];
 
-  // For each conversation, get the other members' profiles
   const enriched = await Promise.all(convs.map(async conv => {
-    const { data: members } = await sb.from('conversation_members')
-      .select('user_id').eq('conversation_id', conv.id);
+    const { data: members, error: memError } = await sb.from('conversation_members')
+      .select('user_id')
+      .eq('conversation_id', conv.id);
+    if (memError) throw memError;
+
     const otherIds = members?.map(m => m.user_id).filter(id => id !== STATE.user.id) || [];
     let peerProfile = null;
     if (otherIds.length) {
@@ -216,42 +247,52 @@ async function fetchConversations() {
 }
 
 async function findOrCreateDirectConv(peerId) {
-  // Find existing direct conversation with this peer
-  const { data: myMems } = await sb.from('conversation_members')
-    .select('conversation_id').eq('user_id', STATE.user.id);
-  const { data: peerMems } = await sb.from('conversation_members')
-    .select('conversation_id').eq('user_id', peerId);
+  if (!STATE.user || !peerId) throw new Error('Missing user');
+  const { data: myMems, error: myError } = await sb.from('conversation_members')
+    .select('conversation_id')
+    .eq('user_id', STATE.user.id);
+  if (myError) throw myError;
+
+  const { data: peerMems, error: peerError } = await sb.from('conversation_members')
+    .select('conversation_id')
+    .eq('user_id', peerId);
+  if (peerError) throw peerError;
 
   const myIds = new Set((myMems || []).map(r => r.conversation_id));
   const shared = (peerMems || []).map(r => r.conversation_id).find(id => myIds.has(id));
 
   if (shared) {
-    // Verify it's a direct conversation
-    const { data: conv } = await sb.from('conversations').select('*').eq('id', shared).eq('type','direct').single();
+    const { data: conv, error } = await sb.from('conversations')
+      .select('*')
+      .eq('id', shared)
+      .eq('type', 'direct')
+      .maybeSingle();
+    if (error && error.code !== 'PGRST116') throw error;
     if (conv) return conv;
   }
 
-  // Create new conversation
   const { data: newConv, error } = await sb.from('conversations')
     .insert({ type: 'direct', created_by: STATE.user.id })
-    .select().single();
+    .select()
+    .single();
   if (error) throw error;
 
-  // Add both members
-  await sb.from('conversation_members').insert([
+  const { error: memInsertError } = await sb.from('conversation_members').insert([
     { conversation_id: newConv.id, user_id: STATE.user.id },
-    { conversation_id: newConv.id, user_id: peerId }
+    { conversation_id: newConv.id, user_id: peerId },
   ]);
+  if (memInsertError) throw memInsertError;
 
   return newConv;
 }
 
 async function fetchMessages(convId) {
-  const { data } = await sb.from('messages')
+  const { data, error } = await sb.from('messages')
     .select('*, sender:profiles!sender_id(id,display_name,username,avatar_url)')
     .eq('conversation_id', convId)
     .order('created_at', { ascending: true })
     .limit(100);
+  if (error) throw error;
   return data || [];
 }
 
@@ -289,7 +330,6 @@ function renderAuthScreen() {
 
       <div id="auth-alert"></div>
 
-      <!-- Sign In Form -->
       <div id="signin-form">
         <div class="form-group">
           <label class="form-label">Email</label>
@@ -305,7 +345,6 @@ function renderAuthScreen() {
         </div>
       </div>
 
-      <!-- Sign Up Form -->
       <div id="signup-form" class="hidden">
         <div class="form-group">
           <label class="form-label">Display Name</label>
@@ -327,7 +366,6 @@ function renderAuthScreen() {
         <button class="btn btn-primary" id="signup-btn" onclick="handleSignUp()">Create Account</button>
       </div>
 
-      <!-- Forgot Password Form -->
       <div id="forgot-form" class="hidden">
         <p style="font-size:14px;color:var(--text-2);margin-bottom:16px">
           Enter your email and we'll send you a reset link.
@@ -344,11 +382,10 @@ function renderAuthScreen() {
     </div>
   `;
 
-  // Enter key support
   setTimeout(() => {
-    qs('#signin-password')?.addEventListener('keydown', e => { if(e.key==='Enter') handleSignIn(); });
-    qs('#signup-password')?.addEventListener('keydown', e => { if(e.key==='Enter') handleSignUp(); });
-    qs('#forgot-email')?.addEventListener('keydown', e => { if(e.key==='Enter') handleForgotPassword(); });
+    qs('#signin-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleSignIn(); });
+    qs('#signup-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleSignUp(); });
+    qs('#forgot-email')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleForgotPassword(); });
   }, 0);
 }
 
@@ -366,6 +403,7 @@ function showForgotPassword() {
   qs('#signup-form')?.classList.add('hidden');
   qs('#forgot-form')?.classList.remove('hidden');
   qs('#tab-signin')?.classList.remove('active');
+  qs('#tab-signup')?.classList.remove('active');
   qs('#auth-alert').innerHTML = '';
 }
 
@@ -379,7 +417,8 @@ function showAuthAlert(msg, type = 'error') {
 const checkUsernameAuth = debounce(async (val) => {
   const el = qs('#signup-username-status');
   if (!el) return;
-  const v = val.trim().toLowerCase();
+  const v = normalizeUsername(val);
+
   if (!v || v.length < 3) {
     el.textContent = v.length ? 'Min 3 characters' : '';
     el.className = 'input-status err';
@@ -390,24 +429,35 @@ const checkUsernameAuth = debounce(async (val) => {
     el.className = 'input-status err';
     return;
   }
+
   el.textContent = 'Checking…';
   el.className = 'input-status';
-  const avail = await isUsernameAvailable(v);
-  el.textContent = avail ? '✓ Available' : '✕ Taken';
-  el.className = `input-status ${avail ? 'ok' : 'err'}`;
+
+  try {
+    const avail = await isUsernameAvailable(v);
+    el.textContent = avail ? '✓ Available' : '✕ Taken';
+    el.className = `input-status ${avail ? 'ok' : 'err'}`;
+  } catch {
+    el.textContent = 'Unable to check';
+    el.className = 'input-status err';
+  }
 }, 500);
 
 async function handleSignIn() {
   const email = qs('#signin-email')?.value.trim();
   const password = qs('#signin-password')?.value;
-  if (!email || !password) { showAuthAlert('Please fill in all fields.'); return; }
+  if (!email || !password) {
+    showAuthAlert('Please fill in all fields.');
+    return;
+  }
+
   const btn = qs('#signin-btn');
   setLoading(btn, true, 'Signing in…');
   qs('#auth-alert').innerHTML = '';
+
   try {
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    // Auth state listener will handle navigation
   } catch (e) {
     showAuthAlert(e.message || 'Sign in failed. Please try again.');
     setLoading(btn, false);
@@ -417,7 +467,7 @@ async function handleSignIn() {
 
 async function handleSignUp() {
   const name = qs('#signup-name')?.value.trim();
-  const username = qs('#signup-username')?.value.trim().toLowerCase();
+  const username = normalizeUsername(qs('#signup-username')?.value);
   const email = qs('#signup-email')?.value.trim();
   const password = qs('#signup-password')?.value;
 
@@ -442,63 +492,94 @@ async function handleSignUp() {
     const avail = await isUsernameAvailable(username);
     if (!avail) {
       showAuthAlert('Username is already taken. Please choose another.');
-      setLoading(btn, false); btn.innerHTML = 'Create Account';
+      setLoading(btn, false);
+      btn.innerHTML = 'Create Account';
       return;
     }
 
     const { data, error } = await sb.auth.signUp({
-      email, password,
-      options: { data: { display_name: name } }
+      email,
+      password,
+      options: {
+        data: {
+          display_name: name,
+          username,
+        },
+      },
     });
     if (error) throw error;
 
-    // Store username/display_name in profile
-    if (data.user) {
-      await sb.from('profiles').upsert({
-        id: data.user.id,
+    if (data.user && data.session) {
+      STATE.user = data.user;
+      await upsertProfile({
         display_name: name,
         username,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
-    }
-
-    if (data.session) {
-      // Immediately signed in (email confirmation disabled)
-      STATE.user = data.user;
       STATE.profile = await fetchProfile(data.user.id);
       showAppScreen();
     } else {
       showAuthAlert('Check your email to confirm your account, then sign in.', 'success');
-      setLoading(btn, false); btn.innerHTML = 'Create Account';
+      setLoading(btn, false);
+      btn.innerHTML = 'Create Account';
     }
   } catch (e) {
     showAuthAlert(e.message || 'Sign up failed. Please try again.');
-    setLoading(btn, false); btn.innerHTML = 'Create Account';
+    setLoading(btn, false);
+    btn.innerHTML = 'Create Account';
   }
 }
 
 async function handleForgotPassword() {
   const email = qs('#forgot-email')?.value.trim();
-  if (!email) { showAuthAlert('Please enter your email.'); return; }
+  if (!email) {
+    showAuthAlert('Please enter your email.');
+    return;
+  }
+
   const btn = qs('#forgot-btn');
   setLoading(btn, true, 'Sending…');
   qs('#auth-alert').innerHTML = '';
+
   try {
     const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + window.location.pathname
+      redirectTo: window.location.origin + window.location.pathname,
     });
     if (error) throw error;
     showAuthAlert('Reset link sent! Check your email.', 'success');
-    setLoading(btn, false); btn.innerHTML = 'Send Reset Link';
-  } catch(e) {
+    setLoading(btn, false);
+    btn.innerHTML = 'Send Reset Link';
+  } catch (e) {
     showAuthAlert(e.message || 'Failed to send reset link.');
-    setLoading(btn, false); btn.innerHTML = 'Send Reset Link';
+    setLoading(btn, false);
+    btn.innerHTML = 'Send Reset Link';
   }
 }
 
 async function handleSignOut() {
+  closeNewChatModal();
+  closeProfileModal();
+  closeLightbox();
   await sb.auth.signOut();
-  STATE = { ...STATE, user:null, profile:null, conversations:[], currentConvId:null, currentConvPeer:null };
+
+  STATE = {
+    ...STATE,
+    user: null,
+    profile: null,
+    conversations: [],
+    currentConvId: null,
+    currentConvPeer: null,
+    messages: [],
+    msgSubscription: null,
+    convSubscription: null,
+    pendingImageFile: null,
+    pendingImageUrl: null,
+    recordedBlob: null,
+    recordedDuration: 0,
+    isRecording: false,
+    sidebarOpen: false,
+  };
+
   unsubscribeAll();
   showScreen('auth-screen');
   renderAuthScreen();
@@ -508,11 +589,14 @@ async function handleSignOut() {
 // 7. PROFILE SETUP (first-time)
 // ════════════════════════════════════════════════════════════
 function needsProfileSetup() {
-  return !STATE.profile?.username;
+  return !STATE.profile || !STATE.profile.username;
 }
 
 function renderProfileSetup() {
   const p = STATE.profile || {};
+  const fallbackName = p.display_name || STATE.user?.user_metadata?.display_name || '';
+  const fallbackUsername = p.username || STATE.user?.user_metadata?.username || '';
+
   qs('#profile-setup-screen').innerHTML = `
     <div class="profile-setup-card">
       <div class="profile-setup-header">
@@ -523,7 +607,7 @@ function renderProfileSetup() {
 
       <div class="profile-avatar-section">
         <div class="avatar-edit-wrap" onclick="qs('#setup-avatar-input').click()">
-          <div class="avatar xl" id="setup-avatar-preview">${getInitials(p.display_name)}</div>
+          <div class="avatar xl" id="setup-avatar-preview">${escHtml(getInitials(fallbackName || STATE.user?.email || '?'))}</div>
           <div class="avatar-edit-overlay">${icons.camera}</div>
         </div>
         <span style="font-size:13px;color:var(--text-2)">Click to upload photo</span>
@@ -534,20 +618,20 @@ function renderProfileSetup() {
 
       <div class="form-group">
         <label class="form-label">Display Name</label>
-        <input type="text" class="form-input" id="setup-name" value="${escHtml(p.display_name||'')}" placeholder="Your full name">
+        <input type="text" class="form-input" id="setup-name" value="${escHtml(fallbackName)}" placeholder="Your full name">
       </div>
       <div class="form-group">
         <label class="form-label">Username</label>
-        <input type="text" class="form-input" id="setup-username" value="${escHtml(p.username||'')}" placeholder="unique handle (no spaces)" oninput="checkUsernameSetup(this.value)">
+        <input type="text" class="form-input" id="setup-username" value="${escHtml(fallbackUsername)}" placeholder="unique handle (no spaces)" oninput="checkUsernameSetup(this.value)">
         <span class="input-status" id="setup-username-status"></span>
       </div>
       <div class="form-group">
         <label class="form-label">Nationality</label>
-        <input type="text" class="form-input" id="setup-nationality" value="${escHtml(p.nationality||'')}" placeholder="e.g. American, British, Japanese">
+        <input type="text" class="form-input" id="setup-nationality" value="${escHtml(p.nationality || '')}" placeholder="e.g. American, British, Japanese">
       </div>
       <div class="form-group">
         <label class="form-label">Bio <span style="color:var(--text-3)">(optional)</span></label>
-        <textarea class="form-input" id="setup-bio" placeholder="A short bio...">${escHtml(p.bio||'')}</textarea>
+        <textarea class="form-input" id="setup-bio" placeholder="A short bio...">${escHtml(p.bio || '')}</textarea>
       </div>
       <button class="btn btn-primary" id="setup-save-btn" onclick="saveProfileSetup()">Complete Setup</button>
     </div>
@@ -556,7 +640,7 @@ function renderProfileSetup() {
 
 let _setupAvatarFile = null;
 function previewSetupAvatar(input) {
-  const file = input.files[0];
+  const file = input.files?.[0];
   if (!file) return;
   _setupAvatarFile = file;
   const url = URL.createObjectURL(file);
@@ -566,22 +650,36 @@ function previewSetupAvatar(input) {
 const checkUsernameSetup = debounce(async (val) => {
   const el = qs('#setup-username-status');
   if (!el) return;
-  const v = val.trim().toLowerCase();
+  const v = normalizeUsername(val);
+
   if (!v || v.length < 3) {
     el.textContent = v.length ? 'Min 3 characters' : '';
     el.className = 'input-status err';
     return;
   }
+
+  if (!/^[a-z0-9_]+$/.test(v)) {
+    el.textContent = 'Letters, numbers, underscore only';
+    el.className = 'input-status err';
+    return;
+  }
+
   el.textContent = 'Checking…';
   el.className = 'input-status';
-  const avail = await isUsernameAvailable(v);
-  el.textContent = avail ? '✓ Available' : '✕ Taken';
-  el.className = `input-status ${avail ? 'ok' : 'err'}`;
+
+  try {
+    const avail = await isUsernameAvailable(v);
+    el.textContent = avail ? '✓ Available' : '✕ Taken';
+    el.className = `input-status ${avail ? 'ok' : 'err'}`;
+  } catch {
+    el.textContent = 'Unable to check';
+    el.className = 'input-status err';
+  }
 }, 500);
 
 async function saveProfileSetup() {
   const name = qs('#setup-name')?.value.trim();
-  const username = qs('#setup-username')?.value.trim().toLowerCase();
+  const username = normalizeUsername(qs('#setup-username')?.value);
   const nationality = qs('#setup-nationality')?.value.trim();
   const bio = qs('#setup-bio')?.value.trim();
 
@@ -601,21 +699,31 @@ async function saveProfileSetup() {
     const avail = await isUsernameAvailable(username);
     if (!avail) {
       qs('#setup-alert').innerHTML = `<div class="alert alert-error">Username taken. Choose another.</div>`;
-      setLoading(btn, false); btn.innerHTML = 'Complete Setup';
+      setLoading(btn, false);
+      btn.innerHTML = 'Complete Setup';
       return;
     }
 
     let avatar_url = STATE.profile?.avatar_url || null;
     if (_setupAvatarFile) {
-      const path = `${STATE.user.id}/avatar.${_setupAvatarFile.name.split('.').pop()}`;
+      const ext = _setupAvatarFile.name.split('.').pop();
+      const path = `${STATE.user.id}/avatar.${ext}`;
       avatar_url = await uploadFile('avatars', path, _setupAvatarFile);
     }
 
-    await upsertProfile({ display_name: name, username, nationality, bio, avatar_url });
+    await upsertProfile({
+      display_name: name,
+      username,
+      nationality,
+      bio,
+      avatar_url,
+    });
+
     showAppScreen();
-  } catch(e) {
+  } catch (e) {
     qs('#setup-alert').innerHTML = `<div class="alert alert-error">${escHtml(e.message)}</div>`;
-    setLoading(btn, false); btn.innerHTML = 'Complete Setup';
+    setLoading(btn, false);
+    btn.innerHTML = 'Complete Setup';
   }
 }
 
@@ -680,7 +788,7 @@ async function loadAndRenderConversations() {
   try {
     STATE.conversations = await fetchConversations();
     renderConversationList(STATE.conversations);
-  } catch(e) {
+  } catch {
     qs('#chat-list').innerHTML = `<div class="empty-state"><p>Failed to load chats</p></div>`;
   }
 }
@@ -688,6 +796,7 @@ async function loadAndRenderConversations() {
 function renderConversationList(convs) {
   const list = qs('#chat-list');
   if (!list) return;
+
   if (!convs?.length) {
     list.innerHTML = `
       <div class="empty-state">
@@ -697,12 +806,14 @@ function renderConversationList(convs) {
       </div>`;
     return;
   }
+
   list.innerHTML = convs.map(conv => {
     const peer = conv.peerProfile;
     const name = peer?.display_name || peer?.username || 'Unknown';
     const time = conv.last_message_at ? formatMsgTime(conv.last_message_at) : '';
     const preview = conv.last_message_preview || 'Start a conversation';
     const isActive = conv.id === STATE.currentConvId;
+
     return `
       <div class="chat-item ${isActive ? 'active' : ''}" onclick="openConversation('${escHtml(conv.id)}')">
         <div class="avatar-wrap">
@@ -720,7 +831,7 @@ function renderConversationList(convs) {
 }
 
 function filterConversations(query) {
-  const q = query.toLowerCase();
+  const q = String(query || '').toLowerCase().trim();
   const filtered = q
     ? STATE.conversations.filter(c => {
         const name = c.peerProfile?.display_name || c.peerProfile?.username || '';
@@ -735,18 +846,20 @@ function filterConversations(query) {
 // ════════════════════════════════════════════════════════════
 async function openConversation(convId) {
   if (STATE.currentConvId === convId) {
-    closeSidebar(); return;
+    closeSidebar();
+    return;
   }
+
   unsubscribeMessages();
   STATE.currentConvId = convId;
   STATE.pendingImageFile = null;
   STATE.pendingImageUrl = null;
   STATE.recordedBlob = null;
+  STATE.recordedDuration = 0;
 
   const conv = STATE.conversations.find(c => c.id === convId);
   STATE.currentConvPeer = conv?.peerProfile || null;
 
-  // Highlight in sidebar
   qsa('.chat-item').forEach(el => el.classList.remove('active'));
   qs(`.chat-item[onclick*="${convId}"]`)?.classList.add('active');
 
@@ -759,7 +872,7 @@ async function openConversation(convId) {
     renderMessages(msgs);
     scrollToBottom();
     subscribeToMessages(convId);
-  } catch(e) {
+  } catch {
     toast('Failed to load messages', 'error');
   }
 }
@@ -826,6 +939,7 @@ function renderConversationScreen() {
 function renderMessages(msgs) {
   const area = qs('#messages-area');
   if (!area) return;
+
   if (!msgs?.length) {
     area.innerHTML = `
       <div class="empty-state" style="flex:1">
@@ -840,7 +954,7 @@ function renderMessages(msgs) {
   let lastDate = null;
   let lastSenderId = null;
 
-  msgs.forEach((msg, i) => {
+  msgs.forEach(msg => {
     const isMine = msg.sender_id === STATE.user.id;
     const dateKey = new Date(msg.created_at).toDateString();
 
@@ -899,7 +1013,6 @@ function appendMessage(msg) {
   const area = qs('#messages-area');
   if (!area) return;
 
-  // Remove empty state if present
   const empty = qs('.empty-state', area);
   if (empty) area.innerHTML = '';
 
@@ -941,7 +1054,6 @@ async function handleSend() {
   const input = qs('#msg-input');
   const text = input?.value.trim();
 
-  // Voice message (recorded blob ready)
   if (STATE.recordedBlob) {
     await sendVoiceMessage(STATE.recordedBlob, STATE.recordedDuration);
     STATE.recordedBlob = null;
@@ -950,19 +1062,23 @@ async function handleSend() {
     return;
   }
 
-  // Image message
   if (STATE.pendingImageFile) {
     await sendImageMessage(STATE.pendingImageFile, text);
     STATE.pendingImageFile = null;
     STATE.pendingImageUrl = null;
     qs('#attachment-preview')?.classList.add('hidden');
-    if (input) { input.value = ''; input.style.height = 'auto'; }
+    if (input) {
+      input.value = '';
+      input.style.height = 'auto';
+    }
     return;
   }
 
-  // Text message
   if (!text) return;
-  if (input) { input.value = ''; input.style.height = 'auto'; }
+  if (input) {
+    input.value = '';
+    input.style.height = 'auto';
+  }
 
   try {
     const msg = await sendMessage({
@@ -970,16 +1086,20 @@ async function handleSend() {
       content: text,
       contentType: 'text',
     });
+    STATE.messages.push(msg);
     appendMessage(msg);
     refreshConvListOrder(STATE.currentConvId, text, 'text');
-  } catch(e) {
+  } catch {
     toast('Failed to send message', 'error');
   }
 }
 
 async function sendImageMessage(file, caption = '') {
   const btn = qs('.send-btn');
-  if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner-sm" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff"></span>`; }
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-sm" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff"></span>`;
+  }
 
   try {
     const ext = file.name.split('.').pop();
@@ -992,18 +1112,25 @@ async function sendImageMessage(file, caption = '') {
       contentType: 'image',
       fileUrl,
     });
+    STATE.messages.push(msg);
     appendMessage(msg);
     refreshConvListOrder(STATE.currentConvId, '📷 Image', 'image');
-  } catch(e) {
+  } catch (e) {
     toast('Failed to send image: ' + e.message, 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = icons.send; }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = icons.send;
+    }
   }
 }
 
 async function sendVoiceMessage(blob, duration) {
   const btn = qs('.send-btn');
-  if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner-sm" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff"></span>`; }
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-sm" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff"></span>`;
+  }
 
   try {
     const path = `${STATE.user.id}/${Date.now()}.webm`;
@@ -1016,19 +1143,24 @@ async function sendVoiceMessage(blob, duration) {
       fileUrl,
       metadata: { duration },
     });
+    STATE.messages.push(msg);
     appendMessage(msg);
     refreshConvListOrder(STATE.currentConvId, '🎤 Voice message', 'voice');
     toast('Voice message sent', 'success');
-  } catch(e) {
+  } catch (e) {
     toast('Failed to send voice: ' + e.message, 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = icons.send; }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = icons.send;
+    }
   }
 }
 
 function handleImageSelect(input) {
-  const file = input.files[0];
+  const file = input.files?.[0];
   if (!file) return;
+
   STATE.pendingImageFile = file;
   STATE.pendingImageUrl = URL.createObjectURL(file);
 
@@ -1048,7 +1180,10 @@ function clearImageAttachment() {
   STATE.pendingImageFile = null;
   STATE.pendingImageUrl = null;
   const preview = qs('#attachment-preview');
-  if (preview) { preview.classList.add('hidden'); preview.innerHTML = ''; }
+  if (preview) {
+    preview.classList.add('hidden');
+    preview.innerHTML = '';
+  }
 }
 
 function refreshConvListOrder(convId, preview, type) {
@@ -1067,7 +1202,7 @@ function refreshConvListOrder(convId, preview, type) {
 // ════════════════════════════════════════════════════════════
 function formatDuration(secs) {
   const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
-  return `${m}:${s.toString().padStart(2,'0')}`;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 async function toggleRecording() {
@@ -1083,26 +1218,27 @@ async function startRecording() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     STATE.audioChunks = [];
     STATE.mediaRecorder = new MediaRecorder(stream);
+
     STATE.mediaRecorder.ondataavailable = e => {
       if (e.data.size > 0) STATE.audioChunks.push(e.data);
     };
+
     STATE.mediaRecorder.onstop = onRecordingStop;
     STATE.mediaRecorder.start(100);
     STATE.isRecording = true;
     STATE.recordingSeconds = 0;
 
-    // UI
     const micBtn = qs('#mic-btn');
-    if (micBtn) { micBtn.style.color = 'var(--danger)'; }
+    if (micBtn) micBtn.style.color = 'var(--danger)';
     qs('#recording-indicator')?.classList.remove('hidden');
 
     STATE.recordingTimer = setInterval(() => {
       STATE.recordingSeconds++;
       const el = qs('#rec-time');
       if (el) el.textContent = formatDuration(STATE.recordingSeconds);
-      if (STATE.recordingSeconds >= 300) stopRecording(); // max 5 min
+      if (STATE.recordingSeconds >= 300) stopRecording();
     }, 1000);
-  } catch(e) {
+  } catch {
     toast('Microphone access denied. Please allow mic access.', 'error');
   }
 }
@@ -1125,7 +1261,6 @@ function onRecordingStop() {
   STATE.recordedBlob = blob;
   STATE.audioChunks = [];
 
-  // Show preview
   const preview = qs('#voice-preview');
   const durEl = qs('#voice-preview-dur');
   if (preview) preview.classList.remove('hidden');
@@ -1136,23 +1271,30 @@ let _previewAudio = null;
 function previewRecording() {
   if (!STATE.recordedBlob) return;
   const btn = qs('#preview-play-btn');
+
   if (_previewAudio && !_previewAudio.paused) {
     _previewAudio.pause();
     if (btn) btn.innerHTML = icons.play;
     return;
   }
+
   const url = URL.createObjectURL(STATE.recordedBlob);
   _previewAudio = new Audio(url);
   _previewAudio.play();
   if (btn) btn.innerHTML = icons.pause;
-  _previewAudio.onended = () => { if (btn) btn.innerHTML = icons.play; };
+  _previewAudio.onended = () => {
+    if (btn) btn.innerHTML = icons.play;
+  };
 }
 
 function discardRecording() {
   STATE.recordedBlob = null;
   STATE.recordedDuration = 0;
   qs('#voice-preview')?.classList.add('hidden');
-  if (_previewAudio) { _previewAudio.pause(); _previewAudio = null; }
+  if (_previewAudio) {
+    _previewAudio.pause();
+    _previewAudio = null;
+  }
 }
 
 function playVoice(url, btn) {
@@ -1161,16 +1303,23 @@ function playVoice(url, btn) {
     btn.innerHTML = icons.play;
     return;
   }
-  // Stop any other playing audio
+
   document.querySelectorAll('.voice-play-btn').forEach(b => {
-    if (b._audio && !b._audio.paused) { b._audio.pause(); b.innerHTML = icons.play; }
+    if (b._audio && !b._audio.paused) {
+      b._audio.pause();
+      b.innerHTML = icons.play;
+    }
   });
+
   const audio = new Audio(url);
   btn._audio = audio;
   audio.play();
   btn.innerHTML = icons.pause;
   audio.onended = () => { btn.innerHTML = icons.play; };
-  audio.onerror = () => { btn.innerHTML = icons.play; toast('Could not play audio', 'error'); };
+  audio.onerror = () => {
+    btn.innerHTML = icons.play;
+    toast('Could not play audio', 'error');
+  };
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1183,18 +1332,21 @@ function subscribeToMessages(convId) {
       event: 'INSERT',
       schema: 'public',
       table: 'messages',
-      filter: `conversation_id=eq.${convId}`
+      filter: `conversation_id=eq.${convId}`,
     }, async (payload) => {
       const newMsg = payload.new;
-      if (newMsg.sender_id === STATE.user.id) return; // already rendered locally
-      // Fetch with sender profile
-      const { data } = await sb.from('messages')
+      if (newMsg.sender_id === STATE.user.id) return;
+
+      const { data, error } = await sb.from('messages')
         .select('*, sender:profiles!sender_id(id,display_name,username,avatar_url)')
-        .eq('id', newMsg.id).single();
+        .eq('id', newMsg.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') return;
       if (data) {
         STATE.messages.push(data);
         appendMessage(data);
-        refreshConvListOrder(convId, newMsg.content || '', newMsg.content_type);
+        refreshConvListOrder(convId, data.content || (data.content_type === 'image' ? '📷 Image' : data.content_type === 'voice' ? '🎤 Voice message' : ''), data.content_type);
       }
     })
     .subscribe();
@@ -1204,12 +1356,20 @@ function subscribeToConversations() {
   if (STATE.convSubscription) {
     sb.removeChannel(STATE.convSubscription);
   }
+
   STATE.convSubscription = sb.channel('user-conversations')
     .on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'conversation_members',
-      filter: `user_id=eq.${STATE.user.id}`
+      filter: `user_id=eq.${STATE.user.id}`,
+    }, () => {
+      loadAndRenderConversations();
+    })
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'conversations',
     }, () => {
       loadAndRenderConversations();
     })
@@ -1269,19 +1429,23 @@ function closeNewChatModal() {
 const searchUsers = debounce(async (query) => {
   const resultsEl = qs('#user-search-results');
   if (!resultsEl) return;
-  const q = query.trim();
+
+  const q = String(query || '').trim();
   if (!q) {
     resultsEl.innerHTML = `<div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px">Type to search users</div>`;
     return;
   }
+
   resultsEl.innerHTML = `<div class="loading-inline"><span class="spinner-sm"></span> Searching…</div>`;
 
   try {
-    const { data } = await sb.from('profiles')
+    const { data, error } = await sb.from('profiles')
       .select('id, display_name, username, avatar_url, nationality')
       .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
       .neq('id', STATE.user.id)
       .limit(10);
+
+    if (error) throw error;
 
     if (!data?.length) {
       resultsEl.innerHTML = `<div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px">No users found</div>`;
@@ -1296,7 +1460,7 @@ const searchUsers = debounce(async (query) => {
           <div class="user-result-username">@${escHtml(u.username || '')} ${u.nationality ? `· ${escHtml(u.nationality)}` : ''}</div>
         </div>
       </div>`).join('');
-  } catch(e) {
+  } catch {
     resultsEl.innerHTML = `<div style="font-size:13px;color:var(--danger);padding:16px">Search failed</div>`;
   }
 }, 350);
@@ -1304,16 +1468,16 @@ const searchUsers = debounce(async (query) => {
 async function startChatWith(peerId) {
   closeNewChatModal();
   showScreen('app-screen');
+
   try {
     const conv = await findOrCreateDirectConv(peerId);
-    // Add peer to conversations list if not present
     if (!STATE.conversations.find(c => c.id === conv.id)) {
       const peerProfile = await fetchProfile(peerId);
       STATE.conversations.unshift({ ...conv, peerProfile });
       renderConversationList(STATE.conversations);
     }
     openConversation(conv.id);
-  } catch(e) {
+  } catch (e) {
     toast('Could not start chat: ' + e.message, 'error');
   }
 }
@@ -1336,7 +1500,7 @@ function openProfileModal() {
         <div class="profile-avatar-section">
           <div class="avatar-edit-wrap" onclick="qs('#profile-avatar-input').click()">
             <div class="avatar xl" id="profile-avatar-preview">
-              ${p.avatar_url ? `<img src="${escHtml(p.avatar_url)}" alt="">` : getInitials(p.display_name)}
+              ${p.avatar_url ? `<img src="${escHtml(p.avatar_url)}" alt="">` : escHtml(getInitials(p.display_name || STATE.user?.email || '?'))}
             </div>
             <div class="avatar-edit-overlay">${icons.camera}</div>
           </div>
@@ -1348,24 +1512,24 @@ function openProfileModal() {
 
         <div class="form-group">
           <label class="form-label">Display Name</label>
-          <input type="text" class="form-input" id="profile-name" value="${escHtml(p.display_name||'')}">
+          <input type="text" class="form-input" id="profile-name" value="${escHtml(p.display_name || '')}">
         </div>
         <div class="form-group">
           <label class="form-label">Username</label>
-          <input type="text" class="form-input" id="profile-username" value="${escHtml(p.username||'')}" oninput="checkUsernameProfile(this.value)">
+          <input type="text" class="form-input" id="profile-username" value="${escHtml(p.username || '')}" oninput="checkUsernameProfile(this.value)">
           <span class="input-status" id="profile-username-status"></span>
         </div>
         <div class="form-group">
           <label class="form-label">Nationality</label>
-          <input type="text" class="form-input" id="profile-nationality" value="${escHtml(p.nationality||'')}">
+          <input type="text" class="form-input" id="profile-nationality" value="${escHtml(p.nationality || '')}">
         </div>
         <div class="form-group">
           <label class="form-label">Bio</label>
-          <textarea class="form-input" id="profile-bio">${escHtml(p.bio||'')}</textarea>
+          <textarea class="form-input" id="profile-bio">${escHtml(p.bio || '')}</textarea>
         </div>
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input type="email" class="form-input" value="${escHtml(STATE.user?.email||'')}" disabled style="opacity:0.5">
+          <input type="email" class="form-input" value="${escHtml(STATE.user?.email || '')}" disabled style="opacity:0.5">
         </div>
         <button class="btn btn-primary" id="profile-save-btn" onclick="saveProfileModal()">Save Changes</button>
         <div class="divider"></div>
@@ -1384,7 +1548,7 @@ function closeProfileModal() {
 
 let _profileAvatarFile = null;
 function previewProfileAvatar(input) {
-  const file = input.files[0];
+  const file = input.files?.[0];
   if (!file) return;
   _profileAvatarFile = file;
   qs('#profile-avatar-preview').innerHTML = `<img src="${URL.createObjectURL(file)}" alt="preview">`;
@@ -1393,21 +1557,36 @@ function previewProfileAvatar(input) {
 const checkUsernameProfile = debounce(async (val) => {
   const el = qs('#profile-username-status');
   if (!el) return;
-  const v = val.trim().toLowerCase();
-  if (v === STATE.profile?.username) { el.textContent = ''; return; }
+  const v = normalizeUsername(val);
+
+  if (v === STATE.profile?.username) {
+    el.textContent = '';
+    el.className = 'input-status';
+    return;
+  }
+
   if (!v || v.length < 3 || !/^[a-z0-9_]+$/.test(v)) {
     el.textContent = v.length < 3 ? 'Min 3 chars' : 'Invalid characters';
-    el.className = 'input-status err'; return;
+    el.className = 'input-status err';
+    return;
   }
+
   el.textContent = 'Checking…';
-  const avail = await isUsernameAvailable(v);
-  el.textContent = avail ? '✓ Available' : '✕ Taken';
-  el.className = `input-status ${avail ? 'ok' : 'err'}`;
+  el.className = 'input-status';
+
+  try {
+    const avail = await isUsernameAvailable(v);
+    el.textContent = avail ? '✓ Available' : '✕ Taken';
+    el.className = `input-status ${avail ? 'ok' : 'err'}`;
+  } catch {
+    el.textContent = 'Unable to check';
+    el.className = 'input-status err';
+  }
 }, 500);
 
 async function saveProfileModal() {
   const name = qs('#profile-name')?.value.trim();
-  const username = qs('#profile-username')?.value.trim().toLowerCase();
+  const username = normalizeUsername(qs('#profile-username')?.value);
   const nationality = qs('#profile-nationality')?.value.trim();
   const bio = qs('#profile-bio')?.value.trim();
   const alertEl = qs('#profile-modal-alert');
@@ -1425,7 +1604,9 @@ async function saveProfileModal() {
       const avail = await isUsernameAvailable(username);
       if (!avail) {
         alertEl.innerHTML = `<div class="alert alert-error">Username taken.</div>`;
-        setLoading(btn, false); btn.innerHTML = 'Save Changes'; return;
+        setLoading(btn, false);
+        btn.innerHTML = 'Save Changes';
+        return;
       }
     }
 
@@ -1440,10 +1621,19 @@ async function saveProfileModal() {
     await upsertProfile({ display_name: name, username, nationality, bio, avatar_url });
     closeProfileModal();
     renderSidebar();
+    if (STATE.currentConvId) {
+      const conv = STATE.conversations.find(c => c.id === STATE.currentConvId);
+      if (conv) STATE.currentConvPeer = conv.peerProfile || STATE.currentConvPeer;
+      renderConversationScreen();
+      const msgs = STATE.messages || [];
+      renderMessages(msgs);
+      scrollToBottom();
+    }
     toast('Profile updated!', 'success');
-  } catch(e) {
+  } catch (e) {
     alertEl.innerHTML = `<div class="alert alert-error">${escHtml(e.message)}</div>`;
-    setLoading(btn, false); btn.innerHTML = 'Save Changes';
+    setLoading(btn, false);
+    btn.innerHTML = 'Save Changes';
   }
 }
 
@@ -1481,7 +1671,6 @@ async function initApp() {
   showScreen('loading-screen');
   renderAuthScreen();
 
-  // Auth state listener
   sb.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
       if (!STATE.user || STATE.user.id !== session?.user?.id) {
@@ -1499,24 +1688,29 @@ async function initApp() {
       STATE.profile = null;
       unsubscribeAll();
       showScreen('auth-screen');
+      renderAuthScreen();
     } else if (event === 'PASSWORD_RECOVERY') {
       showScreen('auth-screen');
+      renderAuthScreen();
       qs('#auth-alert').innerHTML = `<div class="alert alert-info">Set your new password below.</div>`;
     }
   });
 
-  // Check existing session
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    STATE.user = session.user;
-    await loadMyProfile();
-    if (needsProfileSetup()) {
-      showScreen('profile-setup-screen');
-      renderProfileSetup();
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      STATE.user = session.user;
+      await loadMyProfile();
+      if (needsProfileSetup()) {
+        showScreen('profile-setup-screen');
+        renderProfileSetup();
+      } else {
+        showAppScreen();
+      }
     } else {
-      showAppScreen();
+      showScreen('auth-screen');
     }
-  } else {
+  } catch {
     showScreen('auth-screen');
   }
 }
