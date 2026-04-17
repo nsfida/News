@@ -1,7 +1,11 @@
 /* ============================================================
    NSFChat · app.js — Complete Application Logic
-   Fixed: safer signup/profile flow, better profile checks,
-   realtime conversation refresh, and more defensive helpers.
+   Fixes:
+   - profile flow without auth-side auto profile trigger
+   - username availability check
+   - safe direct chat creation via RPC
+   - message/image/voice sending
+   - realtime updates
    ============================================================ */
 
 'use strict';
@@ -9,8 +13,8 @@
 // ════════════════════════════════════════════════════════════
 // 1. CONFIG & SUPABASE INIT
 // ════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://ddgqamzhwzzrvjylkiqb.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkZ3FhbXpod3p6cnZqeWxraXFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTc0NTgsImV4cCI6MjA5MTk5MzQ1OH0.RjL4BBe3y-nH-scSSbsAlnEmWZWnn51f79ROCv7Y8ZU';
+const SUPABASE_URL = 'https://vfarxizjxvzqvyxefcvx.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmYXJ4aXpqeHZ6cXZ5eGVmY3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MjA1MDgsImV4cCI6MjA5MTk5NjUwOH0.ddVlrRdLJY035xGECHHVtytpJmzj7cOYdZaWWaSb8Zo';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ════════════════════════════════════════════════════════════
@@ -111,11 +115,10 @@ function avatarHtml(profile, sizeClass = '') {
 }
 
 function showScreen(id) {
-  ['loading-screen', 'auth-screen', 'profile-setup-screen', 'app-screen']
-    .forEach(s => {
-      const el = qs(`#${s}`);
-      if (el) el.classList.toggle('hidden', s !== id);
-    });
+  ['loading-screen', 'auth-screen', 'profile-setup-screen', 'app-screen'].forEach(s => {
+    const el = qs(`#${s}`);
+    if (el) el.classList.toggle('hidden', s !== id);
+  });
 }
 
 function toast(msg, type = 'info', dur = 3200) {
@@ -158,6 +161,11 @@ function generateVoiceBars() {
 
 function normalizeUsername(value) {
   return String(value || '').trim().toLowerCase();
+}
+
+function formatDuration(secs) {
+  const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -237,53 +245,12 @@ async function fetchConversations() {
 
     const otherIds = members?.map(m => m.user_id).filter(id => id !== STATE.user.id) || [];
     let peerProfile = null;
-    if (otherIds.length) {
-      peerProfile = await fetchProfile(otherIds[0]);
-    }
+    if (otherIds.length) peerProfile = await fetchProfile(otherIds[0]);
+
     return { ...conv, peerProfile };
   }));
 
   return enriched;
-}
-
-async function findOrCreateDirectConv(peerId) {
-  if (!STATE.user || !peerId) throw new Error('Missing user');
-  const { data: myMems, error: myError } = await sb.from('conversation_members')
-    .select('conversation_id')
-    .eq('user_id', STATE.user.id);
-  if (myError) throw myError;
-
-  const { data: peerMems, error: peerError } = await sb.from('conversation_members')
-    .select('conversation_id')
-    .eq('user_id', peerId);
-  if (peerError) throw peerError;
-
-  const myIds = new Set((myMems || []).map(r => r.conversation_id));
-  const shared = (peerMems || []).map(r => r.conversation_id).find(id => myIds.has(id));
-
-  if (shared) {
-    const { data: conv, error } = await sb.from('conversations')
-      .select('*')
-      .eq('id', shared)
-      .eq('type', 'direct')
-      .maybeSingle();
-    if (error && error.code !== 'PGRST116') throw error;
-    if (conv) return conv;
-  }
-
-  const { data: newConv, error } = await sb.from('conversations')
-    .insert({ type: 'direct', created_by: STATE.user.id })
-    .select()
-    .single();
-  if (error) throw error;
-
-  const { error: memInsertError } = await sb.from('conversation_members').insert([
-    { conversation_id: newConv.id, user_id: STATE.user.id },
-    { conversation_id: newConv.id, user_id: peerId },
-  ]);
-  if (memInsertError) throw memInsertError;
-
-  return newConv;
 }
 
 async function fetchMessages(convId) {
@@ -307,6 +274,12 @@ async function sendMessage({ convId, content, contentType = 'text', fileUrl = nu
   }).select('*, sender:profiles!sender_id(id,display_name,username,avatar_url)').single();
   if (error) throw error;
   return data;
+}
+
+async function createDirectConversation(peerId) {
+  const { data, error } = await sb.rpc('create_direct_conversation', { peer_id: peerId });
+  if (error) throw error;
+  return Array.isArray(data) ? data[0] : data;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -586,7 +559,7 @@ async function handleSignOut() {
 }
 
 // ════════════════════════════════════════════════════════════
-// 7. PROFILE SETUP (first-time)
+// 7. PROFILE SETUP
 // ════════════════════════════════════════════════════════════
 function needsProfileSetup() {
   return !STATE.profile || !STATE.profile.username;
@@ -1200,11 +1173,6 @@ function refreshConvListOrder(convId, preview, type) {
 // ════════════════════════════════════════════════════════════
 // 11. VOICE RECORDING
 // ════════════════════════════════════════════════════════════
-function formatDuration(secs) {
-  const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
 async function toggleRecording() {
   if (STATE.isRecording) {
     stopRecording();
@@ -1346,7 +1314,11 @@ function subscribeToMessages(convId) {
       if (data) {
         STATE.messages.push(data);
         appendMessage(data);
-        refreshConvListOrder(convId, data.content || (data.content_type === 'image' ? '📷 Image' : data.content_type === 'voice' ? '🎤 Voice message' : ''), data.content_type);
+        refreshConvListOrder(
+          convId,
+          data.content || (data.content_type === 'image' ? '📷 Image' : data.content_type === 'voice' ? '🎤 Voice message' : ''),
+          data.content_type
+        );
       }
     })
     .subscribe();
@@ -1457,7 +1429,7 @@ const searchUsers = debounce(async (query) => {
         ${avatarHtml(u, 'sm')}
         <div class="user-result-info">
           <div class="user-result-name">${escHtml(u.display_name || u.username || 'Unknown')}</div>
-          <div class="user-result-username">@${escHtml(u.username || '')} ${u.nationality ? `· ${escHtml(u.nationality)}` : ''}</div>
+          <div class="user-result-username">@${escHtml(u.username || '')}${u.nationality ? ` · ${escHtml(u.nationality)}` : ''}</div>
         </div>
       </div>`).join('');
   } catch {
@@ -1470,12 +1442,14 @@ async function startChatWith(peerId) {
   showScreen('app-screen');
 
   try {
-    const conv = await findOrCreateDirectConv(peerId);
+    const conv = await createDirectConversation(peerId);
+
     if (!STATE.conversations.find(c => c.id === conv.id)) {
       const peerProfile = await fetchProfile(peerId);
       STATE.conversations.unshift({ ...conv, peerProfile });
       renderConversationList(STATE.conversations);
     }
+
     openConversation(conv.id);
   } catch (e) {
     toast('Could not start chat: ' + e.message, 'error');
@@ -1483,7 +1457,7 @@ async function startChatWith(peerId) {
 }
 
 // ════════════════════════════════════════════════════════════
-// 14. PROFILE MODAL (editor)
+// 14. PROFILE MODAL
 // ════════════════════════════════════════════════════════════
 function openProfileModal() {
   const p = STATE.profile || {};
@@ -1621,14 +1595,15 @@ async function saveProfileModal() {
     await upsertProfile({ display_name: name, username, nationality, bio, avatar_url });
     closeProfileModal();
     renderSidebar();
+
     if (STATE.currentConvId) {
       const conv = STATE.conversations.find(c => c.id === STATE.currentConvId);
       if (conv) STATE.currentConvPeer = conv.peerProfile || STATE.currentConvPeer;
       renderConversationScreen();
-      const msgs = STATE.messages || [];
-      renderMessages(msgs);
+      renderMessages(STATE.messages || []);
       scrollToBottom();
     }
+
     toast('Profile updated!', 'success');
   } catch (e) {
     alertEl.innerHTML = `<div class="alert alert-error">${escHtml(e.message)}</div>`;
