@@ -1,0 +1,23 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NSFChat logo">
+  <defs>
+    <linearGradient id="g" x1="28" y1="26" x2="224" y2="230" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="0.52" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="74" y1="66" x2="184" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0E7FF"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <filter id="shadow" x="18" y="18" width="220" height="220" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect x="18" y="18" width="220" height="220" rx="58" fill="#0F172A"/>
+  <path d="M60 72C60 55.4315 73.4315 42 90 42H166C182.569 42 196 55.4315 196 72V138C196 154.569 182.569 168 166 168H128L86 196V168H90C73.4315 168 60 154.569 60 138V72Z" fill="url(#g)" filter="url(#shadow)"/>
+  <path d="M94 84H162C167.523 84 172 88.4772 172 94C172 99.5228 167.523 104 162 104H94C88.4772 104 84 99.5228 84 94C84 88.4772 88.4772 84 94 84Z" fill="url(#g2)" opacity="0.95"/>
+  <path d="M94 116H138C143.523 116 148 120.477 148 126C148 131.523 143.523 136 138 136H94C88.4772 136 84 131.523 84 126C84 120.477 88.4772 116 94 116Z" fill="url(#g2)" opacity="0.86"/>
+  <circle cx="173" cy="125" r="11" fill="#0F172A" opacity="0.34"/>
+  <circle cx="173" cy="125" r="6" fill="#FFFFFF"/>
+  <path d="M168 125L206 145L173 157L168 125Z" fill="url(#g2)"/>
+</svg>

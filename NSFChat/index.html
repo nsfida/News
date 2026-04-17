@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="NSFChat — a modern real-time messaging platform powered by Supabase." />
+  <title>NSFChat</title>
+  <link rel="icon" href="./assets/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="boot-screen" class="boot-screen" aria-live="polite">
+      <div class="boot-card">
+        <img src="./assets/logo.svg" alt="NSFChat logo" class="boot-logo" />
+        <div class="spinner"></div>
+        <p>Loading NSFChat…</p>
+      </div>
+    </div>
+
+    <section id="auth-screen" class="screen auth-screen hidden" aria-label="Authentication">
+      <div class="auth-hero">
+        <div class="auth-hero-inner">
+          <img src="./assets/logo.svg" alt="NSFChat logo" class="auth-logo" />
+          <h1>Messaging that feels instant, polished, and alive.</h1>
+          <p>Secure sign-up, direct chats, image sharing, voice notes, and real-time updates powered by Supabase.</p>
+          <div class="auth-badges">
+            <span>Realtime</span>
+            <span>Storage</span>
+            <span>Profiles</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-panel">
+        <div class="auth-card">
+          <div class="segmented" role="tablist" aria-label="Authentication mode">
+            <button id="tab-signin" class="segmented-btn active" type="button" role="tab" aria-selected="true">Sign in</button>
+            <button id="tab-signup" class="segmented-btn" type="button" role="tab" aria-selected="false">Create account</button>
+          </div>
+
+          <form id="signin-form" class="form active" autocomplete="on">
+            <label>Email
+              <input type="email" name="email" placeholder="you@example.com" required />
+            </label>
+            <label>Password
+              <input type="password" name="password" placeholder="••••••••" required />
+            </label>
+            <button class="primary-btn" type="submit">Sign in</button>
+            <button id="forgot-password" class="ghost-btn" type="button">Forgot password?</button>
+            <p class="fineprint">A session is kept automatically when you return.</p>
+          </form>
+
+          <form id="signup-form" class="form" autocomplete="on" hidden>
+            <div class="grid-2">
+              <label>Display name
+                <input type="text" name="display_name" placeholder="Your name" minlength="2" maxlength="60" required />
+              </label>
+              <label>Username
+                <input type="text" name="username" placeholder="yourname" minlength="3" maxlength="24" required />
+              </label>
+            </div>
+            <div class="grid-2">
+              <label>Nationality
+                <input type="text" name="nationality" placeholder="Emirati" maxlength="48" />
+              </label>
+              <label>Email
+                <input type="email" name="email" placeholder="you@example.com" required />
+              </label>
+            </div>
+            <label>Bio
+              <textarea name="bio" rows="3" placeholder="A short bio about you"></textarea>
+            </label>
+            <label>Password
+              <input type="password" name="password" placeholder="Create a strong password" minlength="8" required />
+            </label>
+            <button class="primary-btn" type="submit">Create account</button>
+            <p class="fineprint">Your profile is created automatically after sign-up.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="shell" class="screen shell hidden" aria-label="Messaging app">
+      <header class="topbar">
+        <button id="mobile-sidebar-toggle" class="icon-btn mobile-only" type="button" aria-label="Open chat list">
+          <span></span><span></span><span></span>
+        </button>
+
+        <div class="brand-wrap">
+          <img src="./assets/logo.svg" alt="" class="brand-logo" />
+          <div>
+            <strong>NSFChat</strong>
+            <small id="connection-state">Connected</small>
+          </div>
+        </div>
+
+        <div class="topbar-search desktop-only">
+          <input id="global-search" type="search" placeholder="Search chats or people" autocomplete="off" />
+        </div>
+
+        <div class="topbar-actions">
+          <button id="new-chat-btn" class="secondary-btn desktop-only" type="button">New chat</button>
+          <button id="profile-btn" class="avatar-btn" type="button" aria-label="Open profile">
+            <img id="topbar-avatar" alt="" />
+          </button>
+          <button id="signout-btn" class="ghost-btn desktop-only" type="button">Sign out</button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside id="sidebar" class="sidebar">
+          <div class="sidebar-header">
+            <div>
+              <h2>Chats</h2>
+              <p id="chat-count">0 conversations</p>
+            </div>
+            <button id="new-chat-btn-2" class="secondary-btn" type="button">Start chat</button>
+          </div>
+
+          <div class="sidebar-search mobile-only">
+            <input id="mobile-search" type="search" placeholder="Search chats or people" autocomplete="off" />
+          </div>
+
+          <div id="chat-list" class="chat-list" aria-live="polite"></div>
+        </aside>
+
+        <main class="conversation">
+          <div id="conversation-empty" class="empty-state">
+            <img src="./assets/logo.svg" alt="" class="empty-logo" />
+            <h3>Choose a chat to begin</h3>
+            <p>Start a direct conversation, send images, or record a voice note.</p>
+            <button id="new-chat-btn-3" class="primary-btn" type="button">Start a new chat</button>
+          </div>
+
+          <div id="conversation-view" class="conversation-view hidden">
+            <div class="conversation-header">
+              <button id="back-to-chats" class="icon-btn mobile-only" type="button" aria-label="Back to chats">
+                <span class="chev"></span>
+              </button>
+              <div class="conversation-title-wrap">
+                <img id="conversation-avatar" alt="" class="conversation-avatar" />
+                <div>
+                  <h2 id="conversation-title">Conversation</h2>
+                  <p id="conversation-meta">Direct chat</p>
+                </div>
+              </div>
+              <div class="conversation-header-actions">
+                <button id="open-profile-from-chat" class="secondary-btn" type="button">Profile</button>
+              </div>
+            </div>
+
+            <div id="message-list" class="message-list" aria-live="polite"></div>
+
+            <form id="composer" class="composer">
+              <div id="composer-preview" class="composer-preview hidden"></div>
+
+              <div class="composer-row">
+                <input id="image-input" type="file" accept="image/*" hidden />
+                <input id="voice-input" type="file" accept="audio/*" hidden />
+
+                <button id="attach-image-btn" class="icon-btn" type="button" aria-label="Attach image">📷</button>
+                <button id="voice-toggle-btn" class="icon-btn" type="button" aria-label="Record voice message">🎙️</button>
+
+                <textarea id="message-input" rows="1" placeholder="Write a message…" maxlength="4000"></textarea>
+
+                <button id="send-btn" class="primary-btn send-btn" type="submit">Send</button>
+              </div>
+
+              <div id="voice-panel" class="voice-panel hidden">
+                <div class="voice-status">
+                  <span id="voice-indicator" class="pulse-dot"></span>
+                  <span id="voice-text">Ready to record</span>
+                </div>
+                <audio id="voice-preview" controls class="voice-preview hidden"></audio>
+                <div class="voice-actions">
+                  <button id="record-start-btn" class="secondary-btn" type="button">Start</button>
+                  <button id="record-stop-btn" class="secondary-btn" type="button" disabled>Stop</button>
+                  <button id="record-send-btn" class="primary-btn" type="button" disabled>Send voice note</button>
+                  <button id="record-discard-btn" class="ghost-btn" type="button" disabled>Discard</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </main>
+
+        <aside class="profile-rail desktop-only">
+          <div class="profile-card">
+            <img id="profile-rail-avatar" alt="" class="profile-rail-avatar" />
+            <h3 id="profile-rail-name">Your profile</h3>
+            <p id="profile-rail-username">@username</p>
+            <button id="edit-profile-btn" class="primary-btn" type="button">Edit profile</button>
+          </div>
+          <div class="hint-card">
+            <h4>Tips</h4>
+            <p>Use the search bar to find people by display name or username. Attach images or record a voice note from the composer.</p>
+          </div>
+        </aside>
+      </div>
+
+      <nav class="mobile-nav" aria-label="Mobile navigation">
+        <button id="mobile-nav-chats" type="button" class="mobile-nav-btn active">Chats</button>
+        <button id="mobile-nav-new" type="button" class="mobile-nav-btn">New</button>
+        <button id="mobile-nav-profile" type="button" class="mobile-nav-btn">Profile</button>
+      </nav>
+    </section>
+
+    <div id="modal-layer" class="modal-layer hidden" aria-hidden="true">
+      <div id="modal-backdrop" class="modal-backdrop"></div>
+      <div id="modal-card" class="modal-card" role="dialog" aria-modal="true"></div>
+    </div>
+
+    <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
