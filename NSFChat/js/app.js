@@ -7,8 +7,8 @@
 // ════════════════════════════════════════════════════════════
 // 1. CONFIG & SUPABASE INIT
 // ════════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://hzrxjaxrmpnfwksdhakf.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6cnhqYXhybXBuZndrc2RoYWtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTIzOTUsImV4cCI6MjA5MTk4ODM5NX0.Di0nZVHkXWl8Y5wH4XzB5INuZsCApRLy2FW04TVo4DM';
+const SUPABASE_URL  = 'https://vfarxizjxvzqvyxefcvx.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmYXJ4aXpqeHZ6cXZ5eGVmY3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MjA1MDgsImV4cCI6MjA5MTk5NjUwOH0.ddVlrRdLJY035xGECHHVtytpJmzj7cOYdZaWWaSb8Zo';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ════════════════════════════════════════════════════════════
