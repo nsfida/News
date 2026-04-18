@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="NSFChat — Modern real-time messaging">
-  <meta name="theme-color" content="#f4f7ff">
+  <meta name="description" content="NSFChat — modern real-time messaging">
+  <meta name="theme-color" content="#f4f7fb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>NSFChat</title>
@@ -13,19 +13,23 @@
 </head>
 <body>
   <div id="loading-screen">
-    <div class="loading-logo-wrap">
-      <img src="assets/logo.svg" alt="NSFChat">
-      <span class="loading-wordmark">NSFChat</span>
+    <div class="loading-card">
+      <div class="loading-logo-wrap">
+        <img src="assets/logo.svg" alt="NSFChat">
+        <span class="loading-wordmark">NSFChat</span>
+      </div>
+      <div class="spinner"></div>
     </div>
-    <div class="spinner"></div>
   </div>
 
   <div id="auth-screen" class="hidden"></div>
   <div id="profile-setup-screen" class="hidden"></div>
+
   <div id="app-screen" class="hidden">
     <div id="sidebar"></div>
     <div id="main-content"></div>
   </div>
+
   <div id="toast-container"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
