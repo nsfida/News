@@ -100,7 +100,10 @@
       box-shadow: 0 12px 40px var(--glow), 0 4px 12px rgba(0,0,0,0.4);
     }
 
-    .brand-mark svg { width: 36px; height: 36px; }
+    .brand-mark svg {
+      width: 36px;
+      height: 36px;
+    }
 
     .brand-title {
       font-size: 30px;
@@ -835,7 +838,9 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    ::-webkit-scrollbar { width: 0; }
+    ::-webkit-scrollbar {
+      width: 0;
+    }
 
     @media (max-width: 480px) {
       .auth-wrap, .home-hero, .search-top, .home-body, .search-results, #incoming-screen, #incall-screen {
@@ -1046,7 +1051,7 @@
 
 <script>
 const SB_URL = 'https://sryiaybsgyavmepvwvkk.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyeWlheWJzZ3lhdm1lcHZ3dmtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0OTU4ODMsImV4cCI6MjA5MjA3MTg4M30.MSbw_f31A-mD0BfRgV43UDihKVniscIk2BkBJgtgucE';
+const SB_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
 
 const sb = window.supabase.createClient(SB_URL, SB_KEY, {
   auth: {
@@ -1309,7 +1314,7 @@ async function doSignup() {
       await enterApp(data.user, u);
       toast('Account created');
     } else {
-      setErr('Account created. If Confirm email is still on, sign in will stay blocked until verification.');
+      setErr('Account created. If Confirm email is still on, sign in will wait for verification.');
       toast('Account created');
       switchTab('login');
       document.getElementById('l-user').value = u;
@@ -1344,7 +1349,7 @@ async function doLogin() {
     if (error) throw error;
 
     const username = await loadProfile(data.user, u);
-    await ensureProfileRow(data.user, username);
+    await ensureOwnProfile(data.user, username);
 
     load(false);
     authBusy = false;
@@ -1372,6 +1377,20 @@ async function loadProfile(user, fallbackUsername = '') {
     await new Promise(r => setTimeout(r, 250));
   }
   return normalizeUsername(fallbackUsername || user.email?.split('@')[0] || 'user');
+}
+
+async function ensureOwnProfile(user, username) {
+  const payload = {
+    id: user.id,
+    username: normalizeUsername(username || user.email?.split('@')[0] || 'user'),
+    display_name: normalizeUsername(username || user.email?.split('@')[0] || 'user'),
+    is_online: true,
+    last_seen: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await sb.from('profiles').upsert(payload, { onConflict: 'id' });
+  if (error) throw error;
 }
 
 async function enterApp(user, username) {
@@ -1908,9 +1927,7 @@ async function boot() {
 }
 
 window.addEventListener('beforeunload', () => {
-  if (me) {
-    setOnlineState(false);
-  }
+  if (me) setOnlineState(false);
 });
 
 boot();
