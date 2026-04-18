@@ -1,0 +1,80 @@
+<!doctype html>
+            <button class="btn primary" id="searchBtn">Search</button>
+            <button class="btn secondary" id="clearSearchBtn">Clear</button>
+          </div>
+
+          <div class="result-box hidden" id="searchResultBox">
+            <div>
+              <p class="result-title" id="resultUsername">@username</p>
+              <p class="result-subtitle" id="resultMeta">Ready to call</p>
+            </div>
+            <button class="btn success" id="callBtn">Call</button>
+          </div>
+        </section>
+
+        <section class="card hidden" id="incomingCard">
+          <div class="card-head">
+            <div>
+              <h2>Incoming call</h2>
+              <p id="incomingText">Someone is calling you.</p>
+            </div>
+            <span class="pill amber">Ringing</span>
+          </div>
+          <div class="button-grid">
+            <button class="btn danger" id="rejectBtn">Reject</button>
+            <button class="btn success" id="acceptBtn">Accept</button>
+          </div>
+        </section>
+
+        <section class="card hidden" id="callCard">
+          <div class="card-head">
+            <div>
+              <h2 id="callTitle">Live call</h2>
+              <p id="callSubtitle">Not connected</p>
+            </div>
+            <span class="pill" id="callStatePill">Idle</span>
+          </div>
+
+          <div class="video-grid">
+            <div class="video-box">
+              <span class="video-label">You</span>
+              <video id="localVideo" autoplay playsinline muted></video>
+            </div>
+            <div class="video-box">
+              <span class="video-label">Peer</span>
+              <video id="remoteVideo" autoplay playsinline></video>
+            </div>
+          </div>
+
+          <div class="button-grid two-actions">
+            <button class="btn secondary" id="micBtn">Mute mic</button>
+            <button class="btn danger" id="endCallBtn">End call</button>
+          </div>
+        </section>
+
+        <section class="card hidden" id="usersCard">
+          <div class="card-head">
+            <div>
+              <h2>Registered users</h2>
+              <p>Quick directory from your profiles table.</p>
+            </div>
+            <button class="text-btn" id="refreshUsersBtn">Refresh</button>
+          </div>
+          <div class="list" id="usersList"></div>
+        </section>
+
+        <section class="card hidden" id="callsCard">
+          <div class="card-head">
+            <div>
+              <h2>Recent calls</h2>
+              <p>Your latest activity.</p>
+            </div>
+          </div>
+          <div class="list" id="callsList"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
