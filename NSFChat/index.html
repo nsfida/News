@@ -3,36 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="NSFChat — modern real-time messaging">
+  <meta name="description" content="NSFChat — a modern real-time messaging platform with direct chats, groups, status updates, media sharing, and privacy controls.">
   <meta name="theme-color" content="#f4f7fb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="color-scheme" content="light">
+
   <title>NSFChat</title>
+
+  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="apple-touch-icon" href="assets/logo.svg">
+
+  <!-- Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="loading-screen">
+  <noscript>
+    <div style="padding:24px;font-family:system-ui,sans-serif;max-width:720px;margin:24px auto;color:#0f172a;line-height:1.6">
+      <h1 style="margin-bottom:12px">NSFChat requires JavaScript</h1>
+      <p>This app uses JavaScript for login, messaging, realtime updates, media uploads, group chat, and profile settings.</p>
+      <p>Please enable JavaScript and reload the page.</p>
+    </div>
+  </noscript>
+
+  <!-- Loading screen shown while session is restored and app is booting -->
+  <div id="loading-screen" aria-live="polite" aria-busy="true">
     <div class="loading-card">
       <div class="loading-logo-wrap">
-        <img src="assets/logo.svg" alt="NSFChat">
+        <img src="assets/logo.svg" alt="NSFChat logo">
         <span class="loading-wordmark">NSFChat</span>
       </div>
-      <div class="spinner"></div>
+      <div class="spinner" aria-hidden="true"></div>
     </div>
   </div>
 
-  <div id="auth-screen" class="hidden"></div>
-  <div id="profile-setup-screen" class="hidden"></div>
+  <!-- Authentication screen rendered by js/app.js -->
+  <section id="auth-screen" class="hidden" aria-label="Authentication"></section>
 
-  <div id="app-screen" class="hidden">
-    <div id="sidebar"></div>
-    <div id="main-content"></div>
-  </div>
+  <!-- Profile setup screen rendered by js/app.js -->
+  <section id="profile-setup-screen" class="hidden" aria-label="Profile setup"></section>
 
-  <div id="toast-container"></div>
+  <!-- Main application screen -->
+  <main id="app-screen" class="hidden" aria-label="NSFChat application">
+    <aside id="sidebar" aria-label="Conversations sidebar"></aside>
+    <section id="main-content" aria-label="Conversation area"></section>
+  </main>
 
+  <!-- Toast container for notifications -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Supabase client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+  <!-- App logic -->
   <script src="js/app.js"></script>
 </body>
 </html>
