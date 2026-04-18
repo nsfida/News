@@ -33,7 +33,6 @@
       --txt2: #8888aa;
       --txt3: #55556a;
       --glow: rgba(108,99,255,0.35);
-      --glow2: rgba(0,212,170,0.3);
     }
 
     html, body {
@@ -101,10 +100,7 @@
       box-shadow: 0 12px 40px var(--glow), 0 4px 12px rgba(0,0,0,0.4);
     }
 
-    .brand-mark svg {
-      width: 36px;
-      height: 36px;
-    }
+    .brand-mark svg { width: 36px; height: 36px; }
 
     .brand-title {
       font-size: 30px;
@@ -590,13 +586,8 @@
       animation: ripple 2.5s ease-out infinite;
     }
 
-    .ring-ripple:nth-child(2) {
-      animation-delay: 0.75s;
-    }
-
-    .ring-ripple:nth-child(3) {
-      animation-delay: 1.5s;
-    }
+    .ring-ripple:nth-child(2) { animation-delay: 0.75s; }
+    .ring-ripple:nth-child(3) { animation-delay: 1.5s; }
 
     @keyframes ripple {
       0% { opacity: 1; transform: scale(0.8); }
@@ -844,9 +835,7 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    ::-webkit-scrollbar {
-      width: 0;
-    }
+    ::-webkit-scrollbar { width: 0; }
 
     @media (max-width: 480px) {
       .auth-wrap, .home-hero, .search-top, .home-body, .search-results, #incoming-screen, #incall-screen {
@@ -1028,7 +1017,7 @@
     <div class="ctrl-wrap">
       <button class="ctrl-btn" id="btn-mute" onclick="toggleMute()">
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-          <path id="mic-icon" d="M13 3a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V7a4 4 0 0 1 4-4zm-7 10a7 7 0 0 0 14 0M13 20v3M10 23h6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M13 3a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V7a4 4 0 0 1 4-4zm-7 10a7 7 0 0 0 14 0M13 20v3M10 23h6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
       </button>
       <span class="ctrl-label" id="mute-label">Mute</span>
@@ -1083,16 +1072,18 @@ let inboxChannel = null;
 let callChannel = null;
 let activeCallId = null;
 let pendingCall = null;
+let pendingIce = [];
 let muted = false;
 let timerInt = null;
 let timerSec = 0;
-let searchCache = [];
-let currentSearchQuery = '';
 let authBusy = false;
-let pendingIce = [];
 let callStarted = false;
 let callTimeout = null;
-let hasBooted = false;
+let onlinePulse = null;
+let ringCtx = null;
+let ringLoop = null;
+let ringNodes = [];
+let booted = false;
 
 function normalizeUsername(value) {
   return String(value || '')
@@ -1100,6 +1091,10 @@ function normalizeUsername(value) {
     .toLowerCase()
     .replace(/\s+/g, '_')
     .replace(/[^a-z0-9_]/g, '');
+}
+
+function emailFromUsername(username) {
+  return `${normalizeUsername(username)}@voicelink.local`;
 }
 
 function initials(name) {
@@ -1176,44 +1171,217 @@ function waitForSubscribed(channel) {
   });
 }
 
-async function ensureProfileRow(user, preferredUsername) {
-  const candidate = normalizeUsername(preferredUsername || user?.user_metadata?.username || user?.email?.split('@')[0] || '');
-  if (!candidate) return;
-
+async function ensureProfileRow(user, username) {
   const payload = {
     id: user.id,
-    username: candidate,
-    display_name: candidate,
-    updated_at: new Date().toISOString()
+    username: normalizeUsername(username || user?.user_metadata?.username || user?.email?.split('@')[0] || ''),
+    display_name: normalizeUsername(username || user?.user_metadata?.display_name || user?.email?.split('@')[0] || ''),
+    updated_at: new Date().toISOString(),
+    last_seen: new Date().toISOString(),
+    is_online: true
   };
 
   const { error } = await sb.from('profiles').upsert(payload, { onConflict: 'id' });
   if (error) throw error;
 }
 
-async function loadProfile(user, preferredUsername = '') {
-  const retries = 3;
-  let lastErr = null;
+async function setOnlineState(isOnline) {
+  if (!me) return;
+  const { error } = await sb
+    .from('profiles')
+    .update({
+      is_online: isOnline,
+      last_seen: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', me.id);
+  if (error) console.warn(error);
+}
 
-  for (let i = 0; i < retries; i++) {
-    const { data, error } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
-    if (data?.username) return data.username;
-    lastErr = error || null;
-    await new Promise(r => setTimeout(r, 250));
+function startOnlinePulse() {
+  stopOnlinePulse();
+  onlinePulse = setInterval(() => {
+    setOnlineState(true);
+  }, 45000);
+}
+
+function stopOnlinePulse() {
+  if (onlinePulse) {
+    clearInterval(onlinePulse);
+    onlinePulse = null;
+  }
+}
+
+function renderSearchResults(users) {
+  const box = document.getElementById('search-results');
+  box.innerHTML = '';
+
+  if (!users.length) {
+    box.innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <circle cx="22" cy="22" r="14" stroke="white" stroke-width="2"/>
+          <path d="M32 32l8 8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <p>No users found</p>
+      </div>
+    `;
+    return;
   }
 
-  if (preferredUsername) {
-    try {
-      await ensureProfileRow(user, preferredUsername);
-      const { data } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
-      if (data?.username) return data.username;
-    } catch (e) {
-      lastErr = e;
+  users.forEach(u => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    const av = document.createElement('div');
+    av.className = 'av-sm';
+    av.textContent = initials(u.username);
+
+    const info = document.createElement('div');
+    info.className = 'result-info';
+
+    const name = document.createElement('h4');
+    name.textContent = u.username;
+
+    const meta = document.createElement('p');
+    meta.textContent = u.is_online ? 'Online now' : 'Offline';
+
+    info.appendChild(name);
+    info.appendChild(meta);
+
+    const btn = document.createElement('button');
+    btn.className = 'call-now-btn';
+    btn.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H7a1 1 0 0 1 .99.88l.26 2a1 1 0 0 1-.68 1.05l-.41.14A8 8 0 0 0 11.93 12.84l.14-.41a1 1 0 0 1 1.05-.68l2 .26a1 1 0 0 1 .88.99v2.5a1.5 1.5 0 0 1-1.5 1.5A12.5 12.5 0 0 1 3 5.5z" fill="white"/>
+      </svg>
+    `;
+    btn.onclick = () => startCall(u.id, u.username);
+
+    card.appendChild(av);
+    card.appendChild(info);
+    card.appendChild(btn);
+    box.appendChild(card);
+  });
+}
+
+async function doSignup() {
+  if (authBusy) return;
+
+  const u = normalizeUsername(document.getElementById('s-user').value);
+  const p = document.getElementById('s-pass').value;
+  const c = document.getElementById('s-conf').value;
+
+  if (!u || !p || !c) return setErr('Please fill all fields.');
+  if (u.length < 3) return setErr('Username must be at least 3 characters.');
+  if (!/^[a-z0-9_]+$/.test(u)) return setErr('Only letters, numbers and underscores are allowed.');
+  if (p.length < 6) return setErr('Password must be at least 6 characters.');
+  if (p !== c) return setErr('Passwords do not match.');
+
+  authBusy = true;
+  setErr('');
+  load(true, 'Creating account…');
+
+  try {
+    const email = emailFromUsername(u);
+
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password: p,
+      options: {
+        data: {
+          username: u,
+          display_name: u
+        }
+      }
+    });
+
+    if (error) throw error;
+
+    if (data?.user) {
+      await ensureProfileRow(data.user, u);
+    }
+
+    load(false);
+    authBusy = false;
+
+    if (data?.session) {
+      await enterApp(data.user, u);
+      toast('Account created');
+    } else {
+      setErr('Account created. If Confirm email is still on, sign in will stay blocked until verification.');
+      toast('Account created');
+      switchTab('login');
+      document.getElementById('l-user').value = u;
+      document.getElementById('l-pass').value = '';
+    }
+  } catch (err) {
+    load(false);
+    authBusy = false;
+    setErr(err.message || 'Signup failed.');
+  }
+}
+
+async function doLogin() {
+  if (authBusy) return;
+
+  const u = normalizeUsername(document.getElementById('l-user').value);
+  const p = document.getElementById('l-pass').value;
+
+  if (!u || !p) return setErr('Please fill all fields.');
+
+  authBusy = true;
+  setErr('');
+  load(true, 'Signing in…');
+
+  try {
+    const email = emailFromUsername(u);
+    const { data, error } = await sb.auth.signInWithPassword({
+      email,
+      password: p
+    });
+
+    if (error) throw error;
+
+    const username = await loadProfile(data.user, u);
+    await ensureProfileRow(data.user, username);
+
+    load(false);
+    authBusy = false;
+    await enterApp(data.user, username);
+  } catch (err) {
+    load(false);
+    authBusy = false;
+
+    const msg = String(err?.message || 'Invalid credentials.');
+    if (msg.toLowerCase().includes('email not confirmed')) {
+      setErr('Email confirmation is still enabled in Supabase.');
+    } else if (msg.toLowerCase().includes('invalid login credentials')) {
+      setErr('Invalid credentials.');
+    } else {
+      setErr(msg);
     }
   }
+}
 
-  if (lastErr) throw lastErr;
-  return normalizeUsername(preferredUsername || user.email?.split('@')[0] || 'user');
+async function loadProfile(user, fallbackUsername = '') {
+  for (let i = 0; i < 3; i++) {
+    const { data, error } = await sb.from('profiles').select('username').eq('id', user.id).maybeSingle();
+    if (data?.username) return normalizeUsername(data.username);
+    if (error) console.warn(error);
+    await new Promise(r => setTimeout(r, 250));
+  }
+  return normalizeUsername(fallbackUsername || user.email?.split('@')[0] || 'user');
+}
+
+async function enterApp(user, username) {
+  me = user;
+  myName = normalizeUsername(username || user?.user_metadata?.username || user?.email?.split('@')[0] || '');
+  setHomeHeader(myName);
+  showScreen('home-screen');
+  attachInbox();
+  await setOnlineState(true);
+  startOnlinePulse();
 }
 
 function attachInbox() {
@@ -1260,10 +1428,6 @@ function attachInbox() {
     .subscribe();
 }
 
-function attachPresence() {
-  return;
-}
-
 function flushPendingIce() {
   if (!pc || !pendingIce.length) return;
   const queue = pendingIce.slice();
@@ -1304,9 +1468,7 @@ function makePeer() {
         clearTimeout(callTimeout);
         callTimeout = null;
       }
-      if (document.getElementById('ic-timer').textContent === 'Calling…') {
-        document.getElementById('ic-timer').textContent = '00:00';
-      }
+      document.getElementById('ic-timer').textContent = '00:00';
     }
 
     if (state === 'failed' || state === 'disconnected' || state === 'closed') {
@@ -1328,248 +1490,31 @@ async function getMic() {
   }
 }
 
-function renderSearchResults(users) {
-  const box = document.getElementById('search-results');
-  box.innerHTML = '';
-
-  if (!users.length) {
-    box.innerHTML = `
-      <div class="empty-state">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-          <circle cx="22" cy="22" r="14" stroke="white" stroke-width="2"/>
-          <path d="M32 32l8 8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
-        <p>No users found</p>
-      </div>
-    `;
-    return;
-  }
-
-  users.forEach(u => {
-    const card = document.createElement('div');
-    card.className = 'result-card';
-
-    const av = document.createElement('div');
-    av.className = 'av-sm';
-    av.textContent = initials(u.username);
-
-    const info = document.createElement('div');
-    info.className = 'result-info';
-
-    const name = document.createElement('h4');
-    name.textContent = u.username;
-
-    const meta = document.createElement('p');
-    meta.textContent = 'Tap to call';
-
-    info.appendChild(name);
-    info.appendChild(meta);
-
-    const btn = document.createElement('button');
-    btn.className = 'call-now-btn';
-    btn.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H7a1 1 0 0 1 .99.88l.26 2a1 1 0 0 1-.68 1.05l-.41.14A8 8 0 0 0 11.93 12.84l.14-.41a1 1 0 0 1 1.05-.68l2 .26a1 1 0 0 1 .88.99v2.5a1.5 1.5 0 0 1-1.5 1.5A12.5 12.5 0 0 1 3 5.5z" fill="white"/>
-      </svg>
-    `;
-    btn.onclick = () => startCall(u.id, u.username);
-
-    card.appendChild(av);
-    card.appendChild(info);
-    card.appendChild(btn);
-    box.appendChild(card);
-  });
-}
-
-async function doSignup() {
-  if (authBusy) return;
-
-  const u = normalizeUsername(document.getElementById('s-user').value);
-  const p = document.getElementById('s-pass').value;
-  const c = document.getElementById('s-conf').value;
-
-  if (!u || !p || !c) {
-    setErr('Please fill all fields.');
-    return;
-  }
-
-  if (u.length < 3) {
-    setErr('Username must be at least 3 characters.');
-    return;
-  }
-
-  if (!/^[a-z0-9_]+$/.test(u)) {
-    setErr('Only letters, numbers and underscores are allowed.');
-    return;
-  }
-
-  if (p.length < 6) {
-    setErr('Password must be at least 6 characters.');
-    return;
-  }
-
-  if (p !== c) {
-    setErr('Passwords do not match.');
-    return;
-  }
-
-  authBusy = true;
-  setErr('');
-  load(true, 'Creating account…');
-
-  try {
-    const email = `${u}@voicelink.local`;
-    const { data, error } = await sb.auth.signUp({
-      email,
-      password: p,
-      options: {
-        data: {
-          username: u,
-          display_name: u
-        }
-      }
-    });
-
-    if (error) throw error;
-
-    if (data?.user) {
-      try {
-        await ensureProfileRow(data.user, u);
-      } catch (profileError) {
-        console.error(profileError);
-      }
-    }
-
-    load(false);
-    authBusy = false;
-
-    if (data?.session) {
-      await enterApp(data.user, u);
-      toast('Account created');
-    } else {
-      setErr('Account created. If email confirmation is enabled, verify your email before signing in.');
-      toast('Account created');
-      switchTab('login');
-      document.getElementById('l-user').value = u;
-      document.getElementById('l-pass').value = '';
-    }
-  } catch (err) {
-    load(false);
-    authBusy = false;
-    setErr(err.message || 'Signup failed.');
-  }
-}
-
-async function doLogin() {
-  if (authBusy) return;
-
-  const u = normalizeUsername(document.getElementById('l-user').value);
-  const p = document.getElementById('l-pass').value;
-
-  if (!u || !p) {
-    setErr('Please fill all fields.');
-    return;
-  }
-
-  authBusy = true;
-  setErr('');
-  load(true, 'Signing in…');
-
-  try {
-    const email = `${u}@voicelink.local`;
-    const { data, error } = await sb.auth.signInWithPassword({
-      email,
-      password: p
-    });
-
-    if (error) throw error;
-
-    const username = await loadProfile(data.user, u);
-    await ensureProfileRow(data.user, username);
-
-    load(false);
-    authBusy = false;
-    await enterApp(data.user, username);
-  } catch (err) {
-    load(false);
-    authBusy = false;
-    setErr('Invalid credentials or email not verified.');
-  }
-}
-
-async function enterApp(user, username) {
-  me = user;
-  myName = normalizeUsername(username || user?.user_metadata?.username || user?.email?.split('@')[0] || '');
-  setHomeHeader(myName);
-  showScreen('home-screen');
-  attachInbox();
-  attachPresence();
-}
-
-async function doLogout() {
-  await endCurrentCall(false);
-  if (inboxChannel) {
-    await sb.removeChannel(inboxChannel);
-    inboxChannel = null;
-  }
-  await sb.auth.signOut();
-  me = null;
-  myName = '';
-  showScreen('auth-screen');
-  switchTab('login');
-  setErr('');
-  document.getElementById('search-results').innerHTML = `
-    <div class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <circle cx="22" cy="22" r="14" stroke="white" stroke-width="2"/>
-        <path d="M32 32l8 8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-      </svg>
-      <p>Search for a username to start a call</p>
-    </div>
-  `;
-}
-
 async function doSearch() {
   if (!me) return;
   const q = normalizeUsername(document.getElementById('search-in').value);
   const box = document.getElementById('search-results');
 
-  currentSearchQuery = q;
-
   if (!q) {
-    box.innerHTML = `
-      <div class="empty-state">
-        <p>Type a username first</p>
-      </div>
-    `;
+    box.innerHTML = `<div class="empty-state"><p>Type a username first</p></div>`;
     return;
   }
 
-  box.innerHTML = `
-    <div class="empty-state">
-      <p>Searching…</p>
-    </div>
-  `;
+  box.innerHTML = `<div class="empty-state"><p>Searching…</p></div>`;
 
   try {
     const { data, error } = await sb
       .from('profiles')
-      .select('id, username')
+      .select('id, username, is_online')
       .ilike('username', `%${q}%`)
       .neq('id', me.id)
       .order('username', { ascending: true })
       .limit(15);
 
     if (error) throw error;
-
-    searchCache = data || [];
-    renderSearchResults(searchCache);
+    renderSearchResults(data || []);
   } catch (err) {
-    box.innerHTML = `
-      <div class="empty-state">
-        <p>Search failed</p>
-      </div>
-    `;
+    box.innerHTML = `<div class="empty-state"><p>Search failed</p></div>`;
   }
 }
 
@@ -1630,7 +1575,7 @@ async function startCall(targetId, targetName) {
     const inbox = sb.channel(`user:${targetId}`, { config: { broadcast: { self: false } } });
     await waitForSubscribed(inbox);
 
-    const sent = await inbox.send({
+    const result = await inbox.send({
       type: 'broadcast',
       event: 'call_offer',
       payload: {
@@ -1643,21 +1588,19 @@ async function startCall(targetId, targetName) {
 
     await sb.removeChannel(inbox);
 
-    if (!sent?.error) {
-      setCallHeader(targetName);
-      document.getElementById('ic-timer').textContent = 'Calling…';
-      showScreen('incall-screen');
-      load(false);
+    if (result?.error) throw result.error;
 
-      callTimeout = setTimeout(async () => {
-        if (!callStarted) {
-          toast('No answer');
-          await doEndCall();
-        }
-      }, 45000);
-    } else {
-      throw new Error('Offer could not be delivered.');
-    }
+    setCallHeader(targetName);
+    document.getElementById('ic-timer').textContent = 'Calling…';
+    showScreen('incall-screen');
+    load(false);
+
+    callTimeout = setTimeout(async () => {
+      if (!callStarted) {
+        toast('No answer');
+        await doEndCall();
+      }
+    }, 45000);
   } catch (err) {
     load(false);
     toast('Could not start call');
@@ -1700,6 +1643,7 @@ async function replyBusy(callId) {
 
 async function acceptCall() {
   if (!pendingCall) return;
+
   stopRing();
   load(true, 'Connecting…');
 
@@ -1752,8 +1696,8 @@ async function acceptCall() {
   } catch (err) {
     load(false);
     pendingCall = null;
-    showScreen('home-screen');
     endCurrentCall(false);
+    showScreen('home-screen');
     toast('Unable to accept the call');
   }
 }
@@ -1834,9 +1778,7 @@ async function endCurrentCall(sendHangup = false) {
 
 function toggleMute() {
   muted = !muted;
-  if (localStream) {
-    localStream.getAudioTracks().forEach(t => t.enabled = !muted);
-  }
+  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !muted);
   document.getElementById('btn-mute').classList.toggle('on', muted);
   document.getElementById('mute-label').textContent = muted ? 'Unmute' : 'Mute';
   toast(muted ? 'Muted' : 'Unmuted');
@@ -1858,10 +1800,6 @@ function startTimer() {
     document.getElementById('ic-timer').textContent = `${m}:${s}`;
   }, 1000);
 }
-
-let ringCtx = null;
-let ringLoop = null;
-let ringNodes = [];
 
 function playRing() {
   try {
@@ -1908,23 +1846,41 @@ function stopRing() {
   }
 }
 
+async function doLogout() {
+  await endCurrentCall(false);
+  stopOnlinePulse();
+  await setOnlineState(false);
+  if (inboxChannel) {
+    await sb.removeChannel(inboxChannel);
+    inboxChannel = null;
+  }
+  await sb.auth.signOut();
+  me = null;
+  myName = '';
+  showScreen('auth-screen');
+  switchTab('login');
+  setErr('');
+  document.getElementById('search-results').innerHTML = `
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <circle cx="22" cy="22" r="14" stroke="white" stroke-width="2"/>
+        <path d="M32 32l8 8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <p>Search for a username to start a call</p>
+    </div>
+  `;
+}
+
 async function boot() {
-  if (hasBooted) return;
-  hasBooted = true;
+  if (booted) return;
+  booted = true;
+
   load(true, 'Loading…');
 
   sb.auth.onAuthStateChange(async (_event, session) => {
-    if (session?.user && !me) {
-      try {
-        const username = await loadProfile(session.user);
-        await enterApp(session.user, username);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
     if (!session?.user && me) {
       await endCurrentCall(false);
+      stopOnlinePulse();
       if (inboxChannel) {
         try { await sb.removeChannel(inboxChannel); } catch (e) {}
         inboxChannel = null;
@@ -1950,6 +1906,12 @@ async function boot() {
 
   load(false);
 }
+
+window.addEventListener('beforeunload', () => {
+  if (me) {
+    setOnlineState(false);
+  }
+});
 
 boot();
 </script>
