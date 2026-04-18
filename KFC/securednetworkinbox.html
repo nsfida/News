@@ -422,7 +422,6 @@ body.loaded *{opacity:1;transform:translateY(0);}
 .sidebar{transition-delay:.2s;}
 .messages-app{transition-delay:.3s;}
 .footer{transition-delay:.5s;}
-/* Disable page animation for dynamically inserted content */
 .msg-row,.contact-item,.date-divider{opacity:1 !important;transform:none !important;}
 
 /* ── RESPONSIVE ── */
@@ -432,13 +431,8 @@ body.loaded *{opacity:1;transform:translateY(0);}
 @media(max-width:768px){
   .dashboard-container{flex-direction:column;}
   .sidebar{
-    width:100%;flex-direction:row;overflow-x:auto;padding:8px 12px;
-    height:auto;flex-shrink:0;
+    display:none !important;
   }
-  .sidebar-header{display:none;}
-  .sidebar-nav{flex-direction:row;gap:6px;}
-  .sidebar-nav a{flex-shrink:0;white-space:nowrap;padding:7px 12px;font-size:12px;border-radius:15px;}
-  .sidebar-app-links{min-width:240px;margin-top:0;}
   .messages-app{padding:8px;gap:0;}
   .contacts-panel{
     position:absolute;inset:0;z-index:10;border-radius:0;
@@ -461,14 +455,12 @@ body.loaded *{opacity:1;transform:translateY(0);}
 </head>
 <body>
 
-<!-- Floating Circles -->
 <div class="floating-circles" aria-hidden="true">
   <div class="circle"></div><div class="circle"></div><div class="circle"></div>
   <div class="circle"></div><div class="circle"></div><div class="circle"></div>
   <div class="circle"></div><div class="circle"></div><div class="circle"></div>
 </div>
 
-<!-- Header -->
 <header class="top-header">
   <div class="logo-area">
     <a href="https://livenews.live/KFC" aria-label="Go to KFC home page">
@@ -498,12 +490,10 @@ body.loaded *{opacity:1;transform:translateY(0);}
   </div>
 </header>
 
-<!-- Info Banner -->
 <div id="infoBanner" class="info-banner">
   <div class="marquee">💬 Member-to-Member Messages — Log in to send and receive private messages with other KFC UAE members securely.</div>
 </div>
 
-<!-- User Dropdown -->
 <div id="userDropdown" class="user-dropdown glass">
   <div id="guestView">
     <h3>Welcome Guest</h3>
@@ -526,7 +516,6 @@ body.loaded *{opacity:1;transform:translateY(0);}
   </div>
 </div>
 
-<!-- Photo Overlay -->
 <div id="photoOverlay" class="overlay" aria-hidden="true">
   <div class="photo-viewer-box glass">
     <div class="leaders-header">
@@ -537,7 +526,6 @@ body.loaded *{opacity:1;transform:translateY(0);}
   </div>
 </div>
 
-<!-- Login Overlay -->
 <div id="loginOverlay" class="login-overlay" aria-hidden="true">
   <div class="login-box glass">
     <h2><i class="fa-solid fa-user-lock"></i> Secure Login</h2>
@@ -548,12 +536,10 @@ body.loaded *{opacity:1;transform:translateY(0);}
   </div>
 </div>
 
-<!-- Welcome Popup -->
 <div id="welcomePopup" class="welcome-popup" aria-live="polite">
   <p id="welcomeText"></p>
 </div>
 
-<!-- Leaders Overlay -->
 <div id="leadersOverlay" class="overlay" aria-hidden="true">
   <div class="leaders-box glass">
     <div class="leaders-header">
@@ -564,16 +550,13 @@ body.loaded *{opacity:1;transform:translateY(0);}
   </div>
 </div>
 
-<!-- Image Lightbox -->
 <div id="lightbox" class="lightbox">
   <button class="lightbox-close" id="lightboxClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
   <img id="lightboxImg" src="" alt="Full image">
 </div>
 
-<!-- Dashboard Container -->
 <div class="dashboard-container">
 
-  <!-- Sidebar -->
   <aside class="sidebar glass">
     <div class="sidebar-header">
       <h2>Main Menu</h2>
@@ -603,11 +586,9 @@ body.loaded *{opacity:1;transform:translateY(0);}
     </div>
   </aside>
 
-  <!-- Main Content -->
   <main class="main-content">
     <div class="messages-app" id="messagesApp">
 
-      <!-- Contacts Panel -->
       <div class="contacts-panel glass" id="contactsPanel">
         <div class="contacts-header">
           <div class="contacts-title"><i class="fa-solid fa-comments" style="font-size:16px;"></i> Members</div>
@@ -621,10 +602,8 @@ body.loaded *{opacity:1;transform:translateY(0);}
         </div>
       </div>
 
-      <!-- Chat Panel -->
       <div class="chat-panel glass" id="chatPanel">
 
-        <!-- Login Prompt -->
         <div class="login-prompt" id="loginPrompt">
           <i class="fa-solid fa-lock"></i>
           <h3>Sign In to Chat</h3>
@@ -632,14 +611,12 @@ body.loaded *{opacity:1;transform:translateY(0);}
           <button id="loginPromptBtn" type="button"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
         </div>
 
-        <!-- Empty state (logged in, no chat selected) -->
         <div class="empty-chat" id="emptyChat" style="display:none;">
           <i class="fa-solid fa-comment-dots"></i>
           <h3 style="margin-bottom:8px;">Start a Conversation</h3>
           <p>Select a member from the list to start chatting.</p>
         </div>
 
-        <!-- Chat Window -->
         <div class="chat-window" id="chatWindow" style="display:none;">
           <div class="chat-header">
             <button class="chat-header-back" id="chatBackBtn" aria-label="Back to contacts">
@@ -684,12 +661,12 @@ body.loaded *{opacity:1;transform:translateY(0);}
           <input type="file" id="photoFileInput" accept="image/*">
         </div>
 
-      </div><!-- /chat-panel -->
+      </div>
 
-    </div><!-- /messages-app -->
+    </div>
   </main>
 
-</div><!-- /dashboard-container -->
+</div>
 
 <footer class="footer">
   <p>© 2026 Khawrai Falahi Committee United Arab Emirates | All Rights Reserved</p>
@@ -711,6 +688,16 @@ const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
 const THEME_KEY   = 'kfcTheme';
 const LANG_KEY    = 'kfcPageLanguage';
+
+const PRIVILEGED_CARDS = new Set([
+  '746-210-011',
+  '746-210-001',
+  '746-210-040',
+  '746-210-006',
+  '746-210-008',
+  '746-210-007',
+  '746-210-021'
+]);
 
 /* ═══════════════════════════════════════════
    STATE
@@ -763,15 +750,26 @@ function generateUsername(name){ const p=normalizeText(name).toLowerCase().split
 function generatePassword(card){ if(!card) return ''; const p=String(card).split('-'); return p[p.length-1]||''; }
 function isCancelled(s){ const v=(s||'').toString().trim().toLowerCase(); return v==='cancel'||v==='cancelled'; }
 
+function canViewFullIdentity(){
+  return !!currentUser && PRIVILEGED_CARDS.has(normalizeText(currentUser.CNo));
+}
+
+function displayNameForUser(user){
+  const full = normalizeText(user?.name);
+  if(!full) return '';
+  if(canViewFullIdentity()) return full;
+  return full.split(/\s+/).filter(Boolean)[0] || 'User';
+}
+
+function displayCardForUser(card){
+  const s = normalizeText(card);
+  if(!s) return '***-***-***';
+  if(canViewFullIdentity()) return s;
+  return '***-***-***';
+}
+
 function maskCard(card){
-  const s = String(card||'');
-  if(!s) return '***';
-  const parts = s.split('-');
-  if(parts.length>=3){
-    return parts[0]+'-***-'+parts[parts.length-1];
-  }
-  if(s.length>6) return s.substring(0,3)+'***'+s.slice(-3);
-  return s.substring(0,2)+'***';
+  return displayCardForUser(card);
 }
 
 function getInitial(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
@@ -878,18 +876,18 @@ function showLoggedOutUI(){
   if(els.guestView) els.guestView.style.display='block';
   if(els.userView) els.userView.style.display='none';
   if(els.username) els.username.innerText='Welcome, Guest';
-  // Show login prompt in chat area
   if(els.loginPrompt){ els.loginPrompt.style.display='flex'; }
   if(els.emptyChat){ els.emptyChat.style.display='none'; }
   if(els.chatWindow){ els.chatWindow.style.display='none'; }
+  if(els.contactsList) els.contactsList.innerHTML='';
 }
 
 function renderUserToUI(user){
   if(!user) return;
-  const first = normalizeText(user.name).split(' ')[0]||'User';
-  if(els.username) els.username.innerText=`Welcome, ${first}`;
-  if(els.userFullName) els.userFullName.innerText=`Welcome, ${user.name}`;
-  if(els.userCard) els.userCard.innerText=`Card: ${maskCard(user.CNo)}`;
+  const visibleName = displayNameForUser(user);
+  if(els.username) els.username.innerText=`Welcome, ${visibleName || 'User'}`;
+  if(els.userFullName) els.userFullName.innerText=`Welcome, ${visibleName || 'User'}`;
+  if(els.userCard) els.userCard.innerText=`Card: ${user.CNo || 'N/A'}`;
   if(els.userDesg) els.userDesg.innerText=`Designation: ${user.Desg}`;
   if(els.userBlood) els.userBlood.innerText=`Blood Group: ${user.BG||'N/A'}`;
   if(els.userMobile) els.userMobile.innerText=`Mobile: ${user.mobile||'N/A'}`;
@@ -901,7 +899,6 @@ function renderUserToUI(user){
   if(els.userView){ els.userView.style.display='flex'; }
   const vcBtn = $('viewCardBtn');
   if(vcBtn) vcBtn.href=`viewcard.html?card=${btoa(String(user.CNo))}`;
-  // Show empty chat state when logged in
   if(els.loginPrompt){ els.loginPrompt.style.display='none'; }
   if(els.emptyChat){ els.emptyChat.style.display='flex'; }
   if(els.chatWindow){ els.chatWindow.style.display='none'; }
@@ -926,7 +923,7 @@ function doLogin(){
   if(!user){ if(els.loginError) els.loginError.innerText='Invalid credentials'; return; }
   if(isCancelled(user.Status)){ if(els.loginError) els.loginError.innerText='This account is cancelled'; return; }
   currentUser=user; saveSession(user); renderUserToUI(user);
-  showWelcome(user.name);
+  showWelcome(displayNameForUser(user));
   if(els.loginOverlay) els.loginOverlay.classList.remove('show');
   renderContacts();
   subscribeRealtime();
@@ -964,7 +961,6 @@ async function loadUnreadCounts(){
 async function loadLastMessages(){
   if(!currentUser) return;
   try{
-    // Get latest message per conversation
     const {data} = await sb.from('kfc_messages')
       .select('sender_card,receiver_card,message_type,content,created_at')
       .or(`sender_card.eq.${currentUser.CNo},receiver_card.eq.${currentUser.CNo}`)
@@ -984,6 +980,12 @@ async function loadLastMessages(){
 
 function renderContacts(filter=''){
   if(!els.contactsList) return;
+
+  if(!currentUser){
+    els.contactsList.innerHTML='';
+    return;
+  }
+
   const fl = filter.trim().toLowerCase();
   const others = allUsers.filter(u=>{
     if(currentUser&&normalizeText(u.CNo)===normalizeText(currentUser.CNo)) return false;
@@ -992,7 +994,6 @@ function renderContacts(filter=''){
     return true;
   });
 
-  // Sort: contacts with last messages first (by recency), then others alphabetically
   others.sort((a,b)=>{
     const la = lastMessages[a.CNo], lb = lastMessages[b.CNo];
     if(la&&lb) return new Date(lb.time)-new Date(la.time);
@@ -1014,16 +1015,16 @@ function renderContacts(filter=''){
 
     const unread = unreadCounts[u.CNo]||0;
     const last   = lastMessages[u.CNo];
-    const initial= getInitial(u.name);
+    const initial= getInitial(displayNameForUser(u));
     const src    = photoSrc(u.CNo);
 
     div.innerHTML=`
       <div class="contact-avatar">
-        <img src="${esc(src)}" alt="${esc(u.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <img src="${esc(src)}" alt="${esc(displayNameForUser(u))}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="avatar-placeholder" style="display:none;">${esc(initial)}</div>
       </div>
       <div class="contact-info">
-        <div class="contact-name">${esc(u.name)}</div>
+        <div class="contact-name">${esc(displayNameForUser(u))}</div>
         <div class="contact-desg">${esc(u.Desg||'')}</div>
         <div class="contact-preview">${esc(last?.preview||'Start a conversation')}</div>
       </div>
@@ -1044,12 +1045,10 @@ async function openChat(contact){
   if(!currentUser) return;
   activeContact=contact;
 
-  // Mobile: hide contacts, show chat
   if(window.innerWidth<=768){
     els.contactsPanel.classList.add('slide-out');
   }
 
-  // Update header
   const src=photoSrc(contact.CNo);
   if(els.chatHeaderImg){
     els.chatHeaderImg.src=src;
@@ -1057,7 +1056,7 @@ async function openChat(contact){
       els.chatHeaderImg.style.display='none';
       if(els.chatHeaderPlaceholder){
         els.chatHeaderPlaceholder.style.display='flex';
-        els.chatHeaderPlaceholder.textContent=getInitial(contact.name);
+        els.chatHeaderPlaceholder.textContent=getInitial(displayNameForUser(contact));
       }
     };
     els.chatHeaderImg.onload=()=>{
@@ -1065,7 +1064,7 @@ async function openChat(contact){
       if(els.chatHeaderPlaceholder) els.chatHeaderPlaceholder.style.display='none';
     };
   }
-  if(els.chatHeaderName) els.chatHeaderName.textContent=contact.name;
+  if(els.chatHeaderName) els.chatHeaderName.textContent=displayNameForUser(contact);
   if(els.chatHeaderDesg) els.chatHeaderDesg.textContent=contact.Desg||'';
   if(els.chatHeaderCard) els.chatHeaderCard.textContent=`Card: ${maskCard(contact.CNo)}`;
 
@@ -1073,12 +1072,10 @@ async function openChat(contact){
   if(els.chatWindow){ els.chatWindow.style.display='flex'; }
   if(els.chatMessages) els.chatMessages.innerHTML=`<div class="chat-loading"><div class="spinner"></div> Loading…</div>`;
 
-  // Highlight active contact
   document.querySelectorAll('.contact-item').forEach(el=>{
     el.classList.toggle('active', el.dataset.card===String(contact.CNo));
   });
 
-  // Clear unread for this contact
   unreadCounts[contact.CNo]=0;
   renderContacts(els.searchInput?.value||'');
 
@@ -1132,7 +1129,6 @@ function renderMessages(msgs){
     row.className=`msg-row ${isMine?'sent':'received'}`;
     row.dataset.id=msg.id;
 
-    // Avatar (only for received)
     if(!isMine){
       const avatarDiv=document.createElement('div');
       avatarDiv.className='msg-avatar';
@@ -1172,10 +1168,8 @@ function appendMessage(msg){
   const myCard=normalizeText(currentUser.CNo);
   const partnerCard = msg.sender_card===currentUser.CNo?msg.receiver_card:msg.sender_card;
   if(normalizeText(partnerCard)!==normalizeText(activeContact.CNo)&&normalizeText(msg.sender_card)!==myCard) return;
-  // If this is from a different contact than active, don't append
   if(normalizeText(msg.sender_card)!==myCard&&normalizeText(msg.sender_card)!==normalizeText(activeContact.CNo)) return;
 
-  // Remove empty state if present
   const empty=els.chatMessages.querySelector('.empty-chat');
   if(empty) empty.remove();
 
@@ -1308,7 +1302,6 @@ async function sendVoiceMessage(blob){
   if(!currentUser||!activeContact||!blob) return;
   try{
     if(els.sendBtn) els.sendBtn.disabled=true;
-    // Determine extension based on mime type
     const mime = blob.type||'audio/webm';
     const ext = mime.includes('ogg')?'ogg':mime.includes('mp4')?'mp4':'webm';
     const url=await uploadMedia(blob,'voice',ext);
@@ -1341,7 +1334,7 @@ function startRecordingTimer(){
     const m=Math.floor(recSeconds/60);
     const s=recSeconds%60;
     if(els.recordingTimer) els.recordingTimer.textContent=`${m}:${String(s).padStart(2,'0')}`;
-    if(recSeconds>=120) stopVoiceRecording(); // Max 2 min
+    if(recSeconds>=120) stopVoiceRecording();
   },1000);
 }
 function stopRecordingTimer(){ clearInterval(recTimerInterval); }
@@ -1350,7 +1343,6 @@ async function startVoiceRecording(){
   if(!currentUser||!activeContact){ alert('Please select a contact first.'); return; }
   try{
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    // Pick best supported mime
     const mimeTypes=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
     const mime=mimeTypes.find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'';
     mediaRecorder = mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
@@ -1400,24 +1392,18 @@ function subscribeRealtime(){
       const msg=payload.new;
       if(!msg) return;
       const myCard=normalizeText(currentUser.CNo);
-      // Message involves me
       if(normalizeText(msg.receiver_card)!==myCard&&normalizeText(msg.sender_card)!==myCard) return;
-      // Update last messages
       const partner=normalizeText(msg.sender_card)===myCard?msg.receiver_card:msg.sender_card;
       const preview=msg.message_type==='text'?(msg.content||'').substring(0,35):msg.message_type==='photo'?'📷 Photo':'🎤 Voice message';
       lastMessages[partner]={preview,time:msg.created_at};
-      // If from someone else, update unread
       if(normalizeText(msg.sender_card)!==myCard){
         if(!activeContact||normalizeText(activeContact.CNo)!==normalizeText(msg.sender_card)){
           unreadCounts[msg.sender_card]=(unreadCounts[msg.sender_card]||0)+1;
         } else {
-          // Active chat — mark read instantly
           markAsRead(msg.sender_card);
         }
       }
-      // Append to active chat if relevant
       if(activeContact&&(normalizeText(msg.sender_card)===normalizeText(activeContact.CNo)||normalizeText(msg.receiver_card)===normalizeText(activeContact.CNo))){
-        // Avoid duplicate (our own sent message already appended)
         if(normalizeText(msg.sender_card)!==myCard){
           appendMessage(msg);
         }
@@ -1494,7 +1480,7 @@ function showLeaders(){
   els.leadersList.innerHTML='';
   leaders.forEach(l=>{
     const d=document.createElement('div'); d.className='leader-item';
-    d.innerHTML=`<h4>${esc(l.name)}</h4><p>${esc(l.Desg)}</p><p style="margin-top:6px;text-align:center;font-size:13px;color:#888;"><i class="fa-solid fa-phone" style="margin-right:4px;"></i>${esc(l.mobile||'Not available')}</p>`;
+    d.innerHTML=`<h4>${esc(displayNameForUser(l))}</h4><p>${esc(l.Desg)}</p><p style="margin-top:6px;text-align:center;font-size:13px;color:#888;"><i class="fa-solid fa-phone" style="margin-right:4px;"></i>${esc(l.mobile||'Not available')}</p>`;
     els.leadersList.appendChild(d);
   });
 }
@@ -1503,20 +1489,16 @@ function showLeaders(){
    EVENT BINDING
 ═══════════════════════════════════════════ */
 function bindEvents(){
-  // Header user area dropdown
   if(els.userArea) els.userArea.addEventListener('click',e=>{
     e.stopPropagation();
     if(els.notiDropdown) els.notiDropdown.classList.remove('show');
     $('userDropdown').classList.toggle('show');
   });
 
-  // Theme toggle
   if(els.themeToggleBtn) els.themeToggleBtn.addEventListener('click',e=>{ e.stopPropagation(); toggleTheme(); });
 
-  // Translate toggle
   if(els.translateToggleBtn) els.translateToggleBtn.addEventListener('click',e=>{ e.stopPropagation(); toggleTranslation(); });
 
-  // Notification bell
   if(els.notificationBtn) els.notificationBtn.addEventListener('click',e=>{
     e.stopPropagation();
     $('userDropdown').classList.remove('show');
@@ -1524,43 +1506,34 @@ function bindEvents(){
     if(els.notiDropdown.classList.contains('show')) fetchAlerts();
   });
 
-  // Close dropdowns on outside click
   document.addEventListener('click',()=>closeAllDropdowns());
   [$('userDropdown'),els.notiDropdown].forEach(el=>{ if(el) el.addEventListener('click',e=>e.stopPropagation()); });
 
-  // Logout
   if(els.logoutBtn) els.logoutBtn.addEventListener('click',()=>{ clearSession(); currentUser=null; if(realtimeChannel) sb.removeChannel(realtimeChannel); location.reload(); });
 
-  // Open login
   if(els.openLoginBtn) els.openLoginBtn.addEventListener('click',()=>{ if(els.loginOverlay) els.loginOverlay.classList.add('show'); });
   if(els.loginPromptBtn) els.loginPromptBtn.addEventListener('click',showLoginModal);
 
-  // Login overlay
   if(els.loginOverlay) els.loginOverlay.addEventListener('click',e=>{ if(e.target===els.loginOverlay) els.loginOverlay.classList.remove('show'); });
   if(els.loginBtn) els.loginBtn.addEventListener('click',doLogin);
   document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&els.loginOverlay&&els.loginOverlay.classList.contains('show')) doLogin(); });
 
-  // Photo overlay
   if(els.viewPhotoBtn) els.viewPhotoBtn.addEventListener('click',()=>{ if(els.photoOverlay){ els.photoOverlay.classList.add('show'); $('userDropdown').classList.remove('show'); } });
   if(els.closePhotoOverlay) els.closePhotoOverlay.addEventListener('click',()=>els.photoOverlay.classList.remove('show'));
   if(els.photoOverlay) els.photoOverlay.addEventListener('click',e=>{ if(e.target===els.photoOverlay) els.photoOverlay.classList.remove('show'); });
 
-  // Leaders
   if(els.leadersOverlay&&els.closeLeaders){
     els.closeLeaders.addEventListener('click',e=>{ e.stopPropagation(); els.leadersOverlay.classList.remove('show'); });
     els.leadersOverlay.addEventListener('click',e=>{ if(e.target===els.leadersOverlay) els.leadersOverlay.classList.remove('show'); });
   }
 
-  // Search contacts
   if(els.searchInput) els.searchInput.addEventListener('input',()=>renderContacts(els.searchInput.value));
 
-  // Send text message
   if(els.sendBtn) els.sendBtn.addEventListener('click',()=>{
     if(!currentUser){ showLoginModal(); return; }
     if(els.chatTextarea&&els.chatTextarea.value.trim()) sendTextMessage();
   });
 
-  // Textarea auto-resize + enter key
   if(els.chatTextarea){
     els.chatTextarea.addEventListener('input',autoResizeTextarea);
     els.chatTextarea.addEventListener('keydown',e=>{
@@ -1572,7 +1545,6 @@ function bindEvents(){
     });
   }
 
-  // Mic button
   if(els.micBtn) els.micBtn.addEventListener('click',()=>{
     if(!currentUser){ showLoginModal(); return; }
     if(!('mediaDevices' in navigator&&'getUserMedia' in navigator.mediaDevices)){
@@ -1582,7 +1554,6 @@ function bindEvents(){
     toggleVoiceRecording();
   });
 
-  // Photo attach
   if(els.attachBtn) els.attachBtn.addEventListener('click',()=>{
     if(!currentUser){ showLoginModal(); return; }
     if(!activeContact) return;
@@ -1594,11 +1565,9 @@ function bindEvents(){
     e.target.value='';
   });
 
-  // Lightbox
   if(els.lightboxClose) els.lightboxClose.addEventListener('click',closeLightbox);
   if(els.lightbox) els.lightbox.addEventListener('click',e=>{ if(e.target===els.lightbox) closeLightbox(); });
 
-  // Back button (mobile)
   if(els.chatBackBtn) els.chatBackBtn.addEventListener('click',()=>{
     if(els.contactsPanel) els.contactsPanel.classList.remove('slide-out');
     activeContact=null;
@@ -1607,7 +1576,6 @@ function bindEvents(){
     document.querySelectorAll('.contact-item').forEach(el=>el.classList.remove('active'));
   });
 
-  // Sidebar toggle (mobile)
   const sidebarToggle=$('sidebarToggle');
   if(sidebarToggle){
     sidebarToggle.addEventListener('click',e=>{
@@ -1617,7 +1585,6 @@ function bindEvents(){
     });
   }
 
-  // Page load animation
   window.addEventListener('load',()=>document.body.classList.add('loaded'));
 }
 
