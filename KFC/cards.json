@@ -2578,5 +2578,29 @@
   "Issue": "15-Apr-2026",
   "Authority": "001",
   "Validity": "UAE VISA EXPIRY"
+},
+  {
+  "name": "Abdul Shahzad Khan Kaseer Khan",
+  "Desg": "Committee Member",
+  "CNo": "746-210-216",
+  "BG": "N/A",
+  "mobile": "+971568362014",
+  "Status": "Active",
+  "Room": "C/O Raj Zammer",
+  "Issue": "20-Apr-2026",
+  "Authority": "001",
+  "Validity": "UAE VISA EXPIRY"
+},
+  {
+  "name": "Rashid Khan Labab Kham",
+  "Desg": "Committee Member",
+  "CNo": "746-210-217",
+  "BG": "N/A",
+  "mobile": "+971543543804",
+  "Status": "Active",
+  "Room": "C/O Raj Zameer",
+  "Issue": "20-Apr-2026",
+  "Authority": "001",
+  "Validity": "UAE VISA EXPIRY"
 }
 ]
