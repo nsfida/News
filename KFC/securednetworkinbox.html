@@ -60,7 +60,92 @@ body.dark-mode .top-header{background:var(--glass-dark);border-bottom:1px solid 
 .theme-toggle-btn i,.translate-toggle-btn i{pointer-events:none;}
 .translate-toggle-btn i{font-size:17px;color:#7873f5;}
 .translate-toggle-btn.active i{color:#ff6ec4;}
+/* ============================================================
+   CONTACT PROFILE OVERLAY (FULL SCREEN BACKGROUND)
+============================================================ */
+#contactProfileOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
 
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.96); /* LIGHT MODE WHITE */
+  backdrop-filter: blur(8px);
+
+  transition: opacity 0.25s ease;
+}
+
+/* Show state */
+#contactProfileOverlay.show {
+  display: flex;
+}
+
+/* ============================================================
+   MODAL CARD
+============================================================ */
+.contact-profile-modal {
+  width: 92%;
+  max-width: 380px;
+
+  background: #ffffff;
+  color: #111;
+
+  border-radius: 20px;
+  padding: 20px 18px;
+  text-align: center;
+
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  animation: profilePop 0.25s ease;
+}
+
+/* Animation */
+@keyframes profilePop {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   PROFILE CONTENT
+============================================================ */
+.contact-profile-modal img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.contact-profile-modal h2 {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.contact-profile-modal p {
+  font-size: 13px;
+  color: #666;
+  margin: 3px 0;
+}
+
+/* ============================================================
+   DARK MODE OVERRIDE
+============================================================ */
+body.dark-mode #contactProfileOverlay {
+  background: rgba(255, 255, 255, 0.95); /* STILL WHITE */
+}
+
+body.dark-mode .contact-profile-modal {
+  background: #ffffff;   /* keep modal white */
+  color: #111;
+}
 .user-dropdown{position:fixed;top:calc(var(--header-h) + 2px);inset-inline-end:var(--safe-gap);width:min(240px,calc(100vw - 24px));padding:15px;display:none;flex-direction:column;height:auto;max-height:550px;z-index:999;}
 .user-dropdown.show{display:flex;}
 .user-dropdown h3{margin-bottom:5px;text-align:center;}
