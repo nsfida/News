@@ -479,6 +479,8 @@
     const SUPABASE_REST = `${SUPABASE_URL}/rest/v1`;
     const STORAGE_BUCKET = "kfc-gallery";
     const ADMIN_CARD = "746-210-011";
+    const COMMITTEE_NAME = "Khawrai Falahi Committee UAE";
+    const COMMITTEE_PHOTO = "https://livenews.live/KFC/logo.png";
 
     const LK = "kfcPageLanguage";
     const TK = "kfcTheme";
@@ -491,7 +493,6 @@
         .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
         .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     }
-    function safeText(v){ return norm(v); }
     function isAdmin(card){ return norm(card).replace(/\D/g,"") === ADMIN_CARD.replace(/\D/g,""); }
     function firstName(name){
       const n = norm(name).replace(/\s+/g," ");
@@ -500,9 +501,9 @@
     }
     function maskCard(card){
       const d = norm(card).replace(/\D/g,"");
-      if(!d) return "***-***-***";
-      const tail = d.slice(-3).padStart(3,"*");
-      return `***-***-${tail}`;
+      if(!d) return "***";
+      const first3 = d.slice(0, 3);
+      return `${first3}${"*".repeat(Math.max(0, d.length - 3))}`;
     }
     function shortDate(raw){
       if(!raw) return "";
@@ -523,6 +524,17 @@
     }
     function cleanAlphaNum(v){
       return norm(v).toLowerCase().replace(/[^a-z0-9]/g,"");
+    }
+    function isCommitteeIdentity(value){
+      const v = cleanAlphaNum(value);
+      return v === cleanAlphaNum(COMMITTEE_NAME) || v === "committeeuser" || v === "committee";
+    }
+    function committeeAvatarUrl(){
+      return COMMITTEE_PHOTO;
+    }
+    function displayCommitteeName(name){
+      if(isCommitteeIdentity(name) || !norm(name)) return COMMITTEE_NAME;
+      return norm(name);
     }
     function genUserName(n){
       const parts = norm(n).toLowerCase().split(/\s+/).filter(Boolean);
@@ -660,14 +672,11 @@
         headers:{Prefer:"return=representation"}
       });
     }
-    async function sbDelete(path){
-      return sbFetch(path, {method:"DELETE", headers:{Prefer:"return=representation"}});
-    }
     async function uploadToStorage(file, folder){
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       const safeFolder = norm(folder || "posts").replace(/[^a-zA-Z0-9/_-]/g,"");
       const fileName = `${safeFolder}/${Date.now()}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}.${ext}`;
-      const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${encodeURIComponent(fileName)}`,{
+      const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${fileName}`,{
         method:"POST",
         headers:{
           apikey: SUPABASE_ANON_KEY,
@@ -679,11 +688,11 @@
       });
       const txt = await res.text();
       if(!res.ok) throw new Error(txt || "Upload failed");
-      return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${encodeURIComponent(fileName)}`;
+      return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${fileName}`;
     }
     function publicAvatarForUser(user){
-      const img = avatarUrl(user.CNo);
-      return img;
+      if(user && isCommitteeIdentity(user.name)) return COMMITTEE_PHOTO;
+      return avatarUrl(user.CNo);
     }
 
     let users = [];
@@ -845,7 +854,7 @@
       if(els.userView) els.userView.style.display = "flex";
     }
     function applyPic(cardNumber){
-      const src = avatarUrl(cardNumber);
+      const src = isCommitteeIdentity(currentUser && currentUser.name) ? COMMITTEE_PHOTO : avatarUrl(cardNumber);
       if(els.headerProfileImg) els.headerProfileImg.src = src;
       if(els.dropdownProfileImg) els.dropdownProfileImg.src = src;
       if(els.fullProfileImg) els.fullProfileImg.src = src;
@@ -853,8 +862,8 @@
     function renderUser(u){
       if(!u) return;
       if(els.username) els.username.innerText = `Welcome, ${firstName(u.name)}`;
-      if(els.userFullName) els.userFullName.innerText = `Welcome, ${u.name}`;
-      if(els.userCard) els.userCard.innerText = `Card Number: ${u.CNo}`;
+      if(els.userFullName) els.userFullName.innerText = `Welcome, ${displayCommitteeName(u.name)}`;
+      if(els.userCard) els.userCard.innerText = `Card Number: ${maskCard(u.CNo)}`;
       if(els.userDesg) els.userDesg.innerText = `Designation: ${u.Desg}`;
       if(els.userBlood) els.userBlood.innerText = `Blood Group: ${u.BG || "Not available"}`;
       if(els.userMobile) els.userMobile.innerText = `Registered Mobile: ${u.mobile || "Not available"}`;
@@ -869,7 +878,7 @@
     }
     function showWelcome(name){
       if(!els.welcomePopup || !els.welcomeText) return;
-      els.welcomeText.innerText = `Welcome, ${name} 👋`;
+      els.welcomeText.innerText = `Welcome, ${displayCommitteeName(name)} 👋`;
       els.welcomePopup.classList.add("show");
       setTimeout(() => els.welcomePopup.classList.remove("show"), 2500);
       schedFix();
@@ -1041,7 +1050,7 @@
       leaders.forEach(l => {
         const d = document.createElement("div");
         d.className = "leader-item";
-        d.innerHTML = `<h4>${esc(l.name)}</h4><p>${esc(l.Desg)}</p><p class="leader-phone"><i class="fa-solid fa-phone"></i> ${esc(l.mobile || "Not available")}</p>`;
+        d.innerHTML = `<h4>${esc(displayCommitteeName(l.name))}</h4><p>${esc(l.Desg)}</p><p class="leader-phone"><i class="fa-solid fa-phone"></i> ${esc(l.mobile || "Not available")}</p>`;
         els.leadersList.appendChild(d);
       });
     }
@@ -1070,12 +1079,13 @@
     }
 
     function mapDbPost(row){
-      const post = {
+      const rawAuthor = norm(row.author_name || row.authorName || "");
+      return {
         sourceType: "db",
         postKey: row.post_key || row.id,
         id: row.id,
         ownerCard: row.owner_card || "",
-        authorName: row.author_name || "Committee User",
+        authorName: displayCommitteeName(rawAuthor || COMMITTEE_NAME),
         authorDesg: row.author_desg || "",
         authorBlood: row.author_blood || "",
         authorMobile: row.author_mobile || "",
@@ -1092,13 +1102,13 @@
         createdSort: normalizeCreated(row.created_at || row.updated_at || 0),
         raw: row
       };
-      return post;
     }
 
     function mapLegacyPost(item, idx){
       const media = parseGalleryMedia(item);
       const username = norm(item.username || item.user_name || "");
-      const author = norm(item.name || item.author || item.user_full_name || username || "Committee User");
+      const authorRaw = norm(item.name || item.author || item.user_full_name || username || COMMITTEE_NAME);
+      const author = displayCommitteeName(authorRaw);
       return {
         sourceType: "json",
         postKey: buildPostKeyForJson(item, idx),
@@ -1124,29 +1134,28 @@
     }
 
     function authorDisplayName(post){
-      if(post.sourceType === "json" && post.jsonUsername) return post.jsonUsername;
-      if(canSeeFull(post)) return post.authorName || "Committee User";
-      return firstName(post.authorName || post.jsonUsername || "Committee User");
+      const raw = norm(post.authorName || post.jsonUsername || "");
+      if(isCommitteeIdentity(raw)) return COMMITTEE_NAME;
+      if(post.sourceType === "json" && post.jsonUsername && isCommitteeIdentity(post.jsonUsername)) return COMMITTEE_NAME;
+      if(post.sourceType === "json" && post.jsonUsername && !raw) return COMMITTEE_NAME;
+      if(canSeeFull(post)) return displayCommitteeName(post.authorName || COMMITTEE_NAME);
+      return firstName(displayCommitteeName(post.authorName || post.jsonUsername || COMMITTEE_NAME));
     }
 
     function authorDisplayCard(post){
       const c = norm(post.ownerCard);
-      if(canSeeFull(post)) return c || "Not available";
       if(!c) return "Not available";
       return maskCard(c);
     }
 
     function authorDetailLines(post){
       if(!currentUser) return "";
-      const full = canSeeFull(post);
       const lines = [];
-      if(full){
-        lines.push(`Card: ${esc(authorDisplayCard(post))}`);
+      lines.push(`Card: ${esc(authorDisplayCard(post))}`);
+      if(canSeeFull(post)){
         if(post.authorDesg) lines.push(`Designation: ${esc(post.authorDesg)}`);
         if(post.authorBlood) lines.push(`Blood Group: ${esc(post.authorBlood)}`);
         if(post.authorMobile) lines.push(`Mobile: ${esc(post.authorMobile)}`);
-      }else{
-        lines.push(`Card: ${esc(authorDisplayCard(post))}`);
       }
       return lines.map(t => `<div>${t}</div>`).join("");
     }
@@ -1510,7 +1519,7 @@
       wrap.className = "profile-mini";
       const img = document.createElement("img");
       img.className = "mini-photo";
-      img.src = post.sourceType === "json" && post.raw && post.raw.image ? post.raw.image : avatarUrl(post.ownerCard);
+      img.src = isCommitteeIdentity(post.authorName) || isCommitteeIdentity(post.jsonUsername) ? committeeAvatarUrl() : (post.sourceType === "json" && post.raw && post.raw.image ? post.raw.image : avatarUrl(post.ownerCard));
       img.onerror = () => { img.src = DEFAULT_PHOTO; };
       const lines = document.createElement("div");
       lines.className = "mini-lines";
@@ -1537,7 +1546,7 @@
 
       const avatar = document.createElement("img");
       avatar.className = "post-avatar";
-      avatar.src = post.sourceType === "json" && post.raw && post.raw.avatar ? post.raw.avatar : (post.ownerCard ? avatarUrl(post.ownerCard) : DEFAULT_PHOTO);
+      avatar.src = isCommitteeIdentity(post.authorName) || isCommitteeIdentity(post.jsonUsername) ? COMMITTEE_PHOTO : (post.ownerCard ? avatarUrl(post.ownerCard) : DEFAULT_PHOTO);
       avatar.alt = authorDisplayName(post);
       avatar.onerror = () => { avatar.src = DEFAULT_PHOTO; };
 
@@ -1546,7 +1555,7 @@
 
       const orgName = document.createElement("div");
       orgName.className = "post-org-name";
-      orgName.textContent = post.sourceType === "json" && post.jsonUsername ? post.jsonUsername : (currentUser && isAdmin(currentUser.CNo) ? post.authorName : authorDisplayName(post));
+      orgName.textContent = post.sourceType === "json" && post.jsonUsername && !isCommitteeIdentity(post.authorName) ? post.jsonUsername : displayCommitteeName(post.authorName || COMMITTEE_NAME);
 
       const meta = document.createElement("div");
       meta.className = "post-meta";
@@ -1561,7 +1570,7 @@
 
       const viewerBadge = document.createElement("span");
       viewerBadge.className = "viewer-badge";
-      viewerBadge.textContent = post.sourceType === "json" ? "Legacy JSON" : "User Post";
+      viewerBadge.textContent = post.sourceType === "json" ? "ADMIN" : "User Post";
 
       meta.appendChild(dateEl);
       meta.appendChild(badge);
@@ -1576,7 +1585,7 @@
       const authorLine = document.createElement("div");
       authorLine.className = "post-author";
       authorLine.innerHTML = `<strong>${esc(authorDisplayName(post))}</strong>${authorDetailLines(post)}`;
-      if(post.sourceType === "json" && post.jsonUsername){
+      if(post.sourceType === "json" && post.jsonUsername && !isCommitteeIdentity(post.authorName)){
         const tag = document.createElement("div");
         tag.style.cssText = "margin-top:4px;font-size:11px;color:#7873f5;";
         tag.textContent = `Username: ${post.jsonUsername}`;
