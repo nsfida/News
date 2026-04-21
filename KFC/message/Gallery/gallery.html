@@ -203,6 +203,24 @@
     .post-header-info{flex:1;min-width:0}
     .post-org-name{font-weight:700;font-size:14px;color:#0d3c91;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:none;-webkit-text-fill-color:unset;display:block;width:auto;text-align:left}
     body.dark-mode .post-org-name{color:#9bc2ff}
+    .author-name-btn{
+      border:none;
+      background:transparent;
+      padding:0;
+      margin:0;
+      font:inherit;
+      font-weight:700;
+      font-size:14px;
+      color:inherit;
+      cursor:pointer;
+      text-align:left;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      width:100%;
+    }
+    .author-name-btn:hover{opacity:.9;text-decoration:underline}
+    body.dark-mode .author-name-btn{color:inherit}
     .post-meta{display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap}
     .post-date{font-size:11px;color:#888}
     body.dark-mode .post-date{color:#7a90a8}
@@ -295,6 +313,32 @@
     body.dark-mode .profile-mini .mini-name{color:#9bc2ff}
     .profile-mini .mini-sub{font-size:11px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     body.dark-mode .profile-mini .mini-sub{color:#a9bed6}
+    .author-details-text{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:13px;
+      line-height:1.7;
+      color:#333;
+      margin-top:4px;
+    }
+    body.dark-mode .author-details-text{color:#d8e4f2}
+    .author-details-item{
+      padding:10px 12px;
+      border-radius:14px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(120,115,245,.12);
+      margin-top:8px;
+    }
+    body.dark-mode .author-details-item{
+      background:rgba(12,19,34,.48);
+      border-color:rgba(255,255,255,.08);
+    }
+    .author-details-btn{
+      width:100%;
+      margin-top:10px;
+      justify-content:center;
+    }
     @media(max-width:1024px){
       .dashboard-container{flex-direction:column}
       .sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:10px}
@@ -415,6 +459,13 @@
     <div class="leaders-box glass">
       <div class="leaders-header"><h2>Committee Leaders</h2><i class="fa-solid fa-xmark" id="closeLeaders"></i></div>
       <div id="leadersList"></div>
+    </div>
+  </div>
+
+  <div id="authorDetailsOverlay" class="overlay">
+    <div class="leaders-box glass" style="max-width:460px;">
+      <div class="leaders-header"><h2>User Details</h2><i class="fa-solid fa-xmark" id="closeAuthorDetails"></i></div>
+      <div id="authorDetailsBody"></div>
     </div>
   </div>
 
@@ -719,7 +770,7 @@
         "userFullName","userCard","userDesg","userBlood","userMobile","welcomePopup","welcomeText","headerProfileImg","headerUserIcon","dropdownProfileImg","viewPhotoBtn",
         "photoOverlay","fullProfileImg","closePhotoOverlay","notificationBtn","notiDropdown","notiBadge","notiList","msgBtn","msgDropdown","msgBadge","msgList",
         "leadersOverlay","closeLeaders","leadersList","themeToggleBtn","themeToggleIcon","translateToggleBtn","google_translate_element","lightbox","lightboxInner","lightboxClose","lbPrev","lbNext",
-        "feedWrapper","feedLoader","sidebarToggle"
+        "feedWrapper","feedLoader","sidebarToggle","authorDetailsOverlay","closeAuthorDetails","authorDetailsBody"
       ];
       ids.forEach(x => els[x] = id(x));
     }
@@ -863,7 +914,7 @@
       if(!u) return;
       if(els.username) els.username.innerText = `Welcome, ${firstName(u.name)}`;
       if(els.userFullName) els.userFullName.innerText = `Welcome, ${displayCommitteeName(u.name)}`;
-      if(els.userCard) els.userCard.innerText = `Card Number: ${maskCard(u.CNo)}`;
+      if(els.userCard) els.userCard.innerText = `Card Number: ${u.CNo || "Not available"}`;
       if(els.userDesg) els.userDesg.innerText = `Designation: ${u.Desg}`;
       if(els.userBlood) els.userBlood.innerText = `Blood Group: ${u.BG || "Not available"}`;
       if(els.userMobile) els.userMobile.innerText = `Registered Mobile: ${u.mobile || "Not available"}`;
@@ -1142,22 +1193,19 @@
       return firstName(displayCommitteeName(post.authorName || post.jsonUsername || COMMITTEE_NAME));
     }
 
-    function authorDisplayCard(post){
-      const c = norm(post.ownerCard);
-      if(!c) return "Not available";
-      return maskCard(c);
-    }
-
-    function authorDetailLines(post){
-      if(!currentUser) return "";
-      const lines = [];
-      lines.push(`Card: ${esc(authorDisplayCard(post))}`);
-      if(canSeeFull(post)){
-        if(post.authorDesg) lines.push(`Designation: ${esc(post.authorDesg)}`);
-        if(post.authorBlood) lines.push(`Blood Group: ${esc(post.authorBlood)}`);
-        if(post.authorMobile) lines.push(`Mobile: ${esc(post.authorMobile)}`);
-      }
-      return lines.map(t => `<div>${t}</div>`).join("");
+    function openAuthorDetails(post){
+      if(!currentUser || !isAdmin(currentUser.CNo)) return;
+      if(!els.authorDetailsOverlay || !els.authorDetailsBody) return;
+      const fullName = displayCommitteeName(post.authorName || COMMITTEE_NAME);
+      const details = [];
+      details.push(`<div class="author-details-item"><strong>Name:</strong> ${esc(fullName)}</div>`);
+      details.push(`<div class="author-details-item"><strong>Card Number:</strong> ${esc(post.ownerCard || "Not available")}</div>`);
+      if(post.authorDesg) details.push(`<div class="author-details-item"><strong>Designation:</strong> ${esc(post.authorDesg)}</div>`);
+      if(post.authorBlood) details.push(`<div class="author-details-item"><strong>Blood Group:</strong> ${esc(post.authorBlood)}</div>`);
+      if(post.authorMobile) details.push(`<div class="author-details-item"><strong>Mobile:</strong> ${esc(post.authorMobile)}</div>`);
+      if(post.sourceType === "json" && post.jsonUsername) details.push(`<div class="author-details-item"><strong>Username:</strong> ${esc(post.jsonUsername)}</div>`);
+      els.authorDetailsBody.innerHTML = details.join("");
+      els.authorDetailsOverlay.classList.add("show");
     }
 
     function canDelete(post){
@@ -1514,28 +1562,6 @@
       els.feedWrapper.innerHTML = `<div class="notice-card">${infoMsg(text)}</div>`;
     }
 
-    function buildCardMini(post){
-      const wrap = document.createElement("div");
-      wrap.className = "profile-mini";
-      const img = document.createElement("img");
-      img.className = "mini-photo";
-      img.src = isCommitteeIdentity(post.authorName) || isCommitteeIdentity(post.jsonUsername) ? committeeAvatarUrl() : (post.sourceType === "json" && post.raw && post.raw.image ? post.raw.image : avatarUrl(post.ownerCard));
-      img.onerror = () => { img.src = DEFAULT_PHOTO; };
-      const lines = document.createElement("div");
-      lines.className = "mini-lines";
-      const name = document.createElement("div");
-      name.className = "mini-name";
-      name.textContent = authorDisplayName(post);
-      const sub = document.createElement("div");
-      sub.className = "mini-sub";
-      sub.textContent = canSeeFull(post) ? (post.authorDesg || "Committee Member") : (post.sourceType === "json" && post.jsonUsername ? "Legacy JSON post" : "Committee Member");
-      lines.appendChild(name);
-      lines.appendChild(sub);
-      wrap.appendChild(img);
-      wrap.appendChild(lines);
-      return wrap;
-    }
-
     function createPostCard(post){
       const card = document.createElement("div");
       card.className = "post-card";
@@ -1555,7 +1581,17 @@
 
       const orgName = document.createElement("div");
       orgName.className = "post-org-name";
-      orgName.textContent = post.sourceType === "json" && post.jsonUsername && !isCommitteeIdentity(post.authorName) ? post.jsonUsername : displayCommitteeName(post.authorName || COMMITTEE_NAME);
+
+      if(currentUser && isAdmin(currentUser.CNo)){
+        const nameBtn = document.createElement("button");
+        nameBtn.type = "button";
+        nameBtn.className = "author-name-btn";
+        nameBtn.textContent = displayCommitteeName(post.authorName || COMMITTEE_NAME);
+        nameBtn.addEventListener("click", () => openAuthorDetails(post));
+        orgName.appendChild(nameBtn);
+      }else{
+        orgName.textContent = authorDisplayName(post);
+      }
 
       const meta = document.createElement("div");
       meta.className = "post-meta";
@@ -1584,42 +1620,34 @@
 
       const authorLine = document.createElement("div");
       authorLine.className = "post-author";
-      authorLine.innerHTML = `<strong>${esc(authorDisplayName(post))}</strong>${authorDetailLines(post)}`;
-      if(post.sourceType === "json" && post.jsonUsername && !isCommitteeIdentity(post.authorName)){
-        const tag = document.createElement("div");
-        tag.style.cssText = "margin-top:4px;font-size:11px;color:#7873f5;";
-        tag.textContent = `Username: ${post.jsonUsername}`;
-        authorLine.appendChild(tag);
+
+      if(currentUser && isAdmin(currentUser.CNo)){
+        const hint = document.createElement("div");
+        hint.className = "helper-text";
+        hint.style.marginTop = "2px";
+        hint.textContent = "Tap the name to view full details.";
+        authorLine.appendChild(hint);
       }
+
       card.appendChild(authorLine);
 
-      if(post.title){
+      const capText = fmtCaptionText(post);
+      const titleText = norm(post.title);
+
+      if(post.sourceType !== "db" && titleText && titleText !== capText){
         const t = document.createElement("div");
         t.className = "post-title";
-        t.textContent = post.title;
+        t.textContent = titleText;
         card.appendChild(t);
       }
 
-      const capText = fmtCaptionText(post);
       if(capText){
         const capWrap = document.createElement("div");
         capWrap.className = "post-caption-wrap";
         const cap = document.createElement("span");
-        cap.className = "post-caption clamped";
+        cap.className = "post-caption";
         cap.textContent = capText;
         capWrap.appendChild(cap);
-        if(capText.length > 160){
-          const rm = document.createElement("button");
-          rm.className = "read-more-btn";
-          rm.textContent = "See more";
-          let expanded = false;
-          rm.addEventListener("click", () => {
-            expanded = !expanded;
-            cap.classList.toggle("clamped", !expanded);
-            rm.textContent = expanded ? "See less" : "See more";
-          });
-          capWrap.appendChild(rm);
-        }
         card.appendChild(capWrap);
       }
 
@@ -2090,6 +2118,7 @@
             if(els.userDropdown) els.userDropdown.classList.remove("show");
             if(els.notiDropdown) els.notiDropdown.classList.remove("show");
             if(els.msgDropdown) els.msgDropdown.classList.remove("show");
+            if(els.authorDetailsOverlay) els.authorDetailsOverlay.classList.remove("show");
           }
         }
         if(e.key === "ArrowLeft" && els.lightbox && els.lightbox.classList.contains("show")) navLightbox(-1);
@@ -2109,6 +2138,9 @@
       [els.userDropdown, els.notiDropdown, els.msgDropdown].forEach(b => { if(b) b.addEventListener("click", e => e.stopPropagation()); });
       if(els.closeLeaders) els.closeLeaders.addEventListener("click", () => { if(els.leadersOverlay) els.leadersOverlay.classList.remove("show"); });
       if(els.leadersOverlay) els.leadersOverlay.addEventListener("click", e => { if(e.target === els.leadersOverlay) els.leadersOverlay.classList.remove("show"); });
+
+      if(els.closeAuthorDetails) els.closeAuthorDetails.addEventListener("click", () => { if(els.authorDetailsOverlay) els.authorDetailsOverlay.classList.remove("show"); });
+      if(els.authorDetailsOverlay) els.authorDetailsOverlay.addEventListener("click", e => { if(e.target === els.authorDetailsOverlay) els.authorDetailsOverlay.classList.remove("show"); });
 
       if(els.sidebarToggle) els.sidebarToggle.addEventListener("click", e => {
         e.stopPropagation();
