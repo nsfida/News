@@ -28,8 +28,8 @@ let userArea, usernameSpan, userDropdown,
     viewPhotoBtn, photoOverlay, fullProfileImg, closePhotoOverlay,
     viewCardBtn,
     themeToggleBtn, themeToggleIcon,
-    searchField, searchInput, searchButton, printButton,
-    generateButton, englishConstitution, urduConstitution, allCardsBtn,
+    searchField, searchInput, searchButton, printButton, csvButton,
+    generateButton, englishConstitution, urduConstitution, allCardsBtn, emirates,
     resultContainer,
     ecardOverlay, ecardOverlayBox, ecardCloseBtn, ecardSpinner, ecardInner,
     searchModeAll, searchModeActive;
@@ -69,10 +69,12 @@ function cacheDOM() {
   searchInput        = document.getElementById("searchInput");
   searchButton       = document.getElementById("searchButton");
   printButton        = document.getElementById("printButton");
+  csvButton          = document.getElementById("csv");
   generateButton     = document.getElementById("generateButton");
   englishConstitution= document.getElementById("englishConstitution");
   urduConstitution   = document.getElementById("urduConstitution");
   allCardsBtn        = document.getElementById("allCards");
+  emirates           = document.getElementById("emirates");
   resultContainer    = document.getElementById("resultContainer");
   ecardOverlay       = document.getElementById("ecardOverlay");
   ecardOverlayBox    = document.getElementById("ecardOverlayBox");
@@ -141,6 +143,70 @@ function isActiveStatus(item) {
 function getSearchMode() {
   if (searchModeActive?.checked) return "active";
   return "all";
+}
+
+function getSearchResults() {
+  const term  = norm(searchInput?.value).toLowerCase();
+  const field = searchField?.value || "name";
+  const mode  = getSearchMode();
+
+  if (!allData.length || term === "") return [];
+
+  let results = allData.filter(item =>
+    item[field] &&
+    item[field].toString().toLowerCase().includes(term) &&
+    (mode !== "active" || isActiveStatus(item))
+  );
+
+  if (currentSort.column) {
+    results.sort((a, b) => {
+      const va = (a[currentSort.column] || "").toString().toLowerCase();
+      const vb = (b[currentSort.column] || "").toString().toLowerCase();
+      if (va < vb) return currentSort.asc ? -1 : 1;
+      if (va > vb) return currentSort.asc ?  1 : -1;
+      return 0;
+    });
+  }
+
+  return results;
+}
+
+/* ─── CSV EXPORT ─────────────────────────────────────────────── */
+function csvEscape(value) {
+  return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+function downloadCSV(filename, rows) {
+  const blob = new Blob([rows.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV() {
+  if (!currentUser || !isFullAccess(currentUser.CNo)) return;
+
+  const results = getSearchResults();
+  if (!results.length) return;
+
+  const keys = Object.keys(results[0]);
+  const rows = [];
+  rows.push(["S.NO.", ...keys].map(csvEscape).join(","));
+
+  results.forEach((item, idx) => {
+    rows.push([idx + 1, ...keys.map(k => item[k])].map(csvEscape).join(","));
+  });
+
+  downloadCSV(`${sanitizeFileName("Khawrai Falahi Committee UAE")}.csv`, rows);
+}
+
+function sanitizeFileName(n) {
+  return String(n || "card").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim();
 }
 
 /* ─── Profile image with fallback ─────────────────────────── */
@@ -226,14 +292,26 @@ function checkSession() {
   }
 }
 
-/* ─── Button access ──────────────────────────────────────── */
+/* ─── Button access ──────────────────────────────────────────── */
 function updateButtonAccess() {
   const loggedIn = !!currentUser;
   const fullAcc  = loggedIn && isFullAccess(currentUser.CNo);
-  const hasInput = norm(searchInput?.value) !== "";
+  const hasInput  = norm(searchInput?.value) !== "";
 
   if (searchButton) searchButton.disabled = !loggedIn || !hasInput;
-  if (printButton)  printButton.disabled  = true;
+
+  if (csvButton) {
+    csvButton.disabled = !loggedIn || !fullAcc || !hasInput;
+    csvButton.title = (!loggedIn || !fullAcc)
+      ? "Full Access members only"
+      : (hasInput ? "" : "Type in search to enable CSV");
+    csvButton.style.cursor = csvButton.disabled ? "not-allowed" : "pointer";
+  }
+
+  if (printButton) {
+    printButton.title = hasInput ? "" : "Search first to print results";
+    printButton.style.cursor = hasInput ? "pointer" : "not-allowed";
+  }
 
   [generateButton, allCardsBtn].forEach(btn => {
     if (!btn) return;
@@ -302,18 +380,22 @@ async function loadData() {
 ═══════════════════════════════════════════════════════════════ */
 function handleSearch() {
   const term = norm(searchInput?.value);
-  if (searchButton) searchButton.disabled = !currentUser || term === "";
 
   if (!currentUser) {
-    resultContainer.innerHTML = "<p class='no-data'>⚠ Please sign in before searching.</p>";
+    if (resultContainer) resultContainer.innerHTML = "<p class='no-data'>⚠ Please sign in before searching.</p>";
     if (printButton) printButton.disabled = true;
+    if (csvButton) csvButton.disabled = true;
     return;
   }
 
+  if (searchButton) searchButton.disabled = term === "";
+  updateButtonAccess();
+
   if (term !== "") renderTable();
   else {
-    resultContainer.innerHTML = "";
+    if (resultContainer) resultContainer.innerHTML = "";
     if (printButton) printButton.disabled = true;
+    if (csvButton) csvButton.disabled = true;
   }
 }
 
@@ -323,8 +405,9 @@ window.openCardInNewWindow = function(cardNo) {
 
 function renderTable() {
   if (!currentUser) {
-    resultContainer.innerHTML = "<p class='no-data'>⚠ Login required to search.</p>";
+    if (resultContainer) resultContainer.innerHTML = "<p class='no-data'>⚠ Login required to search.</p>";
     if (printButton) printButton.disabled = true;
+    if (csvButton) csvButton.disabled = true;
     return;
   }
 
@@ -333,8 +416,10 @@ function renderTable() {
   const mode  = getSearchMode();
 
   if (!allData.length || term === "") {
-    resultContainer.innerHTML = "";
+    if (resultContainer) resultContainer.innerHTML = "";
     if (printButton) printButton.disabled = true;
+    if (csvButton) csvButton.disabled = true;
+    updateButtonAccess();
     return;
   }
 
@@ -345,8 +430,10 @@ function renderTable() {
   );
 
   if (!results.length) {
-    resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
+    if (resultContainer) resultContainer.innerHTML = "<p class='no-data'>No matching results found.</p>";
     if (printButton) printButton.disabled = true;
+    if (csvButton) csvButton.disabled = true;
+    updateButtonAccess();
     return;
   }
 
@@ -410,7 +497,7 @@ function renderTable() {
       let cls = "";
       if (k.toLowerCase() === "status") {
         const s = norm(item[k]).toLowerCase();
-        if (s === "active")                   cls = " class='active'";
+        if (s === "active") cls = " class='active'";
         if (s === "cancel" || s === "cancelled") cls = " class='cancel'";
       }
 
@@ -439,8 +526,11 @@ function renderTable() {
   });
 
   html += "</tbody></table>";
-  resultContainer.innerHTML = html;
+  if (resultContainer) resultContainer.innerHTML = html;
+
   if (printButton) printButton.disabled = false;
+  if (csvButton) csvButton.disabled = !fullAcc;
+  updateButtonAccess();
 }
 
 window.sortTable = function(col) {
@@ -449,14 +539,9 @@ window.sortTable = function(col) {
   renderTable();
 };
 
-/* ═══════════════════════════════════════════════════════════════
-   PDF / IMAGE HELPERS
-═══════════════════════════════════════════════════════════════ */
+/* ─── PDF / IMAGE HELPERS ───────────────────────────────────── */
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function nextPaint() { return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); }
-function sanitizeFileName(n) {
-  return String(n || "card").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim();
-}
 function waitForImageLoad(img) {
   return new Promise(resolve => {
     if (!img) return resolve();
@@ -699,8 +784,8 @@ window.openCardOverlay = async function(encodedCard) {
 
   const renderMask = () => {
     const m = masked;
-    if (nameEl)   nameEl.textContent   = "Name: "    + (m ? maskName(norm(card.name))      : norm(card.name));
-    if (cnoEl)    cnoEl.textContent    = "Card No.: " + (m ? maskCardNo(norm(card.CNo))     : norm(card.CNo));
+    if (nameEl)   nameEl.textContent   = "Name: "    + (m ? maskName(norm(card.name))        : norm(card.name));
+    if (cnoEl)    cnoEl.textContent    = "Card No.: " + (m ? maskCardNo(norm(card.CNo))      : norm(card.CNo));
     if (mobileEl) mobileEl.textContent = "Contact: "  + (m ? maskPhone(norm(card.mobile||"")): norm(card.mobile||""));
     if (urduEl)   urduEl.textContent   = m ? maskName(urduName || norm(card.name)) : (urduName || norm(card.name));
     if (vnameEl)  vnameEl.textContent  = m ? maskName(norm(card.name)) : norm(card.name);
@@ -771,6 +856,8 @@ function closeCardOverlay() {
    PRINT
 ═══════════════════════════════════════════════════════════════ */
 function doPrint() {
+  const hasResults = !!(currentUser && norm(searchInput?.value) !== "" && resultContainer && resultContainer.querySelector("table"));
+  if (!hasResults) return;
   closeCardOverlay();
   window.print();
 }
@@ -820,13 +907,12 @@ function bindEvents() {
   searchInput?.addEventListener("input", handleSearch);
   searchField?.addEventListener("change", handleSearch);
   searchButton?.addEventListener("click", handleSearch);
+  csvButton?.addEventListener("click", exportCSV);
+  printButton?.addEventListener("click", doPrint);
 
   document.querySelectorAll('input[type="radio"][name="memberFilter"]').forEach(r => {
     r.addEventListener("change", handleSearch);
   });
-
-  /* Print */
-  printButton?.addEventListener("click", doPrint);
 
   /* Constitution buttons */
   englishConstitution?.addEventListener("click", () => window.open(`${API_BASE}/English.pdf`, "_blank"));
