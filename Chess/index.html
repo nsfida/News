@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grandmaster Chess</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ SETUP MODAL ═══════════════════════════════ -->
+  <div id="setup-modal" class="modal-overlay">
+    <div class="modal setup-modal-box">
+      <div class="modal-crest">
+        <div class="crest-icon">♛</div>
+        <h1 class="modal-title">GRANDMASTER CHESS</h1>
+        <p class="modal-subtitle">A Premium Two-Player Experience</p>
+      </div>
+      <div class="modal-divider"></div>
+      <div class="modal-body">
+        <div class="players-row">
+          <div class="player-setup white-setup">
+            <div class="setup-crown">♔</div>
+            <label class="setup-label">White Player</label>
+            <input type="text" id="player1-name" class="name-input" placeholder="Enter name…" maxlength="18" autocomplete="off">
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="player-setup black-setup">
+            <div class="setup-crown dark-crown">♚</div>
+            <label class="setup-label">Black Player</label>
+            <input type="text" id="player2-name" class="name-input" placeholder="Enter name…" maxlength="18" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="time-section">
+          <label class="setup-label center-label">⏱ Time Control</label>
+          <div class="time-options">
+            <button class="time-btn" data-time="60">1 min</button>
+            <button class="time-btn" data-time="180">3 min</button>
+            <button class="time-btn active" data-time="600">10 min</button>
+            <button class="time-btn" data-time="900">15 min</button>
+            <button class="time-btn" data-time="1800">30 min</button>
+          </div>
+        </div>
+
+        <button id="start-game-btn" class="start-btn">
+          <span class="start-icon">♞</span> Begin Match
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ PROMOTION MODAL ═══════════════════════════════ -->
+  <div id="promotion-modal" class="modal-overlay hidden">
+    <div class="modal promotion-box">
+      <h2 class="promo-title">Pawn Promotion</h2>
+      <p class="promo-subtitle">Choose your piece</p>
+      <div class="promotion-pieces" id="promotion-pieces"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ GAME OVER MODAL ═══════════════════════════════ -->
+  <div id="gameover-modal" class="modal-overlay hidden">
+    <div class="modal gameover-box">
+      <div class="gameover-trophy" id="gameover-icon">🏆</div>
+      <h2 class="gameover-title" id="gameover-title">Checkmate!</h2>
+      <p class="gameover-message" id="gameover-message">White wins the match</p>
+      <div class="gameover-stats" id="gameover-stats"></div>
+      <div class="gameover-buttons">
+        <button id="new-game-btn" class="start-btn">New Game</button>
+        <button id="rematch-btn" class="start-btn outline-btn">Rematch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ MAIN GAME ═══════════════════════════════ -->
+  <div class="game-container">
+
+    <!-- Top Header -->
+    <header class="game-header">
+      <div class="header-logo">
+        <span class="logo-icon">♛</span>
+        <span class="logo-text">GRANDMASTER</span>
+      </div>
+      <div class="header-status-wrap">
+        <div class="status-indicator" id="status-indicator"></div>
+        <div class="game-status" id="game-status">Waiting for players…</div>
+      </div>
+      <div class="header-controls">
+        <button class="ctrl-btn" id="draw-btn" title="Offer Draw">½</button>
+        <button class="ctrl-btn resign-btn" id="resign-btn" title="Resign">⚑</button>
+        <button class="ctrl-btn" id="new-match-btn" title="New Game">⟳</button>
+      </div>
+    </header>
+
+    <!-- Game Layout -->
+    <main class="game-layout">
+
+      <!-- ── LEFT PANEL (Black Player) ── -->
+      <aside class="side-panel left-panel">
+        <div class="player-card" id="black-card">
+          <div class="player-avatar dark-avatar">♛</div>
+          <div class="player-details">
+            <div class="player-name" id="black-name">Player 2</div>
+            <div class="player-label">Black</div>
+          </div>
+          <div class="clock-wrap">
+            <div class="clock" id="black-clock">10:00</div>
+            <div class="clock-pip" id="black-pip"></div>
+          </div>
+        </div>
+
+        <div class="captured-zone">
+          <div class="zone-label">Captured by Black</div>
+          <div class="captured-row" id="white-captures"></div>
+          <div class="material-score" id="black-score"></div>
+        </div>
+
+        <div class="move-history-panel">
+          <div class="zone-label">Move History</div>
+          <div class="history-scroll" id="history-list"></div>
+        </div>
+      </aside>
+
+      <!-- ── BOARD AREA ── -->
+      <section class="board-area">
+        <div class="board-frame">
+          <div class="rank-axis" id="rank-axis"></div>
+          <div class="board-grid" id="chess-board"></div>
+          <div class="file-axis" id="file-axis"></div>
+        </div>
+        <div class="board-footer">
+          <span class="board-foot-text" id="last-move-label"></span>
+        </div>
+      </section>
+
+      <!-- ── RIGHT PANEL (White Player) ── -->
+      <aside class="side-panel right-panel">
+        <div class="player-card active-card" id="white-card">
+          <div class="player-avatar light-avatar">♔</div>
+          <div class="player-details">
+            <div class="player-name" id="white-name">Player 1</div>
+            <div class="player-label">White</div>
+          </div>
+          <div class="clock-wrap">
+            <div class="clock" id="white-clock">10:00</div>
+            <div class="clock-pip" id="white-pip"></div>
+          </div>
+        </div>
+
+        <div class="captured-zone">
+          <div class="zone-label">Captured by White</div>
+          <div class="captured-row" id="black-captures"></div>
+          <div class="material-score" id="white-score"></div>
+        </div>
+
+        <div class="legend-panel">
+          <div class="zone-label">Legend</div>
+          <div class="legend-row"><span class="dot dot-selected"></span>Selected</div>
+          <div class="legend-row"><span class="dot dot-move"></span>Legal Move</div>
+          <div class="legend-row"><span class="dot dot-capture"></span>Capture</div>
+          <div class="legend-row"><span class="dot dot-lastmove"></span>Last Move</div>
+          <div class="legend-row"><span class="dot dot-check"></span>Check</div>
+        </div>
+      </aside>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
