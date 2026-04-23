@@ -14,7 +14,7 @@ const FALLBACK_USERS = [
 ];
 
 const SUPABASE_URL      = 'https://xwuqiteezvutzfekjbot.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsImtpZCI6Inh3dXFpdGVlenZ1dHpmZWtqYm90IiwidHlwIjoiSldUIn0.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3dXFpdGVlenZ1dHpmZWtqYm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDI2NDksImV4cCI6MjA5MjQ3ODY0OX0.vloiHcIgNbrAcT6XTIEalgZvxmRXK95tVJR9yzoxihk';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3dXFpdGVlenZ1dHpmZWtqYm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDI2NDksImV4cCI6MjA5MjQ3ODY0OX0.vloiHcIgNbrAcT6XTIEalgZvxmRXK95tVJR9yzoxihk';
 
 const SESSION_KEY = 'gm_arena_session';
 const THEME_KEY   = 'gm_arena_theme';
