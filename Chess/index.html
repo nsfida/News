@@ -1,6 +1,5 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,7 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+
+<body data-theme="dark">
 
   <div id="login-overlay" class="overlay">
     <div class="auth-card">
@@ -23,19 +23,35 @@
         </div>
       </div>
 
-      <form id="login-form" class="auth-form">
+      <form id="login-form" class="auth-form" novalidate>
         <label class="field-label" for="login-userid">User ID</label>
-        <input id="login-userid" class="text-input" type="text" placeholder="Enter your User ID" autocomplete="username" required />
+        <input
+          id="login-userid"
+          class="text-input"
+          type="text"
+          placeholder="Enter your User ID"
+          autocomplete="username"
+          spellcheck="false"
+          required
+        />
 
         <label class="field-label" for="login-password">Password</label>
-        <input id="login-password" class="text-input" type="password" placeholder="Enter your Password" autocomplete="current-password" required />
+        <input
+          id="login-password"
+          class="text-input"
+          type="password"
+          placeholder="Enter your Password"
+          autocomplete="current-password"
+          spellcheck="false"
+          required
+        />
 
         <button id="login-btn" class="primary-btn full-width" type="submit">
           <span>Login</span>
           <span class="btn-icon">→</span>
         </button>
 
-        <div id="login-error" class="form-error"></div>
+        <div id="login-error" class="form-error" aria-live="polite"></div>
       </form>
 
       <div class="auth-note">
@@ -65,8 +81,8 @@
 
       <div class="topbar-right">
         <div class="user-pill" id="current-user-chip">Guest</div>
-        <button id="theme-toggle" class="icon-btn" title="Toggle light / dark mode">☾</button>
-        <button id="logout-btn" class="icon-btn" title="Logout">⎋</button>
+        <button id="theme-toggle" class="icon-btn" type="button" title="Toggle light / dark mode">☾</button>
+        <button id="logout-btn" class="icon-btn" type="button" title="Logout">⎋</button>
       </div>
     </header>
 
@@ -86,7 +102,7 @@
             <div id="selected-user" class="selected-user-value">None</div>
           </div>
 
-          <button id="create-game-btn" class="primary-btn full-width">
+          <button id="create-game-btn" class="primary-btn full-width" type="button">
             <span>Create Game Link</span>
             <span class="btn-icon">↗</span>
           </button>
@@ -99,7 +115,7 @@
           </div>
 
           <input id="game-id-input" class="text-input" type="text" placeholder="Paste game ID here..." autocomplete="off" />
-          <button id="open-game-btn" class="secondary-btn full-width">
+          <button id="open-game-btn" class="secondary-btn full-width" type="button">
             <span>Open Game</span>
           </button>
         </section>
@@ -158,16 +174,16 @@
           </div>
 
           <div class="share-box">
-            <label class="mini-label">Game link</label>
+            <label class="mini-label" for="share-game-link">Game link</label>
             <div class="link-row">
               <input id="share-game-link" class="text-input link-input" type="text" readonly />
-              <button id="copy-game-link" class="icon-btn small" title="Copy game link">⧉</button>
+              <button id="copy-game-link" class="icon-btn small" type="button" title="Copy game link">⧉</button>
             </div>
 
-            <label class="mini-label">Invite link</label>
+            <label class="mini-label" for="invite-game-link">Invite link</label>
             <div class="link-row">
               <input id="invite-game-link" class="text-input link-input" type="text" readonly />
-              <button id="copy-invite-link" class="icon-btn small" title="Copy invite link">⧉</button>
+              <button id="copy-invite-link" class="icon-btn small" type="button" title="Copy invite link">⧉</button>
             </div>
           </div>
         </section>
@@ -217,8 +233,8 @@
       <div id="gameover-message" class="modal-subtitle">Match complete</div>
       <div id="gameover-stats" class="stats-box"></div>
       <div class="button-row">
-        <button id="new-game-btn" class="primary-btn">New Game</button>
-        <button id="rematch-btn" class="secondary-btn">Rematch</button>
+        <button id="new-game-btn" class="primary-btn" type="button">New Game</button>
+        <button id="rematch-btn" class="secondary-btn" type="button">Rematch</button>
       </div>
     </div>
   </div>
