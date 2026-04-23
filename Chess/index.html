@@ -1,174 +1,230 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCGMs Arena</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grandmaster Arena Online</title>
+  <meta name="color-scheme" content="dark light" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- ═══════════════════════════════ SETUP MODAL ═══════════════════════════════ -->
-  <div id="setup-modal" class="modal-overlay">
-    <div class="modal setup-modal-box">
-      <div class="modal-crest">
-        <div class="crest-icon">♛</div>
-        <h1 class="modal-title">OCGMs Arena</h1>
-        <p class="modal-subtitle">A Premium Two-Player Experience</p>
+  <div id="login-overlay" class="overlay">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-emblem">♛</div>
+        <div>
+          <div class="brand-name">GRANDMASTER ARENA</div>
+          <div class="brand-tag">Secure login, online play, live recording</div>
+        </div>
       </div>
-      <div class="modal-divider"></div>
-      <div class="modal-body">
-        <div class="players-row">
-          <div class="player-setup white-setup">
-            <div class="setup-crown">♔</div>
-            <label class="setup-label">White Player</label>
-            <input type="text" id="player1-name" class="name-input" placeholder="Enter name…" maxlength="18" autocomplete="off">
-          </div>
-          <div class="vs-badge">VS</div>
-          <div class="player-setup black-setup">
-            <div class="setup-crown dark-crown">♚</div>
-            <label class="setup-label">Black Player</label>
-            <input type="text" id="player2-name" class="name-input" placeholder="Enter name…" maxlength="18" autocomplete="off">
-          </div>
-        </div>
 
-        <div class="time-section">
-          <label class="setup-label center-label">⏱ Time Control</label>
-          <div class="time-options">
-            <button class="time-btn" data-time="60">1 min</button>
-            <button class="time-btn" data-time="180">3 min</button>
-            <button class="time-btn active" data-time="600">10 min</button>
-            <button class="time-btn" data-time="900">15 min</button>
-            <button class="time-btn" data-time="1800">30 min</button>
-          </div>
-        </div>
+      <form id="login-form" class="auth-form">
+        <label class="field-label" for="login-userid">User ID</label>
+        <input id="login-userid" class="text-input" type="text" placeholder="Enter your User ID" autocomplete="username" required />
 
-        <button id="start-game-btn" class="start-btn">
-          <span class="start-icon">♞</span> Begin Match
+        <label class="field-label" for="login-password">Password</label>
+        <input id="login-password" class="text-input" type="password" placeholder="Enter your Password" autocomplete="current-password" required />
+
+        <button id="login-btn" class="primary-btn full-width" type="submit">
+          <span>Login</span>
+          <span class="btn-icon">→</span>
         </button>
+
+        <div id="login-error" class="form-error"></div>
+      </form>
+
+      <div class="auth-note">
+        Connects to Supabase for game storage and live syncing.
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════ PROMOTION MODAL ═══════════════════════════════ -->
-  <div id="promotion-modal" class="modal-overlay hidden">
-    <div class="modal promotion-box">
-      <h2 class="promo-title">Pawn Promotion</h2>
-      <p class="promo-subtitle">Choose your piece</p>
-      <div class="promotion-pieces" id="promotion-pieces"></div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════ GAME OVER MODAL ═══════════════════════════════ -->
-  <div id="gameover-modal" class="modal-overlay hidden">
-    <div class="modal gameover-box">
-      <div class="gameover-trophy" id="gameover-icon">🏆</div>
-      <h2 class="gameover-title" id="gameover-title">Checkmate!</h2>
-      <p class="gameover-message" id="gameover-message">White wins the match</p>
-      <div class="gameover-stats" id="gameover-stats"></div>
-      <div class="gameover-buttons">
-        <button id="new-game-btn" class="start-btn">New Game</button>
-        <button id="rematch-btn" class="start-btn outline-btn">Rematch</button>
+  <div id="app-shell" class="app-shell hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="top-brand">
+          <div class="top-brand-mark">♛</div>
+          <div>
+            <div class="top-brand-title">GRANDMASTER ARENA</div>
+            <div class="top-brand-subtitle" id="game-chip">Lobby</div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ═══════════════════════════════ MAIN GAME ═══════════════════════════════ -->
-  <div class="game-container">
+      <div class="topbar-center">
+        <div class="status-pill">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="game-status">Waiting for login...</span>
+        </div>
+      </div>
 
-    <!-- Top Header -->
-    <header class="game-header">
-      <div class="header-logo">
-        <span class="logo-icon">♛</span>
-        <span class="logo-text">GRANDMASTER</span>
-      </div>
-      <div class="header-status-wrap">
-        <div class="status-indicator" id="status-indicator"></div>
-        <div class="game-status" id="game-status">Waiting for players…</div>
-      </div>
-      <div class="header-controls">
-        <button class="ctrl-btn" id="draw-btn" title="Offer Draw">½</button>
-        <button class="ctrl-btn resign-btn" id="resign-btn" title="Resign">⚑</button>
-        <button class="ctrl-btn" id="new-match-btn" title="New Game">⟳</button>
+      <div class="topbar-right">
+        <div class="user-pill" id="current-user-chip">Guest</div>
+        <button id="theme-toggle" class="icon-btn" title="Toggle light / dark mode">☾</button>
+        <button id="logout-btn" class="icon-btn" title="Logout">⎋</button>
       </div>
     </header>
 
-    <!-- Game Layout -->
-    <main class="game-layout">
-
-      <!-- ── LEFT PANEL (Black Player) ── -->
-      <aside class="side-panel left-panel">
-        <div class="player-card" id="black-card">
-          <div class="player-avatar dark-avatar">♛</div>
-          <div class="player-details">
-            <div class="player-name" id="black-name">Player 2</div>
-            <div class="player-label">Black</div>
+    <main class="workspace">
+      <aside class="sidebar left-sidebar">
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Invite a Player</div>
+            <div class="panel-subtitle">Search by name or User ID</div>
           </div>
-          <div class="clock-wrap">
-            <div class="clock" id="black-clock">10:00</div>
-            <div class="clock-pip" id="black-pip"></div>
+
+          <input id="invite-search" class="text-input" type="text" placeholder="Search users..." autocomplete="off" />
+          <div id="user-results" class="user-results"></div>
+
+          <div class="selected-user-box">
+            <div class="selected-user-label">Selected player</div>
+            <div id="selected-user" class="selected-user-value">None</div>
           </div>
-        </div>
 
-        <div class="captured-zone">
-          <div class="zone-label">Captured by Black</div>
-          <div class="captured-row" id="white-captures"></div>
-          <div class="material-score" id="black-score"></div>
-        </div>
+          <button id="create-game-btn" class="primary-btn full-width">
+            <span>Create Game Link</span>
+            <span class="btn-icon">↗</span>
+          </button>
+        </section>
 
-        <div class="move-history-panel">
-          <div class="zone-label">Move History</div>
-          <div class="history-scroll" id="history-list"></div>
-        </div>
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Open Game</div>
+            <div class="panel-subtitle">Load by game link or game ID</div>
+          </div>
+
+          <input id="game-id-input" class="text-input" type="text" placeholder="Paste game ID here..." autocomplete="off" />
+          <button id="open-game-btn" class="secondary-btn full-width">
+            <span>Open Game</span>
+          </button>
+        </section>
+
+        <section class="panel flex-grow">
+          <div class="panel-head">
+            <div class="panel-title">Recent Games</div>
+            <div class="panel-subtitle">Loaded from Supabase</div>
+          </div>
+          <div id="recent-games" class="games-list"></div>
+        </section>
       </aside>
 
-      <!-- ── BOARD AREA ── -->
       <section class="board-area">
-        <div class="board-frame">
+        <div class="board-shell">
           <div class="rank-axis" id="rank-axis"></div>
-          <div class="board-grid" id="chess-board"></div>
-          <div class="file-axis" id="file-axis"></div>
+          <div class="board-wrap">
+            <div class="board-grid" id="chess-board"></div>
+            <div class="file-axis" id="file-axis"></div>
+          </div>
         </div>
-        <div class="board-footer">
-          <span class="board-foot-text" id="last-move-label"></span>
-        </div>
+        <div class="board-footer" id="last-move-label"></div>
       </section>
 
-      <!-- ── RIGHT PANEL (White Player) ── -->
-      <aside class="side-panel right-panel">
-        <div class="player-card active-card" id="white-card">
-          <div class="player-avatar light-avatar">♔</div>
-          <div class="player-details">
-            <div class="player-name" id="white-name">Player 1</div>
-            <div class="player-label">White</div>
+      <aside class="sidebar right-sidebar">
+        <section class="panel player-panel">
+          <div class="player-card active" id="white-card">
+            <div class="player-avatar light-avatar">♔</div>
+            <div class="player-info">
+              <div class="player-name" id="white-name">White Player</div>
+              <div class="player-side">White</div>
+            </div>
+            <div class="clock-box">
+              <div class="clock" id="white-clock">10:00</div>
+              <div class="clock-pip" id="white-pip"></div>
+            </div>
           </div>
-          <div class="clock-wrap">
-            <div class="clock" id="white-clock">10:00</div>
-            <div class="clock-pip" id="white-pip"></div>
+
+          <div class="player-card" id="black-card">
+            <div class="player-avatar dark-avatar">♚</div>
+            <div class="player-info">
+              <div class="player-name" id="black-name">Black Player</div>
+              <div class="player-side">Black</div>
+            </div>
+            <div class="clock-box">
+              <div class="clock" id="black-clock">10:00</div>
+              <div class="clock-pip" id="black-pip"></div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div class="captured-zone">
-          <div class="zone-label">Captured by White</div>
-          <div class="captured-row" id="black-captures"></div>
-          <div class="material-score" id="white-score"></div>
-        </div>
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Share Game</div>
+            <div class="panel-subtitle">Unique link for this match</div>
+          </div>
 
-        <div class="legend-panel">
-          <div class="zone-label">Legend</div>
-          <div class="legend-row"><span class="dot dot-selected"></span>Selected</div>
-          <div class="legend-row"><span class="dot dot-move"></span>Legal Move</div>
-          <div class="legend-row"><span class="dot dot-capture"></span>Capture</div>
-          <div class="legend-row"><span class="dot dot-lastmove"></span>Last Move</div>
-          <div class="legend-row"><span class="dot dot-check"></span>Check</div>
-        </div>
+          <div class="share-box">
+            <label class="mini-label">Game link</label>
+            <div class="link-row">
+              <input id="share-game-link" class="text-input link-input" type="text" readonly />
+              <button id="copy-game-link" class="icon-btn small" title="Copy game link">⧉</button>
+            </div>
+
+            <label class="mini-label">Invite link</label>
+            <div class="link-row">
+              <input id="invite-game-link" class="text-input link-input" type="text" readonly />
+              <button id="copy-invite-link" class="icon-btn small" title="Copy invite link">⧉</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Captured Pieces</div>
+            <div class="panel-subtitle">Material tracker</div>
+          </div>
+
+          <div class="capture-block">
+            <div class="mini-label">Captured by White</div>
+            <div id="white-captures" class="capture-row"></div>
+            <div id="white-score" class="material-score"></div>
+          </div>
+
+          <div class="capture-block">
+            <div class="mini-label">Captured by Black</div>
+            <div id="black-captures" class="capture-row"></div>
+            <div id="black-score" class="material-score"></div>
+          </div>
+        </section>
+
+        <section class="panel flex-grow">
+          <div class="panel-head">
+            <div class="panel-title">Move History</div>
+            <div class="panel-subtitle">Every move stored and synced</div>
+          </div>
+          <div id="move-history" class="history-list"></div>
+        </section>
       </aside>
-
     </main>
   </div>
 
-  <script src="script.js"></script>
+  <div id="promotion-modal" class="overlay hidden">
+    <div class="modal-card promo-card">
+      <div class="modal-title">Pawn Promotion</div>
+      <div class="modal-subtitle">Choose the piece you want</div>
+      <div id="promotion-pieces" class="promotion-pieces"></div>
+    </div>
+  </div>
+
+  <div id="gameover-modal" class="overlay hidden">
+    <div class="modal-card gameover-card">
+      <div id="gameover-icon" class="gameover-icon">🏆</div>
+      <div id="gameover-title" class="modal-title">Game Over</div>
+      <div id="gameover-message" class="modal-subtitle">Match complete</div>
+      <div id="gameover-stats" class="stats-box"></div>
+      <div class="button-row">
+        <button id="new-game-btn" class="primary-btn">New Game</button>
+        <button id="rematch-btn" class="secondary-btn">Rematch</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>
