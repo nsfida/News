@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financial Intelligence Dashboard</title>
+  <meta name="description" content="Static financial intelligence dashboard for Silver, Oil, NASDAQ-100 and CAC 40 with AI-like analytics and live market data." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Static, client-side financial intelligence</p>
+      <h1>Market Pulse Dashboard</h1>
+      <p class="subtitle">Live prices, technical signals, sentiment, and probabilistic forecasts for Silver, Crude Oil, Tech45, and Cack40.</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="refreshBtn" class="btn primary">Refresh now</button>
+      <button id="settingsBtn" class="btn secondary">API settings</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="hero-grid">
+      <div class="panel panel-hero">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker">Live snapshot</span>
+            <h2 id="selectedTitle">Silver — XAG/USD</h2>
+          </div>
+          <div class="pill" id="connectionPill">Idle</div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span>Price</span>
+            <strong id="livePrice">—</strong>
+            <small id="livePriceMeta">Awaiting data</small>
+          </div>
+          <div class="stat-card">
+            <span>24h change</span>
+            <strong id="liveChange">—</strong>
+            <small id="liveChangeMeta">—</small>
+          </div>
+          <div class="stat-card">
+            <span>Confidence</span>
+            <strong id="confidenceValue">—</strong>
+            <small id="confidenceMeta">Model blend</small>
+          </div>
+          <div class="stat-card">
+            <span>Signal</span>
+            <strong id="signalValue">—</strong>
+            <small id="signalMeta">No recommendation yet</small>
+          </div>
+        </div>
+
+        <div class="filters">
+          <div class="segmented" id="assetTabs"></div>
+          <div class="segmented" id="rangeTabs"></div>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="mainChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <aside class="panel side-panel">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker">AI-like analysis</span>
+            <h2>Forecast engine</h2>
+          </div>
+        </div>
+        <div class="insight-list" id="insightList"></div>
+
+        <div class="forecast-box">
+          <h3>Suggested trade zones</h3>
+          <div class="zone-grid">
+            <div><span>Buy zone</span><strong id="buyZone">—</strong></div>
+            <div><span>Sell zone</span><strong id="sellZone">—</strong></div>
+            <div><span>Stop-loss</span><strong id="stopZone">—</strong></div>
+            <div><span>Take-profit</span><strong id="tpZone">—</strong></div>
+          </div>
+          <p class="risk-note" id="riskNote">Risk is estimated from volatility and indicator agreement.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid-3">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker">Indicators</span>
+            <h2>Technical snapshot</h2>
+          </div>
+        </div>
+        <div class="indicator-grid" id="indicatorGrid"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker">News sentiment</span>
+            <h2>Headline scanner</h2>
+          </div>
+        </div>
+        <div id="newsList" class="news-list"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker">Model memory</span>
+            <h2>Prediction tracking</h2>
+          </div>
+        </div>
+        <div class="metric-row">
+          <div class="metric">
+            <span>Resolved predictions</span>
+            <strong id="resolvedCount">0</strong>
+          </div>
+          <div class="metric">
+            <span>Directional accuracy</span>
+            <strong id="accuracyValue">—</strong>
+          </div>
+          <div class="metric">
+            <span>Avg. error</span>
+            <strong id="errorValue">—</strong>
+          </div>
+        </div>
+        <div id="predictionList" class="prediction-list"></div>
+      </div>
+    </section>
+
+    <section class="panel footer-panel">
+      <div class="panel-head">
+        <div>
+          <span class="panel-kicker">Controls</span>
+          <h2>Data sources and symbols</h2>
+        </div>
+      </div>
+      <div class="settings-grid">
+        <label>
+          <span>Alpha Vantage API key</span>
+          <input id="alphaKey" type="password" placeholder="Enter your Alpha Vantage key" />
+        </label>
+        <label>
+          <span>FMP API key</span>
+          <input id="fmpKey" type="password" placeholder="Enter your FMP key" />
+        </label>
+        <label>
+          <span>Refresh interval</span>
+          <select id="refreshInterval">
+            <option value="300000">5 minutes</option>
+            <option value="600000">10 minutes</option>
+            <option value="900000">15 minutes</option>
+          </select>
+        </label>
+        <label>
+          <span>Selected asset</span>
+          <select id="selectedAsset"></select>
+        </label>
+      </div>
+      <div class="settings-grid second">
+        <label>
+          <span>Silver symbol</span>
+          <input id="symbolSilver" value="XAG" />
+        </label>
+        <label>
+          <span>WTI symbol</span>
+          <input id="symbolWti" value="WTI" />
+        </label>
+        <label>
+          <span>Brent symbol</span>
+          <input id="symbolBrent" value="BRENT" />
+        </label>
+        <label>
+          <span>Tech45 symbol</span>
+          <input id="symbolTech" value="^NDX" />
+        </label>
+        <label>
+          <span>Cack40 symbol</span>
+          <input id="symbolCack" value="^FCHI" />
+        </label>
+      </div>
+      <div class="footer-actions">
+        <button id="saveSettingsBtn" class="btn primary">Save settings</button>
+        <button id="clearCacheBtn" class="btn secondary">Clear cache</button>
+      </div>
+      <p class="disclaimer">
+        This dashboard is educational and displays probabilistic, not guaranteed, forecasts. Any trade zones are heuristic ranges derived from price action, volatility, and sentiment. Always verify data with your own sources before making decisions.
+      </p>
+    </section>
+  </main>
+
+  <div id="modalBackdrop" class="modal-backdrop hidden"></div>
+  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-head">
+      <h2 id="settingsTitle">API configuration</h2>
+      <button id="closeSettingsBtn" class="icon-btn" aria-label="Close settings">×</button>
+    </div>
+    <p class="modal-copy">Keys are stored locally in your browser only. GitHub Pages cannot hide secrets, so keep your own API keys private.</p>
+    <div class="settings-grid">
+      <label>
+        <span>Alpha Vantage key</span>
+        <input id="modalAlphaKey" type="password" placeholder="Optional" />
+      </label>
+      <label>
+        <span>FMP key</span>
+        <input id="modalFmpKey" type="password" placeholder="Optional" />
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button id="modalSaveBtn" class="btn primary">Save</button>
+      <button id="modalCancelBtn" class="btn secondary">Cancel</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
