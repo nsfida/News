@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Financial Intelligence Dashboard</title>
-  <meta name="description" content="Static financial intelligence dashboard for Silver, Oil, NASDAQ-100 and CAC 40 with AI-like analytics and live market data." />
+  <title>Market Pulse Dashboard</title>
+  <meta name="description" content="Real-time financial dashboard — Silver, WTI Crude, Brent, Nasdaq-100, CAC 40. Live quotes, technical indicators, sentiment, and probabilistic forecasts." />
+  <meta name="theme-color" content="#07111f" />
+  <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
 </head>
@@ -14,35 +16,36 @@
 
   <header class="topbar">
     <div>
-      <p class="eyebrow">Static, client-side financial intelligence</p>
+      <p class="eyebrow">Real-time market intelligence · Powered by Yahoo Finance</p>
       <h1>Market Pulse Dashboard</h1>
-      <p class="subtitle">Live prices, technical signals, sentiment, and probabilistic forecasts for Silver, Crude Oil, Tech45, and Cack40.</p>
+      <p class="subtitle">Live quotes, technical indicators, headline sentiment, and probabilistic forecasts for Silver, WTI Crude, Brent, Tech 45, and Cack 40.</p>
     </div>
     <div class="topbar-actions">
-      <button id="refreshBtn" class="btn primary">Refresh now</button>
-      <button id="settingsBtn" class="btn secondary">API settings</button>
+      <button id="refreshBtn" class="btn primary">↻ Refresh</button>
+      <button id="settingsBtn" class="btn secondary">⚙ Settings</button>
     </div>
   </header>
 
   <main class="layout">
+    <!-- ── Hero Row ── -->
     <section class="hero-grid">
       <div class="panel panel-hero">
         <div class="panel-head">
           <div>
             <span class="panel-kicker">Live snapshot</span>
-            <h2 id="selectedTitle">Silver — XAG/USD</h2>
+            <h2 id="selectedTitle">Silver — SI=F</h2>
           </div>
           <div class="pill" id="connectionPill">Idle</div>
         </div>
 
         <div class="hero-stats">
           <div class="stat-card">
-            <span>Price</span>
+            <span>Live price</span>
             <strong id="livePrice">—</strong>
-            <small id="livePriceMeta">Awaiting data</small>
+            <small id="livePriceMeta">Waiting for quote feed</small>
           </div>
           <div class="stat-card">
-            <span>24h change</span>
+            <span>Change (day)</span>
             <strong id="liveChange">—</strong>
             <small id="liveChangeMeta">—</small>
           </div>
@@ -75,7 +78,9 @@
             <h2>Forecast engine</h2>
           </div>
         </div>
-        <div class="insight-list" id="insightList"></div>
+        <div class="insight-list" id="insightList">
+          <div class="insight"><p style="color:var(--muted)">Loading analysis…</p></div>
+        </div>
 
         <div class="forecast-box">
           <h3>Suggested trade zones</h3>
@@ -90,6 +95,7 @@
       </aside>
     </section>
 
+    <!-- ── Lower Grid ── -->
     <section class="grid-3">
       <div class="panel">
         <div class="panel-head">
@@ -119,103 +125,100 @@
           </div>
         </div>
         <div class="metric-row">
-          <div class="metric">
-            <span>Resolved predictions</span>
-            <strong id="resolvedCount">0</strong>
-          </div>
-          <div class="metric">
-            <span>Directional accuracy</span>
-            <strong id="accuracyValue">—</strong>
-          </div>
-          <div class="metric">
-            <span>Avg. error</span>
-            <strong id="errorValue">—</strong>
-          </div>
+          <div class="metric"><span>Resolved</span><strong id="resolvedCount">0</strong></div>
+          <div class="metric"><span>Directional accuracy</span><strong id="accuracyValue">—</strong></div>
+          <div class="metric"><span>Avg. error</span><strong id="errorValue">—</strong></div>
         </div>
         <div id="predictionList" class="prediction-list"></div>
       </div>
     </section>
 
+    <!-- ── Settings Footer ── -->
     <section class="panel footer-panel">
       <div class="panel-head">
         <div>
           <span class="panel-kicker">Controls</span>
-          <h2>Data sources and symbols</h2>
+          <h2>Data sources &amp; symbols</h2>
         </div>
       </div>
+
+      <p style="color:var(--good);margin:0 0 14px;font-size:.9rem;">
+        ✓ No API key required — data is sourced from Yahoo Finance (free).
+      </p>
+
       <div class="settings-grid">
-        <label>
-          <span>Alpha Vantage API key</span>
-          <input id="alphaKey" type="password" placeholder="Enter your Alpha Vantage key" />
-        </label>
-        <label>
-          <span>FMP API key</span>
-          <input id="fmpKey" type="password" placeholder="Enter your FMP key" />
-        </label>
         <label>
           <span>Refresh interval</span>
           <select id="refreshInterval">
+            <option value="60000">1 minute</option>
+            <option value="120000" selected>2 minutes</option>
             <option value="300000">5 minutes</option>
             <option value="600000">10 minutes</option>
-            <option value="900000">15 minutes</option>
           </select>
         </label>
         <label>
           <span>Selected asset</span>
           <select id="selectedAsset"></select>
         </label>
-      </div>
-      <div class="settings-grid second">
         <label>
-          <span>Silver symbol</span>
-          <input id="symbolSilver" value="XAG" />
-        </label>
-        <label>
-          <span>WTI symbol</span>
-          <input id="symbolWti" value="WTI" />
-        </label>
-        <label>
-          <span>Brent symbol</span>
-          <input id="symbolBrent" value="BRENT" />
-        </label>
-        <label>
-          <span>Tech45 symbol</span>
-          <input id="symbolTech" value="^NDX" />
-        </label>
-        <label>
-          <span>Cack40 symbol</span>
-          <input id="symbolCack" value="^FCHI" />
+          <span>CORS proxy</span>
+          <select id="proxySelect">
+            <option value="allorigins">allorigins.win (default)</option>
+            <option value="corsproxy">corsproxy.io</option>
+            <option value="direct">Direct (may not work)</option>
+          </select>
         </label>
       </div>
+
+      <div class="settings-grid second" style="margin-top:14px;grid-template-columns:repeat(5,minmax(0,1fr))">
+        <label><span>Silver symbol</span><input id="symbolSilver" value="SI=F" /></label>
+        <label><span>WTI symbol</span><input id="symbolWti" value="CL=F" /></label>
+        <label><span>Brent symbol</span><input id="symbolBrent" value="BZ=F" /></label>
+        <label><span>Tech 45 symbol</span><input id="symbolTech" value="^NDX" /></label>
+        <label><span>Cack 40 symbol</span><input id="symbolCack" value="^FCHI" /></label>
+      </div>
+
       <div class="footer-actions">
         <button id="saveSettingsBtn" class="btn primary">Save settings</button>
-        <button id="clearCacheBtn" class="btn secondary">Clear cache</button>
+        <button id="clearCacheBtn" class="btn secondary">Clear cache &amp; reload</button>
       </div>
+
       <p class="disclaimer">
-        This dashboard is educational and displays probabilistic, not guaranteed, forecasts. Any trade zones are heuristic ranges derived from price action, volatility, and sentiment. Always verify data with your own sources before making decisions.
+        This dashboard is educational. Quotes, charts, and forecasts are probabilistic and can differ by venue and timestamp.
+        Yahoo Finance data is subject to their terms of service. No guaranteed prediction is implied. Not financial advice.
       </p>
     </section>
   </main>
 
+  <!-- ── Settings Modal ── -->
   <div id="modalBackdrop" class="modal-backdrop hidden"></div>
   <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <div class="modal-head">
-      <h2 id="settingsTitle">API configuration</h2>
-      <button id="closeSettingsBtn" class="icon-btn" aria-label="Close settings">×</button>
+      <h2 id="settingsTitle">Quick settings</h2>
+      <button id="closeSettingsBtn" class="icon-btn" aria-label="Close">×</button>
     </div>
-    <p class="modal-copy">Keys are stored locally in your browser only. GitHub Pages cannot hide secrets, so keep your own API keys private.</p>
-    <div class="settings-grid">
+    <p class="modal-copy">No API key needed. Data is fetched via Yahoo Finance through a free CORS proxy. Symbol changes take effect on next refresh.</p>
+    <div class="settings-grid" style="grid-template-columns:1fr 1fr;gap:12px">
       <label>
-        <span>Alpha Vantage key</span>
-        <input id="modalAlphaKey" type="password" placeholder="Optional" />
+        <span>Refresh interval</span>
+        <select id="modalRefreshInterval">
+          <option value="60000">1 minute</option>
+          <option value="120000" selected>2 minutes</option>
+          <option value="300000">5 minutes</option>
+          <option value="600000">10 minutes</option>
+        </select>
       </label>
       <label>
-        <span>FMP key</span>
-        <input id="modalFmpKey" type="password" placeholder="Optional" />
+        <span>CORS proxy</span>
+        <select id="modalProxySelect">
+          <option value="allorigins">allorigins.win</option>
+          <option value="corsproxy">corsproxy.io</option>
+          <option value="direct">Direct</option>
+        </select>
       </label>
     </div>
-    <div class="modal-actions">
-      <button id="modalSaveBtn" class="btn primary">Save</button>
+    <div class="modal-actions" style="display:flex;gap:10px;margin-top:18px">
+      <button id="modalSaveBtn" class="btn primary">Save &amp; refresh</button>
       <button id="modalCancelBtn" class="btn secondary">Cancel</button>
     </div>
   </div>
