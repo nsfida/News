@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSF Facebook Video URL Extractor</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0a0b0f;
+    --panel:    #111318;
+    --border:   #1e2028;
+    --accent:   #4f8cff;
+    --accent2:  #00e5c3;
+    --danger:   #ff4f4f;
+    --text:     #e2e4ed;
+    --muted:    #5a5f75;
+    --card:     #161820;
+  }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 60px;
+    overflow-x: hidden;
+  }
+
+  /* ─── noise overlay ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: .6;
+  }
+
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 860px; }
+
+  /* ─── header ─── */
+  header {
+    padding: 48px 0 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+  }
+  .logo-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: .18em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    border: 1px solid var(--accent2);
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-bottom: 14px;
+    opacity: .8;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(26px, 5vw, 46px);
+    letter-spacing: -.02em;
+    line-height: 1.1;
+    background: linear-gradient(120deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .05em;
+  }
+
+  /* ─── step labels ─── */
+  .step-label {
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── instruction box ─── */
+  .instructions {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    padding: 18px 20px;
+    border-radius: 6px;
+    margin-bottom: 28px;
+    font-size: 12px;
+    line-height: 1.9;
+    color: #8a91ac;
+  }
+  .instructions code {
+    background: #0d1117;
+    border: 1px solid #2a2d3a;
+    color: var(--accent2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .instructions strong { color: var(--text); }
+
+  /* ─── textarea ─── */
+  .input-area {
+    position: relative;
+    margin-bottom: 18px;
+  }
+  textarea {
+    width: 100%;
+    height: 220px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: #8a91ac;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    padding: 16px;
+    resize: vertical;
+    outline: none;
+    transition: border-color .2s;
+  }
+  textarea:focus { border-color: var(--accent); color: var(--text); }
+  textarea::placeholder { color: var(--muted); opacity: .6; }
+
+  .char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    font-size: 10px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  /* ─── buttons ─── */
+  .btn-row { display: flex; gap: 10px; margin-bottom: 32px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    border-radius: 5px;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #6fa0ff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,140,255,.35); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid #2a1515;
+  }
+  .btn-danger:hover { background: #1a0808; border-color: var(--danger); }
+
+  /* ─── status / error ─── */
+  #status {
+    display: none;
+    padding: 12px 16px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-bottom: 24px;
+    animation: fadeIn .3s ease;
+  }
+  #status.error { background: #1a0808; border: 1px solid var(--danger); color: var(--danger); }
+  #status.info  { background: #0a1528; border: 1px solid var(--accent); color: var(--accent); }
+  #status.ok    { background: #061a14; border: 1px solid var(--accent2); color: var(--accent2); }
+
+  /* ─── results ─── */
+  #results { display: none; animation: fadeUp .4s ease; }
+
+  /* ─── video player ─── */
+  .player-section {
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .player-header {
+    padding: 12px 16px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .player-title { font-size: 11px; color: var(--muted); letter-spacing: .05em; }
+  .player-title span { color: var(--accent2); }
+  #videoPlayer {
+    width: 100%;
+    max-height: 420px;
+    display: block;
+    background: #000;
+  }
+  .player-controls {
+    padding: 12px 16px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .quality-label { font-size: 10px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus { border-color: var(--accent); }
+
+  /* ─── stream cards ─── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: .05em;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .count-badge {
+    background: var(--accent);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+
+  .streams-grid {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .stream-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    transition: border-color .2s, background .2s;
+  }
+  .stream-card:hover { border-color: #2a2f40; background: #181b26; }
+  .stream-card.playing { border-color: var(--accent2); background: #061a14; }
+  .stream-card.audio-card { border-color: #1e1828; }
+  .stream-card.audio-card:hover { border-color: #2d2045; }
+
+  .stream-info { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .stream-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .badge-video { background: rgba(79,140,255,.15); color: var(--accent); border: 1px solid rgba(79,140,255,.3); }
+  .badge-audio { background: rgba(180,100,255,.15); color: #c084fc; border: 1px solid rgba(180,100,255,.3); }
+  .badge-hd    { background: rgba(0,229,195,.15); color: var(--accent2); border: 1px solid rgba(0,229,195,.3); }
+
+  .stream-meta {
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .stream-meta span { display: flex; align-items: center; gap: 4px; }
+
+  .url-pill {
+    font-size: 9.5px;
+    color: #4a5068;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+    cursor: text;
+    user-select: all;
+  }
+
+  .stream-actions { display: flex; gap: 7px; align-items: center; flex-shrink: 0; }
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .15s;
+    text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--panel); color: var(--text); border-color: #2a2f40; }
+  .icon-btn.play { border-color: rgba(79,140,255,.4); color: var(--accent); }
+  .icon-btn.play:hover { background: rgba(79,140,255,.1); }
+  .icon-btn.dl { border-color: rgba(0,229,195,.3); color: var(--accent2); }
+  .icon-btn.dl:hover { background: rgba(0,229,195,.08); }
+  .icon-btn.copy:hover { color: #f0c94a; border-color: rgba(240,201,74,.4); background: rgba(240,201,74,.05); }
+
+  /* ─── raw url section ─── */
+  .raw-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .raw-section h3 {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .url-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 10px;
+    color: #5a6080;
+    word-break: break-all;
+    user-select: all;
+    cursor: text;
+    line-height: 1.6;
+    transition: color .2s;
+  }
+  .url-box:hover { color: #8a91ac; }
+
+  /* ─── copy toast ─── */
+  #toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent2);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 9px 20px;
+    border-radius: 30px;
+    pointer-events: none;
+    opacity: 0;
+    transition: all .3s ease;
+    z-index: 999;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ─── animations ─── */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── scrollbar ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-tag">Powered by Nadeem Shahzad Fida</div>
+    <h1>NSF Facebook Video URL Extractor</h1>
+    <p class="subtitle">paste raw json from inspect element → get direct playable video links</p>
+  </header>
+
+  <!-- HOW TO USE -->
+  <div class="step-label">01 — how to get the data</div>
+  <div class="instructions">
+    <strong>Steps to grab the JSON from Facebook:</strong><br>
+    1. Open the Facebook video / reel in your browser.<br>
+    2. Press <code>F12</code> → go to <strong>Network</strong> tab → filter by <code>XHR</code> or search <code>video</code>.<br>
+    3. Alternatively go to <strong>Sources / Debugger</strong> tab and search <code>Ctrl+F</code> for <code>base_url</code>.<br>
+    4. Or right-click page → <strong>View Page Source</strong>, then <code>Ctrl+F</code> → search <code>representations</code>.<br>
+    5. Copy the entire JSON block (or the full page source) and paste it below.
+  </div>
+
+  <!-- INPUT -->
+  <div class="step-label">02 — paste raw data</div>
+  <div class="input-area">
+    <textarea id="jsonInput" placeholder='Paste raw JSON data here from Facebook page source or network inspector...&#10;&#10;It can be the full JSON blob, page source, or just the part containing "representations" or "base_url".&#10;The extractor will find all video/audio streams automatically.'></textarea>
+    <div class="char-count" id="charCount">0 chars</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="extractURLs()">⚡ Extract Video URLs</button>
+    <button class="btn btn-secondary" onclick="pasteFromClipboard()">📋 Paste from Clipboard</button>
+    <button class="btn btn-danger" onclick="clearAll()">✕ Clear</button>
+  </div>
+
+  <!-- STATUS -->
+  <div id="status"></div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="step-label">03 — video streams found</div>
+
+    <!-- PLAYER -->
+    <div class="player-section">
+      <div class="player-header">
+        <div class="player-title">▶ Preview — <span id="nowPlaying">select a stream below</span></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="quality-label">Quality:</span>
+          <select id="qualitySelect" onchange="switchQuality()">
+            <option value="">— pick —</option>
+          </select>
+        </div>
+      </div>
+      <video id="videoPlayer" controls playsinline>
+        Your browser does not support HTML5 video.
+      </video>
+      <div class="player-controls">
+        <span class="quality-label">Video ID:</span>
+        <span id="videoIdDisplay" style="color:var(--accent2);font-size:11px;">—</span>
+        <span style="flex:1"></span>
+        <span class="quality-label" id="playerMeta"></span>
+      </div>
+    </div>
+
+    <!-- VIDEO STREAMS -->
+    <div id="videoSection">
+      <div class="section-title">
+        Video Streams <span class="count-badge" id="videoCount">0</span>
+      </div>
+      <div class="streams-grid" id="videoGrid"></div>
+    </div>
+
+    <!-- AUDIO STREAMS -->
+    <div id="audioSection" style="display:none;">
+      <div class="section-title" style="margin-top:8px;">
+        Audio Streams <span class="count-badge" id="audioCount" style="background:#9333ea">0</span>
+      </div>
+      <div class="streams-grid" id="audioGrid"></div>
+    </div>
+
+  </div><!-- end #results -->
+</div><!-- end .wrap -->
+
+<div id="toast">✓ Copied to clipboard</div>
+
+<script>
+// ── State ──
+let allStreams = [];
+let videoStreams = [];
+let audioStreams = [];
+
+// ── Char counter ──
+document.getElementById('jsonInput').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length.toLocaleString() + ' chars';
+});
+
+// ── Main extraction ──
+function extractURLs() {
+  const raw = document.getElementById('jsonInput').value.trim();
+  if (!raw) { showStatus('Paste your JSON data first.', 'error'); return; }
+
+  showStatus('Scanning for video streams…', 'info');
+  allStreams = [];
+  videoStreams = [];
+  audioStreams = [];
+
+  try {
+    const streams = deepExtract(raw);
+    if (!streams.length) {
+      showStatus('No video streams found. Make sure you pasted the correct JSON containing "base_url" or "representations".', 'error');
+      return;
+    }
+
+    // Separate video and audio
+    streams.forEach(s => {
+      if (s.type === 'audio') audioStreams.push(s);
+      else videoStreams.push(s);
+    });
+
+    // Sort video by quality desc
+    videoStreams.sort((a, b) => (b.height || 0) - (a.height || 0));
+    audioStreams.sort((a, b) => (b.bandwidth || 0) - (a.bandwidth || 0));
+
+    allStreams = [...videoStreams, ...audioStreams];
+
+    renderResults();
+    showStatus(`✓ Extracted ${videoStreams.length} video stream${videoStreams.length !== 1 ? 's' : ''} and ${audioStreams.length} audio stream${audioStreams.length !== 1 ? 's' : ''}.`, 'ok');
+  } catch (err) {
+    showStatus('Parse error: ' + err.message, 'error');
+    console.error(err);
+  }
+}
+
+// ── Deep JSON extractor ──
+function deepExtract(raw) {
+  const found = [];
+  const seenUrls = new Set();
+  let videoId = null;
+
+  // Try to find video_id
+  const vidIdMatch = raw.match(/"video_id"\s*:\s*"(\d+)"/);
+  if (vidIdMatch) videoId = vidIdMatch[1];
+
+  // Strategy 1: find all "representations" arrays
+  const repPattern = /"representations"\s*:\s*\[/g;
+  let match;
+  while ((match = repPattern.exec(raw)) !== null) {
+    try {
+      const slice = raw.slice(match.index);
+      const arr = extractJsonArray(slice.replace(/^"representations"\s*:\s*/, ''));
+      if (arr) {
+        arr.forEach(rep => processRep(rep, found, seenUrls));
+      }
+    } catch(e) {}
+  }
+
+  // Strategy 2: find base_url patterns directly if Strategy 1 got nothing
+  if (found.length === 0) {
+    const baseUrlPattern = /"base_url"\s*:\s*"(https?:\/\/[^"]+\.mp4[^"]*)"/g;
+    let bMatch;
+    let idx = 0;
+    while ((bMatch = baseUrlPattern.exec(raw)) !== null) {
+      const url = unescape(bMatch[1]);
+      if (seenUrls.has(url)) continue;
+      seenUrls.add(url);
+
+      // Try to grab surrounding context
+      const ctxStart = Math.max(0, bMatch.index - 400);
+      const ctx = raw.slice(ctxStart, bMatch.index + bMatch[0].length + 200);
+      const obj = tryParseContext(ctx, url);
+      found.push({ ...obj, url, id: 'stream_' + idx++ });
+    }
+  }
+
+  // Attach video id
+  if (videoId) found.forEach(s => s.videoId = videoId);
+
+  return found;
+}
+
+function processRep(rep, found, seenUrls) {
+  if (!rep || typeof rep !== 'object') return;
+  let url = rep.base_url || rep.baseUrl || rep.src || '';
+  if (!url) return;
+  // unescape unicode
+  url = url.replace(/\\u003D/g, '=').replace(/\\u0026/g, '&').replace(/%253D/g, '=').replace(/%2526/g, '&');
+  if (seenUrls.has(url)) return;
+  seenUrls.add(url);
+
+  const mime = rep.mime_type || rep.mimeType || '';
+  const isAudio = mime.includes('audio') || (rep.height === 0 && rep.width === 0);
+  const height = rep.height || 0;
+  const width = rep.width || 0;
+  const bw = rep.bandwidth || 0;
+  const codecs = rep.codecs || '';
+  const id = rep.representation_id || rep.id || '';
+
+  let label;
+  if (isAudio) {
+    label = `Audio — ${Math.round(bw / 1000)}kbps (${codecs})`;
+  } else {
+    const res = height && width ? `${width}×${height}` : '';
+    const kbps = bw ? `${Math.round(bw / 1000)}kbps` : '';
+    const p = height ? height + 'p' : '';
+    label = [p, res, kbps, codecs].filter(Boolean).join(' · ');
+  }
+
+  found.push({
+    id,
+    url,
+    type: isAudio ? 'audio' : 'video',
+    mime,
+    codecs,
+    height,
+    width,
+    bandwidth: bw,
+    label,
+    isHD: height >= 720
+  });
+}
+
+function tryParseContext(ctx, url) {
+  const hwMatch = ctx.match(/"height"\s*:\s*(\d+).*?"width"\s*:\s*(\d+)/s)
+               || ctx.match(/"width"\s*:\s*(\d+).*?"height"\s*:\s*(\d+)/s);
+  const bwMatch = ctx.match(/"bandwidth"\s*:\s*(\d+)/);
+  const mimeMatch = ctx.match(/"mime_type"\s*:\s*"([^"]+)"/);
+  const codecsMatch = ctx.match(/"codecs"\s*:\s*"([^"]+)"/);
+
+  const height = hwMatch ? parseInt(hwMatch[1]) : 0;
+  const width  = hwMatch ? parseInt(hwMatch[2]) : 0;
+  const bw     = bwMatch ? parseInt(bwMatch[1]) : 0;
+  const mime   = mimeMatch ? mimeMatch[1] : 'video/mp4';
+  const codecs = codecsMatch ? codecsMatch[1] : '';
+  const isAudio = mime.includes('audio');
+
+  const p = height ? height + 'p' : '';
+  const kbps = bw ? `${Math.round(bw / 1000)}kbps` : '';
+  const label = isAudio
+    ? `Audio · ${kbps} (${codecs})`
+    : [p, height && width ? `${width}×${height}` : '', kbps, codecs].filter(Boolean).join(' · ');
+
+  return { type: isAudio ? 'audio' : 'video', mime, codecs, height, width, bandwidth: bw, label, isHD: height >= 720 };
+}
+
+// Extract JSON array from string starting with '['
+function extractJsonArray(str) {
+  str = str.trim();
+  if (!str.startsWith('[')) return null;
+  let depth = 0, inStr = false, escape = false;
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\') { escape = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === '[' || c === '{') depth++;
+    else if (c === ']' || c === '}') {
+      depth--;
+      if (depth === 0) {
+        try { return JSON.parse(str.slice(0, i + 1)); } catch(e) { return null; }
+      }
+    }
+  }
+  return null;
+}
+
+function unescape(str) {
+  return str.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+}
+
+// ── Render ──
+function renderResults() {
+  // Video ID
+  const vidId = allStreams[0]?.videoId;
+  document.getElementById('videoIdDisplay').textContent = vidId || '—';
+
+  // Quality selector
+  const qSel = document.getElementById('qualitySelect');
+  qSel.innerHTML = '<option value="">— pick quality —</option>';
+  videoStreams.forEach((s, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.label;
+    qSel.appendChild(opt);
+  });
+
+  // Auto-load best quality
+  if (videoStreams.length) {
+    loadInPlayer(videoStreams[0], 0);
+    qSel.value = '0';
+  }
+
+  // Render video cards
+  const vGrid = document.getElementById('videoGrid');
+  vGrid.innerHTML = '';
+  document.getElementById('videoCount').textContent = videoStreams.length;
+  videoStreams.forEach((s, i) => {
+    vGrid.appendChild(makeCard(s, i, 'video'));
+  });
+
+  // Render audio cards
+  const aGrid = document.getElementById('audioGrid');
+  aGrid.innerHTML = '';
+  if (audioStreams.length) {
+    document.getElementById('audioSection').style.display = 'block';
+    document.getElementById('audioCount').textContent = audioStreams.length;
+    audioStreams.forEach((s, i) => {
+      aGrid.appendChild(makeCard(s, i, 'audio'));
+    });
+  } else {
+    document.getElementById('audioSection').style.display = 'none';
+  }
+
+  document.getElementById('results').style.display = 'block';
+}
+
+function makeCard(stream, idx, type) {
+  const card = document.createElement('div');
+  card.className = 'stream-card' + (type === 'audio' ? ' audio-card' : '');
+  card.id = 'card_' + type + '_' + idx;
+
+  const bw = stream.bandwidth ? `${Math.round(stream.bandwidth / 1000)} kbps` : '';
+  const res = stream.height && stream.width ? `${stream.width}×${stream.height}` : '';
+  const p   = stream.height ? stream.height + 'p' : '';
+
+  const badgeHtml = stream.isHD
+    ? `<span class="badge badge-hd">HD</span>`
+    : '';
+  const typeBadge = type === 'audio'
+    ? `<span class="badge badge-audio">AUDIO</span>`
+    : `<span class="badge badge-video">VIDEO</span>`;
+
+  const shortUrl = stream.url.split('?')[0].split('/').pop().slice(0, 40) + '…';
+
+  card.innerHTML = `
+    <div class="stream-info">
+      <div class="stream-name">
+        ${typeBadge}
+        ${badgeHtml}
+        ${p || (type === 'audio' ? 'Audio' : 'Video')}
+        ${res ? `<small style="color:var(--muted);font-size:10px">(${res})</small>` : ''}
+      </div>
+      <div class="stream-meta">
+        ${bw ? `<span>📡 ${bw}</span>` : ''}
+        ${stream.codecs ? `<span>🎞 ${stream.codecs}</span>` : ''}
+        ${stream.mime ? `<span>📄 ${stream.mime}</span>` : ''}
+      </div>
+      <div class="url-pill" title="${stream.url}">${stream.url}</div>
+    </div>
+    <div class="stream-actions">
+      ${type === 'video' ? `<button class="icon-btn play" onclick="loadInPlayer(videoStreams[${idx}], ${idx})" title="Play in player">▶</button>` : ''}
+      <button class="icon-btn copy" onclick="copyUrl('${escHtml(stream.url)}')" title="Copy URL">⧉</button>
+      <a class="icon-btn dl" href="${escHtml(stream.url)}" download target="_blank" rel="noopener" title="Open / Download">↓</a>
+    </div>
+  `;
+  return card;
+}
+
+function escHtml(s) {
+  return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ── Player ──
+function loadInPlayer(stream, idx) {
+  const player = document.getElementById('videoPlayer');
+  player.src = stream.url;
+  player.play().catch(() => {});
+  document.getElementById('nowPlaying').textContent = stream.label;
+  document.getElementById('playerMeta').textContent =
+    [stream.mime, stream.codecs].filter(Boolean).join(' · ');
+  document.getElementById('qualitySelect').value = idx;
+
+  // Highlight card
+  document.querySelectorAll('.stream-card').forEach(c => c.classList.remove('playing'));
+  const card = document.getElementById('card_video_' + idx);
+  if (card) card.classList.add('playing');
+}
+
+function switchQuality() {
+  const idx = parseInt(document.getElementById('qualitySelect').value);
+  if (!isNaN(idx) && videoStreams[idx]) loadInPlayer(videoStreams[idx], idx);
+}
+
+// ── Utilities ──
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('jsonInput').value = text;
+    document.getElementById('charCount').textContent = text.length.toLocaleString() + ' chars';
+  } catch(e) {
+    showStatus('Clipboard access denied. Please paste manually (Ctrl+V).', 'error');
+  }
+}
+
+function clearAll() {
+  document.getElementById('jsonInput').value = '';
+  document.getElementById('charCount').textContent = '0 chars';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('status').style.display = 'none';
+  document.getElementById('videoPlayer').src = '';
+  allStreams = videoStreams = audioStreams = [];
+}
+
+function copyUrl(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  });
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = type;
+  el.style.display = 'block';
+}
+
+// Allow Ctrl+Enter to extract
+document.getElementById('jsonInput').addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') extractURLs();
+});
+</script>
+</body>
+</html>
