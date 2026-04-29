@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NSF's Loan Management System</title>
   <meta name="description" content="Simple loan tracking for money given, received back, loan taken, and returned back." />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     @font-face{
       font-family:"DirhamSymbol";
@@ -39,7 +40,6 @@
     *{box-sizing:border-box}
     html,body{margin:0;padding:0}
     
-    /* Global font stack ensuring symbols render everywhere (body, inputs, selects, options, buttons) */
     body{
       font-family: "DirhamSymbol", "RiyalSymbol", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:var(--bg);
@@ -47,18 +47,20 @@
       min-height:100vh;
       -webkit-font-smoothing:antialiased;
       text-rendering:optimizeLegibility;
+      display: flex;
+      flex-direction: column;
     }
     button,input,select,textarea,option{
       font-family: inherit;
     }
 
-    /* Fallback explicits for symbols just in case */
-    .symbol-dirham { font-family: "DirhamSymbol", Inter, system-ui, sans-serif !important; }
-    .symbol-riyal { font-family: "RiyalSymbol", Inter, system-ui, sans-serif !important; }
+    .symbol-dirham, .currency-chip .symbol-dirham { font-family: "DirhamSymbol", Inter, system-ui, sans-serif !important; }
+    .symbol-riyal, .currency-chip .symbol-riyal { font-family: "RiyalSymbol", Inter, system-ui, sans-serif !important; }
 
-    a{color:inherit}
+    a{color:inherit; text-decoration: none;}
+    a:hover{text-decoration: underline;}
 
-    .shell{max-width:var(--max);margin:0 auto;padding:16px}
+    .shell{max-width:var(--max);margin:0 auto;padding:16px; flex: 1; width: 100%;}
 
     .header{
       display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
@@ -66,8 +68,8 @@
     }
     .brand{display:flex;gap:12px;align-items:center;min-width:0}
     .mark{
-      width:40px;height:40px;border-radius:12px;background:var(--primary);color:#fff;display:grid;place-items:center;
-      font-weight:800;letter-spacing:-.04em;flex:0 0 auto;box-shadow:var(--shadow);
+      width:40px;height:40px;border-radius:12px;flex:0 0 auto;box-shadow:var(--shadow);
+      object-fit:contain;background:transparent;
     }
     .brand h1{margin:0;font-size:1rem;line-height:1.2;letter-spacing:-.03em}
     .brand p{margin:4px 0 0;color:var(--muted);font-size:.85rem}
@@ -92,8 +94,7 @@
     .summary span{font-size:.74rem;color:var(--muted)}
     .summary strong{font-size:1rem;letter-spacing:-.02em}
     .currency-summary{gap:7px}
-    .currency-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .currency-head strong{font-size:.98rem}
+    .currency-head{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:2rem;line-height:1; color:var(--primary);}
     .summary-line{
       display:flex;justify-content:space-between;gap:10px;align-items:baseline;
       font-size:.82rem;line-height:1.4;
@@ -181,16 +182,19 @@
     }
     .loan summary{list-style:none;cursor:pointer}
     .loan summary::-webkit-details-marker{display:none}
+    
     .loan-top{
-      display:grid;grid-template-columns:minmax(0,1.8fr) repeat(4,minmax(92px,1fr));gap:10px;align-items:center;
+      display:grid;grid-template-columns:minmax(0,1.8fr) repeat(4,minmax(80px,1fr)) 40px;gap:10px;align-items:center;
       padding:12px 13px;background:#fff;
     }
     .loan-top:hover{background:#fcfdff}
-    .loan-name{font-size:1rem;font-weight:780;line-height:1.2;letter-spacing:-.03em}
+    .lt-main{min-width:0;display:flex;flex-direction:column;}
+    .loan-name{font-size:1rem;font-weight:780;line-height:1.2;letter-spacing:-.03em;}
     .loan-sub{margin-top:5px;color:var(--muted);font-size:.76rem;line-height:1.45;display:flex;gap:8px;flex-wrap:wrap}
     .cell{display:flex;flex-direction:column;gap:4px;min-width:0}
     .cell small{font-size:.71rem;color:var(--muted)}
     .cell strong{font-size:.92rem;line-height:1.25}
+    .lt-action{display:flex;align-items:center;justify-content:flex-end;}
 
     details[open] .loan-top{border-bottom:1px solid var(--line)}
     .detail{padding:12px 13px 13px;background:#fcfdff}
@@ -276,7 +280,6 @@
     .modal-footer{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px;}
     label{font-size:.78rem;color:var(--muted);font-weight:600}
 
-    /* Row-wise layout for multiple entries */
     .multi-row-header {
       display: grid;
       grid-template-columns: 1.2fr 1fr 1.5fr;
@@ -300,6 +303,66 @@
       font-size: 0.88rem;
     }
 
+    .note-full { display: block; }
+    .note-toggle { display: none; cursor: pointer; color: var(--primary); font-weight: 600; font-size: .8rem; }
+    .note-content-mobile { display: none; margin-top: 4px; padding: 6px; background: var(--bg); border-radius: 6px; font-size: .76rem; }
+
+    .site-footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 20px;
+    }
+    .site-footer a {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Print Template Styles */
+    #invoice-template {
+      display: none;
+      background: white;
+      padding: 40px;
+      font-family: "DirhamSymbol", "RiyalSymbol", Inter, system-ui, sans-serif;
+      color: #17212b;
+    }
+    .inv-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .inv-logo-area { display: flex; align-items: center; gap: 15px; }
+    .inv-logo { width: 60px; height: 60px; object-fit: contain; }
+    .inv-company-details h1 { margin: 0; font-size: 1.6rem; color: var(--primary); }
+    .inv-company-details p { margin: 4px 0 0 0; font-size: 0.9rem; color: #667085; }
+    .inv-title { text-align: right; }
+    .inv-title h2 { margin: 0; font-size: 2rem; letter-spacing: 2px; color: #17212b; text-transform: uppercase; }
+    .inv-title p { margin: 4px 0 0 0; font-size: 0.9rem; color: #667085; }
+    
+    .inv-meta { display: flex; justify-content: space-between; margin-bottom: 30px; }
+    .inv-bill-to h3 { margin: 0 0 8px 0; font-size: 0.9rem; color: #667085; text-transform: uppercase; }
+    .inv-bill-to h4 { margin: 0; font-size: 1.4rem; color: #17212b; }
+    .inv-bill-to .badge { margin-top: 8px; }
+    .inv-summary-boxes { display: flex; gap: 15px; text-align: right; }
+    .inv-box { background: #f8fafc; border: 1px solid #e4e7ec; padding: 15px; border-radius: 12px; min-width: 140px; }
+    .inv-box span { display: block; font-size: 0.8rem; color: #667085; text-transform: uppercase; margin-bottom: 5px; }
+    .inv-box strong { display: block; font-size: 1.3rem; color: var(--primary); }
+
+    .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .inv-table th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 0.9rem; }
+    .inv-table th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .inv-table th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+    .inv-table td { padding: 12px; border-bottom: 1px solid #e4e7ec; font-size: 0.9rem; vertical-align: top; }
+    .inv-table tr:nth-child(even) td { background: #fbfcfd; }
+    .inv-notes-cell { font-size: 0.85rem; color: #444; }
+
+    .inv-footer { text-align: center; border-top: 1px solid #e4e7ec; padding-top: 20px; font-size: 0.85rem; color: #667085; }
+    .inv-footer a { color: var(--primary); text-decoration: none; }
+
     @media (max-width: 820px){
       .shell{padding:12px}
       .header{flex-direction:column;align-items:flex-start}
@@ -315,12 +378,32 @@
       .brand h1{font-size:.9rem}
       .brand p{font-size:.74rem}
       .chip{font-size:.7rem;padding:5px 8px}
+      
+      .overview-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
       .overview{padding:10px;margin-bottom:10px}
       .overview-top h2{font-size:.92rem}
       .overview-top p{font-size:.78rem}
-      .summary{padding:10px;gap:6px;min-height:74px}
-      .summary strong{font-size:.88rem}
-      .summary-line strong{font-size:.8rem}
+      
+      .summary{
+        padding: 6px;
+        gap: 4px;
+        min-height: auto;
+        align-items: center;
+        text-align: center;
+      }
+      .currency-head { font-size: 1.4rem !important; justify-content: center; margin-bottom: 2px; width: 100%; }
+      .summary-line {
+        flex-direction: column;
+        gap: 2px;
+        width: 100%;
+        align-items: center;
+      }
+      .summary-line span { font-size: .55rem; line-height: 1; }
+      .summary-line strong { font-size: .65rem; line-height: 1; }
+      
       .section{padding:10px}
       .section-head{gap:10px}
       .section-head h3{font-size:.92rem}
@@ -330,14 +413,21 @@
       .btn{font-size:.8rem;padding:8px 10px}
       .filter-label{font-size:.72rem;padding:5px 10px}
       
-      .loan-top{grid-template-columns:1fr;gap:6px;padding:10px 11px}
-      .loan-name{font-size:.9rem}
-      .loan-sub{font-size:.7rem;gap:6px}
-      .cell strong{font-size:.85rem}
-      .cell small{font-size:.68rem}
+      .loan-top {
+        grid-template-columns: 1fr max-content max-content 32px;
+        gap: 6px;
+        padding: 10px;
+      }
+      .loan-sub { display: none; }
+      .lt-principal, .lt-movement { display: none; }
+      .lt-status small, .lt-remaining small { display: none; }
+      .lt-status strong { font-size: .75rem; }
+      .lt-remaining strong { font-size: .8rem; }
+      .lt-main { overflow: hidden; justify-content: center; }
+      .loan-name { font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       
       thead th,tbody td{font-size:.74rem;padding:8px}
-      .badge{font-size:.68rem;padding:4px 6px}
+      .badge{font-size:.64rem;padding:4px 6px}
       
       .modal{padding:8px}
       .modal-dialog{max-height:calc(100vh - 16px);border-radius:16px}
@@ -355,6 +445,9 @@
         border-left-width: 1.5px;
       }
       .multi-row .input { padding: 6px 5px; font-size: .75rem; border-radius: 8px;}
+
+      .note-full { display: none; }
+      .note-toggle { display: inline-block; }
     }
   </style>
 </head>
@@ -362,9 +455,9 @@
   <div id="lockScreen" class="lock">
     <div class="lock-card">
       <div class="brand" style="margin-bottom:12px">
-        <div class="mark">MM</div>
+        <img class="mark" src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
         <div>
-          <h1>NSF's Money Management System</h1>
+          <h1>NSF's Loan Management System</h1>
           <p>Private loan tracking workspace</p>
         </div>
       </div>
@@ -381,9 +474,9 @@
   <div id="app" class="shell hide">
     <header class="header">
       <div class="brand">
-        <div class="mark">MM</div>
+        <img class="mark" src="logo.png" alt="Logo" id="mainLogo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
         <div>
-          <h1>NSF's Money Management System</h1>
+          <h1>NSF's Loan Management System</h1>
           <p>Loan Given, Received Back, Loan Taken, Returned Back</p>
         </div>
       </div>
@@ -398,7 +491,7 @@
       <div class="overview-top">
         <div>
           <h2>Overview</h2>
-          <p>Separate balances shown by currency, with symbol fonts applied where the symbols appear.</p>
+          <p>Separate balances shown by currency.</p>
         </div>
         <div class="tools">
           <button class="btn primary" id="refreshBtn" type="button">Refresh</button>
@@ -551,6 +644,10 @@
         <div class="summary"><span>Returned rows</span><strong id="returnedCount">0</strong></div>
       </div>
     </section>
+
+    <footer class="site-footer">
+      &copy; 2026 Powered by <a href="https://www.facebook.com/nadeemshahzadfida" target="_blank" rel="noopener">Nadeem Shahzad Fida</a>
+    </footer>
   </div>
 
   <div id="entryModal" class="modal hide" aria-hidden="true">
@@ -680,6 +777,62 @@
           </div>
         </form>
       </div>
+    </div>
+  </div>
+
+  <div id="invoice-template" class="hide">
+    <div class="inv-header">
+      <div class="inv-logo-area">
+        <img src="logo.png" class="inv-logo" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+        <div class="inv-company-details">
+          <h1>NSF's Loan Management System</h1>
+          <p>Powered by Nadeem Shahzad Fida | <a href="https://www.facebook.com/nadeemshahzadfida" style="color:var(--primary);text-decoration:none;">facebook.com/nadeemshahzadfida</a></p>
+        </div>
+      </div>
+      <div class="inv-title">
+        <h2>STATEMENT</h2>
+        <p id="inv-date"></p>
+      </div>
+    </div>
+    
+    <div class="inv-meta">
+      <div class="inv-bill-to">
+        <h3>Statement For:</h3>
+        <h4 id="inv-name"></h4>
+        <div id="inv-status"></div>
+      </div>
+      <div class="inv-summary-boxes">
+        <div class="inv-box">
+          <span>Principal</span>
+          <strong id="inv-principal"></strong>
+        </div>
+        <div class="inv-box">
+          <span>Paid/Returned</span>
+          <strong id="inv-paid"></strong>
+        </div>
+        <div class="inv-box" style="background: var(--primary-soft); border-color: #dbe4fa;">
+          <span style="color: var(--primary);">Remaining</span>
+          <strong id="inv-remaining"></strong>
+        </div>
+      </div>
+    </div>
+
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Remaining</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="inv-tbody">
+      </tbody>
+    </table>
+
+    <div class="inv-footer">
+      Generated automatically by NSF's Loan Management System &bull; <a href="https://www.facebook.com/nadeemshahzadfida">Connect on Facebook</a>
     </div>
   </div>
 
@@ -968,7 +1121,6 @@
           <div class="summary currency-summary">
             <div class="currency-head">
               ${currencySymbolHtml(currency)}
-              <strong>${escapeHtml(currency)}</strong>
             </div>
             <div class="summary-line">
               <span>Given principal</span>
@@ -1027,7 +1179,7 @@
           <details class="loan">
             <summary>
               <div class="loan-top">
-                <div>
+                <div class="lt-main">
                   <div class="loan-name">${escapeHtml(group.person_name || "Unnamed")}</div>
                   <div class="loan-sub">
                     <span>${escapeHtml(directionLabel)}</span>
@@ -1038,10 +1190,13 @@
                     ${openOnly ? '<span class="badge orange">Open</span>' : '<span class="badge green">Closed</span>'}
                   </div>
                 </div>
-                <div class="cell"><small>Status</small><strong><span class="badge ${statusClass}">${escapeHtml(calc.status)}</span></strong></div>
-                <div class="cell"><small>Principal</small><strong>${money(calc.principal, group.currency)}</strong></div>
-                <div class="cell"><small>${escapeHtml(movementLabel)}</small><strong>${money(calc.paid, group.currency)}</strong></div>
-                <div class="cell"><small>Remaining</small><strong>${money(calc.remaining, group.currency)}</strong></div>
+                <div class="cell lt-status"><small>Status</small><strong><span class="badge ${statusClass}">${escapeHtml(calc.status)}</span></strong></div>
+                <div class="cell lt-principal"><small>Principal</small><strong>${money(calc.principal, group.currency)}</strong></div>
+                <div class="cell lt-movement"><small>${escapeHtml(movementLabel)}</small><strong>${money(calc.paid, group.currency)}</strong></div>
+                <div class="cell lt-remaining"><small>Remaining</small><strong>${money(calc.remaining, group.currency)}</strong></div>
+                <div class="lt-action">
+                   <button class="icon-btn ghost pdfBtn" data-id="${escapeHtml(group.group_id)}" title="Download Statement" style="width:32px;height:32px;font-size:1rem;" onclick="event.preventDefault(); downloadPDF('${escapeHtml(group.group_id)}')">📄</button>
+                </div>
               </div>
             </summary>
             <div class="detail">
@@ -1072,8 +1227,14 @@
                         <td>${money(row.amount, group.currency)}</td>
                         <td><strong>${money(row.remainingAfter, group.currency)}</strong></td>
                         <td>
-                          <div>${escapeHtml(row.note)}</div>
-                          <div style="color:var(--muted);font-size:.74rem;margin-top:3px">${index === 0 ? "Opening row" : `Linked ${escapeHtml(shortId(row.entryId))}`}</div>
+                          <div>
+                            <span class="note-full">${escapeHtml(row.note)}</span>
+                            <span class="note-toggle" onclick="this.nextElementSibling.classList.toggle('show')">Notes ▾</span>
+                            <div class="note-content-mobile">
+                              ${escapeHtml(row.note)}
+                            </div>
+                            <div style="color:var(--muted);font-size:.7rem;margin-top:3px">${index === 0 ? "Opening row" : `Linked ${escapeHtml(shortId(row.entryId))}`}</div>
+                          </div>
                         </td>
                         <td>
                            <div style="display:flex;gap:4px;">
@@ -1368,6 +1529,55 @@
         await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
       }
       await loadEntries();
+    }
+
+    async function downloadPDF(groupId) {
+      if (typeof html2pdf === 'undefined') {
+        alert("PDF library is loading, please try again in a second.");
+        return;
+      }
+      const group = groupByLoan(state.entries.filter(e => e.group_id === groupId))[0];
+      if (!group) return;
+      const calc = calculateLoan(group);
+
+      const today = new Date();
+      document.getElementById('inv-date').textContent = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+      document.getElementById('inv-name').textContent = group.person_name;
+      
+      const badgeClass = calc.status === 'Closed' ? 'green' : calc.status === 'Partial' ? 'orange' : 'blue';
+      document.getElementById('inv-status').innerHTML = `<span class="badge ${badgeClass}" style="display:inline-block;padding:6px 12px;background:#eef3ff;color:#2457d6;border-radius:999px;font-size:0.85rem;font-weight:700;">${calc.status}</span>`;
+      
+      document.getElementById('inv-principal').innerHTML = money(calc.principal, group.currency);
+      document.getElementById('inv-paid').innerHTML = money(calc.paid, group.currency);
+      document.getElementById('inv-remaining').innerHTML = money(calc.remaining, group.currency);
+
+      const tbody = document.getElementById('inv-tbody');
+      tbody.innerHTML = calc.rows.map((row, i) => `
+        <tr>
+          <td>${displayDate(row.date)}</td>
+          <td>${row.kind === 'principal' ? 'Principal' : (row.kind === 'partial' ? 'Partial' : 'Full')}</td>
+          <td>${money(row.amount, group.currency)}</td>
+          <td><strong>${money(row.remainingAfter, group.currency)}</strong></td>
+          <td class="inv-notes-cell">
+            ${escapeHtml(row.note)}<br>
+            <small style="color:#888;">${i === 0 ? "Opening row" : `Linked ${shortId(row.entryId)}`}</small>
+          </td>
+        </tr>
+      `).join('');
+
+      const element = document.getElementById('invoice-template');
+      element.style.display = 'block';
+      
+      const opt = {
+        margin:       [0.5, 0.5, 0.5, 0.5],
+        filename:     `Statement_${group.person_name.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+      element.style.display = 'none';
     }
 
     function attachEvents(){
