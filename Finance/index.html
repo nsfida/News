@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apex Loan Ledger</title>
+  <meta name="theme-color" content="#f7f4ef" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div id="gateOverlay" class="gate-overlay" aria-modal="true" role="dialog">
+    <div class="gate-card">
+      <div class="brand-mark">A</div>
+      <p class="eyebrow">Private access</p>
+      <h1>Unlock Apex Loan Ledger</h1>
+      <p class="muted">
+        This static build uses a client-side gate for convenience. For real security, pair it with server-side authentication.
+      </p>
+      <form id="gateForm" class="gate-form" autocomplete="off">
+        <label class="field">
+          <span>Password</span>
+          <input id="gatePassword" type="password" placeholder="Enter access password" autocomplete="current-password" />
+        </label>
+        <div class="row row-gap">
+          <button type="submit" class="btn btn-primary">Unlock</button>
+          <button type="button" id="gateClear" class="btn btn-ghost">Clear</button>
+        </div>
+        <p id="gateError" class="field-hint error"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="confirmOverlay" class="confirm-overlay hidden" aria-modal="true" role="dialog">
+    <div class="confirm-card">
+      <h3 id="confirmTitle">Confirm action</h3>
+      <p id="confirmMessage" class="muted"></p>
+      <div class="row row-gap right">
+        <button id="confirmCancel" class="btn btn-ghost">Cancel</button>
+        <button id="confirmAccept" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="appShell" class="app-shell hidden">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div>
+          <p class="eyebrow">Personal finance dashboard</p>
+          <h1>Apex Loan Ledger</h1>
+          <p class="subtitle">Track loan given, money received back, money taken, and money returned in one polished workspace.</p>
+        </div>
+        <div class="topbar-actions">
+          <button id="refreshButton" class="btn btn-ghost">Refresh</button>
+          <button id="exportCsvButton" class="btn btn-ghost">Export CSV</button>
+          <button id="exportJsonButton" class="btn btn-ghost">Export backup</button>
+          <button id="importButton" class="btn btn-ghost">Import backup</button>
+          <button id="printButton" class="btn btn-ghost">Print</button>
+        </div>
+      </div>
+
+      <div class="summary-strip">
+        <div class="summary-pill">
+          <span class="summary-label">Entries</span>
+          <strong id="summaryEntries">0</strong>
+        </div>
+        <div class="summary-pill">
+          <span class="summary-label">Outstanding</span>
+          <strong id="summaryOutstanding">0</strong>
+        </div>
+        <div class="summary-pill">
+          <span class="summary-label">Settled</span>
+          <strong id="summarySettled">0</strong>
+        </div>
+        <div class="summary-pill">
+          <span class="summary-label">Partial</span>
+          <strong id="summaryPartial">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="card tabs-card">
+        <div class="tabs-wrap">
+          <div id="categoryTabs" class="segmented"></div>
+          <div id="viewTabs" class="segmented segmented-soft">
+            <button class="segment active" data-view="new">New Entry</button>
+            <button class="segment" data-view="existing">Existing Entries</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <aside class="card side-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Category overview</p>
+              <h2 id="activeCategoryTitle">Loan Given</h2>
+            </div>
+            <span id="activeCategoryBadge" class="badge badge-soft">Active</span>
+          </div>
+          <div id="currencyTotals" class="currency-totals"></div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <span>Visible</span>
+              <strong id="visibleCount">0</strong>
+            </div>
+            <div class="mini-stat">
+              <span>Outstanding</span>
+              <strong id="visibleOutstanding">0</strong>
+            </div>
+            <div class="mini-stat">
+              <span>Fully settled</span>
+              <strong id="visibleSettled">0</strong>
+            </div>
+          </div>
+          <div class="timeline-card">
+            <div class="panel-head compact">
+              <h3>Activity timeline</h3>
+              <span class="muted small">Recent updates</span>
+            </div>
+            <div id="activityTimeline" class="timeline"></div>
+          </div>
+        </aside>
+
+        <section id="newEntryView" class="card main-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">New Entry</p>
+              <h2>Record a loan transaction</h2>
+            </div>
+            <div id="editBanner" class="edit-banner hidden">
+              <span>Editing existing entry</span>
+              <button id="cancelEditButton" type="button" class="btn btn-ghost btn-small">Cancel</button>
+            </div>
+          </div>
+
+          <form id="entryForm" class="entry-form">
+            <input type="hidden" id="entryId" />
+            <div class="form-grid">
+              <label class="field">
+                <span>Person name</span>
+                <input id="personName" name="personName" type="text" placeholder="e.g. Ahmed Khan" required />
+              </label>
+
+              <label class="field">
+                <span>Amount</span>
+                <input id="amount" name="amount" type="number" min="0" step="0.01" placeholder="0.00" required />
+              </label>
+
+              <label class="field">
+                <span>Currency</span>
+                <select id="currency" name="currency" required>
+                  <option value="AED">AED</option>
+                  <option value="SAR">SAR</option>
+                  <option value="PKR">PKR</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Date</span>
+                <input id="entryDate" name="entryDate" type="date" required />
+              </label>
+
+              <label class="field">
+                <span>Status</span>
+                <select id="status" name="status" required>
+                  <option value="open">Open</option>
+                  <option value="partial">Partial</option>
+                  <option value="settled">Settled</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Partial amount</span>
+                <input id="partialAmount" name="partialAmount" type="number" min="0" step="0.01" placeholder="Optional" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Partial payment / return note</span>
+              <input id="partialNote" name="partialNote" type="text" placeholder="Optional settlement note" />
+            </label>
+
+            <label class="field">
+              <span>Notes / description</span>
+              <textarea id="notes" name="notes" rows="4" placeholder="Add context, reference, or reminders..."></textarea>
+            </label>
+
+            <div class="form-footer">
+              <div class="help-text">
+                <strong>Current category:</strong> <span id="formCategoryLabel">Loan Given</span>
+              </div>
+              <div class="row row-gap">
+                <button type="button" id="resetDraftButton" class="btn btn-ghost">Reset draft</button>
+                <button type="submit" class="btn btn-primary">Save entry</button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section id="existingEntriesView" class="card main-panel hidden">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Existing Entries</p>
+              <h2>Review, filter, and manage your records</h2>
+            </div>
+            <div class="badge-row">
+              <span id="syncStateBadge" class="badge badge-soft">Local ready</span>
+            </div>
+          </div>
+
+          <div class="filters-grid">
+            <label class="field compact-field">
+              <span>Search</span>
+              <input id="searchInput" type="search" placeholder="Search by name or notes" />
+            </label>
+            <label class="field compact-field">
+              <span>Currency</span>
+              <select id="filterCurrency">
+                <option value="all">All currencies</option>
+                <option value="AED">AED</option>
+                <option value="SAR">SAR</option>
+                <option value="PKR">PKR</option>
+              </select>
+            </label>
+            <label class="field compact-field">
+              <span>Status</span>
+              <select id="filterStatus">
+                <option value="all">All statuses</option>
+                <option value="open">Open</option>
+                <option value="partial">Partial</option>
+                <option value="settled">Settled</option>
+              </select>
+            </label>
+            <label class="field compact-field">
+              <span>Date from</span>
+              <input id="filterFrom" type="date" />
+            </label>
+            <label class="field compact-field">
+              <span>Date to</span>
+              <input id="filterTo" type="date" />
+            </label>
+            <label class="field compact-field">
+              <span>Sort by</span>
+              <select id="sortBy">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="amount_desc">Amount high to low</option>
+                <option value="amount_asc">Amount low to high</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="results-toolbar">
+            <div class="muted small">
+              <span id="resultCount">0</span> entries shown
+            </div>
+            <button id="clearFiltersButton" type="button" class="btn btn-ghost btn-small">Clear filters</button>
+          </div>
+
+          <div id="entriesGrid" class="entries-grid"></div>
+          <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">◎</div>
+            <h3>No entries yet</h3>
+            <p class="muted">Create your first record to start tracking the selected loan category.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <input id="importInput" type="file" accept=".json,.csv,application/json,text/csv" hidden />
+  </div>
+</body>
+</html>
