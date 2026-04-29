@@ -181,7 +181,7 @@
       background:#f8fafc;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;
       color:var(--muted);font-size:.76rem;white-space:nowrap;
     }
-    tbody td{padding:9px 10px;border-bottom:1px solid rgba(16,24,40,.06);font-size:.82rem;vertical-align:top}
+    tbody td{padding:9px 10px;border-bottom:1px solid rgba(16,24,40,.06);font-size:.82rem;vertical-align:middle}
     tbody tr:last-child td{border-bottom:none}
     tbody tr:hover{background:#fbfdff}
 
@@ -194,12 +194,12 @@
     .orange{background:rgba(181,71,8,.12);color:var(--warning)}
     .red{background:rgba(180,35,24,.10);color:var(--danger)}
 
-    .row-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px}
     .tiny{
-      border:none;border-radius:10px;padding:7px 9px;background:var(--primary-soft);color:var(--primary);
-      cursor:pointer;font-size:.78rem;font-weight:650;
+      border:none;border-radius:8px;padding:5px 8px;background:var(--primary-soft);color:var(--primary);
+      cursor:pointer;font-size:.75rem;font-weight:650;
     }
     .tiny.danger{background:#fff1f0;color:var(--danger)}
+    .tiny.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
 
     .empty{
       border:1px dashed var(--line-strong);border-radius:12px;background:#fff;padding:16px;text-align:center;
@@ -208,40 +208,17 @@
 
     .money{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap;font-variant-numeric:tabular-nums}
     .money .symbol{display:inline-block;line-height:1}
-    .money .symbol.symbol-dirham{font-family:"DirhamSymbol", Inter, system-ui, sans-serif}
-    .money .symbol.symbol-riyal{font-family:"RiyalSymbol", Inter, system-ui, sans-serif}
     .money .amount{letter-spacing:-.01em}
 
-    .currency-picker{
-      display:flex;gap:8px;flex-wrap:wrap;
-    }
+    .currency-picker{display:flex;gap:8px;flex-wrap:wrap;}
     .currency-chip{
-      border:1px solid var(--line-strong);
-      background:#fff;
-      color:var(--text);
-      border-radius:999px;
-      padding:9px 11px;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      font-weight:700;
-      line-height:1;
-      transition:all .15s ease;
+      border:1px solid var(--line-strong);background:#fff;color:var(--text);border-radius:999px;
+      padding:9px 11px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;
+      line-height:1;transition:all .15s ease;
     }
     .currency-chip:hover{transform:translateY(-1px)}
-    .currency-chip.active{
-      border-color:rgba(36,87,214,.42);
-      background:var(--primary-soft);
-      color:var(--primary);
-    }
-    .currency-chip .symbol{
-      display:inline-block;
-      font-size:1.05rem;
-      line-height:1;
-    }
-    .currency-chip .symbol.symbol-dirham{font-family:"DirhamSymbol", Inter, system-ui, sans-serif}
-    .currency-chip .symbol.symbol-riyal{font-family:"RiyalSymbol", Inter, system-ui, sans-serif}
+    .currency-chip.active{border-color:rgba(36,87,214,.42);background:var(--primary-soft);color:var(--primary);}
+    .currency-chip .symbol{display:inline-block;font-size:1.05rem;line-height:1;}
 
     .lock{
       position:fixed;inset:0;background:rgba(246,247,249,.96);backdrop-filter:blur(7px);display:grid;place-items:center;z-index:100;padding:16px;
@@ -255,43 +232,30 @@
     .lock-error{min-height:1.1em;margin-top:10px;color:var(--danger);font-size:.88rem}
     .hide{display:none !important}
 
-    .modal{
-      position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:14px;
-    }
-    .modal-backdrop{
-      position:absolute;inset:0;background:rgba(15,23,42,.48);backdrop-filter:blur(4px);
-    }
+    .modal{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:14px;}
+    .modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.48);backdrop-filter:blur(4px);}
     .modal-dialog{
       position:relative;width:min(760px,100%);max-height:calc(100vh - 28px);overflow:auto;
       background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 50px rgba(16,24,40,.18);
     }
-    .modal-head{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 16px 0 16px;
-    }
+    .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 16px 0 16px;}
     .modal-head h3{margin:0;font-size:1.02rem;letter-spacing:-.02em}
     .modal-head p{margin:4px 0 0;color:var(--muted);font-size:.84rem;line-height:1.5}
     .modal-body{padding:16px}
-    .modal-grid{
-      display:grid;
-      grid-template-columns:repeat(12,minmax(0,1fr));
-      gap:10px;
-    }
-    .modal-grid .field{grid-column:span 12}
-    .modal-grid .field.w3{grid-column:span 3}
-    .modal-grid .field.w4{grid-column:span 4}
-    .modal-grid .field.w6{grid-column:span 6}
-    .modal-grid .field.w8{grid-column:span 8}
-    .modal-grid .field.w12{grid-column:span 12}
-    .modal-footer{
-      display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;
-    }
+    .modal-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;}
+    
     .field{grid-column:span 12;display:flex;flex-direction:column;gap:6px}
     .field.w3{grid-column:span 3}
     .field.w4{grid-column:span 4}
     .field.w6{grid-column:span 6}
     .field.w8{grid-column:span 8}
     .field.w12{grid-column:span 12}
+    .modal-footer{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
     label{font-size:.78rem;color:var(--muted);font-weight:600}
+
+    /* Fixed Symbols Globally */
+    .symbol-dirham { font-family: "DirhamSymbol", Inter, system-ui, sans-serif !important; }
+    .symbol-riyal { font-family: "RiyalSymbol", Inter, system-ui, sans-serif !important; }
 
     @media (max-width: 820px){
       .shell{padding:12px}
@@ -325,21 +289,6 @@
       .modal-dialog{max-height:calc(100vh - 16px);border-radius:18px}
       .modal-head,.modal-body{padding-left:12px;padding-right:12px}
       .modal-grid .field{grid-column:span 12}
-    }
-    @media (max-width: 420px){
-      .summary span{font-size:.7rem}
-      .summary strong{font-size:.88rem}
-      .tiny{font-size:.74rem}
-    }
-
-    /* Explicit overview symbol font enforcement */
-    .overview .money .symbol.symbol-dirham,
-    .overview .currency-head .symbol.symbol-dirham{
-      font-family:"DirhamSymbol", Inter, system-ui, sans-serif !important;
-    }
-    .overview .money .symbol.symbol-riyal,
-    .overview .currency-head .symbol.symbol-riyal{
-      font-family:"RiyalSymbol", Inter, system-ui, sans-serif !important;
     }
   </style>
 </head>
@@ -550,22 +499,16 @@
         <form id="paymentModalForm" class="hide" data-form-type="payment">
           <input type="hidden" name="direction" value="given" />
           <div class="modal-grid">
-            <div class="field w12">
+            <div class="field w8">
               <label>Related loan</label>
               <select class="select" name="group_id" id="modalLoanSelect" required></select>
             </div>
             <div class="field w4">
-              <label>Amount</label>
-              <input class="input" name="action_amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+              <label>Entries Count</label>
+              <input class="input" id="multiEntryCount" type="number" min="1" max="10" value="1" required />
             </div>
-            <div class="field w4">
-              <label>Date</label>
-              <input class="input" name="action_date" type="date" required data-default-today="true" />
-            </div>
-            <div class="field w12">
-              <label>Notes</label>
-              <input class="input" name="notes" placeholder="Cash, transfer, partial, etc." />
-            </div>
+            <div id="multiEntryContainer" class="modal-grid" style="grid-column: span 12; margin-top: 5px;">
+              </div>
             <div class="field w12 modal-footer">
               <button class="btn ghost" type="button" data-close-modal>Cancel</button>
               <button class="btn primary" type="submit" id="paymentSubmitBtn">Save</button>
@@ -619,7 +562,9 @@
       paymentModalForm: document.getElementById("paymentModalForm"),
       modalLoanSelect: document.getElementById("modalLoanSelect"),
       principalSubmitBtn: document.getElementById("principalSubmitBtn"),
-      paymentSubmitBtn: document.getElementById("paymentSubmitBtn")
+      paymentSubmitBtn: document.getElementById("paymentSubmitBtn"),
+      multiEntryCount: document.getElementById("multiEntryCount"),
+      multiEntryContainer: document.getElementById("multiEntryContainer")
     };
 
     function escapeHtml(str){
@@ -908,7 +853,7 @@
                     <span>Updated ${escapeHtml(displayDate(group.lastActivity || principal?.loan_date || group.loan_date || "—"))}</span>
                     <span>${currencySymbolHtml(group.currency || "")}</span>
                     <span>${escapeHtml(shortId(group.group_id))}</span>
-                    ${openOnly ? '<span class="badge orange">Open balance</span>' : '<span class="badge green">Closed</span>'}
+                    ${openOnly ? '<span class="badge orange">Open</span>' : '<span class="badge green">Closed</span>'}
                   </div>
                 </div>
                 <div class="cell"><small>Status</small><strong><span class="badge ${statusClass}">${escapeHtml(calc.status)}</span></strong></div>
@@ -932,8 +877,9 @@
                       <th>Date</th>
                       <th>Type</th>
                       <th>Amount</th>
-                      <th>Remaining after row</th>
+                      <th>Remaining</th>
                       <th>Notes</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -947,22 +893,24 @@
                           <div>${escapeHtml(row.note)}</div>
                           <div style="color:var(--muted);font-size:.74rem;margin-top:3px">${index === 0 ? "Opening row" : `Linked ${escapeHtml(shortId(row.entryId))}`}</div>
                         </td>
+                        <td>
+                           <div style="display:flex;gap:4px;">
+                             <button class="tiny ghost editRowBtn" data-id="${escapeHtml(row.entryId)}" title="Edit entry">✎</button>
+                             <button class="tiny danger delRowBtn" data-id="${escapeHtml(row.entryId)}" title="Delete entry">✕</button>
+                           </div>
+                        </td>
                       </tr>
                     `).join("")}
                   </tbody>
                 </table>
-              </div>
-              <div class="row-actions">
-                <button class="tiny editBtn" data-id="${escapeHtml(principal?.id || "")}" type="button">Edit</button>
-                <button class="tiny danger deleteBtn" data-id="${escapeHtml(principal?.id || "")}" type="button">Delete</button>
               </div>
             </div>
           </details>
         `;
       }).join("");
 
-      container.querySelectorAll(".editBtn").forEach(btn => btn.addEventListener("click", () => editPrincipal(btn.dataset.id)));
-      container.querySelectorAll(".deleteBtn").forEach(btn => btn.addEventListener("click", () => deletePrincipal(btn.dataset.id)));
+      container.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => editEntry(btn.dataset.id)));
+      container.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
     }
 
     function renderLoanSelectors(){
@@ -985,8 +933,32 @@
 
     function defaultDateInputs(root = document){
       root.querySelectorAll('input[type="date"]').forEach(i => {
-        if (!i.value) i.value = todayISO();
+        if (!i.value && i.dataset.defaultToday === "true") i.value = todayISO();
       });
+    }
+
+    function renderMultiEntries(count) {
+      let html = '';
+      for(let i=0; i<count; i++){
+        html += `
+          <div style="border-left: 2px solid var(--primary); padding-left: 10px; margin-bottom: 10px; display:flex; flex-wrap:wrap; gap:10px;">
+            <div class="field w4" style="flex: 1 1 100px;">
+              <label>Amount ${i+1}</label>
+              <input class="input" name="action_amount_${i}" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w4" style="flex: 1 1 130px;">
+              <label>Date ${i+1}</label>
+              <input class="input" name="action_date_${i}" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12" style="flex: 1 1 100%;">
+              <label>Notes ${i+1}</label>
+              <input class="input" name="notes_${i}" placeholder="Remarks" />
+            </div>
+          </div>
+        `;
+      }
+      els.multiEntryContainer.innerHTML = html;
+      defaultDateInputs(els.multiEntryContainer);
     }
 
     async function loadEntries(){
@@ -1031,35 +1003,26 @@
 
       if (mode === "principal"){
         els.modalTitle.textContent = direction === "given" ? "New loan given" : "New loan taken";
-        els.modalDesc.textContent = direction === "given"
-          ? "Add a loan you gave to someone."
-          : "Add money you received from someone.";
-
+        els.modalDesc.textContent = direction === "given" ? "Add a loan you gave to someone." : "Add money you received from someone.";
         els.principalModalForm.classList.remove("hide");
         els.paymentModalForm.classList.add("hide");
-
         els.principalModalForm.reset();
         els.principalModalForm.querySelector('input[name="direction"]').value = direction;
         els.principalModalForm.querySelector('input[name="person_name"]').placeholder = direction === "given" ? "Full name" : "Lender name";
         els.principalSubmitBtn.textContent = direction === "given" ? "Save given loan" : "Save taken loan";
-
         setCurrencyChoice(els.principalModalForm, state.lastCurrency || "AED");
         defaultDateInputs(els.principalModalForm);
       } else {
         els.modalTitle.textContent = direction === "given" ? "New received back entry" : "New returned back entry";
-        els.modalDesc.textContent = direction === "given"
-          ? "Record money received against a given loan."
-          : "Record repayment against a taken loan.";
-
+        els.modalDesc.textContent = direction === "given" ? "Record money received against a given loan." : "Record repayment against a taken loan.";
         els.paymentModalForm.classList.remove("hide");
         els.principalModalForm.classList.add("hide");
-
         els.paymentModalForm.reset();
         els.paymentModalForm.querySelector('input[name="direction"]').value = direction;
         els.paymentSubmitBtn.textContent = direction === "given" ? "Save received back" : "Save returned back";
-
+        els.multiEntryCount.value = 1;
+        renderMultiEntries(1);
         renderLoanSelectors();
-        defaultDateInputs(els.paymentModalForm);
       }
     }
 
@@ -1086,9 +1049,7 @@
         notes: String(fd.get("notes") || "").trim() || null
       };
 
-      if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date){
-        throw new Error("Please complete all required fields.");
-      }
+      if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date) throw new Error("Complete all required fields.");
 
       await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
       form.reset();
@@ -1102,88 +1063,118 @@
       const fd = new FormData(form);
       const direction = String(fd.get("direction") || "");
       const groupId = String(fd.get("group_id") || "");
-      const amount = Number(fd.get("action_amount") || 0);
-      const actionDate = fd.get("action_date");
-      const notes = String(fd.get("notes") || "").trim() || null;
+      const count = parseInt(els.multiEntryCount.value) || 1;
 
-      if (!groupId || !amount || !actionDate){
-        throw new Error("Please choose a loan and enter amount/date.");
-      }
+      if (!groupId) throw new Error("Please choose a loan.");
 
       const principalEntry = state.entries.find(e => e.group_id === groupId && e.entry_kind === "principal");
       if (!principalEntry) throw new Error("Selected loan could not be found.");
 
       const group = groupByLoan(state.entries.filter(e => e.group_id === groupId))[0];
-      const remaining = calculateLoan(group).remaining;
+      let currentRemaining = calculateLoan(group).remaining;
 
-      if (amount > remaining){
-        throw new Error(`Amount exceeds remaining balance (${moneyText(remaining, principalEntry.currency)}).`);
+      let totalAmount = 0;
+      for(let i=0; i<count; i++){
+         totalAmount += Number(fd.get(`action_amount_${i}`) || 0);
       }
 
-      const entry_kind = amount < remaining ? "partial" : "full";
+      if (totalAmount > currentRemaining){
+        throw new Error(`Total amount (${totalAmount}) exceeds remaining balance (${currentRemaining}).`);
+      }
 
-      await supabase(CONFIG.table, {
-        method: "POST",
-        body: JSON.stringify({
+      const payloads = [];
+      for(let i=0; i<count; i++){
+        const amt = Number(fd.get(`action_amount_${i}`) || 0);
+        const dt = fd.get(`action_date_${i}`);
+        const nt = String(fd.get(`notes_${i}`) || "").trim() || null;
+        
+        if(!amt || !dt) continue;
+
+        currentRemaining -= amt;
+        payloads.push({
           group_id: groupId,
           direction,
-          entry_kind,
+          entry_kind: currentRemaining <= 0 ? "full" : "partial",
           person_name: principalEntry.person_name,
           currency: principalEntry.currency,
           principal_amount: null,
-          action_amount: amount,
+          action_amount: amt,
           loan_date: principalEntry.loan_date,
-          action_date: actionDate,
-          notes
-        })
-      });
+          action_date: dt,
+          notes: nt
+        });
+      }
+
+      if(payloads.length === 0) throw new Error("Please fill out amount and date.");
+
+      await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payloads) });
 
       form.reset();
-      defaultDateInputs(form);
+      els.multiEntryCount.value = 1;
+      renderMultiEntries(1);
       closeEntryModal();
       await loadEntries();
     }
 
-    async function editPrincipal(id){
+    async function editEntry(id){
+      if(!id) return;
       const entry = state.entries.find(e => e.id === id);
-      if (!entry) return;
+      if(!entry) return;
 
-      const newName = prompt("Person name", entry.person_name || "");
-      if (newName === null) return;
+      if(entry.entry_kind === "principal"){
+        const newName = prompt("Person name", entry.person_name || "");
+        if (newName === null) return;
+        const newCurrency = prompt("Currency code (AED / SAR / PKR)", entry.currency || "AED");
+        if (newCurrency === null) return;
+        const newAmount = prompt("Principal amount", entry.principal_amount ?? "");
+        if (newAmount === null) return;
+        const newDate = prompt("Loan date (YYYY-MM-DD)", entry.loan_date || "");
+        if (newDate === null) return;
+        const newNote = prompt("Notes", entry.notes || "");
+        if (newNote === null) return;
 
-      const newCurrency = prompt("Currency code (AED / SAR / PKR)", entry.currency || "AED");
-      if (newCurrency === null) return;
+        await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            person_name: newName.trim(),
+            currency: newCurrency.trim().toUpperCase(),
+            principal_amount: Number(newAmount),
+            loan_date: newDate.trim(),
+            notes: newNote.trim() || null
+          })
+        });
+      } else {
+        const newAmount = prompt("Amount", entry.action_amount ?? "");
+        if (newAmount === null) return;
+        const newDate = prompt("Date (YYYY-MM-DD)", entry.action_date || "");
+        if (newDate === null) return;
+        const newNote = prompt("Notes", entry.notes || "");
+        if (newNote === null) return;
 
-      const newAmount = prompt("Principal amount", entry.principal_amount ?? "");
-      if (newAmount === null) return;
-
-      const newDate = prompt("Loan date (YYYY-MM-DD)", entry.loan_date || "");
-      if (newDate === null) return;
-
-      const newNote = prompt("Notes", entry.notes || "");
-      if (newNote === null) return;
-
-      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          person_name: newName.trim(),
-          currency: newCurrency.trim(),
-          principal_amount: Number(newAmount),
-          loan_date: newDate.trim(),
-          notes: newNote.trim() || null
-        })
-      });
-
+        await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            action_amount: Number(newAmount),
+            action_date: newDate.trim(),
+            notes: newNote.trim() || null
+          })
+        });
+      }
       await loadEntries();
     }
 
-    async function deletePrincipal(id){
+    async function deleteEntry(id){
       if (!id) return;
       const entry = state.entries.find(e => e.id === id);
       if (!entry) return;
-      if (!confirm(`Delete the loan for ${entry.person_name}? This will also remove linked repayments.`)) return;
-
-      await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(entry.group_id)}`, { method: "DELETE" });
+      
+      if(entry.entry_kind === "principal"){
+        if (!confirm(`Delete the entire loan for ${entry.person_name}? This will also remove ALL linked repayments.`)) return;
+        await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(entry.group_id)}`, { method: "DELETE" });
+      } else {
+        if (!confirm(`Delete this specific repayment entry?`)) return;
+        await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+      }
       await loadEntries();
     }
 
@@ -1213,27 +1204,24 @@
       });
 
       document.querySelectorAll(".currency-chip").forEach(btn => {
-        btn.addEventListener("click", () => {
-          setCurrencyChoice(els.principalModalForm, btn.dataset.currency);
-        });
+        btn.addEventListener("click", () => setCurrencyChoice(els.principalModalForm, btn.dataset.currency));
+      });
+
+      els.multiEntryCount.addEventListener("input", e => {
+        let cnt = parseInt(e.target.value) || 1;
+        if(cnt < 1) cnt = 1;
+        if(cnt > 10) cnt = 10;
+        renderMultiEntries(cnt);
       });
 
       els.principalModalForm.addEventListener("submit", async e => {
         e.preventDefault();
-        try {
-          await createPrincipal(els.principalModalForm);
-        } catch (err) {
-          alert(err.message);
-        }
+        try { await createPrincipal(els.principalModalForm); } catch (err) { alert(err.message); }
       });
 
       els.paymentModalForm.addEventListener("submit", async e => {
         e.preventDefault();
-        try {
-          await createPayment(els.paymentModalForm);
-        } catch (err) {
-          alert(err.message);
-        }
+        try { await createPayment(els.paymentModalForm); } catch (err) { alert(err.message); }
       });
 
       els.refreshBtn.addEventListener("click", () => loadEntries().catch(err => alert(err.message)));
@@ -1243,9 +1231,7 @@
         openEntryModal("principal", "given");
       });
 
-      els.passwordInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") attemptUnlock();
-      });
+      els.passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
       els.unlockBtn.addEventListener("click", attemptUnlock);
 
       [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"]].forEach(([id,key]) => {
@@ -1266,10 +1252,8 @@
         els.lockError.textContent = "Please enter the password.";
         return;
       }
-
       els.unlockBtn.disabled = true;
       els.unlockBtn.textContent = "Checking…";
-
       try{
         if (!(await verifyPassword(value))) throw new Error("Wrong password.");
         sessionStorage.setItem("loanledger-unlocked", "true");
@@ -1289,16 +1273,11 @@
     async function boot(){
       attachEvents();
       defaultDateInputs(document);
-
       if (sessionStorage.getItem("loanledger-unlocked") === "true"){
         state.unlocked = true;
         els.lockScreen.classList.add("hide");
         els.app.classList.remove("hide");
-        try {
-          await loadEntries();
-        } catch (err) {
-          alert("Failed to load data: " + err.message);
-        }
+        try { await loadEntries(); } catch (err) { alert("Failed to load data: " + err.message); }
       }
     }
 
