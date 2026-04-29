@@ -38,17 +38,25 @@
 
     *{box-sizing:border-box}
     html,body{margin:0;padding:0}
+    
+    /* Global font stack ensuring symbols render everywhere (body, inputs, selects, options, buttons) */
     body{
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "DirhamSymbol", "RiyalSymbol", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:var(--bg);
       color:var(--text);
       min-height:100vh;
       -webkit-font-smoothing:antialiased;
       text-rendering:optimizeLegibility;
     }
+    button,input,select,textarea,option{
+      font-family: inherit;
+    }
+
+    /* Fallback explicits for symbols just in case */
+    .symbol-dirham { font-family: "DirhamSymbol", Inter, system-ui, sans-serif !important; }
+    .symbol-riyal { font-family: "RiyalSymbol", Inter, system-ui, sans-serif !important; }
 
     a{color:inherit}
-    button,input,select,textarea{font:inherit}
 
     .shell{max-width:var(--max);margin:0 auto;padding:16px}
 
@@ -116,8 +124,11 @@
     }
     .section{padding:14px}
     .section-head{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+      display:flex;flex-direction:column;align-items:stretch;gap:12px;
       margin-bottom:12px;
+    }
+    .section-head-top{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
     }
     .section-head h3{margin:0;font-size:.98rem;letter-spacing:-.02em}
     .section-head p{margin:4px 0 0;color:var(--muted);font-size:.84rem;line-height:1.55}
@@ -125,6 +136,17 @@
     .title-group{display:flex;flex-direction:column;gap:0;min-width:0}
     .title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
     .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+    .filter-group{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+    .filter-radio{display:none;}
+    .filter-label{
+      padding:6px 12px;border:1px solid var(--line-strong);border-radius:999px;
+      font-size:.78rem;font-weight:650;cursor:pointer;color:var(--muted);
+      background:#fff;transition:all .15s ease;
+    }
+    .filter-radio:checked + .filter-label{
+      background:var(--primary-soft);border-color:rgba(36,87,214,.42);color:var(--primary);
+    }
 
     .input,.select{
       width:100%;border:1px solid var(--line-strong);border-radius:11px;background:#fff;color:var(--text);
@@ -135,6 +157,7 @@
     .btn{
       appearance:none;border:none;border-radius:11px;padding:10px 12px;font-weight:650;cursor:pointer;
       transition:background .15s ease, transform .15s ease, opacity .15s ease;font-size:.88rem;line-height:1;
+      white-space:nowrap;
     }
     .btn:hover{transform:translateY(-1px)}
     .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
@@ -250,12 +273,32 @@
     .field.w6{grid-column:span 6}
     .field.w8{grid-column:span 8}
     .field.w12{grid-column:span 12}
-    .modal-footer{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
+    .modal-footer{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px;}
     label{font-size:.78rem;color:var(--muted);font-weight:600}
 
-    /* Fixed Symbols Globally */
-    .symbol-dirham { font-family: "DirhamSymbol", Inter, system-ui, sans-serif !important; }
-    .symbol-riyal { font-family: "RiyalSymbol", Inter, system-ui, sans-serif !important; }
+    /* Row-wise layout for multiple entries */
+    .multi-row-header {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1.5fr;
+      gap: 8px;
+      padding-left: 10px;
+      margin-bottom: 4px;
+      font-size: .75rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .multi-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1.5fr;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding-left: 8px;
+      border-left: 2px solid var(--primary);
+      align-items: center;
+    }
+    .multi-row .input {
+      font-size: 0.88rem;
+    }
 
     @media (max-width: 820px){
       .shell{padding:12px}
@@ -263,32 +306,55 @@
       .chips{justify-content:flex-start}
       .loan-top{grid-template-columns:1fr 1fr;gap:8px}
       .loan-top .cell:nth-child(1){grid-column:1 / -1}
-      .modal-grid .field.w3,.modal-grid .field.w4,.modal-grid .field.w6,.modal-grid .field.w8,.modal-grid .field.w12{grid-column:span 6}
+      .modal-grid .field.w3,.modal-grid .field.w4,.modal-grid .field.w6,.modal-grid .field.w8{grid-column:span 6}
     }
+    
     @media (max-width: 560px){
-      .tabs{padding:7px}
-      .tab{font-size:.8rem;padding:9px 10px}
-      .brand h1{font-size:.94rem}
-      .brand p{font-size:.76rem}
-      .chip{font-size:.72rem;padding:6px 9px}
-      .overview-top h2{font-size:.95rem}
-      .overview-top p{font-size:.8rem}
-      .summary strong{font-size:.92rem}
-      .section{padding:12px}
-      .section-head h3{font-size:.95rem}
-      .section-head p{font-size:.8rem}
-      .input,.select{font-size:.86rem;padding:9px 10px}
-      .btn{font-size:.82rem;padding:9px 11px}
-      .loan-top{grid-template-columns:1fr;gap:7px;padding:11px 12px}
-      .loan-name{font-size:.93rem}
-      .loan-sub{font-size:.72rem}
-      .cell strong{font-size:.88rem}
-      thead th,tbody td{font-size:.76rem;padding:8px 9px}
-      .lock-row{grid-template-columns:1fr}
+      .tabs{padding:6px;gap:4px;}
+      .tab{font-size:.78rem;padding:8px 10px}
+      .brand h1{font-size:.9rem}
+      .brand p{font-size:.74rem}
+      .chip{font-size:.7rem;padding:5px 8px}
+      .overview{padding:10px;margin-bottom:10px}
+      .overview-top h2{font-size:.92rem}
+      .overview-top p{font-size:.78rem}
+      .summary{padding:10px;gap:6px;min-height:74px}
+      .summary strong{font-size:.88rem}
+      .summary-line strong{font-size:.8rem}
+      .section{padding:10px}
+      .section-head{gap:10px}
+      .section-head h3{font-size:.92rem}
+      .section-head p{font-size:.78rem}
+      
+      .input,.select{font-size:.8rem;padding:8px 9px}
+      .btn{font-size:.8rem;padding:8px 10px}
+      .filter-label{font-size:.72rem;padding:5px 10px}
+      
+      .loan-top{grid-template-columns:1fr;gap:6px;padding:10px 11px}
+      .loan-name{font-size:.9rem}
+      .loan-sub{font-size:.7rem;gap:6px}
+      .cell strong{font-size:.85rem}
+      .cell small{font-size:.68rem}
+      
+      thead th,tbody td{font-size:.74rem;padding:8px}
+      .badge{font-size:.68rem;padding:4px 6px}
+      
       .modal{padding:8px}
-      .modal-dialog{max-height:calc(100vh - 16px);border-radius:18px}
-      .modal-head,.modal-body{padding-left:12px;padding-right:12px}
+      .modal-dialog{max-height:calc(100vh - 16px);border-radius:16px}
+      .modal-head{padding:12px 12px 0;gap:8px}
+      .modal-body{padding:12px}
+      .modal-grid{gap:8px}
       .modal-grid .field{grid-column:span 12}
+      
+      .multi-row-header { font-size: .68rem; gap: 4px; padding-left: 6px; }
+      .multi-row { 
+        grid-template-columns: 1.3fr 1fr 1.2fr; 
+        gap: 4px; 
+        padding-left: 4px; 
+        margin-bottom: 6px;
+        border-left-width: 1.5px;
+      }
+      .multi-row .input { padding: 6px 5px; font-size: .75rem; border-radius: 8px;}
     }
   </style>
 </head>
@@ -353,16 +419,27 @@
       <section id="givenPanel" class="panel active">
         <div class="card section">
           <div class="section-head">
-            <div class="title-group">
-              <div class="title-row">
-                <h3>Loan Given</h3>
-                <button class="icon-btn" type="button" data-open-modal="principal" data-direction="given" aria-label="Add new loan given">＋</button>
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Loan Given</h3>
+                  <button class="icon-btn" type="button" data-open-modal="principal" data-direction="given" aria-label="Add new loan given">＋</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
-              <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              <div class="tools">
+                <input id="searchGiven" class="input" style="min-width:180px" placeholder="Search name or note" />
+              </div>
             </div>
-            <div class="tools">
-              <input id="searchGiven" class="input" style="min-width:210px" placeholder="Search name or note" />
-              <button class="btn ghost" data-refresh-filter="given" type="button">Refresh</button>
+            <div class="filter-group">
+              <input type="radio" id="f_given_all" name="f_given" value="All" class="filter-radio" data-filter="given" checked>
+              <label for="f_given_all" class="filter-label">All</label>
+              <input type="radio" id="f_given_open" name="f_given" value="Open" class="filter-radio" data-filter="given">
+              <label for="f_given_open" class="filter-label">Open</label>
+              <input type="radio" id="f_given_partial" name="f_given" value="Partial" class="filter-radio" data-filter="given">
+              <label for="f_given_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_given_closed" name="f_given" value="Closed" class="filter-radio" data-filter="given">
+              <label for="f_given_closed" class="filter-label">Closed</label>
             </div>
           </div>
           <div id="givenList" class="list"></div>
@@ -372,16 +449,27 @@
       <section id="receivedPanel" class="panel">
         <div class="card section">
           <div class="section-head">
-            <div class="title-group">
-              <div class="title-row">
-                <h3>Received Back</h3>
-                <button class="icon-btn" type="button" data-open-modal="payment" data-direction="given" aria-label="Add received back entry">＋</button>
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Received Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="given" aria-label="Add received back entry">＋</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
-              <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              <div class="tools">
+                <input id="searchReceived" class="input" style="min-width:180px" placeholder="Search name or note" />
+              </div>
             </div>
-            <div class="tools">
-              <input id="searchReceived" class="input" style="min-width:210px" placeholder="Search name or note" />
-              <button class="btn ghost" data-refresh-filter="received" type="button">Refresh</button>
+            <div class="filter-group">
+              <input type="radio" id="f_rec_all" name="f_rec" value="All" class="filter-radio" data-filter="received" checked>
+              <label for="f_rec_all" class="filter-label">All</label>
+              <input type="radio" id="f_rec_open" name="f_rec" value="Open" class="filter-radio" data-filter="received">
+              <label for="f_rec_open" class="filter-label">Open</label>
+              <input type="radio" id="f_rec_partial" name="f_rec" value="Partial" class="filter-radio" data-filter="received">
+              <label for="f_rec_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_rec_closed" name="f_rec" value="Closed" class="filter-radio" data-filter="received">
+              <label for="f_rec_closed" class="filter-label">Closed</label>
             </div>
           </div>
           <div id="receivedList" class="list"></div>
@@ -391,16 +479,27 @@
       <section id="takenPanel" class="panel">
         <div class="card section">
           <div class="section-head">
-            <div class="title-group">
-              <div class="title-row">
-                <h3>Loan Taken</h3>
-                <button class="icon-btn" type="button" data-open-modal="principal" data-direction="taken" aria-label="Add new loan taken">＋</button>
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Loan Taken</h3>
+                  <button class="icon-btn" type="button" data-open-modal="principal" data-direction="taken" aria-label="Add new loan taken">＋</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
-              <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              <div class="tools">
+                <input id="searchTaken" class="input" style="min-width:180px" placeholder="Search name or note" />
+              </div>
             </div>
-            <div class="tools">
-              <input id="searchTaken" class="input" style="min-width:210px" placeholder="Search name or note" />
-              <button class="btn ghost" data-refresh-filter="taken" type="button">Refresh</button>
+            <div class="filter-group">
+              <input type="radio" id="f_taken_all" name="f_taken" value="All" class="filter-radio" data-filter="taken" checked>
+              <label for="f_taken_all" class="filter-label">All</label>
+              <input type="radio" id="f_taken_open" name="f_taken" value="Open" class="filter-radio" data-filter="taken">
+              <label for="f_taken_open" class="filter-label">Open</label>
+              <input type="radio" id="f_taken_partial" name="f_taken" value="Partial" class="filter-radio" data-filter="taken">
+              <label for="f_taken_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_taken_closed" name="f_taken" value="Closed" class="filter-radio" data-filter="taken">
+              <label for="f_taken_closed" class="filter-label">Closed</label>
             </div>
           </div>
           <div id="takenList" class="list"></div>
@@ -410,16 +509,27 @@
       <section id="returnedPanel" class="panel">
         <div class="card section">
           <div class="section-head">
-            <div class="title-group">
-              <div class="title-row">
-                <h3>Returned Back</h3>
-                <button class="icon-btn" type="button" data-open-modal="payment" data-direction="taken" aria-label="Add returned back entry">＋</button>
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Returned Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="taken" aria-label="Add returned back entry">＋</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
-              <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              <div class="tools">
+                <input id="searchReturned" class="input" style="min-width:180px" placeholder="Search name or note" />
+              </div>
             </div>
-            <div class="tools">
-              <input id="searchReturned" class="input" style="min-width:210px" placeholder="Search name or note" />
-              <button class="btn ghost" data-refresh-filter="returned" type="button">Refresh</button>
+            <div class="filter-group">
+              <input type="radio" id="f_ret_all" name="f_ret" value="All" class="filter-radio" data-filter="returned" checked>
+              <label for="f_ret_all" class="filter-label">All</label>
+              <input type="radio" id="f_ret_open" name="f_ret" value="Open" class="filter-radio" data-filter="returned">
+              <label for="f_ret_open" class="filter-label">Open</label>
+              <input type="radio" id="f_ret_partial" name="f_ret" value="Partial" class="filter-radio" data-filter="returned">
+              <label for="f_ret_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_ret_closed" name="f_ret" value="Closed" class="filter-radio" data-filter="returned">
+              <label for="f_ret_closed" class="filter-label">Closed</label>
             </div>
           </div>
           <div id="returnedList" class="list"></div>
@@ -444,14 +554,14 @@
   </div>
 
   <div id="entryModal" class="modal hide" aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-backdrop" data-close-modal="entryModal"></div>
     <div class="modal-dialog">
       <div class="modal-head">
         <div>
           <h3 id="modalTitle">New entry</h3>
           <p id="modalDesc">Fill the form and save the entry.</p>
         </div>
-        <button class="icon-btn ghost" type="button" data-close-modal aria-label="Close">×</button>
+        <button class="icon-btn ghost" type="button" data-close-modal="entryModal" aria-label="Close">×</button>
       </div>
 
       <div class="modal-body">
@@ -477,11 +587,11 @@
               </div>
               <input type="hidden" name="currency" value="AED" />
             </div>
-            <div class="field w4">
+            <div class="field w6">
               <label>Amount</label>
               <input class="input" name="principal_amount" type="number" min="0" step="0.01" required placeholder="0.00" />
             </div>
-            <div class="field w4">
+            <div class="field w6">
               <label>Date</label>
               <input class="input" name="loan_date" type="date" required data-default-today="true" />
             </div>
@@ -490,7 +600,7 @@
               <input class="input" name="notes" placeholder="Optional note" />
             </div>
             <div class="field w12 modal-footer">
-              <button class="btn ghost" type="button" data-close-modal>Cancel</button>
+              <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
               <button class="btn primary" type="submit" id="principalSubmitBtn">Save</button>
             </div>
           </div>
@@ -507,11 +617,65 @@
               <label>Entries Count</label>
               <input class="input" id="multiEntryCount" type="number" min="1" max="10" value="1" required />
             </div>
-            <div id="multiEntryContainer" class="modal-grid" style="grid-column: span 12; margin-top: 5px;">
+            <div id="multiEntryContainer" style="grid-column: span 12; margin-top: 5px;">
               </div>
             <div class="field w12 modal-footer">
-              <button class="btn ghost" type="button" data-close-modal>Cancel</button>
+              <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
               <button class="btn primary" type="submit" id="paymentSubmitBtn">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="editModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3>Edit entry</h3>
+          <p>Update the record details below.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="editModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="modal-grid">
+            <div id="editPersonGroup" class="field w6 hide">
+              <label>Person name</label>
+              <input class="input" id="editName" name="person_name" placeholder="Full name" />
+            </div>
+            <div id="editCurrencyGroup" class="field w6 hide">
+              <label>Currency</label>
+              <div class="currency-picker">
+                <button type="button" class="currency-chip" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" id="editCurrency" name="currency" />
+            </div>
+            <div class="field w6">
+              <label id="editAmountLabel">Amount</label>
+              <input class="input" id="editAmount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label id="editDateLabel">Date</label>
+              <input class="input" id="editDate" type="date" required />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" id="editNotes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="editModal">Cancel</button>
+              <button class="btn primary" type="submit">Update</button>
             </div>
           </div>
         </form>
@@ -534,8 +698,11 @@
       entries: [],
       unlocked: false,
       search: { given: "", received: "", taken: "", returned: "" },
+      statusFilter: { given: "All", received: "All", taken: "All", returned: "All" },
       lastCurrency: "AED",
-      modalDirection: "given"
+      modalDirection: "given",
+      editId: null,
+      editKind: null
     };
 
     const els = {
@@ -556,10 +723,12 @@
       refreshBtn: document.getElementById("refreshBtn"),
       newLoanShortcut: document.getElementById("newLoanShortcut"),
       entryModal: document.getElementById("entryModal"),
+      editModal: document.getElementById("editModal"),
       modalTitle: document.getElementById("modalTitle"),
       modalDesc: document.getElementById("modalDesc"),
       principalModalForm: document.getElementById("principalModalForm"),
       paymentModalForm: document.getElementById("paymentModalForm"),
+      editForm: document.getElementById("editForm"),
       modalLoanSelect: document.getElementById("modalLoanSelect"),
       principalSubmitBtn: document.getElementById("principalSubmitBtn"),
       paymentSubmitBtn: document.getElementById("paymentSubmitBtn"),
@@ -580,7 +749,15 @@
     function displayDate(value){
       if (!value) return "—";
       const str = String(value);
-      return str.length >= 10 ? str.slice(0,10) : str;
+      if (str.length >= 10) {
+        const yyyy = str.slice(0, 4);
+        const mm = str.slice(5, 7);
+        const dd = str.slice(8, 10);
+        if (yyyy && mm && dd && yyyy.length === 4) {
+          return `${dd}/${mm}/${yyyy}`;
+        }
+      }
+      return str;
     }
 
     function dateStamp(value){
@@ -816,7 +993,7 @@
 
     function matchesSearch(entry, term){
       if (!term) return true;
-      const blob = `${entry.person_name || ""} ${entry.notes || ""} ${entry.currency || ""} ${entry.loan_date || ""} ${entry.action_date || ""}`.toLowerCase();
+      const blob = `${entry.person_name || ""} ${entry.notes || ""} ${entry.currency || ""} ${displayDate(entry.loan_date)} ${displayDate(entry.action_date)}`.toLowerCase();
       return blob.includes(term.toLowerCase());
     }
 
@@ -826,7 +1003,12 @@
     }
 
     function renderLoanCards(container, direction, searchKey = direction){
-      const groups = filterPrincipal(direction, searchKey);
+      let groups = filterPrincipal(direction, searchKey);
+      const filterValue = state.statusFilter[searchKey];
+      
+      if(filterValue !== "All") {
+        groups = groups.filter(g => calculateLoan(g).status.toLowerCase() === filterValue.toLowerCase());
+      }
 
       if (!groups.length){
         container.innerHTML = `<div class="empty">No entries found.</div>`;
@@ -909,7 +1091,7 @@
         `;
       }).join("");
 
-      container.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => editEntry(btn.dataset.id)));
+      container.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
       container.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
     }
 
@@ -938,22 +1120,19 @@
     }
 
     function renderMultiEntries(count) {
-      let html = '';
+      let html = `
+        <div class="multi-row-header">
+          <div>Date</div>
+          <div>Amount</div>
+          <div>Remarks</div>
+        </div>
+      `;
       for(let i=0; i<count; i++){
         html += `
-          <div style="border-left: 2px solid var(--primary); padding-left: 10px; margin-bottom: 10px; display:flex; flex-wrap:wrap; gap:10px;">
-            <div class="field w4" style="flex: 1 1 100px;">
-              <label>Amount ${i+1}</label>
-              <input class="input" name="action_amount_${i}" type="number" min="0" step="0.01" required placeholder="0.00" />
-            </div>
-            <div class="field w4" style="flex: 1 1 130px;">
-              <label>Date ${i+1}</label>
-              <input class="input" name="action_date_${i}" type="date" required data-default-today="true" />
-            </div>
-            <div class="field w12" style="flex: 1 1 100%;">
-              <label>Notes ${i+1}</label>
-              <input class="input" name="notes_${i}" placeholder="Remarks" />
-            </div>
+          <div class="multi-row">
+            <input class="input" name="action_date_${i}" type="date" required data-default-today="true" aria-label="Date ${i+1}" />
+            <input class="input" name="action_amount_${i}" type="number" min="0" step="0.01" required placeholder="0.00" aria-label="Amount ${i+1}" />
+            <input class="input" name="notes_${i}" placeholder="Notes" aria-label="Remarks ${i+1}" />
           </div>
         `;
       }
@@ -1026,9 +1205,41 @@
       }
     }
 
-    function closeEntryModal(){
-      els.entryModal.classList.add("hide");
-      els.entryModal.setAttribute("aria-hidden", "true");
+    function openEditModal(id) {
+      const entry = state.entries.find(e => e.id === id);
+      if (!entry) return;
+      state.editId = id;
+      state.editKind = entry.entry_kind;
+
+      if (entry.entry_kind === "principal") {
+        document.getElementById('editPersonGroup').classList.remove('hide');
+        document.getElementById('editCurrencyGroup').classList.remove('hide');
+        document.getElementById('editName').value = entry.person_name || "";
+        document.getElementById('editName').required = true;
+        setCurrencyChoice(els.editForm, entry.currency || "AED");
+        document.getElementById('editAmountLabel').textContent = "Principal Amount";
+        document.getElementById('editAmount').value = entry.principal_amount || "";
+        document.getElementById('editDateLabel').textContent = "Loan Date";
+        document.getElementById('editDate').value = entry.loan_date || "";
+      } else {
+        document.getElementById('editPersonGroup').classList.add('hide');
+        document.getElementById('editCurrencyGroup').classList.add('hide');
+        document.getElementById('editName').required = false;
+        document.getElementById('editAmountLabel').textContent = "Payment Amount";
+        document.getElementById('editAmount').value = entry.action_amount || "";
+        document.getElementById('editDateLabel').textContent = "Payment Date";
+        document.getElementById('editDate').value = entry.action_date || "";
+      }
+      document.getElementById('editNotes').value = entry.notes || "";
+
+      els.editModal.classList.remove("hide");
+      els.editModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal(modalId){
+      document.getElementById(modalId).classList.add("hide");
+      document.getElementById(modalId).setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
     }
 
@@ -1055,7 +1266,7 @@
       form.reset();
       setCurrencyChoice(form, "AED");
       defaultDateInputs(form);
-      closeEntryModal();
+      closeModal("entryModal");
       await loadEntries();
     }
 
@@ -1112,54 +1323,35 @@
       form.reset();
       els.multiEntryCount.value = 1;
       renderMultiEntries(1);
-      closeEntryModal();
+      closeModal("entryModal");
       await loadEntries();
     }
 
-    async function editEntry(id){
-      if(!id) return;
-      const entry = state.entries.find(e => e.id === id);
-      if(!entry) return;
+    async function submitEdit(){
+      const id = state.editId;
+      if (!id) return;
 
-      if(entry.entry_kind === "principal"){
-        const newName = prompt("Person name", entry.person_name || "");
-        if (newName === null) return;
-        const newCurrency = prompt("Currency code (AED / SAR / PKR)", entry.currency || "AED");
-        if (newCurrency === null) return;
-        const newAmount = prompt("Principal amount", entry.principal_amount ?? "");
-        if (newAmount === null) return;
-        const newDate = prompt("Loan date (YYYY-MM-DD)", entry.loan_date || "");
-        if (newDate === null) return;
-        const newNote = prompt("Notes", entry.notes || "");
-        if (newNote === null) return;
+      const amt = Number(document.getElementById('editAmount').value || 0);
+      const dt = document.getElementById('editDate').value;
+      const nt = document.getElementById('editNotes').value.trim() || null;
 
+      if(state.editKind === "principal"){
+        const nm = document.getElementById('editName').value.trim();
+        const curr = document.getElementById('editCurrency').value;
+        if (!nm || !curr || !amt || !dt) throw new Error("Complete required fields.");
         await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
           method: "PATCH",
-          body: JSON.stringify({
-            person_name: newName.trim(),
-            currency: newCurrency.trim().toUpperCase(),
-            principal_amount: Number(newAmount),
-            loan_date: newDate.trim(),
-            notes: newNote.trim() || null
-          })
+          body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: nt })
         });
       } else {
-        const newAmount = prompt("Amount", entry.action_amount ?? "");
-        if (newAmount === null) return;
-        const newDate = prompt("Date (YYYY-MM-DD)", entry.action_date || "");
-        if (newDate === null) return;
-        const newNote = prompt("Notes", entry.notes || "");
-        if (newNote === null) return;
-
+        if (!amt || !dt) throw new Error("Complete required fields.");
         await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
           method: "PATCH",
-          body: JSON.stringify({
-            action_amount: Number(newAmount),
-            action_date: newDate.trim(),
-            notes: newNote.trim() || null
-          })
+          body: JSON.stringify({ action_amount: amt, action_date: dt, notes: nt })
         });
       }
+
+      closeModal("editModal");
       await loadEntries();
     }
 
@@ -1192,19 +1384,36 @@
       });
 
       document.querySelectorAll("[data-close-modal]").forEach(btn => {
-        btn.addEventListener("click", closeEntryModal);
+        btn.addEventListener("click", e => closeModal(e.target.dataset.closeModal));
       });
 
-      els.entryModal.addEventListener("click", e => {
-        if (e.target && e.target.matches(".modal-backdrop")) closeEntryModal();
+      [els.entryModal, els.editModal].forEach(m => {
+        m.addEventListener("click", e => {
+          if (e.target && e.target.matches(".modal-backdrop")) closeModal(m.id);
+        });
       });
 
       document.addEventListener("keydown", e => {
-        if (e.key === "Escape" && !els.entryModal.classList.contains("hide")) closeEntryModal();
+        if (e.key === "Escape") {
+          if (!els.entryModal.classList.contains("hide")) closeModal("entryModal");
+          if (!els.editModal.classList.contains("hide")) closeModal("editModal");
+        }
       });
 
       document.querySelectorAll(".currency-chip").forEach(btn => {
-        btn.addEventListener("click", () => setCurrencyChoice(els.principalModalForm, btn.dataset.currency));
+        btn.addEventListener("click", () => setCurrencyChoice(btn.closest('form'), btn.dataset.currency));
+      });
+
+      document.querySelectorAll(".filter-radio").forEach(r => {
+        r.addEventListener("change", e => {
+          const key = e.target.dataset.filter;
+          state.statusFilter[key] = e.target.value;
+          renderLoanCards(
+            key === "given" ? els.givenList : key === "received" ? els.receivedList : key === "taken" ? els.takenList : els.returnedList,
+            key === "given" || key === "received" ? "given" : "taken",
+            key
+          );
+        });
       });
 
       els.multiEntryCount.addEventListener("input", e => {
@@ -1222,6 +1431,11 @@
       els.paymentModalForm.addEventListener("submit", async e => {
         e.preventDefault();
         try { await createPayment(els.paymentModalForm); } catch (err) { alert(err.message); }
+      });
+
+      els.editForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        try { await submitEdit(); } catch (err) { alert(err.message); }
       });
 
       els.refreshBtn.addEventListener("click", () => loadEntries().catch(err => alert(err.message)));
