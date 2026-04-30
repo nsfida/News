@@ -542,8 +542,9 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
                     <td><strong>${money(row.remainingAfter, group.currency)}</strong></td>
                     <td>
                       <div>
-                        <span style="color:var(--primary);cursor:pointer;font-weight:600;font-size:.8rem;" onclick="this.nextElementSibling.classList.toggle('hide')">Notes ▾</span>
-                        <div class="hide" style="margin-top:4px;padding:6px;background:var(--bg);border-radius:6px;font-size:.76rem;">
+                        <span class="note-toggle" style="color:var(--primary);cursor:pointer;font-weight:600;font-size:.8rem;" onclick="this.nextElementSibling.classList.toggle('hide')">Notes ▾</span>
+                        <div class="hide note-popover" style="margin-top:4px;padding:6px;background:var(--bg);border-radius:6px;font-size:.76rem;">
+                          <button class="note-close" type="button" onclick="this.parentElement.classList.add('hide')" aria-label="Close note">×</button>
                           ${escapeHtml(row.note)}
                           <div style="color:var(--muted);font-size:.7rem;margin-top:3px">${index === 0 ? "Opening row" : `Linked ${escapeHtml(shortId(row.entryId))}`}</div>
                         </div>
