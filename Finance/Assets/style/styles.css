@@ -1,11 +1,11 @@
 @font-face{
   font-family:"DirhamSymbol";
-  src:url("Fonts/AED.ttf") format("truetype");
+  src:url("fonts/AED.ttf") format("truetype");
   font-display:swap;
 }
 @font-face{
   font-family:"RiyalSymbol";
-  src:url("Fonts/SAR.otf") format("opentype");
+  src:url("fonts/SAR.otf") format("opentype");
   font-display:swap;
 }
 
