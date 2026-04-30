@@ -888,8 +888,6 @@ function drawPdfHeader(doc, logoData, title, subtitle){
   doc.roundedRect(10, 8, pageWidth - 20, 34, 2, 2, "F");
 
   if (logoData){
-    doc.setFillColor(36, 87, 214);
-    doc.roundedRect(14, 12, 20, 20, 3, 3, "F");
     try { doc.addImage(logoData, "PNG", 15.5, 13.5, 17, 17); } catch {}
   }
 
