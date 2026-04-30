@@ -364,9 +364,9 @@
     .inv-box.highlight { background: var(--primary-soft); border-color: #dbe4fa; }
     .inv-box.highlight strong { color: var(--primary); }
 
-    .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 0 1px #e4e7ec; }
+    .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 0 1px #e4e7ec; table-layout: fixed; }
     .inv-table th { background: #f8fafc; color: #667085; padding: 14px 16px; text-align: left; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e4e7ec; }
-    .inv-table td { padding: 16px; border-bottom: 1px solid #e4e7ec; font-size: 0.95rem; vertical-align: top; color: #17212b; }
+    .inv-table td { padding: 16px; border-bottom: 1px solid #e4e7ec; font-size: 0.95rem; vertical-align: top; color: #17212b; overflow-wrap: anywhere; word-break: break-word; }
     .inv-table tr:last-child td { border-bottom: none; }
     .inv-notes-cell { font-size: 0.85rem; color: #444; line-height: 1.5; }
     .inv-notes-cell small { display: block; margin-top: 4px; color: #888; font-size: 0.75rem; }
@@ -1572,18 +1572,27 @@
       wrapper.style.position = 'fixed';
       wrapper.style.top = '0';
       wrapper.style.left = '200vw'; // Render completely offscreen
-      wrapper.style.width = '800px';
       wrapper.style.background = '#ffffff';
       wrapper.style.zIndex = '-9999';
+
+      // Force template width to printable A4 area so content never overflows page.
+      const pageWidthInches = 8.27; // A4 portrait width
+      const marginInches = 0.4;
+      const printableWidthPx = Math.floor((pageWidthInches - (marginInches * 2)) * 96);
+      wrapper.style.width = `${printableWidthPx}px`;
+      clone.style.width = `${printableWidthPx}px`;
+      clone.style.maxWidth = `${printableWidthPx}px`;
+      clone.style.boxSizing = 'border-box';
       
       wrapper.appendChild(clone);
       document.body.appendChild(wrapper);
 
       const opt = {
-        margin:       [0.4, 0.4, 0.4, 0.4],
+        margin:       [marginInches, marginInches, marginInches, marginInches],
         filename:     `Statement_${group.person_name.replace(/\s+/g, '_')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, windowWidth: 800 },
+        html2canvas:  { scale: Math.max(2, window.devicePixelRatio || 1), useCORS: true, scrollX: 0, scrollY: 0, windowWidth: printableWidthPx },
+        pagebreak:    { mode: ['css', 'legacy'] },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
