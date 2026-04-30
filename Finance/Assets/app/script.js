@@ -1,4 +1,4 @@
-﻿const CONFIG = {
+const CONFIG = {
   protectedZipPath: "Assets/app/key.zip",
   table: "loan_ledger_entries"
 };
@@ -97,10 +97,6 @@ function getSupabaseConfig(){
 async function readConfigFromZip(file, password){
   if (!window.zip?.ZipReader) throw new Error("ZIP library failed to load.");
 
-  // #region agent log
-  fetch('http://127.0.0.1:7727/ingest/d68be0e2-9443-4e52-9336-de42c96a676b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c6c938'},body:JSON.stringify({sessionId:'c6c938',runId:'pre-fix',hypothesisId:'H1',location:'Assets/app/script.js:readConfigFromZip',message:'Attempting ZIP unlock',data:{fileName:file?.name || null,fileSize:file?.size || 0,hasPassword:Boolean(password)},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
-
   const reader = new zip.ZipReader(new zip.BlobReader(file), { password });
   const entries = await reader.getEntries();
   const configEntry = entries.find(e => /(^|\/)db-config\.json$/i.test(e.filename) || /\.json$/i.test(e.filename));
@@ -112,10 +108,6 @@ async function readConfigFromZip(file, password){
 
 async function fetchProtectedZipBlob(){
   const zipRes = await fetch(CONFIG.protectedZipPath, { cache: "no-store" });
-
-  // #region agent log
-  fetch('http://127.0.0.1:7727/ingest/d68be0e2-9443-4e52-9336-de42c96a676b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c6c938'},body:JSON.stringify({sessionId:'c6c938',runId:'pre-fix',hypothesisId:'H5',location:'Assets/app/script.js:fetchProtectedZipBlob',message:'Fetched protected ZIP path',data:{path:CONFIG.protectedZipPath,status:zipRes.status,ok:zipRes.ok},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
 
   if (!zipRes.ok){
     throw new Error(`Unable to load ${CONFIG.protectedZipPath}.`);
@@ -934,7 +926,7 @@ async function downloadPersonPDF(personNameEncoded, direction) {
     return;
   }
 
-  const logoData = await getBase64ImageFromUrl('..Assets/logo/logo.png');
+  const logoData = await getBase64ImageFromUrl('.Assets/logo/logo.png');
 
   if (logoData) {
     try {
@@ -1250,9 +1242,6 @@ async function attemptUnlock(){
     const zipFile = new File([zipBlob], "key.zip", { type: "application/zip" });
     const configData = await readConfigFromZip(zipFile, zipPassword);
     if (!configData?.supabaseUrl || !configData?.supabaseKey){
-      // #region agent log
-      fetch('http://127.0.0.1:7727/ingest/d68be0e2-9443-4e52-9336-de42c96a676b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c6c938'},body:JSON.stringify({sessionId:'c6c938',runId:'pre-fix',hypothesisId:'H3',location:'Assets/app/script.js:attemptUnlock',message:'Config JSON missing required keys',data:{hasSupabaseUrl:Boolean(configData?.supabaseUrl),hasSupabaseKey:Boolean(configData?.supabaseKey)},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
     }
 
@@ -1265,16 +1254,9 @@ async function attemptUnlock(){
     els.lockScreen.classList.add("hide");
     els.app.classList.remove("hide");
 
-    // #region agent log
-    fetch('http://127.0.0.1:7727/ingest/d68be0e2-9443-4e52-9336-de42c96a676b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c6c938'},body:JSON.stringify({sessionId:'c6c938',runId:'pre-fix',hypothesisId:'H4',location:'Assets/app/script.js:attemptUnlock',message:'Unlock succeeded and runtime config set',data:{urlHost:(new URL(runtimeConfig.supabaseUrl)).host,keyLength:runtimeConfig.supabaseKey.length},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-
     defaultDateInputs(document);
     await loadEntries();
   }catch(err){
-    // #region agent log
-    fetch('http://127.0.0.1:7727/ingest/d68be0e2-9443-4e52-9336-de42c96a676b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c6c938'},body:JSON.stringify({sessionId:'c6c938',runId:'pre-fix',hypothesisId:'H2',location:'Assets/app/script.js:attemptUnlock',message:'Unlock failed',data:{error:String(err?.message || err)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     els.lockError.textContent = err.message;
   }finally{
     els.unlockBtn.disabled = false;
