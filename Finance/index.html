@@ -21,7 +21,7 @@
         </div>
       </div>
       <h2>Unlock Database Config</h2>
-      <p>Enter the password to unlock the page.</p>
+      <p>Enter the ZIP password to unlock `Assets/app/key.zip` and load Supabase access.</p>
       <div class="lock-row">
         <input id="zipPasswordInput" class="input" type="password" placeholder="ZIP Password" autocomplete="current-password" />
         <button id="unlockBtn" class="btn primary" type="button">Unlock</button>
@@ -81,7 +81,7 @@
               </div>
               <div class="tools">
                 <input id="searchGiven" class="input" style="min-width:180px" placeholder="Search name or note" />
-                <button class="btn soft" id="downloadGivenPdfBtn" type="button">PDF</button>
+                <button class="btn soft" id="downloadGivenPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
             <div class="filter-group">
@@ -120,7 +120,7 @@
               </div>
               <div class="tools">
                 <input id="searchReceived" class="input" style="min-width:180px" placeholder="Search name or note" />
-                <button class="btn soft" id="downloadReceivedPdfBtn" type="button">PDF</button>
+                <button class="btn soft" id="downloadReceivedPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
             <div class="filter-group">
@@ -160,7 +160,7 @@
               </div>
               <div class="tools">
                 <input id="searchTaken" class="input" style="min-width:180px" placeholder="Search name or note" />
-                <button class="btn soft" id="downloadTakenPdfBtn" type="button">PDF</button>
+                <button class="btn soft" id="downloadTakenPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
             <div class="filter-group">
@@ -199,7 +199,7 @@
               </div>
               <div class="tools">
                 <input id="searchReturned" class="input" style="min-width:180px" placeholder="Search name or note" />
-                <button class="btn soft" id="downloadReturnedPdfBtn" type="button">PDF</button>
+                <button class="btn soft" id="downloadReturnedPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
             <div class="filter-group">
@@ -240,6 +240,13 @@
         <div class="summary"><span>Returned rows</span><strong id="returnedCount">0</strong></div>
       </div>
     </section>
+  </div>
+
+  <div style="max-width:1240px;margin:8px auto 18px;padding:0 16px;text-align:center;color:#667085;font-size:.86rem;">
+    Powered by
+    <a href="https://facebook.com/nadeemshahzadfida" target="_blank" rel="noopener noreferrer" style="color:#2457d6;text-decoration:none;font-weight:700;">
+      Nadeem Shahzad Fida
+    </a>
   </div>
 
   <div id="entryModal" class="modal hide" aria-hidden="true">
