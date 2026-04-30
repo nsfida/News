@@ -463,12 +463,20 @@
             <div class="filter-group">
               <input type="radio" id="f_given_all" name="f_given" value="All" class="filter-radio" data-filter="given" checked>
               <label for="f_given_all" class="filter-label">All</label>
-              <input type="radio" id="f_given_open" name="f_given" value="Open" class="filter-radio" data-filter="given">
-              <label for="f_given_open" class="filter-label">Open</label>
-              <input type="radio" id="f_given_partial" name="f_given" value="Partial" class="filter-radio" data-filter="given">
-              <label for="f_given_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_given_active" name="f_given" value="Active" class="filter-radio" data-filter="given">
+              <label for="f_given_active" class="filter-label">Open/Partial</label>
               <input type="radio" id="f_given_closed" name="f_given" value="Closed" class="filter-radio" data-filter="given">
               <label for="f_given_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_given_cur_all" name="f_given_cur" value="All" class="currency-radio filter-radio" data-currency-filter="given" checked>
+              <label for="f_given_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_given_cur_aed" name="f_given_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_given_cur_sar" name="f_given_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_given_cur_pkr" name="f_given_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_pkr" class="filter-label">Rs.</label>
             </div>
           </div>
           <div id="givenList" class="list"></div>
@@ -493,12 +501,20 @@
             <div class="filter-group">
               <input type="radio" id="f_rec_all" name="f_rec" value="All" class="filter-radio" data-filter="received" checked>
               <label for="f_rec_all" class="filter-label">All</label>
-              <input type="radio" id="f_rec_open" name="f_rec" value="Open" class="filter-radio" data-filter="received">
-              <label for="f_rec_open" class="filter-label">Open</label>
-              <input type="radio" id="f_rec_partial" name="f_rec" value="Partial" class="filter-radio" data-filter="received">
-              <label for="f_rec_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_rec_active" name="f_rec" value="Active" class="filter-radio" data-filter="received">
+              <label for="f_rec_active" class="filter-label">Open/Partial</label>
               <input type="radio" id="f_rec_closed" name="f_rec" value="Closed" class="filter-radio" data-filter="received">
               <label for="f_rec_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_rec_cur_all" name="f_rec_cur" value="All" class="currency-radio filter-radio" data-currency-filter="received" checked>
+              <label for="f_rec_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_rec_cur_aed" name="f_rec_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_rec_cur_sar" name="f_rec_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_rec_cur_pkr" name="f_rec_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_pkr" class="filter-label">Rs.</label>
             </div>
           </div>
           <div id="receivedList" class="list"></div>
@@ -523,12 +539,20 @@
             <div class="filter-group">
               <input type="radio" id="f_taken_all" name="f_taken" value="All" class="filter-radio" data-filter="taken" checked>
               <label for="f_taken_all" class="filter-label">All</label>
-              <input type="radio" id="f_taken_open" name="f_taken" value="Open" class="filter-radio" data-filter="taken">
-              <label for="f_taken_open" class="filter-label">Open</label>
-              <input type="radio" id="f_taken_partial" name="f_taken" value="Partial" class="filter-radio" data-filter="taken">
-              <label for="f_taken_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_taken_active" name="f_taken" value="Active" class="filter-radio" data-filter="taken">
+              <label for="f_taken_active" class="filter-label">Open/Partial</label>
               <input type="radio" id="f_taken_closed" name="f_taken" value="Closed" class="filter-radio" data-filter="taken">
               <label for="f_taken_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_taken_cur_all" name="f_taken_cur" value="All" class="currency-radio filter-radio" data-currency-filter="taken" checked>
+              <label for="f_taken_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_taken_cur_aed" name="f_taken_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_taken_cur_sar" name="f_taken_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_taken_cur_pkr" name="f_taken_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_pkr" class="filter-label">Rs.</label>
             </div>
           </div>
           <div id="takenList" class="list"></div>
@@ -553,12 +577,20 @@
             <div class="filter-group">
               <input type="radio" id="f_ret_all" name="f_ret" value="All" class="filter-radio" data-filter="returned" checked>
               <label for="f_ret_all" class="filter-label">All</label>
-              <input type="radio" id="f_ret_open" name="f_ret" value="Open" class="filter-radio" data-filter="returned">
-              <label for="f_ret_open" class="filter-label">Open</label>
-              <input type="radio" id="f_ret_partial" name="f_ret" value="Partial" class="filter-radio" data-filter="returned">
-              <label for="f_ret_partial" class="filter-label">Partial</label>
+              <input type="radio" id="f_ret_active" name="f_ret" value="Active" class="filter-radio" data-filter="returned">
+              <label for="f_ret_active" class="filter-label">Open/Partial</label>
               <input type="radio" id="f_ret_closed" name="f_ret" value="Closed" class="filter-radio" data-filter="returned">
               <label for="f_ret_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_ret_cur_all" name="f_ret_cur" value="All" class="currency-radio filter-radio" data-currency-filter="returned" checked>
+              <label for="f_ret_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_ret_cur_aed" name="f_ret_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_ret_cur_sar" name="f_ret_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_ret_cur_pkr" name="f_ret_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_pkr" class="filter-label">Rs.</label>
             </div>
           </div>
           <div id="returnedList" class="list"></div>
@@ -728,6 +760,7 @@
       unlocked: false,
       search: { given: "", received: "", taken: "", returned: "" },
       statusFilter: { given: "All", received: "All", taken: "All", returned: "All" },
+      currencyFilter: { given: "All", received: "All", taken: "All", returned: "All" },
       lastCurrency: "AED",
       modalDirection: "given",
       editId: null,
@@ -1034,9 +1067,11 @@
       const personMap = new Map();
       const directionEntries = state.entries.filter(e => e.direction === direction);
       const searchTerm = state.search[searchKey];
+      const selectedCurrency = state.currencyFilter[searchKey] || "All";
 
       for (const entry of directionEntries){
         if (!matchesSearch(entry, searchTerm)) continue;
+        if (selectedCurrency !== "All" && entry.currency !== selectedCurrency) continue;
 
         const personKey = String(entry.person_name || "").trim();
         if (!personMap.has(personKey)){
@@ -1131,7 +1166,11 @@
       const filterValue = state.statusFilter[searchKey];
       
       if(filterValue !== "All") {
-        groups = groups.filter(g => g.status.toLowerCase() === filterValue.toLowerCase());
+        if (filterValue === "Active"){
+          groups = groups.filter(g => g.status === "Open" || g.status === "Partial");
+        } else {
+          groups = groups.filter(g => g.status.toLowerCase() === filterValue.toLowerCase());
+        }
       }
 
       if (!groups.length){
@@ -1697,8 +1736,21 @@
 
       document.querySelectorAll(".filter-radio").forEach(r => {
         r.addEventListener("change", e => {
+          if (!e.target.dataset.filter) return;
           const key = e.target.dataset.filter;
           state.statusFilter[key] = e.target.value;
+          renderLoanCards(
+            key === "given" ? els.givenList : key === "received" ? els.receivedList : key === "taken" ? els.takenList : els.returnedList,
+            key === "given" || key === "received" ? "given" : "taken",
+            key
+          );
+        });
+      });
+
+      document.querySelectorAll(".currency-radio").forEach(r => {
+        r.addEventListener("change", e => {
+          const key = e.target.dataset.currencyFilter;
+          state.currencyFilter[key] = e.target.value;
           renderLoanCards(
             key === "given" ? els.givenList : key === "received" ? els.receivedList : key === "taken" ? els.takenList : els.returnedList,
             key === "given" || key === "received" ? "given" : "taken",
