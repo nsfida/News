@@ -934,7 +934,7 @@ async function downloadPersonPDF(personNameEncoded, direction) {
     return;
   }
 
-  const logoData = await getBase64ImageFromUrl('logo.png');
+  const logoData = await getBase64ImageFromUrl('.Assets/logo/logo.png');
 
   if (logoData) {
     try {
