@@ -1,0 +1,425 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NSF's Loan Management System</title>
+  <meta name="description" content="Simple loan tracking for money given, received back, loan taken, and returned back." />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="lockScreen" class="lock">
+    <div class="lock-card">
+      <div class="brand" style="margin-bottom:12px">
+        <img class="mark" src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+        <div>
+          <h1>NSF's Loan Management System</h1>
+          <p>Private loan tracking workspace</p>
+        </div>
+      </div>
+      <h2>Unlock</h2>
+      <p>Enter the password to open the loan ledger.</p>
+      <div class="lock-row">
+        <input id="passwordInput" class="input" type="password" placeholder="Password" autocomplete="current-password" />
+        <button id="unlockBtn" class="btn primary" type="button">Unlock</button>
+      </div>
+      <div id="lockError" class="lock-error"></div>
+    </div>
+  </div>
+
+  <div id="app" class="shell hide">
+    <header class="header">
+      <div class="brand">
+        <img class="mark" src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+        <div>
+          <h1>NSF's Loan Management System</h1>
+          <p>Loan Given/Received Back and Loan Taken/Returned Back</p>
+        </div>
+      </div>
+      <div class="chips">
+        <div class="chip">Supabase connected</div>
+        <div class="chip">Compact ledger</div>
+        <div class="chip">Mobile friendly</div>
+      </div>
+    </header>
+
+    <section class="overview">
+      <div class="overview-top">
+        <div>
+          <h2>Overview</h2>
+          <p>Separate balances shown by currency.</p>
+        </div>
+        <div class="tools">
+          <button class="btn primary" id="refreshBtn" type="button">Refresh</button>
+          <button class="btn ghost" id="newLoanShortcut" type="button"><span aria-hidden="true">+</span>&nbsp;New given</button>
+          <button class="btn soft" id="downloadAllSectionsPdfBtn" type="button">&#128196; Download Full Report</button>
+        </div>
+      </div>
+      <div class="overview-grid" id="statsGrid"></div>
+    </section>
+
+    <section class="tabs">
+      <button class="tab active" data-tab="given" type="button">Loan Given / Received Back</button>
+      <button class="tab" data-tab="taken" type="button">Loan Taken / Returned Back</button>
+    </section>
+
+    <main class="center-wrap">
+      <section id="givenPanel" class="panel active">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Loan Given / Received Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="principal" data-direction="given" aria-label="Add new loan given">+</button>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="given" aria-label="Add received back entry">+</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchGiven" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadGivenPdfBtn" type="button">PDF</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_given_all" name="f_given" value="All" class="filter-radio" data-filter="given" checked>
+              <label for="f_given_all" class="filter-label">All</label>
+              <input type="radio" id="f_given_active" name="f_given" value="Active" class="filter-radio" data-filter="given">
+              <label for="f_given_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_given_closed" name="f_given" value="Closed" class="filter-radio" data-filter="given">
+              <label for="f_given_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_given_cur_all" name="f_given_cur" value="All" class="currency-radio filter-radio" data-currency-filter="given" checked>
+              <label for="f_given_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_given_cur_aed" name="f_given_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_given_cur_sar" name="f_given_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_given_cur_pkr" name="f_given_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="givenList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="receivedPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Received Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="given" aria-label="Add received back entry">+</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchReceived" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadReceivedPdfBtn" type="button">PDF</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_rec_all" name="f_rec" value="All" class="filter-radio" data-filter="received" checked>
+              <label for="f_rec_all" class="filter-label">All</label>
+              <input type="radio" id="f_rec_active" name="f_rec" value="Active" class="filter-radio" data-filter="received">
+              <label for="f_rec_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_rec_closed" name="f_rec" value="Closed" class="filter-radio" data-filter="received">
+              <label for="f_rec_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_rec_cur_all" name="f_rec_cur" value="All" class="currency-radio filter-radio" data-currency-filter="received" checked>
+              <label for="f_rec_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_rec_cur_aed" name="f_rec_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_rec_cur_sar" name="f_rec_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_rec_cur_pkr" name="f_rec_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="receivedList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="takenPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Loan Taken / Returned Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="principal" data-direction="taken" aria-label="Add new loan taken">+</button>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="taken" aria-label="Add returned back entry">+</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchTaken" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadTakenPdfBtn" type="button">PDF</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_taken_all" name="f_taken" value="All" class="filter-radio" data-filter="taken" checked>
+              <label for="f_taken_all" class="filter-label">All</label>
+              <input type="radio" id="f_taken_active" name="f_taken" value="Active" class="filter-radio" data-filter="taken">
+              <label for="f_taken_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_taken_closed" name="f_taken" value="Closed" class="filter-radio" data-filter="taken">
+              <label for="f_taken_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_taken_cur_all" name="f_taken_cur" value="All" class="currency-radio filter-radio" data-currency-filter="taken" checked>
+              <label for="f_taken_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_taken_cur_aed" name="f_taken_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_taken_cur_sar" name="f_taken_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_taken_cur_pkr" name="f_taken_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="takenList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="returnedPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Returned Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="taken" aria-label="Add returned back entry">+</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchReturned" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadReturnedPdfBtn" type="button">PDF</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_ret_all" name="f_ret" value="All" class="filter-radio" data-filter="returned" checked>
+              <label for="f_ret_all" class="filter-label">All</label>
+              <input type="radio" id="f_ret_active" name="f_ret" value="Active" class="filter-radio" data-filter="returned">
+              <label for="f_ret_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_ret_closed" name="f_ret" value="Closed" class="filter-radio" data-filter="returned">
+              <label for="f_ret_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_ret_cur_all" name="f_ret_cur" value="All" class="currency-radio filter-radio" data-currency-filter="returned" checked>
+              <label for="f_ret_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_ret_cur_aed" name="f_ret_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_ret_cur_sar" name="f_ret_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_ret_cur_pkr" name="f_ret_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="returnedList" class="list"></div>
+        </div>
+      </section>
+    </main>
+
+    <section class="overview" style="margin-top:14px">
+      <div class="overview-top">
+        <div>
+          <h2>Quick counters</h2>
+          <p>Active loans and repayment records.</p>
+        </div>
+      </div>
+      <div class="overview-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        <div class="summary"><span>Open given</span><strong id="openGivenCount">0</strong></div>
+        <div class="summary"><span>Open taken</span><strong id="openTakenCount">0</strong></div>
+        <div class="summary"><span>Received rows</span><strong id="receivedCount">0</strong></div>
+        <div class="summary"><span>Returned rows</span><strong id="returnedCount">0</strong></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="entryModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="entryModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 id="modalTitle">New entry</h3>
+          <p id="modalDesc">Fill the form and save the entry.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="entryModal" aria-label="Close">Ã—</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="principalModalForm" class="hide" data-form-type="principal">
+          <input type="hidden" name="direction" value="given" />
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Person name</label>
+              <input class="input" name="person_name" required placeholder="Full name" />
+            </div>
+            <div class="field w6">
+              <label>Currency</label>
+              <div class="currency-picker" id="principalCurrencyPicker">
+                <button type="button" class="currency-chip active" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" name="currency" value="AED" />
+            </div>
+            <div class="field w6">
+              <label>Amount</label>
+              <input class="input" name="principal_amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Date</label>
+              <input class="input" name="loan_date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
+              <button class="btn primary" type="submit" id="principalSubmitBtn">Save</button>
+            </div>
+          </div>
+        </form>
+
+        <form id="paymentModalForm" class="hide" data-form-type="payment">
+          <input type="hidden" name="direction" value="given" />
+          <div class="modal-grid">
+            <div class="field w8">
+              <label>Related loan</label>
+              <select class="select" name="group_id" id="modalLoanSelect" required></select>
+            </div>
+            <div class="field w4">
+              <label>Entries Count</label>
+              <input class="input" id="multiEntryCount" type="number" min="1" max="10" value="1" required />
+            </div>
+            <div id="multiEntryContainer" style="grid-column: span 12; margin-top: 5px;">
+              </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
+              <button class="btn primary" type="submit" id="paymentSubmitBtn">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="editModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3>Edit entry</h3>
+          <p>Update the record details below.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="editModal" aria-label="Close">Ã—</button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="modal-grid">
+            <div id="editPersonGroup" class="field w6 hide">
+              <label>Person name</label>
+              <input class="input" id="editName" name="person_name" placeholder="Full name" />
+            </div>
+            <div id="editCurrencyGroup" class="field w6 hide">
+              <label>Currency</label>
+              <div class="currency-picker">
+                <button type="button" class="currency-chip" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" id="editCurrency" name="currency" />
+            </div>
+            <div class="field w6">
+              <label id="editAmountLabel">Amount</label>
+              <input class="input" id="editAmount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label id="editDateLabel">Date</label>
+              <input class="input" id="editDate" type="date" required />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" id="editNotes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="editModal">Cancel</button>
+              <button class="btn primary" type="submit">Update</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="zip.min.js"></script>
+  <script>
+    (async function loadProtectedScript(){
+      async function readZipBlob(path){
+        try{
+          const response = await fetch(path, { cache: "no-store" });
+          if (response.ok) return await response.blob();
+        }catch(_err){}
+
+        // Fallback for file:// contexts where fetch may be blocked.
+        return await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("GET", path, true);
+          xhr.responseType = "blob";
+          xhr.onload = () => {
+            if (xhr.status === 200 || xhr.status === 0) resolve(xhr.response);
+            else reject(new Error("Could not read zip file."));
+          };
+          xhr.onerror = () => reject(new Error("Could not read zip file."));
+          xhr.send();
+        });
+      }
+
+      const requested = prompt("Enter ZIP password to unlock script.js");
+      if (requested === null) return;
+      const password = requested.trim();
+      if (!password){
+        alert("Password is required.");
+        return;
+      }
+      try{
+        const blob = await readZipBlob("script.zip");
+
+        const reader = new zip.ZipReader(new zip.BlobReader(blob));
+        const entries = await reader.getEntries();
+        const scriptEntry = entries.find(e => e.filename === "script.js");
+        if (!scriptEntry) throw new Error("script.js not found in zip.");
+
+        const scriptText = await scriptEntry.getData(new zip.TextWriter(), { password });
+        await reader.close();
+
+        const scriptTag = document.createElement("script");
+        scriptTag.textContent = scriptText;
+        document.body.appendChild(scriptTag);
+      }catch(err){
+        alert("Failed to unlock/load script. Check password or open via a local web server.");
+      }
+    })();
+  </script>
+</body>
+</html>
+
