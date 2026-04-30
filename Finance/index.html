@@ -1030,12 +1030,107 @@
         .filter(group => matchesSearch(group.principal || group.actions[0] || {}, state.search[searchKey]));
     }
 
+    function groupByPerson(direction, searchKey = direction){
+      const personMap = new Map();
+      const directionEntries = state.entries.filter(e => e.direction === direction);
+      const searchTerm = state.search[searchKey];
+
+      for (const entry of directionEntries){
+        if (!matchesSearch(entry, searchTerm)) continue;
+
+        const personKey = String(entry.person_name || "").trim();
+        if (!personMap.has(personKey)){
+          personMap.set(personKey, {
+            person_name: personKey,
+            entries: [],
+            groupIds: new Set(),
+            activityStamp: 0,
+            lastActivity: null
+          });
+        }
+
+        const person = personMap.get(personKey);
+        person.entries.push(entry);
+        if (entry.group_id) person.groupIds.add(entry.group_id);
+
+        const stamp = Math.max(dateStamp(entry.loan_date), dateStamp(entry.action_date));
+        if (stamp >= person.activityStamp){
+          person.activityStamp = stamp;
+          person.lastActivity = entry.action_date || entry.loan_date || person.lastActivity;
+        }
+      }
+
+      const people = [];
+      for (const person of personMap.values()){
+        const principalRows = person.entries.filter(e => e.entry_kind === "principal");
+        const actionRows = person.entries.filter(e => e.entry_kind !== "principal");
+
+        const principalTotal = principalRows.reduce((sum, e) => sum + Number(e.principal_amount || 0), 0);
+        const paidTotal = actionRows.reduce((sum, e) => sum + Number(e.action_amount || 0), 0);
+        const remaining = Math.max(principalTotal - paidTotal, 0);
+        const status = remaining <= 0 ? "Closed" : paidTotal > 0 ? "Partial" : "Open";
+
+        const currency = principalRows[0]?.currency || actionRows[0]?.currency || "";
+
+        const timeline = person.entries
+          .slice()
+          .sort((a, b) => {
+            const aStamp = dateStamp(a.entry_kind === "principal" ? a.loan_date : a.action_date);
+            const bStamp = dateStamp(b.entry_kind === "principal" ? b.loan_date : b.action_date);
+            if (aStamp !== bStamp) return aStamp - bStamp;
+            return (a.entry_kind === "principal" ? -1 : 1) - (b.entry_kind === "principal" ? -1 : 1);
+          });
+
+        let runningRemaining = 0;
+        const rows = timeline.map(entry => {
+          const isPrincipal = entry.entry_kind === "principal";
+          const amount = Number(isPrincipal ? entry.principal_amount : entry.action_amount || 0);
+          runningRemaining = isPrincipal
+            ? runningRemaining + amount
+            : Math.max(runningRemaining - amount, 0);
+
+          return {
+            kind: isPrincipal ? "principal" : (entry.entry_kind === "partial" ? "partial" : "full"),
+            date: isPrincipal ? (entry.loan_date || "—") : (entry.action_date || "—"),
+            amount,
+            remainingAfter: runningRemaining,
+            note: entry.notes || "—",
+            entryId: entry.id
+          };
+        });
+
+        const firstDate = timeline[0]
+          ? (timeline[0].entry_kind === "principal" ? timeline[0].loan_date : timeline[0].action_date)
+          : null;
+
+        people.push({
+          person_name: person.person_name,
+          currency,
+          principalTotal,
+          paidTotal,
+          remaining,
+          status,
+          rows,
+          loan_date: firstDate || null,
+          activityStamp: person.activityStamp,
+          lastActivity: person.lastActivity,
+          groupCount: person.groupIds.size
+        });
+      }
+
+      return people.sort((a, b) => {
+        const diff = (b.activityStamp || 0) - (a.activityStamp || 0);
+        if (diff !== 0) return diff;
+        return String(a.person_name || "").localeCompare(String(b.person_name || ""));
+      });
+    }
+
     function renderLoanCards(container, direction, searchKey = direction){
-      let groups = filterPrincipal(direction, searchKey);
+      let groups = groupByPerson(direction, searchKey);
       const filterValue = state.statusFilter[searchKey];
       
       if(filterValue !== "All") {
-        groups = groups.filter(g => calculateLoan(g).status.toLowerCase() === filterValue.toLowerCase());
+        groups = groups.filter(g => g.status.toLowerCase() === filterValue.toLowerCase());
       }
 
       if (!groups.length){
@@ -1044,12 +1139,10 @@
       }
 
       container.innerHTML = groups.map(group => {
-        const calc = calculateLoan(group);
-        const principal = group.principal;
-        const statusClass = calc.status === "Closed" ? "green" : calc.status === "Partial" ? "orange" : "blue";
+        const statusClass = group.status === "Closed" ? "green" : group.status === "Partial" ? "orange" : "blue";
         const directionLabel = direction === "given" ? "Given" : "Taken";
         const movementLabel = direction === "given" ? "Received back" : "Returned back";
-        const openOnly = calc.remaining > 0;
+        const openOnly = group.remaining > 0;
 
         return `
           <details class="loan">
@@ -1059,19 +1152,19 @@
                   <div class="loan-name">${escapeHtml(group.person_name || "Unnamed")}</div>
                   <div class="loan-sub">
                     <span>${escapeHtml(directionLabel)}</span>
-                    <span>Opened ${escapeHtml(displayDate(principal?.loan_date || group.loan_date || "—"))}</span>
-                    <span>Updated ${escapeHtml(displayDate(group.lastActivity || principal?.loan_date || group.loan_date || "—"))}</span>
+                    <span>Opened ${escapeHtml(displayDate(group.loan_date || "—"))}</span>
+                    <span>Updated ${escapeHtml(displayDate(group.lastActivity || group.loan_date || "—"))}</span>
                     <span>${currencySymbolHtml(group.currency || "")}</span>
-                    <span>${escapeHtml(shortId(group.group_id))}</span>
+                    <span>${escapeHtml(`${group.groupCount || 1} loan${(group.groupCount || 1) > 1 ? "s" : ""}`)}</span>
                     ${openOnly ? '<span class="badge orange">Open</span>' : '<span class="badge green">Closed</span>'}
                   </div>
                 </div>
-                <div class="cell lt-status"><small>Status</small><strong><span class="badge ${statusClass}">${escapeHtml(calc.status)}</span></strong></div>
-                <div class="cell lt-principal"><small>Principal</small><strong>${money(calc.principal, group.currency)}</strong></div>
-                <div class="cell lt-movement"><small>${escapeHtml(movementLabel)}</small><strong>${money(calc.paid, group.currency)}</strong></div>
-                <div class="cell lt-remaining"><small>Remaining</small><strong>${money(calc.remaining, group.currency)}</strong></div>
+                <div class="cell lt-status"><small>Status</small><strong><span class="badge ${statusClass}">${escapeHtml(group.status)}</span></strong></div>
+                <div class="cell lt-principal"><small>Principal</small><strong>${money(group.principalTotal, group.currency)}</strong></div>
+                <div class="cell lt-movement"><small>${escapeHtml(movementLabel)}</small><strong>${money(group.paidTotal, group.currency)}</strong></div>
+                <div class="cell lt-remaining"><small>Remaining</small><strong>${money(group.remaining, group.currency)}</strong></div>
                 <div class="lt-action">
-                   <button class="icon-btn ghost pdfBtn" data-id="${escapeHtml(group.group_id)}" title="Download Statement" style="width:32px;height:32px;font-size:1rem;" onclick="event.preventDefault(); downloadPDF('${escapeHtml(group.group_id)}')">📄</button>
+                  <button class="icon-btn ghost pdfBtn" data-id="${escapeHtml(group.primaryGroupId)}" title="Download Statement" style="width:32px;height:32px;font-size:1rem;" onclick="event.preventDefault(); downloadPDF('${escapeHtml(group.primaryGroupId)}')">📄</button>
                 </div>
               </div>
             </summary>
@@ -1096,7 +1189,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    ${calc.rows.map((row, index) => `
+                    ${group.rows.map((row, index) => `
                       <tr>
                         <td>${escapeHtml(displayDate(row.date))}</td>
                         <td><span class="badge ${row.kind === "principal" ? "blue" : row.kind === "partial" ? "orange" : "green"}">${row.kind === "principal" ? "Principal" : row.kind === "partial" ? "Partial" : "Full"}</span></td>
