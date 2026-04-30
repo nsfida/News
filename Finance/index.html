@@ -432,6 +432,7 @@
         <div class="tools">
           <button class="btn primary" id="refreshBtn" type="button">Refresh</button>
           <button class="btn ghost" id="newLoanShortcut" type="button"><span aria-hidden="true">＋</span>&nbsp;New given</button>
+          <button class="btn soft" id="downloadAllSectionsPdfBtn" type="button">All Sections PDF</button>
         </div>
       </div>
       <div class="overview-grid" id="statsGrid"></div>
@@ -458,6 +459,7 @@
               </div>
               <div class="tools">
                 <input id="searchGiven" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadGivenPdfBtn" type="button">PDF</button>
               </div>
             </div>
             <div class="filter-group">
@@ -496,6 +498,7 @@
               </div>
               <div class="tools">
                 <input id="searchReceived" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadReceivedPdfBtn" type="button">PDF</button>
               </div>
             </div>
             <div class="filter-group">
@@ -534,6 +537,7 @@
               </div>
               <div class="tools">
                 <input id="searchTaken" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadTakenPdfBtn" type="button">PDF</button>
               </div>
             </div>
             <div class="filter-group">
@@ -572,6 +576,7 @@
               </div>
               <div class="tools">
                 <input id="searchReturned" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadReturnedPdfBtn" type="button">PDF</button>
               </div>
             </div>
             <div class="filter-group">
@@ -784,6 +789,11 @@
       returnedCount: document.getElementById("returnedCount"),
       refreshBtn: document.getElementById("refreshBtn"),
       newLoanShortcut: document.getElementById("newLoanShortcut"),
+      downloadAllSectionsPdfBtn: document.getElementById("downloadAllSectionsPdfBtn"),
+      downloadGivenPdfBtn: document.getElementById("downloadGivenPdfBtn"),
+      downloadReceivedPdfBtn: document.getElementById("downloadReceivedPdfBtn"),
+      downloadTakenPdfBtn: document.getElementById("downloadTakenPdfBtn"),
+      downloadReturnedPdfBtn: document.getElementById("downloadReturnedPdfBtn"),
       entryModal: document.getElementById("entryModal"),
       editModal: document.getElementById("editModal"),
       modalTitle: document.getElementById("modalTitle"),
@@ -1161,17 +1171,21 @@
       });
     }
 
-    function renderLoanCards(container, direction, searchKey = direction){
+    function getFilteredGroups(direction, searchKey){
       let groups = groupByPerson(direction, searchKey);
       const filterValue = state.statusFilter[searchKey];
-      
-      if(filterValue !== "All") {
+      if (filterValue !== "All"){
         if (filterValue === "Active"){
           groups = groups.filter(g => g.status === "Open" || g.status === "Partial");
         } else {
           groups = groups.filter(g => g.status.toLowerCase() === filterValue.toLowerCase());
         }
       }
+      return groups;
+    }
+
+    function renderLoanCards(container, direction, searchKey = direction){
+      let groups = getFilteredGroups(direction, searchKey);
 
       if (!groups.length){
         container.innerHTML = `<div class="empty">No entries found.</div>`;
@@ -1700,6 +1714,145 @@
       doc.save(`Statement_${data.personName.replace(/\s+/g, '_')}.pdf`);
     }
 
+    function sectionLabel(searchKey){
+      return searchKey === "given"
+        ? "Loan Given"
+        : searchKey === "received"
+        ? "Received Back"
+        : searchKey === "taken"
+        ? "Loan Taken"
+        : "Returned Back";
+    }
+
+    function formatReportAmount(amount, currency){
+      const n = Number(amount || 0);
+      const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `${currency || ""} ${formatted}`.trim();
+    }
+
+    function buildSectionReportRows(direction, searchKey){
+      const groups = getFilteredGroups(direction, searchKey);
+      const rows = [];
+
+      for (const group of groups){
+        for (const row of group.rows){
+          rows.push([
+            group.person_name || "Unnamed",
+            displayDate(row.date),
+            row.kind === "principal" ? "Principal" : row.kind === "partial" ? "Partial" : "Full",
+            formatReportAmount(row.amount, group.currency),
+            formatReportAmount(row.remainingAfter, group.currency),
+            row.note || "—"
+          ]);
+        }
+      }
+
+      return { groups, rows };
+    }
+
+    async function exportSectionPDF(searchKey){
+      if (!window.jspdf){
+        alert("PDF library loading. Please try again in a moment.");
+        return;
+      }
+
+      const direction = (searchKey === "given" || searchKey === "received") ? "given" : "taken";
+      const label = sectionLabel(searchKey);
+      const report = buildSectionReportRows(direction, searchKey);
+      if (!report.rows.length){
+        alert("No entries found for this section.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("NSF's Loan Management System", 14, 16);
+      doc.setFontSize(11);
+      doc.setTextColor(100);
+      doc.text(`${label} - Full Report`, 14, 23);
+      doc.setTextColor(0);
+      doc.text(`Members: ${report.groups.length}`, 14, 30);
+      doc.text(`Rows: ${report.rows.length}`, 70, 30);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 120, 30);
+
+      doc.autoTable({
+        startY: 36,
+        head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+        body: report.rows,
+        theme: "grid",
+        headStyles: { fillColor: [36, 87, 214] },
+        styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+        columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } }
+      });
+
+      doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
+    }
+
+    async function exportAllSectionsPDF(){
+      if (!window.jspdf){
+        alert("PDF library loading. Please try again in a moment.");
+        return;
+      }
+
+      const sectionDefs = [
+        { key: "given", direction: "given", label: "Loan Given" },
+        { key: "received", direction: "given", label: "Received Back" },
+        { key: "taken", direction: "taken", label: "Loan Taken" },
+        { key: "returned", direction: "taken", label: "Returned Back" }
+      ];
+
+      const sectionReports = sectionDefs.map(def => ({
+        ...def,
+        ...buildSectionReportRows(def.direction, def.key)
+      }));
+
+      const totalRows = sectionReports.reduce((sum, s) => sum + s.rows.length, 0);
+      if (!totalRows){
+        alert("No entries found to export.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("NSF's Loan Management System", 14, 16);
+      doc.setFontSize(11);
+      doc.setTextColor(100);
+      doc.text("All Sections - Detailed Report", 14, 23);
+      doc.setTextColor(0);
+      doc.text(`Total Rows: ${totalRows}`, 14, 30);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 70, 30);
+
+      let printedSections = 0;
+      sectionReports.forEach(section => {
+        if (!section.rows.length) return;
+        if (printedSections > 0) doc.addPage();
+
+        doc.setFontSize(13);
+        doc.text(`${section.label}`, 14, 16);
+        doc.setFontSize(10);
+        doc.setTextColor(90);
+        doc.text(`Members: ${section.groups.length} | Rows: ${section.rows.length}`, 14, 22);
+        doc.setTextColor(0);
+
+        doc.autoTable({
+          startY: 27,
+          head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+          body: section.rows,
+          theme: "grid",
+          headStyles: { fillColor: [36, 87, 214] },
+          styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.2 },
+          columnStyles: { 0: { cellWidth: 34 }, 5: { cellWidth: 55 } }
+        });
+        printedSections += 1;
+      });
+
+      doc.save("All_Sections_Detailed_Report.pdf");
+    }
+
     function attachEvents(){
       document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => activate(btn.dataset.tab)));
 
@@ -1787,6 +1940,11 @@
         activate("given");
         openEntryModal("principal", "given");
       });
+      els.downloadGivenPdfBtn.addEventListener("click", () => exportSectionPDF("given").catch(err => alert(err.message)));
+      els.downloadReceivedPdfBtn.addEventListener("click", () => exportSectionPDF("received").catch(err => alert(err.message)));
+      els.downloadTakenPdfBtn.addEventListener("click", () => exportSectionPDF("taken").catch(err => alert(err.message)));
+      els.downloadReturnedPdfBtn.addEventListener("click", () => exportSectionPDF("returned").catch(err => alert(err.message)));
+      els.downloadAllSectionsPdfBtn.addEventListener("click", () => exportAllSectionsPDF().catch(err => alert(err.message)));
 
       els.passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
       els.unlockBtn.addEventListener("click", attemptUnlock);
