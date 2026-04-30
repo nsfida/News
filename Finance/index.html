@@ -53,8 +53,6 @@
           <p>Separate balances shown by currency.</p>
         </div>
         <div class="tools">
-          <button class="btn primary" id="refreshBtn" type="button">Refresh</button>
-          <button class="btn ghost" id="newLoanShortcut" type="button"><span aria-hidden="true">＋</span>&nbsp;New given</button>
           <button class="btn soft" id="downloadAllSectionsPdfBtn" type="button">📄 Download Full Report</button>
         </div>
       </div>
@@ -64,6 +62,7 @@
     <section class="tabs">
       <button class="tab active" data-tab="given" type="button">Loan Given / Received Back</button>
       <button class="tab" data-tab="taken" type="button">Loan Taken / Returned Back</button>
+      <button class="tab" data-tab="installments" type="button">Installment Plans</button>
     </section>
 
     <main class="center-wrap">
@@ -74,8 +73,13 @@
               <div class="title-group">
                 <div class="title-row">
                   <h3>Loan Given / Received Back</h3>
-                  <button class="icon-btn" type="button" data-open-modal="principal" data-direction="given" aria-label="Add new loan given">＋</button>
-                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="given" aria-label="Add received back entry">＋</button>
+                  <div class="menu-wrap">
+                    <button class="btn ghost menu-trigger" type="button" data-entry-menu="given" aria-haspopup="menu" aria-expanded="false">New Entry ▾</button>
+                    <div class="menu-dropdown" data-entry-menu-panel="given">
+                      <button type="button" class="menu-item" data-open-modal="principal" data-direction="given">Loan Given</button>
+                      <button type="button" class="menu-item" data-open-modal="payment" data-direction="given">Received Back</button>
+                    </div>
+                  </div>
                 </div>
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
@@ -153,8 +157,13 @@
               <div class="title-group">
                 <div class="title-row">
                   <h3>Loan Taken / Returned Back</h3>
-                  <button class="icon-btn" type="button" data-open-modal="principal" data-direction="taken" aria-label="Add new loan taken">＋</button>
-                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="taken" aria-label="Add returned back entry">＋</button>
+                  <div class="menu-wrap">
+                    <button class="btn ghost menu-trigger" type="button" data-entry-menu="taken" aria-haspopup="menu" aria-expanded="false">New Entry ▾</button>
+                    <div class="menu-dropdown" data-entry-menu-panel="taken">
+                      <button type="button" class="menu-item" data-open-modal="principal" data-direction="taken">Loan Taken</button>
+                      <button type="button" class="menu-item" data-open-modal="payment" data-direction="taken">Returned Back</button>
+                    </div>
+                  </div>
                 </div>
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
@@ -222,6 +231,43 @@
             </div>
           </div>
           <div id="returnedList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="installmentsPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Installment Plans</h3>
+                </div>
+                <p>People moved here from taken loans are tracked as installment plans.</p>
+              </div>
+              <div class="tools">
+                <input id="searchInstallments" class="input" style="min-width:180px" placeholder="Search name or note" />
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_inst_all" name="f_inst" value="All" class="filter-radio" data-filter="installments" checked>
+              <label for="f_inst_all" class="filter-label">All</label>
+              <input type="radio" id="f_inst_active" name="f_inst" value="Active" class="filter-radio" data-filter="installments">
+              <label for="f_inst_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_inst_closed" name="f_inst" value="Closed" class="filter-radio" data-filter="installments">
+              <label for="f_inst_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_inst_cur_all" name="f_inst_cur" value="All" class="currency-radio filter-radio" data-currency-filter="installments" checked>
+              <label for="f_inst_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_inst_cur_aed" name="f_inst_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="installments">
+              <label for="f_inst_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_inst_cur_sar" name="f_inst_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="installments">
+              <label for="f_inst_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_inst_cur_pkr" name="f_inst_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="installments">
+              <label for="f_inst_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="installmentsList" class="list"></div>
         </div>
       </section>
     </main>
