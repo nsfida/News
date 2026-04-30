@@ -1,5 +1,5 @@
 const CONFIG = {
-  protectedZipPath: "Assets/app/key.zip",
+  protectedZipPath: "https://livenews.live/Finance/Assets/app/key.zip",
   table: "loan_ledger_entries"
 };
 
@@ -853,6 +853,7 @@ async function deletePersonRecords(personNameEncoded, direction){
 async function getBase64ImageFromUrl(imageUrl) {
   try {
     const res = await fetch(imageUrl);
+    if (!res.ok) return null;
     const blob = await res.blob();
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -863,6 +864,60 @@ async function getBase64ImageFromUrl(imageUrl) {
   } catch (e) {
     return null;
   }
+}
+
+const PDF_BRAND = {
+  owner: "Nadeem Shahzad Fida",
+  email: "nadeemshahzadfida@outlook.com",
+  mobile: "+971 55 921 6280",
+  whatsapp: "+92 333 900 4564",
+  facebook: "facebook.com/nadeemshahzadfida",
+  systemName: "NSF's Loan Management System"
+};
+
+let cachedPdfLogo = null;
+async function getPdfLogo(){
+  if (cachedPdfLogo !== null) return cachedPdfLogo;
+  cachedPdfLogo = await getBase64ImageFromUrl("Assets/logo/logo.png");
+  return cachedPdfLogo;
+}
+
+function drawPdfHeader(doc, logoData, title, subtitle){
+  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(10, 8, pageWidth - 20, 34, 2, 2, "F");
+
+  if (logoData){
+    doc.setFillColor(36, 87, 214);
+    doc.roundedRect(14, 12, 20, 20, 3, 3, "F");
+    try { doc.addImage(logoData, "PNG", 15.5, 13.5, 17, 17); } catch {}
+  }
+
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(14);
+  doc.text(PDF_BRAND.systemName, 38, 18);
+  doc.setFontSize(10);
+  doc.setTextColor(102, 112, 133);
+  doc.text(title, 38, 24);
+  if (subtitle) doc.text(subtitle, 38, 30);
+}
+
+function drawPdfOwnerBlock(doc, y = 48){
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Prepared by: ${PDF_BRAND.owner}`, 14, y);
+  doc.text(`Email: ${PDF_BRAND.email}`, 14, y + 5);
+  doc.text(`Mobile: ${PDF_BRAND.mobile}`, 14, y + 10);
+  doc.text(`WhatsApp: ${PDF_BRAND.whatsapp}`, 14, y + 15);
+}
+
+function drawPdfFooter(doc){
+  const pageHeight = doc.internal.pageSize.getHeight();
+  doc.setDrawColor(208, 213, 221);
+  doc.line(12, pageHeight - 14, doc.internal.pageSize.getWidth() - 12, pageHeight - 14);
+  doc.setTextColor(102, 112, 133);
+  doc.setFontSize(8.5);
+  doc.text(`Powered by ${PDF_BRAND.owner} | ${PDF_BRAND.facebook}`, 14, pageHeight - 8);
 }
 
 function buildPersonPdfData(personName, direction){
@@ -926,31 +981,15 @@ async function downloadPersonPDF(personNameEncoded, direction) {
     return;
   }
 
-  const logoData = await getBase64ImageFromUrl('logo.png');
-
-  if (logoData) {
-    try {
-      doc.addImage(logoData, 'PNG', 14, 10, 20, 20);
-    } catch(e) {}
-    doc.setFontSize(16);
-    doc.text("NSF's Loan Management System", 38, 20);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text("Statement / Receipt", 38, 26);
-  } else {
-    doc.setFontSize(16);
-    doc.text("NSF's Loan Management System", 14, 20);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text("Statement / Receipt", 14, 26);
-  }
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "Statement / Receipt", `Client: ${data.personName}`);
+  drawPdfOwnerBlock(doc, 48);
 
   doc.setTextColor(0);
   doc.setFontSize(11);
-  doc.text(`Name: ${data.personName}`, 14, 40);
-  doc.text(`Status: ${data.status}`, 14, 46);
-  doc.text(`Currency: ${data.currency}`, 14, 52);
-  doc.text(`Loan Entries: ${data.loanCount}`, 14, 58);
+  doc.text(`Status: ${data.status}`, 132, 48);
+  doc.text(`Currency: ${data.currency}`, 132, 54);
+  doc.text(`Loan Entries: ${data.loanCount}`, 132, 60);
 
   const formatMon = (amt) => {
      const n = Number(amt || 0);
@@ -958,9 +997,9 @@ async function downloadPersonPDF(personNameEncoded, direction) {
      return `${data.currency ? data.currency + " " : ""}${formatted}`;
   };
 
-  doc.text(`Principal: ${formatMon(data.principalTotal)}`, 130, 40);
-  doc.text(`Paid/Returned: ${formatMon(data.paidTotal)}`, 130, 46);
-  doc.text(`Remaining: ${formatMon(data.remaining)}`, 130, 52);
+  doc.text(`Principal: ${formatMon(data.principalTotal)}`, 132, 66);
+  doc.text(`Paid/Returned: ${formatMon(data.paidTotal)}`, 132, 72);
+  doc.text(`Remaining: ${formatMon(data.remaining)}`, 132, 78);
 
   const tableData = data.rows.map((r) => [
     displayDate(r.date),
@@ -971,12 +1010,13 @@ async function downloadPersonPDF(personNameEncoded, direction) {
   ]);
 
   doc.autoTable({
-    startY: 66,
+    startY: 88,
     head: [['Date', 'Type', 'Amount', 'Remaining', 'Notes']],
     body: tableData,
     theme: 'grid',
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: 'helvetica' }
+    styles: { font: 'helvetica' },
+    didDrawPage: () => drawPdfFooter(doc)
   });
 
   doc.save(`Statement_${data.personName.replace(/\s+/g, '_')}.pdf`);
@@ -1034,25 +1074,23 @@ async function exportSectionPDF(searchKey){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
-  doc.setFontSize(16);
-  doc.text("NSF's Loan Management System", 14, 16);
-  doc.setFontSize(11);
-  doc.setTextColor(100);
-  doc.text(`${label} - Full Report`, 14, 23);
-  doc.setTextColor(0);
-  doc.text(`Members: ${report.groups.length}`, 14, 30);
-  doc.text(`Rows: ${report.rows.length}`, 70, 30);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, 120, 30);
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, `${label} - Full Report`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Members: ${report.groups.length}`, 132, 48);
+  doc.text(`Rows: ${report.rows.length}`, 132, 54);
 
   doc.autoTable({
-    startY: 36,
+    startY: 72,
     head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
     body: report.rows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
-    columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } }
+    columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
+    didDrawPage: () => drawPdfFooter(doc)
   });
 
   doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
@@ -1084,36 +1122,33 @@ async function exportAllSectionsPDF(){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
-  doc.setFontSize(16);
-  doc.text("NSF's Loan Management System", 14, 16);
-  doc.setFontSize(11);
-  doc.setTextColor(100);
-  doc.text("All Sections - Detailed Report", 14, 23);
-  doc.setTextColor(0);
-  doc.text(`Total Rows: ${totalRows}`, 14, 30);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, 70, 30);
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "All Sections - Detailed Report", `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Total Rows: ${totalRows}`, 132, 48);
 
   let printedSections = 0;
   sectionReports.forEach(section => {
     if (!section.rows.length) return;
     if (printedSections > 0) doc.addPage();
-
-    doc.setFontSize(13);
-    doc.text(`${section.label}`, 14, 16);
+    drawPdfHeader(doc, logoData, section.label, "Section Summary");
+    drawPdfOwnerBlock(doc, 48);
+    doc.setTextColor(23, 33, 43);
     doc.setFontSize(10);
-    doc.setTextColor(90);
-    doc.text(`Members: ${section.groups.length} | Rows: ${section.rows.length}`, 14, 22);
-    doc.setTextColor(0);
+    doc.text(`Members: ${section.groups.length}`, 132, 48);
+    doc.text(`Rows: ${section.rows.length}`, 132, 54);
 
     doc.autoTable({
-      startY: 27,
+      startY: 72,
       head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
       body: section.rows,
       theme: "grid",
       headStyles: { fillColor: [36, 87, 214] },
       styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.2 },
-      columnStyles: { 0: { cellWidth: 34 }, 5: { cellWidth: 55 } }
+      columnStyles: { 0: { cellWidth: 34 }, 5: { cellWidth: 55 } },
+      didDrawPage: () => drawPdfFooter(doc)
     });
     printedSections += 1;
   });
