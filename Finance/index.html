@@ -1165,7 +1165,7 @@
                 <div class="cell lt-movement"><small>${escapeHtml(movementLabel)}</small><strong>${money(group.paidTotal, group.currency)}</strong></div>
                 <div class="cell lt-remaining"><small>Remaining</small><strong>${money(group.remaining, group.currency)}</strong></div>
                 <div class="lt-action">
-                  <button class="icon-btn ghost pdfBtn" data-id="${escapeHtml(group.primaryGroupId)}" title="Download Statement" style="width:32px;height:32px;font-size:1rem;" onclick="event.preventDefault(); downloadPDF('${escapeHtml(group.primaryGroupId)}')">📄</button>
+                  <button class="icon-btn ghost pdfBtn" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}" title="Download Statement" style="width:32px;height:32px;font-size:1rem;" onclick="event.preventDefault(); downloadPersonPDF('${encodeURIComponent(group.person_name || "")}','${escapeHtml(direction)}')">📄</button>
                 </div>
               </div>
             </summary>
@@ -1515,17 +1515,66 @@
       }
     }
 
-    async function downloadPDF(groupId) {
+    function buildPersonPdfData(personName, direction){
+      const normalizedName = String(personName || "").trim();
+      const personEntries = state.entries.filter(e =>
+        e.direction === direction && String(e.person_name || "").trim() === normalizedName
+      );
+      if (!personEntries.length) return null;
+
+      const principalRows = personEntries.filter(e => e.entry_kind === "principal");
+      const actionRows = personEntries.filter(e => e.entry_kind !== "principal");
+
+      const currency = principalRows[0]?.currency || actionRows[0]?.currency || "";
+      const principalTotal = principalRows.reduce((sum, e) => sum + Number(e.principal_amount || 0), 0);
+      const paidTotal = actionRows.reduce((sum, e) => sum + Number(e.action_amount || 0), 0);
+      const remaining = Math.max(principalTotal - paidTotal, 0);
+      const status = remaining <= 0 ? "Closed" : paidTotal > 0 ? "Partial" : "Open";
+      const loanCount = new Set(personEntries.map(e => e.group_id).filter(Boolean)).size;
+
+      const timeline = personEntries
+        .slice()
+        .sort((a, b) => {
+          const aStamp = dateStamp(a.entry_kind === "principal" ? a.loan_date : a.action_date);
+          const bStamp = dateStamp(b.entry_kind === "principal" ? b.loan_date : b.action_date);
+          if (aStamp !== bStamp) return aStamp - bStamp;
+          return (a.entry_kind === "principal" ? -1 : 1) - (b.entry_kind === "principal" ? -1 : 1);
+        });
+
+      let runningRemaining = 0;
+      const rows = timeline.map(entry => {
+        const isPrincipal = entry.entry_kind === "principal";
+        const amount = Number(isPrincipal ? entry.principal_amount : entry.action_amount || 0);
+        runningRemaining = isPrincipal
+          ? runningRemaining + amount
+          : Math.max(runningRemaining - amount, 0);
+
+        return {
+          date: isPrincipal ? (entry.loan_date || "—") : (entry.action_date || "—"),
+          type: isPrincipal ? "Principal" : (entry.entry_kind === "partial" ? "Partial" : "Full"),
+          amount,
+          remainingAfter: runningRemaining,
+          note: entry.notes || "—"
+        };
+      });
+
+      return { personName: normalizedName, direction, currency, principalTotal, paidTotal, remaining, status, loanCount, rows };
+    }
+
+    async function downloadPersonPDF(personNameEncoded, direction) {
       if (!window.jspdf) {
         alert("PDF library loading. Please try again in a moment.");
         return;
       }
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      
-      const group = groupByLoan(state.entries.filter(e => e.group_id === groupId))[0];
-      if (!group) return;
-      const calc = calculateLoan(group);
+
+      const personName = decodeURIComponent(personNameEncoded || "");
+      const data = buildPersonPdfData(personName, direction);
+      if (!data) {
+        alert("No entries found for this person.");
+        return;
+      }
 
       const logoData = await getBase64ImageFromUrl('logo.png');
 
@@ -1548,32 +1597,31 @@
 
       doc.setTextColor(0);
       doc.setFontSize(11);
-      doc.text(`Name: ${group.person_name}`, 14, 40);
-      doc.text(`Status: ${calc.status}`, 14, 46);
-      doc.text(`Currency: ${group.currency}`, 14, 52);
-
-      const symbol = currencySymbol(group.currency);
+      doc.text(`Name: ${data.personName}`, 14, 40);
+      doc.text(`Status: ${data.status}`, 14, 46);
+      doc.text(`Currency: ${data.currency}`, 14, 52);
+      doc.text(`Loan Entries: ${data.loanCount}`, 14, 58);
       
       const formatMon = (amt) => {
          const n = Number(amt || 0);
          const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-         return `${symbol ? symbol + " " : ""}${formatted}`;
+         return `${data.currency ? data.currency + " " : ""}${formatted}`;
       };
 
-      doc.text(`Principal: ${formatMon(calc.principal)}`, 130, 40);
-      doc.text(`Paid/Returned: ${formatMon(calc.paid)}`, 130, 46);
-      doc.text(`Remaining: ${formatMon(calc.remaining)}`, 130, 52);
+      doc.text(`Principal: ${formatMon(data.principalTotal)}`, 130, 40);
+      doc.text(`Paid/Returned: ${formatMon(data.paidTotal)}`, 130, 46);
+      doc.text(`Remaining: ${formatMon(data.remaining)}`, 130, 52);
 
-      const tableData = calc.rows.map((r) => [
+      const tableData = data.rows.map((r) => [
         displayDate(r.date),
-        r.kind === 'principal' ? 'Principal' : (r.kind === 'partial' ? 'Partial' : 'Full'),
+        r.type,
         formatMon(r.amount),
         formatMon(r.remainingAfter),
         r.note || '—'
       ]);
 
       doc.autoTable({
-        startY: 60,
+        startY: 66,
         head: [['Date', 'Type', 'Amount', 'Remaining', 'Notes']],
         body: tableData,
         theme: 'grid',
@@ -1581,7 +1629,7 @@
         styles: { font: 'helvetica' }
       });
 
-      doc.save(`Statement_${group.person_name.replace(/\s+/g, '_')}.pdf`);
+      doc.save(`Statement_${data.personName.replace(/\s+/g, '_')}.pdf`);
     }
 
     function attachEvents(){
