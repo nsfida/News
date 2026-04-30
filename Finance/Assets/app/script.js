@@ -10,9 +10,9 @@ const SUPPORTED_CURRENCIES = ["AED", "SAR", "PKR"];
 const state = {
   entries: [],
   unlocked: false,
-  search: { given: "", received: "", taken: "", returned: "" },
-  statusFilter: { given: "All", received: "All", taken: "All", returned: "All" },
-  currencyFilter: { given: "All", received: "All", taken: "All", returned: "All" },
+  search: { given: "", received: "", taken: "", returned: "", installments: "" },
+  statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All" },
+  currencyFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All" },
   lastCurrency: "AED",
   modalDirection: "given",
   editId: null,
@@ -30,12 +30,11 @@ const els = {
   receivedList: document.getElementById("receivedList"),
   takenList: document.getElementById("takenList"),
   returnedList: document.getElementById("returnedList"),
+  installmentsList: document.getElementById("installmentsList"),
   openGivenCount: document.getElementById("openGivenCount"),
   openTakenCount: document.getElementById("openTakenCount"),
   receivedCount: document.getElementById("receivedCount"),
   returnedCount: document.getElementById("returnedCount"),
-  refreshBtn: document.getElementById("refreshBtn"),
-  newLoanShortcut: document.getElementById("newLoanShortcut"),
   downloadAllSectionsPdfBtn: document.getElementById("downloadAllSectionsPdfBtn"),
   downloadGivenPdfBtn: document.getElementById("downloadGivenPdfBtn"),
   downloadReceivedPdfBtn: document.getElementById("downloadReceivedPdfBtn"),
@@ -54,6 +53,8 @@ const els = {
   multiEntryCount: document.getElementById("multiEntryCount"),
   multiEntryContainer: document.getElementById("multiEntryContainer")
 };
+
+const INSTALLMENT_TAG = "[INSTALLMENT]";
 
 function escapeHtml(str){
   return String(str ?? "").replace(/[&<>"']/g, m => ({
@@ -336,6 +337,16 @@ function matchesSearch(entry, term){
   return blob.includes(term.toLowerCase());
 }
 
+function hasInstallmentTag(noteValue){
+  return String(noteValue || "").includes(INSTALLMENT_TAG);
+}
+
+function normalizeInstallmentNote(noteValue, markInstallment){
+  const base = String(noteValue || "").replace(INSTALLMENT_TAG, "").trim();
+  if (!markInstallment) return base || null;
+  return base ? `${INSTALLMENT_TAG} ${base}` : INSTALLMENT_TAG;
+}
+
 function filterPrincipal(direction, searchKey = direction){
   return groupByLoan(state.entries.filter(e => e.direction === direction))
     .filter(group => matchesSearch(group.principal || group.actions[0] || {}, state.search[searchKey]));
@@ -439,8 +450,11 @@ function groupByPerson(direction, searchKey = direction){
   });
 }
 
-function getFilteredGroups(direction, searchKey){
+function getFilteredGroups(direction, searchKey, options = {}){
   let groups = groupByPerson(direction, searchKey);
+  if (typeof options.groupFilter === "function"){
+    groups = groups.filter(options.groupFilter);
+  }
   const filterValue = state.statusFilter[searchKey];
   if (filterValue !== "All"){
     if (filterValue === "Active"){
@@ -452,8 +466,8 @@ function getFilteredGroups(direction, searchKey){
   return groups;
 }
 
-function renderLoanCards(container, direction, searchKey = direction){
-  let groups = getFilteredGroups(direction, searchKey);
+function renderLoanCards(container, direction, searchKey = direction, options = {}){
+  let groups = getFilteredGroups(direction, searchKey, options);
 
   if (!groups.length){
     container.innerHTML = `<div class="empty">No entries found.</div>`;
@@ -466,6 +480,7 @@ function renderLoanCards(container, direction, searchKey = direction){
     const movementLabel = direction === "given" ? "Received back" : "Returned back";
     const openOnly = group.remaining > 0;
 
+    const showInstallmentMove = direction === "taken" && !options.hideMoveToInstallments;
     return `
       <details class="loan">
         <summary>
@@ -486,8 +501,15 @@ function renderLoanCards(container, direction, searchKey = direction){
             <div class="cell lt-movement"><small>${escapeHtml(movementLabel)}</small><strong>${money(group.paidTotal, group.currency)}</strong></div>
             <div class="cell lt-remaining"><small>Remaining</small><strong>${money(group.remaining, group.currency)}</strong></div>
             <div class="lt-action">
-              <button class="icon-btn ghost pdfBtn" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}" title="Download Statement" style="width:32px;height:32px;font-size:1rem;" onclick="event.preventDefault(); downloadPersonPDF('${encodeURIComponent(group.person_name || "")}','${escapeHtml(direction)}')">📄</button>
-              <button class="icon-btn danger" title="Delete full person record" style="width:32px;height:32px;font-size:1rem;margin-left:6px;" onclick="event.preventDefault(); deletePersonRecords('${encodeURIComponent(group.person_name || "")}','${escapeHtml(direction)}')">🗑</button>
+              <div class="menu-wrap">
+                <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" aria-label="More actions" data-person-menu="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">☰</button>
+                <div class="menu-dropdown" data-person-menu-panel="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">
+                  <button class="menu-item personActionBtn" type="button" data-action="pdf" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Download PDF</button>
+                  <button class="menu-item personActionBtn" type="button" data-action="edit-name" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Edit Name</button>
+                  ${showInstallmentMove ? `<button class="menu-item personActionBtn" type="button" data-action="move-installment" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Move to Installments</button>` : ""}
+                  <button class="menu-item danger personActionBtn" type="button" data-action="delete" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Delete Record</button>
+                </div>
+              </div>
             </div>
           </div>
         </summary>
@@ -545,6 +567,30 @@ function renderLoanCards(container, direction, searchKey = direction){
 
   container.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
   container.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
+  container.querySelectorAll(".personActionBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const action = btn.dataset.action;
+    const person = btn.dataset.person;
+    const dir = btn.dataset.direction;
+    if (action === "pdf") {
+      await downloadPersonPDF(person, dir);
+    } else if (action === "delete") {
+      await deletePersonRecords(person, dir);
+    } else if (action === "edit-name") {
+      await renamePersonRecords(person, dir);
+    } else if (action === "move-installment") {
+      await movePersonToInstallments(person, dir);
+    }
+  }));
+  container.querySelectorAll("[data-person-menu]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = btn.dataset.personMenu;
+    const panel = container.querySelector(`[data-person-menu-panel="${key}"]`);
+    if (!panel) return;
+    const nowOpen = panel.classList.toggle("open");
+    btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+  }));
 }
 
 function renderLoanSelectors(){
@@ -603,8 +649,16 @@ function renderAll(){
   renderLoanSelectors();
   renderLoanCards(els.givenList, "given", "given");
   renderLoanCards(els.receivedList, "given", "received");
-  renderLoanCards(els.takenList, "taken", "taken");
-  renderLoanCards(els.returnedList, "taken", "returned");
+  renderLoanCards(els.takenList, "taken", "taken", {
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note))
+  });
+  renderLoanCards(els.returnedList, "taken", "returned", {
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note))
+  });
+  renderLoanCards(els.installmentsList, "taken", "installments", {
+    groupFilter: group => group.rows.some(row => hasInstallmentTag(row.note)),
+    hideMoveToInstallments: true
+  });
 
   els.openGivenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "given")).filter(g => calculateLoan(g).remaining > 0).length;
   els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken")).filter(g => calculateLoan(g).remaining > 0).length;
@@ -807,6 +861,34 @@ async function submitEdit(){
   await loadEntries();
 }
 
+async function renamePersonRecords(personNameEncoded, direction){
+  const currentName = decodeURIComponent(personNameEncoded || "").trim();
+  if (!currentName || !direction) return;
+  const nextName = prompt("Enter new person name:", currentName);
+  if (nextName === null) return;
+  const cleanedName = nextName.trim();
+  if (!cleanedName) {
+    alert("Name cannot be empty.");
+    return;
+  }
+  if (cleanedName === currentName) return;
+
+  const matchingIds = state.entries
+    .filter(e => e.direction === direction && String(e.person_name || "").trim() === currentName)
+    .map(e => e.id)
+    .filter(Boolean);
+
+  if (!matchingIds.length) return;
+
+  for (const id of matchingIds){
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ person_name: cleanedName })
+    });
+  }
+  await loadEntries();
+}
+
 async function deleteEntry(id){
   if (!id) return;
   const entry = state.entries.find(e => e.id === id);
@@ -848,6 +930,32 @@ async function deletePersonRecords(personNameEncoded, direction){
   }
 
   await loadEntries();
+}
+
+async function movePersonToInstallments(personNameEncoded, direction){
+  const personName = decodeURIComponent(personNameEncoded || "").trim();
+  if (!personName || direction !== "taken") return;
+
+  const matchedEntries = state.entries.filter(e =>
+    e.direction === "taken" && String(e.person_name || "").trim() === personName
+  );
+
+  if (!matchedEntries.length){
+    alert("No records found for this person.");
+    return;
+  }
+
+  if (!confirm(`Move ${personName} to Installment Plans?`)) return;
+
+  for (const entry of matchedEntries){
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ notes: normalizeInstallmentNote(entry.notes, true) })
+    });
+  }
+
+  await loadEntries();
+  activate("installments");
 }
 
 async function getBase64ImageFromUrl(imageUrl) {
@@ -1167,6 +1275,28 @@ function attachEvents(){
     });
   });
 
+  document.querySelectorAll("[data-entry-menu]").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      const key = btn.dataset.entryMenu;
+      const panel = document.querySelector(`[data-entry-menu-panel="${key}"]`);
+      if (!panel) return;
+      const nowOpen = panel.classList.toggle("open");
+      btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+    });
+  });
+
+  document.addEventListener("click", e => {
+    const trigger = e.target.closest(".menu-trigger");
+    document.querySelectorAll(".menu-dropdown.open").forEach(panel => {
+      if (trigger && panel.previousElementSibling === trigger) return;
+      panel.classList.remove("open");
+      if (panel.previousElementSibling?.classList.contains("menu-trigger")){
+        panel.previousElementSibling.setAttribute("aria-expanded", "false");
+      }
+    });
+  });
+
   document.querySelectorAll("[data-close-modal]").forEach(btn => {
     btn.addEventListener("click", e => closeModal(e.target.dataset.closeModal));
   });
@@ -1193,11 +1323,7 @@ function attachEvents(){
       if (!e.target.dataset.filter) return;
       const key = e.target.dataset.filter;
       state.statusFilter[key] = e.target.value;
-      renderLoanCards(
-        key === "given" ? els.givenList : key === "received" ? els.receivedList : key === "taken" ? els.takenList : els.returnedList,
-        key === "given" || key === "received" ? "given" : "taken",
-        key
-      );
+      renderAll();
     });
   });
 
@@ -1205,11 +1331,7 @@ function attachEvents(){
     r.addEventListener("change", e => {
       const key = e.target.dataset.currencyFilter;
       state.currencyFilter[key] = e.target.value;
-      renderLoanCards(
-        key === "given" ? els.givenList : key === "received" ? els.receivedList : key === "taken" ? els.takenList : els.returnedList,
-        key === "given" || key === "received" ? "given" : "taken",
-        key
-      );
+      renderAll();
     });
   });
 
@@ -1235,12 +1357,6 @@ function attachEvents(){
     try { await submitEdit(); } catch (err) { alert(err.message); }
   });
 
-  els.refreshBtn.addEventListener("click", () => loadEntries().catch(err => alert(err.message)));
-  document.querySelectorAll("[data-refresh-filter]").forEach(btn => btn.addEventListener("click", () => loadEntries().catch(err => alert(err.message))));
-  els.newLoanShortcut.addEventListener("click", () => {
-    activate("given");
-    openEntryModal("principal", "given");
-  });
   els.downloadGivenPdfBtn.addEventListener("click", () => exportSectionPDF("given").catch(err => alert(err.message)));
   els.downloadReceivedPdfBtn.addEventListener("click", () => exportSectionPDF("received").catch(err => alert(err.message)));
   els.downloadTakenPdfBtn.addEventListener("click", () => exportSectionPDF("taken").catch(err => alert(err.message)));
@@ -1250,14 +1366,10 @@ function attachEvents(){
   els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   els.unlockBtn.addEventListener("click", attemptUnlock);
 
-  [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"]].forEach(([id,key]) => {
+  [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"]].forEach(([id,key]) => {
     document.getElementById(id).addEventListener("input", e => {
       state.search[key] = e.target.value;
-      renderLoanCards(
-        key === "given" ? els.givenList : key === "received" ? els.receivedList : key === "taken" ? els.takenList : els.returnedList,
-        key === "given" || key === "received" ? "given" : "taken",
-        key
-      );
+      renderAll();
     });
   });
 }
