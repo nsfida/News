@@ -229,6 +229,7 @@ tbody tr:hover{background:#fbfdff}
 }
 .tiny.danger{background:#fff1f0;color:var(--danger)}
 .tiny.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+.note-close{display:none}
 
 .empty{
   border:1px dashed var(--line-strong);border-radius:12px;background:#fff;padding:16px;text-align:center;
@@ -350,6 +351,8 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   .section-head{gap:10px}
   .section-head h3{font-size:.92rem}
   .section-head p{font-size:.78rem}
+  .list{gap:6px}
+  .loan{border-radius:10px;border-color:rgba(16,24,40,.12)}
 
   .input,.select{font-size:.8rem;padding:8px 9px}
   .btn{font-size:.8rem;padding:8px 10px}
@@ -358,8 +361,8 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   /* Row wise list mobile (compact but full summary visible) */
   .loan-top {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 4px 8px;
-    padding: 9px;
+    gap: 2px 6px;
+    padding: 6px 7px;
     align-items: start;
   }
   .lt-main{
@@ -368,12 +371,12 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
     overflow: hidden;
   }
   .loan-sub{
-    margin-top: 3px;
-    font-size: .68rem;
-    line-height: 1.3;
-    gap: 5px;
+    margin-top: 2px;
+    font-size: .61rem;
+    line-height: 1.18;
+    gap: 4px;
   }
-  .loan-name { font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .loan-name { font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lt-status,
   .lt-principal,
   .lt-movement,
@@ -389,8 +392,8 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   .lt-principal{ grid-row: 3 / 4; }
   .lt-movement{ grid-row: 4 / 5; }
   .lt-remaining{ grid-row: 5 / 6; }
-  .loan-top .cell small{ font-size: .66rem; }
-  .loan-top .cell strong{ font-size: .74rem; text-align: right; }
+  .loan-top .cell small{ font-size: .58rem; line-height:1.1; }
+  .loan-top .cell strong{ font-size: .64rem; text-align: right; line-height:1.12; }
   .lt-action{
     grid-column: 2 / 3;
     grid-row: 1 / 6;
@@ -400,17 +403,65 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
     gap: 4px;
   }
   .loan-top .lt-action .icon-btn{
-    width: 24px !important;
-    height: 24px !important;
-    min-width: 24px;
-    border-radius: 8px;
-    font-size: .72rem !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px;
+    border-radius: 7px;
+    font-size: .64rem !important;
     margin-left: 0 !important;
   }
   .menu-dropdown{right:0;min-width:160px}
 
-  thead th,tbody td{font-size:.74rem;padding:8px}
-  .badge{font-size:.64rem;padding:4px 6px}
+  .detail{padding:8px}
+  .detail-head h4{font-size:.76rem}
+  .detail-head p{font-size:.66rem;line-height:1.25}
+  .table-wrap{border-radius:10px;max-width:100%}
+  table{table-layout:fixed}
+  thead th,tbody td{
+    font-size:.56rem;
+    padding:3px 3px;
+    white-space:normal;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    line-height:1.12;
+  }
+  thead th:nth-child(1),tbody td:nth-child(1){font-size:.52rem;white-space:nowrap}
+  thead th:nth-child(5),tbody td:nth-child(5){font-size:.5rem;line-height:1.08}
+  thead th:nth-child(5),tbody td:nth-child(5){min-width:90px}
+  thead th:nth-child(6),tbody td:nth-child(6){min-width:56px}
+  .tiny{font-size:.52rem;padding:2px 4px;line-height:1}
+  .badge{font-size:.5rem;padding:2px 4px;line-height:1}
+  .money .amount{font-size:.56rem}
+  .detail .hide{font-size:.52rem !important;line-height:1.15}
+  .detail [onclick*="toggle"]{font-size:.52rem !important}
+  .note-popover{
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:min(90vw,320px);
+    max-height:60vh;
+    overflow:auto;
+    background:#fff !important;
+    border:1px solid var(--line-strong);
+    border-radius:10px !important;
+    box-shadow:0 14px 40px rgba(16,24,40,.25);
+    z-index:120;
+    padding:10px 10px 8px !important;
+  }
+  .note-close{
+    display:block;
+    position:absolute;
+    right:6px;
+    top:6px;
+    border:none;
+    background:transparent;
+    color:var(--muted);
+    font-size:.9rem;
+    line-height:1;
+    cursor:pointer;
+    padding:2px 4px;
+  }
 
   .modal{padding:8px}
   .modal-dialog{max-height:calc(100vh - 16px);border-radius:16px}
