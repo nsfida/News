@@ -1114,7 +1114,8 @@
           loan_date: firstDate || null,
           activityStamp: person.activityStamp,
           lastActivity: person.lastActivity,
-          groupCount: person.groupIds.size
+          groupCount: person.groupIds.size,
+          primaryGroupId: principalRows[0]?.group_id || actionRows[0]?.group_id || ""
         });
       }
 
