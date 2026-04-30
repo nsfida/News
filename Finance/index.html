@@ -351,19 +351,58 @@
       .btn{font-size:.8rem;padding:8px 10px}
       .filter-label{font-size:.72rem;padding:5px 10px}
       
-      /* Row wise list mobile */
+      /* Row wise list mobile (compact but full summary visible) */
       .loan-top {
-        grid-template-columns: 1fr max-content max-content 32px;
-        gap: 6px;
-        padding: 10px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 4px 8px;
+        padding: 9px;
+        align-items: start;
       }
-      .loan-sub { display: none; }
-      .lt-principal, .lt-movement { display: none; }
-      .lt-status small, .lt-remaining small { display: none; }
-      .lt-status strong { font-size: .75rem; }
-      .lt-remaining strong { font-size: .8rem; }
-      .lt-main { overflow: hidden; justify-content: center; }
-      .loan-name { font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .lt-main{
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        overflow: hidden;
+      }
+      .loan-sub{
+        margin-top: 3px;
+        font-size: .68rem;
+        line-height: 1.3;
+        gap: 5px;
+      }
+      .loan-name { font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .lt-status,
+      .lt-principal,
+      .lt-movement,
+      .lt-remaining{
+        grid-column: 1 / 2;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .lt-status{ grid-row: 2 / 3; }
+      .lt-principal{ grid-row: 3 / 4; }
+      .lt-movement{ grid-row: 4 / 5; }
+      .lt-remaining{ grid-row: 5 / 6; }
+      .loan-top .cell small{ font-size: .66rem; }
+      .loan-top .cell strong{ font-size: .74rem; text-align: right; }
+      .lt-action{
+        grid-column: 2 / 3;
+        grid-row: 1 / 6;
+        align-self: center;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .loan-top .lt-action .icon-btn{
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px;
+        border-radius: 8px;
+        font-size: .72rem !important;
+        margin-left: 0 !important;
+      }
       
       thead th,tbody td{font-size:.74rem;padding:8px}
       .badge{font-size:.64rem;padding:4px 6px}
