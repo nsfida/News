@@ -413,7 +413,7 @@
         <img class="mark" src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
         <div>
           <h1>NSF's Loan Management System</h1>
-          <p>Loan Given, Received Back, Loan Taken, Returned Back</p>
+          <p>Loan Given/Received Back and Loan Taken/Returned Back</p>
         </div>
       </div>
       <div class="chips">
@@ -432,17 +432,15 @@
         <div class="tools">
           <button class="btn primary" id="refreshBtn" type="button">Refresh</button>
           <button class="btn ghost" id="newLoanShortcut" type="button"><span aria-hidden="true">＋</span>&nbsp;New given</button>
-          <button class="btn soft" id="downloadAllSectionsPdfBtn" type="button">All Sections PDF</button>
+          <button class="btn soft" id="downloadAllSectionsPdfBtn" type="button">📄 Download Full Report</button>
         </div>
       </div>
       <div class="overview-grid" id="statsGrid"></div>
     </section>
 
     <section class="tabs">
-      <button class="tab active" data-tab="given" type="button">Loan Given</button>
-      <button class="tab" data-tab="received" type="button">Received Back</button>
-      <button class="tab" data-tab="taken" type="button">Loan Taken</button>
-      <button class="tab" data-tab="returned" type="button">Returned Back</button>
+      <button class="tab active" data-tab="given" type="button">Loan Given / Received Back</button>
+      <button class="tab" data-tab="taken" type="button">Loan Taken / Returned Back</button>
     </section>
 
     <main class="center-wrap">
@@ -452,8 +450,9 @@
             <div class="section-head-top">
               <div class="title-group">
                 <div class="title-row">
-                  <h3>Loan Given</h3>
+                  <h3>Loan Given / Received Back</h3>
                   <button class="icon-btn" type="button" data-open-modal="principal" data-direction="given" aria-label="Add new loan given">＋</button>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="given" aria-label="Add received back entry">＋</button>
                 </div>
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
@@ -530,8 +529,9 @@
             <div class="section-head-top">
               <div class="title-group">
                 <div class="title-row">
-                  <h3>Loan Taken</h3>
+                  <h3>Loan Taken / Returned Back</h3>
                   <button class="icon-btn" type="button" data-open-modal="principal" data-direction="taken" aria-label="Add new loan taken">＋</button>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="taken" aria-label="Add returned back entry">＋</button>
                 </div>
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
@@ -1861,7 +1861,7 @@
           const mode = btn.dataset.openModal;
           const direction = btn.dataset.direction || "given";
           if (mode === "principal") activate(direction === "given" ? "given" : "taken");
-          if (mode === "payment") activate(direction === "given" ? "received" : "returned");
+          if (mode === "payment") activate(direction === "given" ? "given" : "taken");
           openEntryModal(mode, direction);
         });
       });
