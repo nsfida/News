@@ -1166,6 +1166,7 @@
                 <div class="cell lt-remaining"><small>Remaining</small><strong>${money(group.remaining, group.currency)}</strong></div>
                 <div class="lt-action">
                   <button class="icon-btn ghost pdfBtn" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}" title="Download Statement" style="width:32px;height:32px;font-size:1rem;" onclick="event.preventDefault(); downloadPersonPDF('${encodeURIComponent(group.person_name || "")}','${escapeHtml(direction)}')">📄</button>
+                  <button class="icon-btn danger" title="Delete full person record" style="width:32px;height:32px;font-size:1rem;margin-left:6px;" onclick="event.preventDefault(); deletePersonRecords('${encodeURIComponent(group.person_name || "")}','${escapeHtml(direction)}')">🗑</button>
                 </div>
               </div>
             </summary>
@@ -1497,6 +1498,34 @@
         if (!confirm(`Delete this specific repayment entry?`)) return;
         await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
       }
+      await loadEntries();
+    }
+
+    async function deletePersonRecords(personNameEncoded, direction){
+      const personName = decodeURIComponent(personNameEncoded || "").trim();
+      if (!personName || !direction) return;
+
+      const recordsCount = state.entries.filter(e =>
+        e.direction === direction && String(e.person_name || "").trim() === personName
+      ).length;
+
+      if (!recordsCount) {
+        alert("No records found for this person.");
+        return;
+      }
+
+      const directionLabel = direction === "given" ? "given" : "taken";
+      if (!confirm(`Delete full record for ${personName}? This will remove ${recordsCount} entr${recordsCount === 1 ? "y" : "ies"} from ${directionLabel}.`)) return;
+
+      const matchingIds = state.entries
+        .filter(e => e.direction === direction && String(e.person_name || "").trim() === personName)
+        .map(e => e.id)
+        .filter(Boolean);
+
+      for (const id of matchingIds){
+        await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+      }
+
       await loadEntries();
     }
 
