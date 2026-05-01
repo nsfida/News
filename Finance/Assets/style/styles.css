@@ -417,6 +417,9 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
   }
+  .expense-overview{
+    grid-column: 1 / -1;
+  }
   .overview{padding:10px;margin-bottom:10px}
   .overview-top h2{font-size:.92rem}
   .overview-top p{font-size:.78rem}
