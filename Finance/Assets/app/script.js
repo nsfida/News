@@ -15,9 +15,9 @@ const state = {
   dbSignatures: new Set(),
   dbSignaturesById: new Map(),
   unlocked: false,
-  search: { given: "", received: "", taken: "", returned: "", installments: "", goods: "" },
-  statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All" },
-  currencyFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All" },
+  search: { given: "", received: "", taken: "", returned: "", installments: "", goods: "", expenses: "" },
+  statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All", expenses: "All" },
+  currencyFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All", expenses: "All" },
   lastCurrency: "AED",
   modalDirection: "given",
   editId: null,
@@ -37,6 +37,7 @@ const els = {
   returnedList: document.getElementById("returnedList"),
   installmentsList: document.getElementById("installmentsList"),
   goodsList: document.getElementById("goodsList"),
+  expensesList: document.getElementById("expensesList"),
   openGivenCount: document.getElementById("openGivenCount"),
   openTakenCount: document.getElementById("openTakenCount"),
   receivedCount: document.getElementById("receivedCount"),
@@ -52,6 +53,7 @@ const els = {
   downloadReceivedPdfBtn: document.getElementById("downloadReceivedPdfBtn"),
   downloadTakenPdfBtn: document.getElementById("downloadTakenPdfBtn"),
   downloadReturnedPdfBtn: document.getElementById("downloadReturnedPdfBtn"),
+  downloadExpensesPdfBtn: document.getElementById("downloadExpensesPdfBtn"),
   entryModal: document.getElementById("entryModal"),
   editModal: document.getElementById("editModal"),
   modalTitle: document.getElementById("modalTitle"),
@@ -73,11 +75,25 @@ const els = {
   goodsNewItemToggleBtn: document.getElementById("goodsNewItemToggleBtn"),
   goodsNewItemFields: document.getElementById("goodsNewItemFields"),
   openGoodsBoughtBtn: document.getElementById("openGoodsBoughtBtn"),
-  openGoodsSoldBtn: document.getElementById("openGoodsSoldBtn")
+  openGoodsSoldBtn: document.getElementById("openGoodsSoldBtn"),
+  expenseModal: document.getElementById("expenseModal"),
+  expenseModalTitle: document.getElementById("expenseModalTitle"),
+  expenseModalDesc: document.getElementById("expenseModalDesc"),
+  expenseAccountForm: document.getElementById("expenseAccountForm"),
+  expenseTopupForm: document.getElementById("expenseTopupForm"),
+  expenseEntryForm: document.getElementById("expenseEntryForm"),
+  expenseTopupAccountSelect: document.getElementById("expenseTopupAccountSelect"),
+  expenseSpendAccountSelect: document.getElementById("expenseSpendAccountSelect"),
+  expenseCurrencySelect: document.getElementById("expenseCurrencySelect"),
+  expenseTypeSelect: document.getElementById("expenseTypeSelect"),
+  openExpenseAccountBtn: document.getElementById("openExpenseAccountBtn"),
+  openExpenseTopupBtn: document.getElementById("openExpenseTopupBtn"),
+  openExpenseEntryBtn: document.getElementById("openExpenseEntryBtn")
 };
 
 const INSTALLMENT_TAG = "[INSTALLMENT]";
 const GOODS_TAG = "[GOODS]";
+const EXPENSE_ACCOUNT_TAG = "[EXPENSE_ACCOUNT]";
 const BACKUP_STORAGE_KEY = "loanledger-json-backup-v1";
 
 function escapeHtml(str){
@@ -374,7 +390,8 @@ function summarizeCurrency(currency){
   const takenGroups = groupByLoan(state.entries.filter(e =>
     e.currency === currency &&
     e.direction === "taken" &&
-    !hasGoodsTag(e.notes)
+    !hasGoodsTag(e.notes) &&
+    !hasExpenseAccountTag(e.notes)
   ));
 
   const givenPrincipal = givenGroups.reduce((s, g) => s + Number(g.principal?.principal_amount || 0), 0);
@@ -383,6 +400,14 @@ function summarizeCurrency(currency){
   const takenOpen = takenGroups.reduce((s, g) => s + calculateLoan(g).remaining, 0);
 
   return { currency, givenPrincipal, givenOpen, takenPrincipal, takenOpen };
+}
+
+function summarizeExpenseByCurrency(currency){
+  const accounts = getExpenseAccounts({ applyUiFilters: false }).filter(a => a.currency === currency);
+  const totalAmount = accounts.reduce((sum, account) => sum + Number(account.openingBalance || 0) + Number(account.addedMoney || 0), 0);
+  const totalExpenses = accounts.reduce((sum, account) => sum + Number(account.spentMoney || 0), 0);
+  const availableBalance = accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  return { currency, totalAmount, totalExpenses, availableBalance };
 }
 
 function renderOverviewCards(){
@@ -449,7 +474,24 @@ function renderOverviewCards(){
     </div>
   `;
 
-  els.statsGrid.innerHTML = currencyCards + goodsCard;
+  const expenseCurrencies = [...new Set(
+    getExpenseAccounts({ applyUiFilters: false }).map(account => account.currency).filter(Boolean)
+  )];
+  const expenseCard = expenseCurrencies.length ? `
+    <div class="summary currency-summary expense-overview">
+      <div class="currency-head">💸</div>
+      ${expenseCurrencies.map(currency => {
+        const s = summarizeExpenseByCurrency(currency);
+        return `
+          <div class="summary-line"><span>${escapeHtml(currency)} total amount</span><strong>${money(s.totalAmount, currency)}</strong></div>
+          <div class="summary-line"><span>${escapeHtml(currency)} total expenses</span><strong>${money(s.totalExpenses, currency)}</strong></div>
+          <div class="summary-line"><span>${escapeHtml(currency)} available balance</span><strong>${money(s.availableBalance, currency)}</strong></div>
+        `;
+      }).join("")}
+    </div>
+  ` : "";
+
+  els.statsGrid.innerHTML = currencyCards + goodsCard + expenseCard;
 }
 
 function matchesSearch(entry, term){
@@ -503,6 +545,47 @@ function upsertGoodsMetaInNote(noteValue, meta = {}){
   if (meta.unitActualPrice != null) tags.push(`[UAP:${meta.unitActualPrice}]`);
   if (meta.unitSoldPrice != null) tags.push(`[USP:${meta.unitSoldPrice}]`);
   return `${note} ${tags.join(" ")}`.trim();
+}
+
+function hasExpenseAccountTag(noteValue){
+  return String(noteValue || "").includes(EXPENSE_ACCOUNT_TAG);
+}
+
+function expenseMetaFromNotes(noteValue){
+  const text = String(noteValue || "");
+  const readText = key => {
+    const m = text.match(new RegExp(`\\[${key}:([^\\]]+)\\]`, "i"));
+    return m ? m[1] : "";
+  };
+  return {
+    accountType: readText("ATYPE"),
+    rowType: readText("ETYPE"),
+    itemName: readText("ITEM"),
+    expenseType: readText("XTYPE")
+  };
+}
+
+function upsertExpenseMetaInNote(noteValue, meta = {}){
+  const base = String(noteValue || "")
+    .replace(EXPENSE_ACCOUNT_TAG, "")
+    .replace(/\[(ATYPE|ETYPE|ITEM|XTYPE):[^\]]+\]/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  const tags = [];
+  if (meta.accountType) tags.push(`[ATYPE:${meta.accountType}]`);
+  if (meta.rowType) tags.push(`[ETYPE:${meta.rowType}]`);
+  if (meta.itemName) tags.push(`[ITEM:${meta.itemName}]`);
+  if (meta.expenseType) tags.push(`[XTYPE:${meta.expenseType}]`);
+  const withTag = `${EXPENSE_ACCOUNT_TAG} ${base}`.trim();
+  return `${withTag} ${tags.join(" ")}`.trim();
+}
+
+function cleanExpenseNote(noteValue){
+  return String(noteValue || "")
+    .replace(EXPENSE_ACCOUNT_TAG, "")
+    .replace(/\[(ATYPE|ETYPE|ITEM|XTYPE):[^\]]+\]/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim() || "—";
 }
 
 function filterPrincipal(direction, searchKey = direction){
@@ -1110,6 +1193,355 @@ function renderGoodsList(){
   }));
 }
 
+function getExpenseAccounts(options = {}){
+  const applyUiFilters = options.applyUiFilters !== false;
+  const groups = groupByLoan(state.entries.filter(e => e.direction === "taken" && hasExpenseAccountTag(e.notes)))
+    .map(group => {
+      const principal = group.principal;
+      const principalMeta = expenseMetaFromNotes(principal?.notes);
+      const topups = group.actions.filter(a => expenseMetaFromNotes(a.notes).rowType === "TOPUP");
+      const spends = group.actions.filter(a => expenseMetaFromNotes(a.notes).rowType === "EXPENSE");
+      const openingBalance = Number(principal?.principal_amount || 0);
+      const addedMoney = topups.reduce((sum, row) => sum + Number(row.action_amount || 0), 0);
+      const spentMoney = spends.reduce((sum, row) => sum + Number(row.action_amount || 0), 0);
+      const balance = Math.max(openingBalance + addedMoney - spentMoney, 0);
+      const status = balance > 0 ? "Open" : "Closed";
+      return {
+        ...group,
+        accountType: principalMeta.accountType || "Bank Account",
+        openingBalance,
+        addedMoney,
+        spentMoney,
+        balance,
+        status,
+        topups,
+        spends
+      };
+    });
+
+  if (!applyUiFilters) return groups;
+
+  const searchTerm = state.search.expenses;
+  const status = state.statusFilter.expenses;
+  const currency = state.currencyFilter.expenses || "All";
+  return groups.filter(group => {
+    const blob = `${group.person_name || ""} ${group.accountType || ""} ${group.principal?.notes || ""} ${group.spends.map(s => expenseMetaFromNotes(s.notes).itemName).join(" ")} ${group.spends.map(s => expenseMetaFromNotes(s.notes).expenseType).join(" ")}`;
+    if (searchTerm && !blob.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (currency !== "All" && group.currency !== currency) return false;
+    if (status === "Active") return group.status === "Open";
+    if (status === "Closed") return group.status === "Closed";
+    return true;
+  });
+}
+
+function renderExpenseAccountSelectors(){
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const byCurrency = accounts.reduce((acc, account) => {
+    const key = account.currency || "";
+    acc[key] = acc[key] || [];
+    acc[key].push(account);
+    return acc;
+  }, {});
+
+  els.expenseTopupAccountSelect.innerHTML = accounts.length
+    ? `<option value="">Choose account</option>${accounts.map(a => `<option value="${escapeHtml(a.group_id)}">${escapeHtml(a.person_name)} (${escapeHtml(a.accountType)}) - ${escapeHtml(formatReportAmount(a.balance, a.currency))}</option>`).join("")}`
+    : `<option value="">No accounts found</option>`;
+
+  const chosenCurrency = els.expenseCurrencySelect.value || "AED";
+  const currencyAccounts = byCurrency[chosenCurrency] || [];
+  els.expenseSpendAccountSelect.innerHTML = currencyAccounts.length
+    ? `<option value="">Choose account</option>${currencyAccounts.map(a => `<option value="${escapeHtml(a.group_id)}">${escapeHtml(a.person_name)} (${escapeHtml(a.accountType)}) - ${escapeHtml(formatReportAmount(a.balance, a.currency))}</option>`).join("")}`
+    : `<option value="">No account in ${escapeHtml(chosenCurrency)}</option>`;
+}
+
+function openExpenseModal(mode, presetGroupId = ""){
+  els.expenseModal.classList.remove("hide");
+  els.expenseModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  els.expenseAccountForm.classList.toggle("hide", mode !== "account");
+  els.expenseTopupForm.classList.toggle("hide", mode !== "topup");
+  els.expenseEntryForm.classList.toggle("hide", mode !== "expense");
+  renderExpenseAccountSelectors();
+
+  if (mode === "account"){
+    els.expenseModalTitle.textContent = "Add Expense Account";
+    els.expenseModalDesc.textContent = "Create Bank or Cash account with opening balance.";
+    els.expenseAccountForm.reset();
+    setCurrencyChoice(els.expenseAccountForm, state.lastCurrency || "AED");
+    defaultDateInputs(els.expenseAccountForm);
+  } else if (mode === "topup"){
+    els.expenseModalTitle.textContent = "Add Money";
+    els.expenseModalDesc.textContent = "Add funds to an existing expense account.";
+    els.expenseTopupForm.reset();
+    defaultDateInputs(els.expenseTopupForm);
+    if (presetGroupId) els.expenseTopupAccountSelect.value = presetGroupId;
+  } else {
+    els.expenseModalTitle.textContent = "Add Expense";
+    els.expenseModalDesc.textContent = "Record expense item, amount, type and source account.";
+    els.expenseEntryForm.reset();
+    els.expenseCurrencySelect.value = state.lastCurrency || "AED";
+    renderExpenseAccountSelectors();
+    defaultDateInputs(els.expenseEntryForm);
+    if (presetGroupId) els.expenseSpendAccountSelect.value = presetGroupId;
+  }
+}
+
+async function saveExpenseAccount(form){
+  const fd = new FormData(form);
+  const payload = {
+    group_id: crypto.randomUUID(),
+    direction: "taken",
+    entry_kind: "principal",
+    person_name: String(fd.get("account_name") || "").trim(),
+    currency: String(fd.get("currency") || "AED").trim(),
+    principal_amount: Number(fd.get("opening_balance") || 0),
+    action_amount: null,
+    loan_date: String(fd.get("account_date") || ""),
+    action_date: null,
+    notes: upsertExpenseMetaInNote(String(fd.get("notes") || "").trim() || null, {
+      accountType: String(fd.get("account_type") || "Bank Account"),
+      rowType: "ACCOUNT"
+    })
+  };
+  if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date){
+    throw new Error("Complete all required fields.");
+  }
+  if (isBackupMode()){
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("expenseModal");
+}
+
+async function saveExpenseTopup(form){
+  const fd = new FormData(form);
+  const groupId = String(fd.get("group_id") || "");
+  const amount = Number(fd.get("amount") || 0);
+  const date = String(fd.get("date") || "");
+  const notes = String(fd.get("notes") || "").trim() || null;
+  if (!groupId || !amount || !date) throw new Error("Complete all required fields.");
+  const principal = state.entries.find(e => e.group_id === groupId && e.direction === "taken" && e.entry_kind === "principal" && hasExpenseAccountTag(e.notes));
+  if (!principal) throw new Error("Account not found.");
+  const payload = {
+    group_id: groupId,
+    direction: "taken",
+    entry_kind: "partial",
+    person_name: principal.person_name,
+    currency: principal.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: principal.loan_date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(notes, {
+      accountType: expenseMetaFromNotes(principal.notes).accountType || "Bank Account",
+      rowType: "TOPUP"
+    })
+  };
+  if (isBackupMode()){
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("expenseModal");
+}
+
+async function saveExpenseEntry(form){
+  const fd = new FormData(form);
+  const groupId = String(fd.get("group_id") || "");
+  const selectedCurrency = String(fd.get("currency") || "").trim();
+  const amount = Number(fd.get("amount") || 0);
+  const date = String(fd.get("date") || "");
+  const itemName = String(fd.get("item_name") || "").trim();
+  const expenseType = String(fd.get("custom_expense_type") || "").trim() || String(fd.get("expense_type") || "").trim() || "Other";
+  const notes = String(fd.get("notes") || "").trim() || null;
+  if (!groupId || !amount || !date || !itemName) throw new Error("Complete all required fields.");
+  const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === groupId);
+  if (!account) throw new Error("Account not found.");
+  if (selectedCurrency && account.currency !== selectedCurrency){
+    throw new Error("Selected currency does not match the account currency.");
+  }
+  if (amount > account.balance) throw new Error(`Insufficient balance. Available: ${formatReportAmount(account.balance, account.currency)}.`);
+  const payload = {
+    group_id: groupId,
+    direction: "taken",
+    entry_kind: "partial",
+    person_name: account.person_name,
+    currency: account.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: account.principal?.loan_date || todayISO(),
+    action_date: date,
+    notes: upsertExpenseMetaInNote(notes, {
+      accountType: account.accountType,
+      rowType: "EXPENSE",
+      itemName,
+      expenseType
+    })
+  };
+  if (isBackupMode()){
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("expenseModal");
+}
+
+async function downloadExpenseAccountPDF(groupId){
+  const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === groupId);
+  if (!account){
+    alert("Account not found.");
+    return;
+  }
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "Expense Account Report", `Account: ${account.person_name}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setFontSize(10);
+  doc.setTextColor(23, 33, 43);
+  doc.text(`Type: ${account.accountType}`, 132, 48);
+  doc.text(`Currency: ${account.currency}`, 132, 54);
+  doc.text(`Balance: ${formatReportAmount(account.balance, account.currency)}`, 132, 60);
+
+  let runningBalance = Number(account.openingBalance || 0);
+  const rows = [
+    ["Opening", displayDate(account.principal?.loan_date || "—"), "—", formatReportAmount(account.openingBalance, account.currency), formatReportAmount(runningBalance, account.currency), cleanExpenseNote(account.principal?.notes)]
+  ];
+  const timeline = account.actions.slice().sort((a, b) => dateStamp(a.action_date) - dateStamp(b.action_date));
+  timeline.forEach(row => {
+    const meta = expenseMetaFromNotes(row.notes);
+    const isExpense = meta.rowType === "EXPENSE";
+    const amt = Number(row.action_amount || 0);
+    runningBalance = isExpense ? Math.max(runningBalance - amt, 0) : runningBalance + amt;
+    rows.push([
+      isExpense ? `Expense (${meta.expenseType || "Other"})` : "Topup",
+      displayDate(row.action_date || "—"),
+      isExpense ? (meta.itemName || "—") : "—",
+      formatReportAmount(amt, account.currency),
+      formatReportAmount(runningBalance, account.currency),
+      cleanExpenseNote(row.notes)
+    ]);
+  });
+
+  doc.autoTable({
+    startY: 72,
+    head: [["Type", "Date", "Item", "Amount", "Balance", "Remarks"]],
+    body: rows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+  doc.save(`Expense_Account_${String(account.person_name || "account").replace(/\s+/g, "_")}.pdf`);
+}
+
+function renderExpensesList(){
+  const accounts = getExpenseAccounts();
+  if (!accounts.length){
+    els.expensesList.innerHTML = `<div class="empty">No expense accounts found.</div>`;
+    return;
+  }
+  els.expensesList.innerHTML = accounts.map(account => {
+    const statusClass = account.status === "Closed" ? "green" : "orange";
+    const timeline = account.actions.slice().sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date));
+    return `
+      <details class="loan">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">${escapeHtml(account.person_name || "Account")}</div>
+              <div class="loan-sub">
+                <span>${escapeHtml(account.accountType)}</span>
+                <span>Opened ${escapeHtml(displayDate(account.principal?.loan_date || "—"))}</span>
+                <span>${currencySymbolHtml(account.currency || "")}</span>
+                <span class="badge ${statusClass}">${account.status === "Closed" ? "Zero Balance" : "Active Balance"}</span>
+              </div>
+            </div>
+            <div class="cell lt-principal"><small>Opening</small><strong>${money(account.openingBalance, account.currency)}</strong></div>
+            <div class="cell lt-movement"><small>Added</small><strong>${money(account.addedMoney, account.currency)}</strong></div>
+            <div class="cell lt-status"><small>Spent</small><strong>${money(account.spentMoney, account.currency)}</strong></div>
+            <div class="cell lt-remaining"><small>Balance</small><strong>${money(account.balance, account.currency)}</strong></div>
+            <div class="lt-action">
+              <div class="menu-wrap">
+                <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" data-expense-menu="${escapeHtml(account.group_id)}">☰</button>
+                <div class="menu-dropdown" data-expense-menu-panel="${escapeHtml(account.group_id)}">
+                  <button class="menu-item expenseActionBtn" type="button" data-action="pdf" data-group-id="${escapeHtml(account.group_id)}">Download PDF</button>
+                  <button class="menu-item expenseActionBtn" type="button" data-action="topup" data-group-id="${escapeHtml(account.group_id)}">Add Money</button>
+                  <button class="menu-item expenseActionBtn" type="button" data-action="expense" data-group-id="${escapeHtml(account.group_id)}">Add Expense</button>
+                  <button class="menu-item expenseActionBtn" type="button" data-action="edit-account" data-entry-id="${escapeHtml(account.principal?.id || "")}">Edit Account</button>
+                  <button class="menu-item danger expenseActionBtn" type="button" data-action="delete-account" data-entry-id="${escapeHtml(account.principal?.id || "")}">Delete Account</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${timeline.length ? timeline.map(row => {
+                  const meta = expenseMetaFromNotes(row.notes);
+                  const isExpense = meta.rowType === "EXPENSE";
+                  return `
+                    <tr>
+                      <td>${escapeHtml(displayDate(row.action_date || "—"))}</td>
+                      <td><span class="badge ${isExpense ? "orange" : "blue"}">${isExpense ? "Expense" : "Topup"}</span></td>
+                      <td>${escapeHtml(meta.itemName || "—")} ${meta.expenseType ? `<span class="badge blue">${escapeHtml(meta.expenseType)}</span>` : ""}</td>
+                      <td>${money(row.action_amount || 0, account.currency)}</td>
+                      <td>${escapeHtml(cleanExpenseNote(row.notes))}</td>
+                      <td>
+                        <div style="display:flex;gap:4px;">
+                          <button class="tiny ghost editRowBtn" data-id="${escapeHtml(row.id)}">✎</button>
+                          <button class="tiny danger delRowBtn" data-id="${escapeHtml(row.id)}">✕</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join("") : `<tr><td colspan="6">No transactions yet.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    `;
+  }).join("");
+
+  els.expensesList.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
+  els.expensesList.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
+  els.expensesList.querySelectorAll(".expenseActionBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const action = btn.dataset.action;
+    if (action === "pdf") await downloadExpenseAccountPDF(btn.dataset.groupId);
+    if (action === "topup") openExpenseModal("topup", btn.dataset.groupId);
+    if (action === "expense") openExpenseModal("expense", btn.dataset.groupId);
+    if (action === "edit-account") openEditModal(btn.dataset.entryId);
+    if (action === "delete-account") await deleteEntry(btn.dataset.entryId);
+  }));
+  els.expensesList.querySelectorAll("[data-expense-menu]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = btn.dataset.expenseMenu;
+    const panel = els.expensesList.querySelector(`[data-expense-menu-panel="${key}"]`);
+    if (!panel) return;
+    document.querySelectorAll(".menu-dropdown.open").forEach(openPanel => {
+      if (openPanel !== panel) openPanel.classList.remove("open");
+    });
+    const nowOpen = panel.classList.toggle("open");
+    btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+  }));
+}
+
 function defaultDateInputs(root = document){
   root.querySelectorAll('input[type="date"]').forEach(i => {
     if (!i.value && i.dataset.defaultToday === "true") i.value = todayISO();
@@ -1309,21 +1741,22 @@ function renderAll(){
   renderLoanCards(els.givenList, "given", "given");
   renderLoanCards(els.receivedList, "given", "received");
   renderLoanCards(els.takenList, "taken", "taken", {
-    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note))
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note))
   });
   renderLoanCards(els.returnedList, "taken", "returned", {
-    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note))
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note))
   });
   renderLoanCards(els.installmentsList, "taken", "installments", {
-    groupFilter: group => group.rows.some(row => hasInstallmentTag(row.note)) && !group.rows.some(row => hasGoodsTag(row.note)),
+    groupFilter: group => group.rows.some(row => hasInstallmentTag(row.note)) && !group.rows.some(row => hasGoodsTag(row.note)) && !group.rows.some(row => hasExpenseAccountTag(row.note)),
     hideMoveToInstallments: true
   });
   renderGoodsList();
+  renderExpensesList();
 
   els.openGivenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "given" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
-  els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
+  els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
   els.receivedCount.textContent = state.entries.filter(e => e.direction === "given" && e.entry_kind !== "principal").length;
-  els.returnedCount.textContent = state.entries.filter(e => e.direction === "taken" && e.entry_kind !== "principal" && !hasGoodsTag(e.notes)).length;
+  els.returnedCount.textContent = state.entries.filter(e => e.direction === "taken" && e.entry_kind !== "principal" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes)).length;
 
 }
 
@@ -1662,6 +2095,8 @@ async function createPayment(form){
 async function submitEdit(){
   const id = state.editId;
   if (!id) return;
+  const currentEntry = state.entries.find(e => e.id === id);
+  if (!currentEntry) return;
 
   const amt = Number(document.getElementById('editAmount').value || 0);
   const dt = document.getElementById('editDate').value;
@@ -1673,26 +2108,30 @@ async function submitEdit(){
     if (!nm || !curr || !amt || !dt) throw new Error("Complete required fields.");
     if (isBackupMode()){
       state.entries = state.entries.map(entry => entry.id === id
-        ? { ...entry, person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: nt }
+        ? { ...entry, person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: hasExpenseAccountTag(currentEntry.notes) ? upsertExpenseMetaInNote(nt, { ...expenseMetaFromNotes(currentEntry.notes), rowType: "ACCOUNT" }) : nt }
         : entry
       );
     } else {
       await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
         method: "PATCH",
-        body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: nt })
+        body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: hasExpenseAccountTag(currentEntry.notes) ? upsertExpenseMetaInNote(nt, { ...expenseMetaFromNotes(currentEntry.notes), rowType: "ACCOUNT" }) : nt })
       });
     }
   } else {
     if (!amt || !dt) throw new Error("Complete required fields.");
+    const expenseMeta = expenseMetaFromNotes(currentEntry.notes);
+    const editedNotes = hasExpenseAccountTag(currentEntry.notes)
+      ? upsertExpenseMetaInNote(nt, expenseMeta)
+      : nt;
     if (isBackupMode()){
       state.entries = state.entries.map(entry => entry.id === id
-        ? { ...entry, action_amount: amt, action_date: dt, notes: nt }
+        ? { ...entry, action_amount: amt, action_date: dt, notes: editedNotes }
         : entry
       );
     } else {
       await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
         method: "PATCH",
-        body: JSON.stringify({ action_amount: amt, action_date: dt, notes: nt })
+        body: JSON.stringify({ action_amount: amt, action_date: dt, notes: editedNotes })
       });
     }
   }
@@ -2009,6 +2448,8 @@ function sectionLabel(searchKey){
     ? "Received Back"
     : searchKey === "taken"
     ? "Loan Taken"
+    : searchKey === "expenses"
+    ? "Expenses"
     : "Returned Back";
 }
 
@@ -2019,6 +2460,40 @@ function formatReportAmount(amount, currency){
 }
 
 function buildSectionReportRows(direction, searchKey){
+  if (searchKey === "expenses"){
+    const accounts = getExpenseAccounts();
+    const rows = [];
+    accounts.forEach(account => {
+      let runningBalance = Number(account.openingBalance || 0);
+      rows.push([
+        account.person_name || "Account",
+        displayDate(account.principal?.loan_date || "—"),
+        "Opening",
+        formatReportAmount(account.openingBalance, account.currency),
+        formatReportAmount(runningBalance, account.currency),
+        cleanExpenseNote(account.principal?.notes)
+      ]);
+      account.actions
+        .slice()
+        .sort((a, b) => dateStamp(a.action_date) - dateStamp(b.action_date))
+        .forEach(row => {
+          const meta = expenseMetaFromNotes(row.notes);
+          const isExpense = meta.rowType === "EXPENSE";
+          const amount = Number(row.action_amount || 0);
+          runningBalance = isExpense ? Math.max(runningBalance - amount, 0) : runningBalance + amount;
+          rows.push([
+            `${account.person_name || "Account"}${meta.expenseType ? ` (${meta.expenseType})` : ""}`,
+            displayDate(row.action_date || "—"),
+            isExpense ? `Expense${meta.itemName ? `: ${meta.itemName}` : ""}` : "Topup",
+            formatReportAmount(amount, account.currency),
+            formatReportAmount(runningBalance, account.currency),
+            cleanExpenseNote(row.notes)
+          ]);
+        });
+    });
+    return { groups: accounts, rows };
+  }
+
   const groups = getFilteredGroups(direction, searchKey);
   const rows = [];
 
@@ -2086,7 +2561,8 @@ async function exportAllSectionsPDF(){
     { key: "given", direction: "given", label: "Loan Given" },
     { key: "received", direction: "given", label: "Received Back" },
     { key: "taken", direction: "taken", label: "Loan Taken" },
-    { key: "returned", direction: "taken", label: "Returned Back" }
+    { key: "returned", direction: "taken", label: "Returned Back" },
+    { key: "expenses", direction: "taken", label: "Expenses" }
   ];
 
   const sectionReports = sectionDefs.map(def => ({
@@ -2336,6 +2812,18 @@ function attachEvents(){
     activate("goods");
     openGoodsModal("sold");
   });
+  els.openExpenseAccountBtn.addEventListener("click", () => {
+    activate("expenses");
+    openExpenseModal("account");
+  });
+  els.openExpenseTopupBtn.addEventListener("click", () => {
+    activate("expenses");
+    openExpenseModal("topup");
+  });
+  els.openExpenseEntryBtn.addEventListener("click", () => {
+    activate("expenses");
+    openExpenseModal("expense");
+  });
 
   document.querySelectorAll("[data-entry-menu]").forEach(btn => {
     btn.addEventListener("click", e => {
@@ -2378,7 +2866,7 @@ function attachEvents(){
     btn.addEventListener("click", e => closeModal(e.target.dataset.closeModal));
   });
 
-  [els.entryModal, els.editModal, els.goodsModal].forEach(m => {
+  [els.entryModal, els.editModal, els.goodsModal, els.expenseModal].forEach(m => {
     m.addEventListener("click", e => {
       if (e.target && e.target.matches(".modal-backdrop")) closeModal(m.id);
     });
@@ -2389,6 +2877,7 @@ function attachEvents(){
       if (!els.entryModal.classList.contains("hide")) closeModal("entryModal");
       if (!els.editModal.classList.contains("hide")) closeModal("editModal");
       if (!els.goodsModal.classList.contains("hide")) closeModal("goodsModal");
+      if (!els.expenseModal.classList.contains("hide")) closeModal("expenseModal");
     }
   });
 
@@ -2442,6 +2931,19 @@ function attachEvents(){
     e.preventDefault();
     try { await saveGoodsSold(els.goodsSoldForm); } catch (err) { alert(err.message); }
   });
+  els.expenseAccountForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveExpenseAccount(els.expenseAccountForm); } catch (err) { alert(err.message); }
+  });
+  els.expenseTopupForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveExpenseTopup(els.expenseTopupForm); } catch (err) { alert(err.message); }
+  });
+  els.expenseEntryForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveExpenseEntry(els.expenseEntryForm); } catch (err) { alert(err.message); }
+  });
+  els.expenseCurrencySelect.addEventListener("change", () => renderExpenseAccountSelectors());
   els.goodsNewItemToggleBtn.addEventListener("click", () => {
     const open = els.goodsNewItemFields.classList.toggle("hide");
     els.goodsNewItemToggleBtn.textContent = open ? "+ Add New" : "− Use Existing";
@@ -2452,6 +2954,7 @@ function attachEvents(){
   els.downloadReceivedPdfBtn.addEventListener("click", () => exportSectionPDF("received").catch(err => alert(err.message)));
   els.downloadTakenPdfBtn.addEventListener("click", () => exportSectionPDF("taken").catch(err => alert(err.message)));
   els.downloadReturnedPdfBtn.addEventListener("click", () => exportSectionPDF("returned").catch(err => alert(err.message)));
+  els.downloadExpensesPdfBtn.addEventListener("click", () => exportSectionPDF("expenses").catch(err => alert(err.message)));
   els.downloadAllSectionsPdfBtn.addEventListener("click", () => exportAllSectionsPDF().catch(err => alert(err.message)));
   els.downloadAllDataJsonBtn.addEventListener("click", downloadJsonBackup);
   els.downloadAllDataCsvBtn.addEventListener("click", downloadCsvBackup);
@@ -2487,7 +2990,7 @@ function attachEvents(){
   els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   els.unlockBtn.addEventListener("click", attemptUnlock);
 
-  [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"],["searchGoods","goods"]].forEach(([id,key]) => {
+  [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"],["searchGoods","goods"],["searchExpenses","expenses"]].forEach(([id,key]) => {
     document.getElementById(id).addEventListener("input", e => {
       state.search[key] = e.target.value;
       renderAll();
