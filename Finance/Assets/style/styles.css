@@ -66,6 +66,75 @@ a{color:inherit}
   border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:.77rem;color:var(--muted);
   box-shadow:0 2px 10px rgba(16,24,40,.03);
 }
+.icon-chip{
+  width:36px;height:36px;padding:0;
+  display:grid;place-items:center;
+  overflow:hidden;
+}
+.finance-chip{
+  position:relative;
+  isolation:isolate;
+  background:linear-gradient(145deg,#f9fbff,#eef3ff);
+  border-color:#dbe5ff;
+}
+.db-core,.db-ring,.cash-note,.cash-dot,.coin{
+  position:absolute;
+  display:block;
+}
+.db-core{
+  width:12px;height:12px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#8cb0ff,#2457d6);
+  box-shadow:0 0 0 3px rgba(36,87,214,.15);
+  animation:pulse-core 1.8s ease-in-out infinite;
+}
+.db-ring{
+  width:22px;height:22px;border-radius:50%;
+  border:2px dashed rgba(36,87,214,.45);
+  animation:spin-ring 3.5s linear infinite;
+}
+.cash-note{
+  width:18px;height:12px;border-radius:4px;
+  background:linear-gradient(135deg,#4caf7b,#1e8f5f);
+  transform:rotate(-14deg);
+  box-shadow:0 3px 6px rgba(30,143,95,.22);
+  animation:float-cash 2s ease-in-out infinite;
+}
+.cash-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#d6ffe8;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+}
+.coin{
+  width:13px;height:13px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#ffe79c,#f6ba2a);
+  border:1px solid rgba(209,147,17,.45);
+}
+.coin-a{left:9px;top:12px;animation:bounce-coin 1.9s ease-in-out infinite}
+.coin-b{left:16px;top:9px;animation:bounce-coin 1.9s ease-in-out infinite .2s}
+@keyframes pulse-core{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.1)}
+}
+@keyframes spin-ring{to{transform:rotate(360deg)}}
+@keyframes float-cash{
+  0%,100%{transform:rotate(-14deg) translateY(0)}
+  50%{transform:rotate(-14deg) translateY(-2px)}
+}
+@keyframes bounce-coin{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-2px)}
+}
+.chip-emoji{
+  font-size:1.02rem;
+  display:inline-block;
+  animation:float-chip 1.9s ease-in-out infinite;
+}
+.icon-chip:nth-child(2) .chip-emoji{animation-delay:.2s}
+.icon-chip:nth-child(3) .chip-emoji{animation-delay:.4s}
+@keyframes float-chip{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-2px)}
+}
 
 .overview{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
@@ -243,9 +312,14 @@ tbody tr:hover{background:#fbfdff}
   position:absolute;
   left:0;
   top:calc(100% + 4px);
-  z-index:60;
+  z-index:9999;
   min-width:220px;
   max-width:min(320px, 78vw);
+}
+.note-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:9998;
 }
 
 .empty{
