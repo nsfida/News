@@ -206,7 +206,13 @@ details[open] .loan-top{border-bottom:1px solid var(--line)}
 .detail-head h4{margin:0;font-size:.92rem}
 .detail-head p{margin:4px 0 0;color:var(--muted);font-size:.82rem;line-height:1.5}
 
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+.table-wrap{
+  overflow-x:auto;
+  overflow-y:visible;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
 table{width:100%;border-collapse:separate;border-spacing:0}
 thead th{
   background:#f8fafc;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;
@@ -232,7 +238,7 @@ tbody tr:hover{background:#fbfdff}
 .tiny.danger{background:#fff1f0;color:var(--danger)}
 .tiny.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
 .note-close{display:none}
-.note-wrap{position:relative}
+.note-wrap{position:relative;z-index:2}
 .note-popover{
   position:absolute;
   left:0;
@@ -427,6 +433,8 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   .detail-head h4{font-size:.76rem}
   .detail-head p{font-size:.66rem;line-height:1.25}
   .table-wrap{border-radius:10px;max-width:100%}
+  .table-wrap{overflow-x:auto;overflow-y:visible}
+  tbody td{overflow:visible}
   table{table-layout:fixed}
   thead th,tbody td{
     font-size:.56rem;
