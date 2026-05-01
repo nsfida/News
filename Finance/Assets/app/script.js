@@ -13,6 +13,7 @@ const state = {
   hasImportedFile: false,
   dbEntryIds: new Set(),
   dbSignatures: new Set(),
+  dbSignaturesById: new Map(),
   unlocked: false,
   search: { given: "", received: "", taken: "", returned: "", installments: "" },
   statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All" },
@@ -134,6 +135,7 @@ function entrySignature(entry){
   const loanDate = normalizeDateForDb(entry.loan_date) || "";
   const actionDate = normalizeDateForDb(entry.action_date) || "";
   return [
+    String(entry.group_id || "").trim().toLowerCase(),
     String(entry.direction || "").trim().toLowerCase(),
     String(entry.entry_kind || "").trim().toLowerCase(),
     person,
@@ -664,10 +666,12 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
     if (!popover.classList.contains("hide")) {
       positionNotePopover(btn, popover);
     }
+    updateNoteBackdropVisibility();
   }));
   container.querySelectorAll("[data-note-close]").forEach(btn => btn.addEventListener("click", e => {
     e.preventDefault();
     btn.closest(".note-popover")?.classList.add("hide");
+    updateNoteBackdropVisibility();
   }));
   container.querySelectorAll("[data-person-menu]").forEach(btn => btn.addEventListener("click", e => {
     e.preventDefault();
@@ -697,6 +701,7 @@ function positionNotePopover(toggleBtn, popover){
   popover.style.top = `${rect.bottom + gap}px`;
   popover.style.right = "auto";
   popover.style.transform = "none";
+  popover.style.zIndex = "9999";
 
   let popRect = popover.getBoundingClientRect();
   const overflowRight = popRect.right - (window.innerWidth - viewportPadding);
@@ -710,6 +715,27 @@ function positionNotePopover(toggleBtn, popover){
     const top = Math.max(viewportPadding, rect.top - popRect.height - gap);
     popover.style.top = `${top}px`;
   }
+}
+
+function ensureNoteBackdrop(){
+  let backdrop = document.getElementById("noteBackdrop");
+  if (!backdrop){
+    backdrop = document.createElement("div");
+    backdrop.id = "noteBackdrop";
+    backdrop.className = "note-backdrop hide";
+    backdrop.addEventListener("click", () => {
+      document.querySelectorAll(".note-popover").forEach(pop => pop.classList.add("hide"));
+      backdrop.classList.add("hide");
+    });
+    document.body.appendChild(backdrop);
+  }
+  return backdrop;
+}
+
+function updateNoteBackdropVisibility(){
+  const backdrop = ensureNoteBackdrop();
+  const hasOpenPopover = Array.from(document.querySelectorAll(".note-popover")).some(pop => !pop.classList.contains("hide"));
+  backdrop.classList.toggle("hide", !hasOpenPopover);
 }
 
 function repositionOpenNotePopovers(){
@@ -728,7 +754,7 @@ function renderLoanSelectors(){
   const makeOptions = groups => groups.length
     ? `<option value="">Choose one</option>` + groups.map(g => {
         const remaining = calculateLoan(g).remaining;
-        return `<option value="${escapeHtml(g.group_id)}">${escapeHtml(g.person_name)} — ${escapeHtml(moneyText(remaining, g.currency))} remaining</option>`;
+        return `<option value="${escapeHtml(g.group_id)}">${escapeHtml(g.person_name)} — ${escapeHtml(formatReportAmount(remaining, g.currency))} remaining</option>`;
       }).join("")
     : `<option value="">No open loans available</option>`;
 
@@ -1666,6 +1692,10 @@ async function importJsonBackup(file){
     throw new Error("JSON file must contain an entries array.");
   }
   applyEntries(entries, "backup", { hasImportedFile: true });
+  if (state.unlocked) {
+    await refreshDbSnapshot();
+    renderAll();
+  }
 }
 
 async function importCsvBackup(file){
@@ -1673,6 +1703,10 @@ async function importCsvBackup(file){
   const text = await file.text();
   const entries = parseEntriesCsv(text);
   applyEntries(entries, "backup", { hasImportedFile: true });
+  if (state.unlocked) {
+    await refreshDbSnapshot();
+    renderAll();
+  }
 }
 
 function sanitizeEntryForSupabase(entry){
@@ -1696,15 +1730,25 @@ function updateDbSnapshot(rows){
   const validRows = Array.isArray(rows) ? rows : [];
   state.dbEntryIds = new Set(validRows.map(r => r.id).filter(Boolean));
   state.dbSignatures = new Set(validRows.map(entrySignature));
+  state.dbSignaturesById = new Map(validRows.filter(r => r.id).map(r => [r.id, entrySignature(r)]));
 }
 
 function getUnsyncedEntriesForPerson(personName, direction){
-  if (!state.unlocked) return [];
+  if (!state.unlocked){
+    return state.hasImportedFile
+      ? state.entries.filter(entry => entry.direction === direction && String(entry.person_name || "").trim() === personName)
+      : [];
+  }
   return state.entries.filter(entry => {
     if (entry.direction !== direction) return false;
     if (String(entry.person_name || "").trim() !== personName) return false;
+    const signature = entrySignature(entry);
     const byId = entry.id && state.dbEntryIds.has(entry.id);
-    const bySignature = state.dbSignatures.has(entrySignature(entry));
+    if (byId){
+      const dbSignature = state.dbSignaturesById.get(entry.id);
+      return dbSignature !== signature;
+    }
+    const bySignature = state.dbSignatures.has(signature);
     return !byId && !bySignature;
   });
 }
@@ -1825,6 +1869,7 @@ function attachEvents(){
     });
     if (!e.target.closest(".note-wrap")){
       document.querySelectorAll(".note-popover").forEach(pop => pop.classList.add("hide"));
+      updateNoteBackdropVisibility();
     }
   });
   window.addEventListener("scroll", () => {
