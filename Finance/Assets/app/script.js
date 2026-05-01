@@ -366,8 +366,16 @@ function calculateLoan(group){
 }
 
 function summarizeCurrency(currency){
-  const givenGroups = groupByLoan(state.entries.filter(e => e.currency === currency && e.direction === "given"));
-  const takenGroups = groupByLoan(state.entries.filter(e => e.currency === currency && e.direction === "taken"));
+  const givenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "given" &&
+    !hasGoodsTag(e.notes)
+  ));
+  const takenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "taken" &&
+    !hasGoodsTag(e.notes)
+  ));
 
   const givenPrincipal = givenGroups.reduce((s, g) => s + Number(g.principal?.principal_amount || 0), 0);
   const givenOpen = givenGroups.reduce((s, g) => s + calculateLoan(g).remaining, 0);
