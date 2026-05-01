@@ -771,6 +771,36 @@ function parseEntriesCsv(csvText){
   }).filter(entry => entry.group_id && entry.direction && entry.entry_kind && entry.person_name);
 }
 
+function normalizeDateForDb(value){
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+  const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch){
+    const dd = slashMatch[1].padStart(2, "0");
+    const mm = slashMatch[2].padStart(2, "0");
+    const yyyy = slashMatch[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const dotMatch = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (dotMatch){
+    const dd = dotMatch[1].padStart(2, "0");
+    const mm = dotMatch[2].padStart(2, "0");
+    const yyyy = dotMatch[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())){
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  return null;
+}
+
 function saveBackupEntries(entries){
   const payload = {
     exportedAt: new Date().toISOString(),
@@ -1563,6 +1593,8 @@ async function importCsvBackup(file){
 }
 
 function sanitizeEntryForSupabase(entry){
+  const normalizedLoanDate = normalizeDateForDb(entry.loan_date);
+  const normalizedActionDate = normalizeDateForDb(entry.action_date);
   return {
     group_id: String(entry.group_id || "").trim(),
     direction: String(entry.direction || "").trim(),
@@ -1571,8 +1603,8 @@ function sanitizeEntryForSupabase(entry){
     currency: String(entry.currency || "").trim(),
     principal_amount: entry.principal_amount == null || entry.principal_amount === "" ? null : Number(entry.principal_amount),
     action_amount: entry.action_amount == null || entry.action_amount === "" ? null : Number(entry.action_amount),
-    loan_date: String(entry.loan_date || "").trim() || null,
-    action_date: String(entry.action_date || "").trim() || null,
+    loan_date: normalizedLoanDate,
+    action_date: normalizedActionDate,
     notes: entry.notes == null || String(entry.notes).trim() === "" ? null : String(entry.notes)
   };
 }
@@ -1594,13 +1626,14 @@ async function uploadBackupToDatabase(){
     .map(sanitizeEntryForSupabase)
     .filter(row => row.group_id && row.direction && row.entry_kind && row.person_name && row.currency && row.loan_date);
 
+  if (!cleanedRows.length){
+    throw new Error("No valid rows found to upload. Please verify CSV/JSON date format.");
+  }
+
   if (!confirm(`Upload imported backup to database? This will DELETE existing records and replace with ${cleanedRows.length} row(s).`)) return;
 
   await supabase(`${CONFIG.table}?id=not.is.null`, { method: "DELETE" });
-
-  if (cleanedRows.length){
-    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(cleanedRows) });
-  }
+  await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(cleanedRows) });
 
   alert("Database updated successfully from imported backup.");
 }
