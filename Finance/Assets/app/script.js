@@ -11,6 +11,8 @@ const state = {
   entries: [],
   dataSource: "backup",
   hasImportedFile: false,
+  dbEntryIds: new Set(),
+  dbSignatures: new Set(),
   unlocked: false,
   search: { given: "", received: "", taken: "", returned: "", installments: "" },
   statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All" },
@@ -95,6 +97,53 @@ function dateStamp(value){
   const normalized = str.length === 10 ? `${str}T23:59:59` : str;
   const time = new Date(normalized).getTime();
   return Number.isFinite(time) ? time : 0;
+}
+
+function normalizeDateForDb(value){
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+  const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch){
+    const dd = slashMatch[1].padStart(2, "0");
+    const mm = slashMatch[2].padStart(2, "0");
+    const yyyy = slashMatch[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const dotMatch = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (dotMatch){
+    const dd = dotMatch[1].padStart(2, "0");
+    const mm = dotMatch[2].padStart(2, "0");
+    const yyyy = dotMatch[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+  return null;
+}
+
+function entrySignature(entry){
+  const person = String(entry.person_name || "").trim().toLowerCase();
+  const notes = String(entry.notes || "").trim().toLowerCase();
+  const principal = entry.principal_amount == null || entry.principal_amount === "" ? "" : Number(entry.principal_amount).toFixed(2);
+  const action = entry.action_amount == null || entry.action_amount === "" ? "" : Number(entry.action_amount).toFixed(2);
+  const loanDate = normalizeDateForDb(entry.loan_date) || "";
+  const actionDate = normalizeDateForDb(entry.action_date) || "";
+  return [
+    String(entry.direction || "").trim().toLowerCase(),
+    String(entry.entry_kind || "").trim().toLowerCase(),
+    person,
+    String(entry.currency || "").trim().toUpperCase(),
+    principal,
+    action,
+    loanDate,
+    actionDate,
+    notes
+  ].join("|");
 }
 
 function getSupabaseConfig(){
@@ -490,6 +539,9 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
     const openOnly = group.remaining > 0;
 
     const showInstallmentMove = direction === "taken" && !options.hideMoveToInstallments;
+    const personName = String(group.person_name || "").trim();
+    const unsyncedEntries = getUnsyncedEntriesForPerson(personName, direction);
+    const hasUnsynced = unsyncedEntries.length > 0;
     return `
       <details class="loan">
         <summary>
@@ -502,6 +554,7 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
                 <span>Updated ${escapeHtml(displayDate(group.lastActivity || group.loan_date || "—"))}</span>
                 <span>${currencySymbolHtml(group.currency || "")}</span>
                 <span>${escapeHtml(`${group.groupCount || 1} loan${(group.groupCount || 1) > 1 ? "s" : ""}`)}</span>
+                ${hasUnsynced ? `<span class="badge orange">Not in DB (${unsyncedEntries.length})</span>` : ""}
                 ${openOnly ? '<span class="badge orange">Open</span>' : '<span class="badge green">Closed</span>'}
               </div>
             </div>
@@ -514,11 +567,13 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
                 <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" aria-label="More actions" data-person-menu="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">☰</button>
                 <div class="menu-dropdown" data-person-menu-panel="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">
                   <button class="menu-item personActionBtn" type="button" data-action="pdf" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Download PDF</button>
+                  ${hasUnsynced ? `<button class="menu-item personActionBtn" type="button" data-action="save-db" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Save to Database</button>` : ""}
                   <button class="menu-item personActionBtn" type="button" data-action="edit-name" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Edit Name</button>
                   ${showInstallmentMove ? `<button class="menu-item personActionBtn" type="button" data-action="move-installment" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Move to Installments</button>` : ""}
                   <button class="menu-item danger personActionBtn" type="button" data-action="delete" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Delete Record</button>
                 </div>
               </div>
+              ${hasUnsynced ? `<button class="icon-btn savePersonBtn" type="button" title="Save missing records to database" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">💾</button>` : ""}
             </div>
           </div>
         </summary>
@@ -551,9 +606,9 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
                     <td><strong>${money(row.remainingAfter, group.currency)}</strong></td>
                     <td>
                       <div class="note-wrap">
-                        <span class="note-toggle" style="color:var(--primary);cursor:pointer;font-weight:600;font-size:.8rem;" onclick="this.nextElementSibling.classList.toggle('hide')">Notes ▾</span>
+                        <button type="button" class="note-toggle" data-note-toggle style="color:var(--primary);cursor:pointer;font-weight:600;font-size:.72rem;line-height:1.1;background:none;border:none;padding:0;font-family:inherit;">Note ▾</button>
                         <div class="hide note-popover" style="margin-top:4px;padding:6px;background:var(--bg);border-radius:6px;font-size:.76rem;">
-                          <button class="note-close" type="button" onclick="this.parentElement.classList.add('hide')" aria-label="Close note">×</button>
+                          <button class="note-close" type="button" data-note-close aria-label="Close note">×</button>
                           ${escapeHtml(row.note)}
                           <div style="color:var(--muted);font-size:.7rem;margin-top:3px">${index === 0 ? "Opening row" : `Linked ${escapeHtml(shortId(row.entryId))}`}</div>
                         </div>
@@ -584,6 +639,8 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
     const dir = btn.dataset.direction;
     if (action === "pdf") {
       await downloadPersonPDF(person, dir);
+    } else if (action === "save-db") {
+      await savePersonRecordsToDatabase(person, dir);
     } else if (action === "delete") {
       await deletePersonRecords(person, dir);
     } else if (action === "edit-name") {
@@ -591,6 +648,26 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
     } else if (action === "move-installment") {
       await movePersonToInstallments(person, dir);
     }
+  }));
+  container.querySelectorAll(".savePersonBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    await savePersonRecordsToDatabase(btn.dataset.person, btn.dataset.direction);
+  }));
+  container.querySelectorAll("[data-note-toggle]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    const popover = btn.parentElement?.querySelector(".note-popover");
+    if (!popover) return;
+    document.querySelectorAll(".note-popover").forEach(p => {
+      if (p !== popover) p.classList.add("hide");
+    });
+    popover.classList.toggle("hide");
+    if (!popover.classList.contains("hide")) {
+      positionNotePopover(btn, popover);
+    }
+  }));
+  container.querySelectorAll("[data-note-close]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    btn.closest(".note-popover")?.classList.add("hide");
   }));
   container.querySelectorAll("[data-person-menu]").forEach(btn => btn.addEventListener("click", e => {
     e.preventDefault();
@@ -607,6 +684,41 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
     const nowOpen = panel.classList.toggle("open");
     btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
   }));
+}
+
+function positionNotePopover(toggleBtn, popover){
+  if (!toggleBtn || !popover) return;
+  const rect = toggleBtn.getBoundingClientRect();
+  const viewportPadding = 8;
+  const gap = 6;
+
+  popover.style.position = "fixed";
+  popover.style.left = `${Math.max(viewportPadding, rect.left)}px`;
+  popover.style.top = `${rect.bottom + gap}px`;
+  popover.style.right = "auto";
+  popover.style.transform = "none";
+
+  let popRect = popover.getBoundingClientRect();
+  const overflowRight = popRect.right - (window.innerWidth - viewportPadding);
+  if (overflowRight > 0){
+    popover.style.left = `${Math.max(viewportPadding, rect.left - overflowRight)}px`;
+    popRect = popover.getBoundingClientRect();
+  }
+
+  const overflowBottom = popRect.bottom - (window.innerHeight - viewportPadding);
+  if (overflowBottom > 0){
+    const top = Math.max(viewportPadding, rect.top - popRect.height - gap);
+    popover.style.top = `${top}px`;
+  }
+}
+
+function repositionOpenNotePopovers(){
+  document.querySelectorAll(".note-wrap").forEach(wrap => {
+    const popover = wrap.querySelector(".note-popover");
+    const toggle = wrap.querySelector("[data-note-toggle]");
+    if (!popover || !toggle || popover.classList.contains("hide")) return;
+    positionNotePopover(toggle, popover);
+  });
 }
 
 function renderLoanSelectors(){
@@ -771,36 +883,6 @@ function parseEntriesCsv(csvText){
   }).filter(entry => entry.group_id && entry.direction && entry.entry_kind && entry.person_name);
 }
 
-function normalizeDateForDb(value){
-  const raw = String(value || "").trim();
-  if (!raw) return null;
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
-
-  const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (slashMatch){
-    const dd = slashMatch[1].padStart(2, "0");
-    const mm = slashMatch[2].padStart(2, "0");
-    const yyyy = slashMatch[3];
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  const dotMatch = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-  if (dotMatch){
-    const dd = dotMatch[1].padStart(2, "0");
-    const mm = dotMatch[2].padStart(2, "0");
-    const yyyy = dotMatch[3];
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  const parsed = new Date(raw);
-  if (!Number.isNaN(parsed.getTime())){
-    return parsed.toISOString().slice(0, 10);
-  }
-
-  return null;
-}
-
 function saveBackupEntries(entries){
   const payload = {
     exportedAt: new Date().toISOString(),
@@ -845,6 +927,7 @@ async function loadEntries(){
 
 async function loadEntriesFromSupabase(){
   const rows = await supabase(`${CONFIG.table}?select=*&order=created_at.desc`);
+  updateDbSnapshot(Array.isArray(rows) ? rows : []);
   applyEntries(Array.isArray(rows) ? rows : [], "supabase", { hasImportedFile: false });
 }
 
@@ -1609,6 +1692,29 @@ function sanitizeEntryForSupabase(entry){
   };
 }
 
+function updateDbSnapshot(rows){
+  const validRows = Array.isArray(rows) ? rows : [];
+  state.dbEntryIds = new Set(validRows.map(r => r.id).filter(Boolean));
+  state.dbSignatures = new Set(validRows.map(entrySignature));
+}
+
+function getUnsyncedEntriesForPerson(personName, direction){
+  if (!state.unlocked) return [];
+  return state.entries.filter(entry => {
+    if (entry.direction !== direction) return false;
+    if (String(entry.person_name || "").trim() !== personName) return false;
+    const byId = entry.id && state.dbEntryIds.has(entry.id);
+    const bySignature = state.dbSignatures.has(entrySignature(entry));
+    return !byId && !bySignature;
+  });
+}
+
+async function refreshDbSnapshot(){
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) return;
+  const rows = await supabase(`${CONFIG.table}?select=*`);
+  updateDbSnapshot(Array.isArray(rows) ? rows : []);
+}
+
 async function uploadBackupToDatabase(){
   if (!state.hasImportedFile || state.dataSource !== "backup"){
     alert("Please import a JSON or CSV file first.");
@@ -1634,8 +1740,43 @@ async function uploadBackupToDatabase(){
 
   await supabase(`${CONFIG.table}?id=not.is.null`, { method: "DELETE" });
   await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(cleanedRows) });
+  await refreshDbSnapshot();
+  renderAll();
 
   alert("Database updated successfully from imported backup.");
+}
+
+async function savePersonRecordsToDatabase(personNameEncoded, direction){
+  const personName = decodeURIComponent(personNameEncoded || "").trim();
+  if (!personName || !direction) return;
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey){
+    alert("Please connect to database first using ZIP password.");
+    els.lockScreen.classList.remove("hide");
+    els.lockError.textContent = "";
+    els.zipPasswordInput.focus();
+    return;
+  }
+
+  await refreshDbSnapshot();
+  const unsyncedEntries = getUnsyncedEntriesForPerson(personName, direction);
+  if (!unsyncedEntries.length){
+    alert("All records for this member are already saved in database.");
+    return;
+  }
+
+  const payload = unsyncedEntries
+    .map(sanitizeEntryForSupabase)
+    .filter(row => row.group_id && row.direction && row.entry_kind && row.person_name && row.currency && row.loan_date);
+
+  if (!payload.length){
+    alert("No valid rows found for database save.");
+    return;
+  }
+
+  await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+  await refreshDbSnapshot();
+  renderAll();
+  alert(`Saved ${payload.length} record(s) to database for ${personName}.`);
 }
 
 function attachEvents(){
@@ -1682,8 +1823,15 @@ function attachEvents(){
         panel.previousElementSibling.setAttribute("aria-expanded", "false");
       }
     });
+    if (!e.target.closest(".note-wrap")){
+      document.querySelectorAll(".note-popover").forEach(pop => pop.classList.add("hide"));
+    }
   });
-  window.addEventListener("scroll", closeAllMenus, { passive: true });
+  window.addEventListener("scroll", () => {
+    closeAllMenus();
+    repositionOpenNotePopovers();
+  }, { passive: true });
+  window.addEventListener("resize", repositionOpenNotePopovers);
 
   document.querySelectorAll("[data-close-modal]").forEach(btn => {
     btn.addEventListener("click", e => closeModal(e.target.dataset.closeModal));
@@ -1820,7 +1968,9 @@ async function attemptUnlock(){
 
     defaultDateInputs(document);
     if (keepCurrentBackup){
+      await refreshDbSnapshot();
       updateUploadButtonVisibility();
+      renderAll();
     } else {
       await loadEntriesFromSupabase();
     }
