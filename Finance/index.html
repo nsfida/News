@@ -86,6 +86,7 @@
       <button class="tab" data-tab="taken" type="button">Loan Taken / Returned Back</button>
       <button class="tab" data-tab="installments" type="button">Installment Plans</button>
       <button class="tab" data-tab="goods" type="button">Goods Bought / Sold</button>
+      <button class="tab" data-tab="expenses" type="button">Expenses</button>
     </section>
 
     <main class="center-wrap">
@@ -327,6 +328,52 @@
           <div id="goodsList" class="list"></div>
         </div>
       </section>
+
+      <section id="expensesPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Expenses</h3>
+                  <div class="menu-wrap">
+                    <button class="btn ghost menu-trigger" type="button" data-entry-menu="expenses" aria-haspopup="menu" aria-expanded="false">New Entry ▾</button>
+                    <div class="menu-dropdown" data-entry-menu-panel="expenses">
+                      <button type="button" class="menu-item" id="openExpenseAccountBtn">Add Account</button>
+                      <button type="button" class="menu-item" id="openExpenseTopupBtn">Add Money</button>
+                      <button type="button" class="menu-item" id="openExpenseEntryBtn">Add Expense</button>
+                    </div>
+                  </div>
+                </div>
+                <p>Track account balances and spending by account type and expense category.</p>
+              </div>
+              <div class="tools">
+                <input id="searchExpenses" class="input" style="min-width:180px" placeholder="Search account, item or note" />
+                <button class="btn soft" id="downloadExpensesPdfBtn" type="button">📄 Download</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_exp_all" name="f_exp" value="All" class="filter-radio" data-filter="expenses" checked>
+              <label for="f_exp_all" class="filter-label">All</label>
+              <input type="radio" id="f_exp_active" name="f_exp" value="Active" class="filter-radio" data-filter="expenses">
+              <label for="f_exp_active" class="filter-label">Active Balance</label>
+              <input type="radio" id="f_exp_empty" name="f_exp" value="Closed" class="filter-radio" data-filter="expenses">
+              <label for="f_exp_empty" class="filter-label">Zero Balance</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_exp_cur_all" name="f_exp_cur" value="All" class="currency-radio filter-radio" data-currency-filter="expenses" checked>
+              <label for="f_exp_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_exp_cur_aed" name="f_exp_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="expenses">
+              <label for="f_exp_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_exp_cur_sar" name="f_exp_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="expenses">
+              <label for="f_exp_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_exp_cur_pkr" name="f_exp_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="expenses">
+              <label for="f_exp_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="expensesList" class="list"></div>
+        </div>
+      </section>
     </main>
 
     <section class="overview" style="margin-top:14px">
@@ -465,6 +512,146 @@
             <div class="field w12 modal-footer">
               <button class="btn ghost" type="button" data-close-modal="goodsModal">Cancel</button>
               <button class="btn primary" type="submit">Save Sale Item</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="expenseModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="expenseModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 id="expenseModalTitle">Expenses</h3>
+          <p id="expenseModalDesc">Track accounts and expenses.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="expenseModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="expenseAccountForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Account name</label>
+              <input class="input" name="account_name" required placeholder="e.g. Main Wallet" />
+            </div>
+            <div class="field w6">
+              <label>Account type</label>
+              <select class="select" name="account_type" required>
+                <option value="Bank Account">Bank Account</option>
+                <option value="Cash Account">Cash Account</option>
+              </select>
+            </div>
+            <div class="field w6">
+              <label>Currency</label>
+              <div class="currency-picker">
+                <button type="button" class="currency-chip active" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" name="currency" value="AED" />
+            </div>
+            <div class="field w6">
+              <label>Available balance</label>
+              <input class="input" name="opening_balance" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Account date</label>
+              <input class="input" name="account_date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="expenseModal">Cancel</button>
+              <button class="btn primary" type="submit">Save Account</button>
+            </div>
+          </div>
+        </form>
+
+        <form id="expenseTopupForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Account</label>
+              <select class="select" name="group_id" id="expenseTopupAccountSelect" required></select>
+            </div>
+            <div class="field w6">
+              <label>Amount to add</label>
+              <input class="input" name="amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Date</label>
+              <input class="input" name="date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="expenseModal">Cancel</button>
+              <button class="btn primary" type="submit">Add Money</button>
+            </div>
+          </div>
+        </form>
+
+        <form id="expenseEntryForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Item name</label>
+              <input class="input" name="item_name" required placeholder="What did you buy/pay?" />
+            </div>
+            <div class="field w6">
+              <label>Amount spent</label>
+              <input class="input" name="amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Currency</label>
+              <select class="select" name="currency" id="expenseCurrencySelect" required>
+                <option value="AED">AED</option>
+                <option value="SAR">SAR</option>
+                <option value="PKR">PKR</option>
+              </select>
+            </div>
+            <div class="field w6">
+              <label>From account</label>
+              <select class="select" name="group_id" id="expenseSpendAccountSelect" required></select>
+            </div>
+            <div class="field w6">
+              <label>Expense type</label>
+              <select class="select" name="expense_type" id="expenseTypeSelect">
+                <option value="">Select type</option>
+                <option value="Food">Food</option>
+                <option value="Transport">Transport</option>
+                <option value="Bills">Bills</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Health">Health</option>
+                <option value="Education">Education</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field w6">
+              <label>Or add new expense type</label>
+              <input class="input" name="custom_expense_type" placeholder="Custom type" />
+            </div>
+            <div class="field w6">
+              <label>Expense date</label>
+              <input class="input" name="date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="expenseModal">Cancel</button>
+              <button class="btn primary" type="submit">Save Expense</button>
             </div>
           </div>
         </form>
