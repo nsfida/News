@@ -53,7 +53,19 @@
           <p>Separate balances shown by currency.</p>
         </div>
         <div class="tools">
-          <button class="btn soft" id="downloadAllSectionsPdfBtn" type="button">📄 Download Full Report</button>
+          <div class="menu-wrap">
+            <button class="btn soft menu-trigger" id="downloadReportMenuBtn" type="button" data-entry-menu="report" aria-haspopup="menu" aria-expanded="false">📄 Download Full Report ▾</button>
+            <div class="menu-dropdown" data-entry-menu-panel="report">
+              <button type="button" class="menu-item" id="downloadAllSectionsPdfBtn">Download Full Report</button>
+              <button type="button" class="menu-item" id="downloadAllDataJsonBtn">Download JSON</button>
+              <button type="button" class="menu-item" id="downloadAllDataCsvBtn">Download CSV</button>
+            </div>
+          </div>
+          <label class="btn ghost file-import-btn" for="importJsonInput">Import JSON</label>
+          <input id="importJsonInput" type="file" accept=".json,application/json" class="file-import-input" />
+          <label class="btn ghost file-import-btn" for="importCsvInput">Import CSV</label>
+          <input id="importCsvInput" type="file" accept=".csv,text/csv" class="file-import-input" />
+          <button class="btn ghost" id="connectSupabaseBtn" type="button">Connect Supabase</button>
         </div>
       </div>
       <div class="overview-grid" id="statsGrid"></div>
