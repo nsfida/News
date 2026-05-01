@@ -9,6 +9,7 @@ const SUPPORTED_CURRENCIES = ["AED", "SAR", "PKR"];
 
 const state = {
   entries: [],
+  dataSource: "backup",
   unlocked: false,
   search: { given: "", received: "", taken: "", returned: "", installments: "" },
   statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All" },
@@ -35,6 +36,11 @@ const els = {
   openTakenCount: document.getElementById("openTakenCount"),
   receivedCount: document.getElementById("receivedCount"),
   returnedCount: document.getElementById("returnedCount"),
+  connectSupabaseBtn: document.getElementById("connectSupabaseBtn"),
+  importJsonInput: document.getElementById("importJsonInput"),
+  importCsvInput: document.getElementById("importCsvInput"),
+  downloadAllDataJsonBtn: document.getElementById("downloadAllDataJsonBtn"),
+  downloadAllDataCsvBtn: document.getElementById("downloadAllDataCsvBtn"),
   downloadAllSectionsPdfBtn: document.getElementById("downloadAllSectionsPdfBtn"),
   downloadGivenPdfBtn: document.getElementById("downloadGivenPdfBtn"),
   downloadReceivedPdfBtn: document.getElementById("downloadReceivedPdfBtn"),
@@ -55,6 +61,7 @@ const els = {
 };
 
 const INSTALLMENT_TAG = "[INSTALLMENT]";
+const BACKUP_STORAGE_KEY = "loanledger-json-backup-v1";
 
 function escapeHtml(str){
   return String(str ?? "").replace(/[&<>"']/g, m => ({
@@ -639,10 +646,159 @@ function renderMultiEntries(count) {
   defaultDateInputs(els.multiEntryContainer);
 }
 
-async function loadEntries(){
-  const rows = await supabase(`${CONFIG.table}?select=*&order=created_at.desc`);
-  state.entries = Array.isArray(rows) ? rows : [];
+function parseEntriesPayload(payload){
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.entries)) return payload.entries;
+  return [];
+}
+
+function csvEscape(value){
+  const str = String(value ?? "");
+  if (!/[",\n\r]/.test(str)) return str;
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
+function toCsv(entries){
+  const headers = [
+    "id","group_id","direction","entry_kind","person_name","currency",
+    "principal_amount","action_amount","loan_date","action_date","notes","created_at"
+  ];
+  const lines = [headers.join(",")];
+  for (const entry of entries){
+    lines.push(headers.map(h => csvEscape(entry[h])).join(","));
+  }
+  return lines.join("\n");
+}
+
+function parseCsvLine(line){
+  const out = [];
+  let value = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++){
+    const ch = line[i];
+    if (ch === '"'){
+      if (inQuotes && line[i + 1] === '"'){
+        value += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes){
+      out.push(value);
+      value = "";
+    } else {
+      value += ch;
+    }
+  }
+  out.push(value);
+  return out;
+}
+
+function parseCsvRows(text){
+  const rows = [];
+  let row = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (ch === '"'){
+      if (inQuotes && text[i + 1] === '"'){
+        row += '""';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+        row += ch;
+      }
+      continue;
+    }
+    if ((ch === "\n" || ch === "\r") && !inQuotes){
+      if (ch === "\r" && text[i + 1] === "\n") i += 1;
+      if (row.trim()) rows.push(parseCsvLine(row));
+      row = "";
+      continue;
+    }
+    row += ch;
+  }
+  if (row.trim()) rows.push(parseCsvLine(row));
+  return rows;
+}
+
+function parseEntriesCsv(csvText){
+  const rows = parseCsvRows(csvText);
+  if (!rows.length) return [];
+  const header = rows[0].map(v => String(v || "").trim());
+  const idx = key => header.indexOf(key);
+  const required = ["group_id","direction","entry_kind","person_name","currency","loan_date"];
+  if (required.some(k => idx(k) === -1)){
+    throw new Error("Invalid CSV format. Missing required columns.");
+  }
+  return rows.slice(1).map(cols => {
+    const get = key => {
+      const i = idx(key);
+      return i >= 0 ? (cols[i] ?? "").trim() : "";
+    };
+    const valOrNull = key => {
+      const v = get(key);
+      return v === "" ? null : v;
+    };
+    const numOrNull = key => {
+      const v = get(key);
+      if (v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    return {
+      id: valOrNull("id") || crypto.randomUUID(),
+      group_id: get("group_id"),
+      direction: get("direction"),
+      entry_kind: get("entry_kind"),
+      person_name: get("person_name"),
+      currency: get("currency"),
+      principal_amount: numOrNull("principal_amount"),
+      action_amount: numOrNull("action_amount"),
+      loan_date: get("loan_date"),
+      action_date: valOrNull("action_date"),
+      notes: valOrNull("notes"),
+      created_at: valOrNull("created_at") || new Date().toISOString()
+    };
+  }).filter(entry => entry.group_id && entry.direction && entry.entry_kind && entry.person_name);
+}
+
+function saveBackupEntries(entries){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    entries: Array.isArray(entries) ? entries : []
+  };
+  localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(payload));
+}
+
+function loadBackupEntriesFromStorage(){
+  const raw = localStorage.getItem(BACKUP_STORAGE_KEY);
+  if (!raw) return [];
+  try{
+    return parseEntriesPayload(JSON.parse(raw));
+  }catch{
+    return [];
+  }
+}
+
+function applyEntries(entries, source = "backup"){
+  state.entries = Array.isArray(entries) ? entries : [];
+  state.dataSource = source;
+  saveBackupEntries(state.entries);
   renderAll();
+}
+
+async function loadEntries(){
+  if (state.dataSource === "backup"){
+    applyEntries(loadBackupEntriesFromStorage(), "backup");
+    return;
+  }
+  await loadEntriesFromSupabase();
+}
+
+async function loadEntriesFromSupabase(){
+  const rows = await supabase(`${CONFIG.table}?select=*&order=created_at.desc`);
+  applyEntries(Array.isArray(rows) ? rows : [], "supabase");
 }
 
 function renderAll(){
@@ -750,6 +906,14 @@ function closeModal(modalId){
   document.body.style.overflow = "";
 }
 
+function isBackupMode(){
+  return state.dataSource === "backup";
+}
+
+function refreshBackupView(){
+  applyEntries(state.entries, "backup");
+}
+
 async function createPrincipal(form){
   const fd = new FormData(form);
   const direction = String(fd.get("direction") || "");
@@ -769,12 +933,21 @@ async function createPrincipal(form){
 
   if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date) throw new Error("Complete all required fields.");
 
-  await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+  if (isBackupMode()){
+    state.entries.unshift({
+      ...payload,
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString()
+    });
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+  }
   form.reset();
   setCurrencyChoice(form, "AED");
   defaultDateInputs(form);
   closeModal("entryModal");
-  await loadEntries();
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
 }
 
 async function createPayment(form){
@@ -825,13 +998,21 @@ async function createPayment(form){
 
   if(payloads.length === 0) throw new Error("Please fill out amount and date.");
 
-  await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payloads) });
+  if (isBackupMode()){
+    const now = new Date().toISOString();
+    payloads.forEach(p => {
+      state.entries.unshift({ ...p, id: crypto.randomUUID(), created_at: now });
+    });
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payloads) });
+  }
 
   form.reset();
   els.multiEntryCount.value = 1;
   renderMultiEntries(1);
   closeModal("entryModal");
-  await loadEntries();
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
 }
 
 async function submitEdit(){
@@ -846,20 +1027,35 @@ async function submitEdit(){
     const nm = document.getElementById('editName').value.trim();
     const curr = document.getElementById('editCurrency').value;
     if (!nm || !curr || !amt || !dt) throw new Error("Complete required fields.");
-    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: nt })
-    });
+    if (isBackupMode()){
+      state.entries = state.entries.map(entry => entry.id === id
+        ? { ...entry, person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: nt }
+        : entry
+      );
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: nt })
+      });
+    }
   } else {
     if (!amt || !dt) throw new Error("Complete required fields.");
-    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ action_amount: amt, action_date: dt, notes: nt })
-    });
+    if (isBackupMode()){
+      state.entries = state.entries.map(entry => entry.id === id
+        ? { ...entry, action_amount: amt, action_date: dt, notes: nt }
+        : entry
+      );
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ action_amount: amt, action_date: dt, notes: nt })
+      });
+    }
   }
 
   closeModal("editModal");
-  await loadEntries();
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
 }
 
 async function renamePersonRecords(personNameEncoded, direction){
@@ -881,13 +1077,23 @@ async function renamePersonRecords(personNameEncoded, direction){
 
   if (!matchingIds.length) return;
 
+  if (isBackupMode()){
+    state.entries = state.entries.map(entry => (
+      entry.direction === direction && String(entry.person_name || "").trim() === currentName
+        ? { ...entry, person_name: cleanedName }
+        : entry
+    ));
+    refreshBackupView();
+    return;
+  }
+
   for (const id of matchingIds){
     await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify({ person_name: cleanedName })
     });
   }
-  await loadEntries();
+  await loadEntriesFromSupabase();
 }
 
 async function deleteEntry(id){
@@ -897,12 +1103,21 @@ async function deleteEntry(id){
 
   if(entry.entry_kind === "principal"){
     if (!confirm(`Delete the entire loan for ${entry.person_name}? This will also remove ALL linked repayments.`)) return;
-    await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(entry.group_id)}`, { method: "DELETE" });
+    if (isBackupMode()){
+      state.entries = state.entries.filter(e => e.group_id !== entry.group_id);
+    } else {
+      await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(entry.group_id)}`, { method: "DELETE" });
+    }
   } else {
     if (!confirm(`Delete this specific repayment entry?`)) return;
-    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (isBackupMode()){
+      state.entries = state.entries.filter(e => e.id !== id);
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    }
   }
-  await loadEntries();
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
 }
 
 async function deletePersonRecords(personNameEncoded, direction){
@@ -921,6 +1136,12 @@ async function deletePersonRecords(personNameEncoded, direction){
   const directionLabel = direction === "given" ? "given" : "taken";
   if (!confirm(`Delete full record for ${personName}? This will remove ${recordsCount} entr${recordsCount === 1 ? "y" : "ies"} from ${directionLabel}.`)) return;
 
+  if (isBackupMode()){
+    state.entries = state.entries.filter(e => !(e.direction === direction && String(e.person_name || "").trim() === personName));
+    refreshBackupView();
+    return;
+  }
+
   const matchingIds = state.entries
     .filter(e => e.direction === direction && String(e.person_name || "").trim() === personName)
     .map(e => e.id)
@@ -930,7 +1151,7 @@ async function deletePersonRecords(personNameEncoded, direction){
     await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
   }
 
-  await loadEntries();
+  await loadEntriesFromSupabase();
 }
 
 async function movePersonToInstallments(personNameEncoded, direction){
@@ -948,14 +1169,22 @@ async function movePersonToInstallments(personNameEncoded, direction){
 
   if (!confirm(`Move ${personName} to Installment Plans?`)) return;
 
-  for (const entry of matchedEntries){
-    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ notes: normalizeInstallmentNote(entry.notes, true) })
-    });
+  if (isBackupMode()){
+    state.entries = state.entries.map(entry => (
+      entry.direction === "taken" && String(entry.person_name || "").trim() === personName
+        ? { ...entry, notes: normalizeInstallmentNote(entry.notes, true) }
+        : entry
+    ));
+    refreshBackupView();
+  } else {
+    for (const entry of matchedEntries){
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ notes: normalizeInstallmentNote(entry.notes, true) })
+      });
+    }
+    await loadEntriesFromSupabase();
   }
-
-  await loadEntries();
   activate("installments");
 }
 
@@ -1263,6 +1492,59 @@ async function exportAllSectionsPDF(){
   doc.save("All_Sections_Detailed_Report.pdf");
 }
 
+function downloadJsonBackup(){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    source: state.dataSource,
+    entries: state.entries
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `LoanLedger_Backup_${todayISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadCsvBackup(){
+  const csvText = toCsv(state.entries);
+  const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `LoanLedger_Backup_${todayISO()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importJsonBackup(file){
+  if (!file) return;
+  const text = await file.text();
+  let parsed;
+  try{
+    parsed = JSON.parse(text);
+  }catch{
+    throw new Error("Invalid JSON file.");
+  }
+  const entries = parseEntriesPayload(parsed);
+  if (!Array.isArray(entries)){
+    throw new Error("JSON file must contain an entries array.");
+  }
+  applyEntries(entries, "backup");
+}
+
+async function importCsvBackup(file){
+  if (!file) return;
+  const text = await file.text();
+  const entries = parseEntriesCsv(text);
+  applyEntries(entries, "backup");
+}
+
 function attachEvents(){
   document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => activate(btn.dataset.tab)));
 
@@ -1363,6 +1645,35 @@ function attachEvents(){
   els.downloadTakenPdfBtn.addEventListener("click", () => exportSectionPDF("taken").catch(err => alert(err.message)));
   els.downloadReturnedPdfBtn.addEventListener("click", () => exportSectionPDF("returned").catch(err => alert(err.message)));
   els.downloadAllSectionsPdfBtn.addEventListener("click", () => exportAllSectionsPDF().catch(err => alert(err.message)));
+  els.downloadAllDataJsonBtn.addEventListener("click", downloadJsonBackup);
+  els.downloadAllDataCsvBtn.addEventListener("click", downloadCsvBackup);
+  els.importJsonInput.addEventListener("change", async e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try{
+      await importJsonBackup(file);
+    }catch(err){
+      alert(err.message);
+    }finally{
+      e.target.value = "";
+    }
+  });
+  els.importCsvInput.addEventListener("change", async e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try{
+      await importCsvBackup(file);
+    }catch(err){
+      alert(err.message);
+    }finally{
+      e.target.value = "";
+    }
+  });
+  els.connectSupabaseBtn.addEventListener("click", () => {
+    els.lockScreen.classList.remove("hide");
+    els.lockError.textContent = "";
+    els.zipPasswordInput.focus();
+  });
 
   els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   els.unlockBtn.addEventListener("click", attemptUnlock);
@@ -1397,11 +1708,12 @@ async function attemptUnlock(){
     };
     sessionStorage.setItem("loanledger-unlocked", "true");
     state.unlocked = true;
+    state.dataSource = "supabase";
     els.lockScreen.classList.add("hide");
     els.app.classList.remove("hide");
 
     defaultDateInputs(document);
-    await loadEntries();
+    await loadEntriesFromSupabase();
   }catch(err){
     els.lockError.textContent = err.message;
   }finally{
@@ -1413,6 +1725,9 @@ async function attemptUnlock(){
 async function boot(){
   attachEvents();
   defaultDateInputs(document);
+  els.lockScreen.classList.add("hide");
+  els.app.classList.remove("hide");
+  applyEntries(loadBackupEntriesFromStorage(), "backup");
 }
 
 boot();
