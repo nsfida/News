@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>NSF's Loan Management System</title>
   <meta name="description" content="Simple loan tracking for money given, received back, loan taken, and returned back." />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="Assets/style/styles.css" />
 </head>
 <body>
+  <div class="page-currency-bg" id="pageCurrencyBg" aria-hidden="true"></div>
   <div id="lockScreen" class="lock">
     <div class="lock-card">
       <div class="brand" style="margin-bottom:12px">
@@ -75,7 +76,7 @@
           <label class="btn ghost file-import-btn" for="importCsvInput">Import CSV</label>
           <input id="importCsvInput" type="file" accept=".csv,text/csv" class="file-import-input" />
           <button class="btn primary hide" id="uploadBackupBtn" type="button">Upload to Database</button>
-          <button class="btn ghost" id="connectSupabaseBtn" type="button">Connect Supabase</button>
+          <button class="btn ghost hide" id="connectSupabaseBtn" type="button">Connect Supabase</button>
         </div>
       </div>
       <div class="overview-grid" id="statsGrid"></div>
@@ -659,7 +660,7 @@
     </div>
   </div>
 
-  <div style="max-width:1240px;margin:8px auto 18px;padding:0 16px;text-align:center;color:#667085;font-size:.86rem;">
+  <div class="site-footer" style="max-width:1240px;margin:8px auto 18px;padding:0 16px;text-align:center;color:#667085;font-size:.86rem;">
     Powered by
     <a href="https://facebook.com/nadeemshahzadfida" target="_blank" rel="noopener noreferrer" style="color:#2457d6;text-decoration:none;font-weight:700;">
       Nadeem Shahzad Fida
