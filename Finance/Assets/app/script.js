@@ -387,8 +387,20 @@ function summarizeCurrency(currency){
 
 function renderOverviewCards(){
   const currencies = [...new Set([...SUPPORTED_CURRENCIES, ...state.entries.map(e => e.currency).filter(Boolean)])];
+  const goodsAll = getGoodsGroups({ applyUiFilters: false });
+  const goodsBoughtQty = goodsAll.reduce((sum, g) => sum + Number(g.boughtQty || 0), 0);
+  const goodsSoldQty = goodsAll.reduce((sum, g) => sum + Number(g.soldQty || 0), 0);
+  const goodsStockQty = goodsAll.reduce((sum, g) => sum + Number(g.remainingQty || 0), 0);
+  const goodsNetPLByCurrency = goodsAll.reduce((acc, g) => {
+    const key = g.currency || "";
+    acc[key] = (acc[key] || 0) + Number(g.profitLoss || 0);
+    return acc;
+  }, {});
+  const goodsNetPLText = Object.keys(goodsNetPLByCurrency).length
+    ? Object.entries(goodsNetPLByCurrency).map(([currency, amount]) => formatReportAmount(amount, currency)).join(" | ")
+    : "0";
 
-  els.statsGrid.innerHTML = currencies.map(currency => {
+  const currencyCards = currencies.map(currency => {
     const s = summarizeCurrency(currency);
     return `
       <div class="summary currency-summary">
@@ -414,6 +426,30 @@ function renderOverviewCards(){
       </div>
     `;
   }).join("");
+
+  const goodsCard = `
+    <div class="summary currency-summary">
+      <div class="currency-head">🛒</div>
+      <div class="summary-line">
+        <span>Bought qty</span>
+        <strong>${escapeHtml(String(goodsBoughtQty))}</strong>
+      </div>
+      <div class="summary-line">
+        <span>Sold qty</span>
+        <strong>${escapeHtml(String(goodsSoldQty))}</strong>
+      </div>
+      <div class="summary-line">
+        <span>In stock qty</span>
+        <strong>${escapeHtml(String(goodsStockQty))}</strong>
+      </div>
+      <div class="summary-line">
+        <span>Net P/L</span>
+        <strong>${escapeHtml(goodsNetPLText)}</strong>
+      </div>
+    </div>
+  `;
+
+  els.statsGrid.innerHTML = currencyCards + goodsCard;
 }
 
 function matchesSearch(entry, term){
@@ -827,8 +863,9 @@ function renderLoanSelectors(){
   els.paymentSubmitBtn.disabled = !hasOptions;
 }
 
-function getGoodsGroups(){
-  return groupByLoan(state.entries.filter(e =>
+function getGoodsGroups(options = {}){
+  const applyUiFilters = options.applyUiFilters !== false;
+  const groups = groupByLoan(state.entries.filter(e =>
     e.direction === "goods" || (e.direction === "taken" && hasGoodsTag(e.notes))
   ))
     .map(group => {
@@ -860,8 +897,11 @@ function getGoodsGroups(){
           ? group.actions.slice().sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date))[0]?.action_date
           : null
       };
-    })
-    .filter(group => {
+    });
+
+  if (!applyUiFilters) return groups;
+
+  return groups.filter(group => {
       if (!matchesSearch(group.principal || {}, state.search.goods)) return false;
       const f = state.statusFilter.goods;
       if (f === "Open") return group.status === "In Stock" || group.status === "Partial";
@@ -1280,10 +1320,11 @@ function renderAll(){
   });
   renderGoodsList();
 
-  els.openGivenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "given")).filter(g => calculateLoan(g).remaining > 0).length;
-  els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken")).filter(g => calculateLoan(g).remaining > 0).length;
+  els.openGivenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "given" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
+  els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
   els.receivedCount.textContent = state.entries.filter(e => e.direction === "given" && e.entry_kind !== "principal").length;
-  els.returnedCount.textContent = state.entries.filter(e => e.direction === "taken" && e.entry_kind !== "principal").length;
+  els.returnedCount.textContent = state.entries.filter(e => e.direction === "taken" && e.entry_kind !== "principal" && !hasGoodsTag(e.notes)).length;
+
 }
 
 function activate(tab){
