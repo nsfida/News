@@ -95,6 +95,44 @@ const INSTALLMENT_TAG = "[INSTALLMENT]";
 const GOODS_TAG = "[GOODS]";
 const EXPENSE_ACCOUNT_TAG = "[EXPENSE_ACCOUNT]";
 const BACKUP_STORAGE_KEY = "loanledger-json-backup-v1";
+const IMPORT_SESSION_KEY = "loanledger-imported-file-v1";
+const FLOAT_CURRENCY_PATHS = ["currency-float-path-1", "currency-float-path-2", "currency-float-path-3", "currency-float-path-4"];
+
+function initFloatingCurrencyBackground(){
+  const root = document.getElementById("pageCurrencyBg");
+  if (!root) return;
+  root.replaceChildren();
+  const specs = [
+    { type: "aed", cls: "float-currency-aed", html: '<span class="symbol symbol-dirham">~</span>' },
+    { type: "sar", cls: "float-currency-sar", html: '<span class="symbol symbol-riyal">$</span>' },
+    { type: "pkr", cls: "float-currency-pkr", html: '<span class="symbol">Rs.</span>' }
+  ];
+  const colorPools = {
+    aed: ["rgba(36,87,214,", "rgba(99,140,235,", "rgba(55,105,200,", "rgba(130,160,240,"],
+    sar: ["rgba(6,118,71,", "rgba(46,160,110,", "rgba(20,90,65,", "rgba(80,175,120,"],
+    pkr: ["rgba(181,71,8,", "rgba(210,110,35,", "rgba(160,85,20,", "rgba(200,95,45,"]
+  };
+  const count = 16;
+  for (let i = 0; i < count; i++){
+    const spec = specs[i % 3];
+    const el = document.createElement("span");
+    el.className = `float-currency ${spec.cls}`;
+    el.innerHTML = spec.html;
+    el.style.left = `${5 + Math.random() * 90}%`;
+    el.style.top = `${3 + Math.random() * 88}%`;
+    const fsMin = 2.4;
+    const fsMax = 9.5;
+    el.style.fontSize = `${fsMin + Math.random() * (fsMax - fsMin)}rem`;
+    const pool = colorPools[spec.type];
+    const alpha = 0.055 + Math.random() * 0.055;
+    el.style.color = `${pool[Math.floor(Math.random() * pool.length)]}${alpha})`;
+    const dur = 24 + Math.random() * 32;
+    el.style.animationDuration = `${dur}s`;
+    el.style.animationDelay = `${-Math.random() * dur}s`;
+    el.style.animationName = FLOAT_CURRENCY_PATHS[Math.floor(Math.random() * FLOAT_CURRENCY_PATHS.length)];
+    root.appendChild(el);
+  }
+}
 
 function escapeHtml(str){
   return String(str ?? "").replace(/[&<>"']/g, m => ({
@@ -410,6 +448,43 @@ function summarizeExpenseByCurrency(currency){
   return { currency, totalAmount, totalExpenses, availableBalance };
 }
 
+function overviewOneLine(label, amountHtml){
+  return `
+    <div class="summary-line summary-line-one">
+      <span class="summary-line-one-label">${escapeHtml(label)}</span>
+      <span class="summary-line-one-value">${amountHtml}</span>
+    </div>
+  `;
+}
+
+function overviewExpenseLine(currency, suffix, amountHtml){
+  return `
+    <div class="summary-line summary-line-one">
+      <span class="summary-line-one-label summary-line-one-label--with-symbol">
+        <span class="summary-currency-mark">${currencySymbolHtml(currency)}</span>
+        <span class="summary-label-suffix">${escapeHtml(suffix)}</span>
+      </span>
+      <span class="summary-line-one-value">${amountHtml}</span>
+    </div>
+  `;
+}
+
+function overviewWatermarkCurrency(currency){
+  return `<div class="summary-watermark" aria-hidden="true">${currencySymbolHtml(currency)}</div>`;
+}
+
+function overviewWatermarkGoods(){
+  return `<div class="summary-watermark summary-watermark-goods" aria-hidden="true">🛒</div>`;
+}
+
+function overviewWatermarkExpenses(currencies){
+  if (!currencies.length) return "";
+  const layers = currencies.map((currency, index) =>
+    `<span class="summary-watermark-symbol" style="animation-delay:${index * 0.55}s">${currencySymbolHtml(currency)}</span>`
+  ).join("");
+  return `<div class="summary-watermark summary-watermark-expense" aria-hidden="true">${layers}</div>`;
+}
+
 function renderOverviewCards(){
   const currencies = [...new Set([...SUPPORTED_CURRENCIES, ...state.entries.map(e => e.currency).filter(Boolean)])];
   const goodsAll = getGoodsGroups({ applyUiFilters: false });
@@ -429,48 +504,26 @@ function renderOverviewCards(){
     const s = summarizeCurrency(currency);
     return `
       <div class="summary currency-summary">
+        ${overviewWatermarkCurrency(currency)}
         <div class="currency-head">
           ${currencySymbolHtml(currency)}
         </div>
-        <div class="summary-line">
-          <span>Given principal</span>
-          <strong>${money(s.givenPrincipal, currency)}</strong>
-        </div>
-        <div class="summary-line">
-          <span>Given open</span>
-          <strong>${money(s.givenOpen, currency)}</strong>
-        </div>
-        <div class="summary-line">
-          <span>Taken principal</span>
-          <strong>${money(s.takenPrincipal, currency)}</strong>
-        </div>
-        <div class="summary-line">
-          <span>Taken open</span>
-          <strong>${money(s.takenOpen, currency)}</strong>
-        </div>
+        ${overviewOneLine("Given Principal:", money(s.givenPrincipal, currency))}
+        ${overviewOneLine("Given Open:", money(s.givenOpen, currency))}
+        ${overviewOneLine("Taken Principal:", money(s.takenPrincipal, currency))}
+        ${overviewOneLine("Taken Open:", money(s.takenOpen, currency))}
       </div>
     `;
   }).join("");
 
   const goodsCard = `
-    <div class="summary currency-summary">
+    <div class="summary currency-summary goods-overview">
+      ${overviewWatermarkGoods()}
       <div class="currency-head">🛒</div>
-      <div class="summary-line">
-        <span>Bought qty</span>
-        <strong>${escapeHtml(String(goodsBoughtQty))}</strong>
-      </div>
-      <div class="summary-line">
-        <span>Sold qty</span>
-        <strong>${escapeHtml(String(goodsSoldQty))}</strong>
-      </div>
-      <div class="summary-line">
-        <span>In stock qty</span>
-        <strong>${escapeHtml(String(goodsStockQty))}</strong>
-      </div>
-      <div class="summary-line">
-        <span>Net P/L</span>
-        <strong>${escapeHtml(goodsNetPLText)}</strong>
-      </div>
+      ${overviewOneLine("Bought qty:", `<strong>${escapeHtml(String(goodsBoughtQty))}</strong>`)}
+      ${overviewOneLine("Sold qty:", `<strong>${escapeHtml(String(goodsSoldQty))}</strong>`)}
+      ${overviewOneLine("In stock qty:", `<strong>${escapeHtml(String(goodsStockQty))}</strong>`)}
+      ${overviewOneLine("Net P/L:", `<strong>${escapeHtml(goodsNetPLText)}</strong>`)}
     </div>
   `;
 
@@ -479,13 +532,14 @@ function renderOverviewCards(){
   )];
   const expenseCard = expenseCurrencies.length ? `
     <div class="summary currency-summary expense-overview">
+      ${overviewWatermarkExpenses(expenseCurrencies)}
       <div class="currency-head">💸</div>
       ${expenseCurrencies.map(currency => {
         const s = summarizeExpenseByCurrency(currency);
         return `
-          <div class="summary-line"><span>${escapeHtml(currency)} total amount</span><strong>${money(s.totalAmount, currency)}</strong></div>
-          <div class="summary-line"><span>${escapeHtml(currency)} total expenses</span><strong>${money(s.totalExpenses, currency)}</strong></div>
-          <div class="summary-line"><span>${escapeHtml(currency)} available balance</span><strong>${money(s.availableBalance, currency)}</strong></div>
+          ${overviewExpenseLine(currency, "Total Amount:", money(s.totalAmount, currency))}
+          ${overviewExpenseLine(currency, "Total Expenses:", money(s.totalExpenses, currency))}
+          ${overviewExpenseLine(currency, "Available Balance:", money(s.availableBalance, currency))}
         `;
       }).join("")}
     </div>
@@ -1709,14 +1763,25 @@ function updateUploadButtonVisibility(){
   els.uploadBackupBtn.classList.toggle("hide", !shouldShow);
 }
 
+function updateConnectButtonVisibility(){
+  const showConnect = state.hasImportedFile && !state.unlocked;
+  els.connectSupabaseBtn.classList.toggle("hide", !showConnect);
+}
+
 function applyEntries(entries, source = "backup", options = {}){
   state.entries = Array.isArray(entries) ? entries : [];
   state.dataSource = source;
   if (typeof options.hasImportedFile === "boolean"){
     state.hasImportedFile = options.hasImportedFile;
+    if (state.hasImportedFile){
+      sessionStorage.setItem(IMPORT_SESSION_KEY, "1");
+    } else {
+      sessionStorage.removeItem(IMPORT_SESSION_KEY);
+    }
   }
   saveBackupEntries(state.entries);
   updateUploadButtonVisibility();
+  updateConnectButtonVisibility();
   renderAll();
 }
 
@@ -3028,6 +3093,7 @@ async function attemptUnlock(){
     if (keepCurrentBackup){
       await refreshDbSnapshot();
       updateUploadButtonVisibility();
+      updateConnectButtonVisibility();
       renderAll();
     } else {
       await loadEntriesFromSupabase();
@@ -3042,8 +3108,10 @@ async function attemptUnlock(){
 
 async function boot(){
   attachEvents();
+  initFloatingCurrencyBackground();
   defaultDateInputs(document);
-  applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: false });
+  const resumedImport = sessionStorage.getItem(IMPORT_SESSION_KEY) === "1";
+  applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: resumedImport });
 }
 
 boot();
