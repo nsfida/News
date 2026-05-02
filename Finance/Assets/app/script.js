@@ -31,6 +31,7 @@ const els = {
   unlockBtn: document.getElementById("unlockBtn"),
   lockError: document.getElementById("lockError"),
   app: document.getElementById("app"),
+  mainOverview: document.getElementById("mainOverview"),
   statsGrid: document.getElementById("statsGrid"),
   givenList: document.getElementById("givenList"),
   receivedList: document.getElementById("receivedList"),
@@ -102,7 +103,14 @@ const els = {
   conversionRateInput: document.getElementById("conversionRateInput"),
   conversionHelp: document.getElementById("conversionHelp"),
   fromCurrencyIndicator: document.getElementById("fromCurrencyIndicator"),
-  toCurrencyIndicator: document.getElementById("toCurrencyIndicator")
+  toCurrencyIndicator: document.getElementById("toCurrencyIndicator"),
+  toggleWalletsBtn: document.getElementById("toggleWalletsBtn"),
+  walletsOverviewSection: document.getElementById("walletsOverviewSection"),
+  walletsBanner: document.getElementById("walletsBanner"),
+  walletsContent: document.getElementById("walletsContent"),
+  toggleMainOverviewBtn: document.getElementById("toggleMainOverviewBtn"),
+  mainOverviewBanner: document.getElementById("mainOverviewBanner"),
+  mainOverviewContent: document.getElementById("mainOverviewContent")
 };
 
 const INSTALLMENT_TAG = "[INSTALLMENT]";
@@ -2203,7 +2211,24 @@ function activate(tab){
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById(`${tab}Panel`).classList.add("active");
   const mainOverview = document.getElementById("mainOverview");
-  if (mainOverview) mainOverview.classList.toggle("expenses-mode", tab === "expenses");
+  const walletsOverview = document.getElementById("walletsOverviewSection");
+  
+  if (mainOverview) {
+    if (tab === "expenses") {
+      mainOverview.style.display = "none";
+    } else {
+      mainOverview.style.display = "block";
+      // Keep main overview in collapsed state (don't auto-expand)
+    }
+  }
+  
+  if (walletsOverview) {
+    if (tab === "expenses") {
+      walletsOverview.style.display = "block";
+    } else {
+      walletsOverview.style.display = "none";
+    }
+  }
 }
 
 function setCurrencyChoice(form, currency){
@@ -3696,6 +3721,52 @@ async function savePersonRecordsToDatabase(personNameEncoded, direction){
   alert(`Saved ${payload.length} record(s) to database for ${personName}.`);
 }
 
+function expandWalletsOverview() {
+  els.walletsOverviewSection.classList.remove("collapsed");
+  els.walletsOverviewSection.classList.add("expanded");
+  els.toggleWalletsBtn.textContent = "▼";
+  els.toggleWalletsBtn.title = "Collapse Wallets Overview";
+}
+
+function collapseWalletsOverview() {
+  els.walletsOverviewSection.classList.remove("expanded");
+  els.walletsOverviewSection.classList.add("collapsed");
+  els.toggleWalletsBtn.textContent = "▶";
+  els.toggleWalletsBtn.title = "Expand Wallets Overview";
+}
+
+function toggleWalletsOverview() {
+  const isExpanded = els.walletsOverviewSection.classList.contains("expanded");
+  if (isExpanded) {
+    collapseWalletsOverview();
+  } else {
+    expandWalletsOverview();
+  }
+}
+
+function expandMainOverview() {
+  els.mainOverview.classList.remove("collapsed");
+  els.mainOverview.classList.add("expanded");
+  els.toggleMainOverviewBtn.textContent = "▼";
+  els.toggleMainOverviewBtn.title = "Collapse Overview";
+}
+
+function collapseMainOverview() {
+  els.mainOverview.classList.remove("expanded");
+  els.mainOverview.classList.add("collapsed");
+  els.toggleMainOverviewBtn.textContent = "▶";
+  els.toggleMainOverviewBtn.title = "Expand Overview";
+}
+
+function toggleMainOverview() {
+  const isExpanded = els.mainOverview.classList.contains("expanded");
+  if (isExpanded) {
+    collapseMainOverview();
+  } else {
+    expandMainOverview();
+  }
+}
+
 function attachEvents(){
   const closeAllMenus = () => {
     document.querySelectorAll(".menu-dropdown.open").forEach(panel => panel.classList.remove("open"));
@@ -3733,6 +3804,18 @@ function attachEvents(){
     activate("expenses");
     openExpenseModal("expense");
   });
+
+  els.toggleWalletsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleWalletsOverview();
+  });
+  els.walletsBanner.addEventListener("click", toggleWalletsOverview);
+
+  els.toggleMainOverviewBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleMainOverview();
+  });
+  els.mainOverviewBanner.addEventListener("click", toggleMainOverview);
 
   document.querySelectorAll("[data-entry-menu]").forEach(btn => {
     btn.addEventListener("click", e => {
