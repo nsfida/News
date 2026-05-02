@@ -64,8 +64,8 @@
       <button class="tab" data-tab="expenses" type="button">Expenses</button>
     </section>
 
-<section class="overview" id="mainOverview">
-      <div class="overview-top">
+<section class="overview main-overview-section collapsed" id="mainOverview">
+      <div class="overview-top" id="mainOverviewBanner">
         <div>
           <h2>Overview</h2>
           <p>Separate balances shown by currency.</p>
@@ -85,10 +85,28 @@
           <input id="importCsvInput" type="file" accept=".csv,text/csv" class="file-import-input" />
           <button class="btn primary hide" id="uploadBackupBtn" type="button">Upload to Database</button>
           <button class="btn ghost hide" id="connectSupabaseBtn" type="button">Connect Supabase</button>
+          <button class="icon-btn ghost" id="toggleMainOverviewBtn" type="button" title="Expand Overview">▶</button>
         </div>
       </div>
-<div id="expenseOverviewWallets"></div>
-  <div class="overview-grid" id="statsGrid"></div>
+      <div class="main-overview-content" id="mainOverviewContent">
+        <div class="overview-grid" id="statsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Wallets Overview Section -->
+    <section class="overview wallets-overview-section collapsed" id="walletsOverviewSection">
+      <div class="overview-top" id="walletsBanner">
+        <div>
+          <h2>Wallets Overview</h2>
+          <p>Account balances and expense tracking by wallet.</p>
+        </div>
+        <div class="tools">
+          <button class="icon-btn ghost" id="toggleWalletsBtn" type="button" title="Expand Wallets Overview">▶</button>
+        </div>
+      </div>
+      <div class="wallets-content" id="walletsContent">
+        <div id="expenseOverviewWallets"></div>
+      </div>
     </section>
 
     <main class="center-wrap">
