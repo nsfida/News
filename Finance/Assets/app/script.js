@@ -1938,6 +1938,31 @@ async function loadEntriesFromSupabase(){
   updateDbSnapshot(Array.isArray(rows) ? rows : []);
   applyEntries(Array.isArray(rows) ? rows : [], "supabase", { hasImportedFile: false });
 }
+function renderExpenseOverviewWallets(){
+  const container = document.getElementById("expenseOverviewWallets");
+  if (!container) return;
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  if (!accounts.length){
+    container.innerHTML = `<div class="empty" style="grid-column:1/-1">No expense accounts yet.</div>`;
+    return;
+  }
+  container.innerHTML = accounts.map(a => {
+    const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
+    const balClass = a.balance > 0 ? "" : "style=\"opacity:.6\"";
+    return `
+      <div class="summary currency-summary" ${balClass}>
+        ${overviewWatermarkCurrency(a.currency)}
+        <div class="currency-head" style="font-size:1.1rem;gap:6px;justify-content:flex-start;">
+          ${currencySymbolHtml(a.currency)}
+          <span style="font-size:.8rem;font-weight:750;line-height:1.2;">${escapeHtml(a.person_name || "Wallet")}</span>
+        </div>
+        ${overviewOneLine("Top-up:", money(totalTopup, a.currency))}
+        ${overviewOneLine("Spent:", money(a.spentMoney, a.currency))}
+        ${overviewOneLine("Balance:", money(a.balance, a.currency))}
+      </div>
+    `;
+  }).join("");
+}
 
 function renderAll(){
   renderOverviewCards();
@@ -1957,6 +1982,7 @@ function renderAll(){
   });
   renderGoodsList();
   renderExpensesList();
+  renderExpenseOverviewWallets();
 
   els.openGivenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "given" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
   els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
@@ -1969,6 +1995,8 @@ function activate(tab){
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById(`${tab}Panel`).classList.add("active");
+  const mainOverview = document.getElementById("mainOverview");
+  if (mainOverview) mainOverview.classList.toggle("expenses-mode", tab === "expenses");
 }
 
 function setCurrencyChoice(form, currency){
