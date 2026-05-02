@@ -851,3 +851,53 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
     width:100%;
   }
 }
+/* ── Expense tab: overview switches to wallet card mode ── */
+#expenseOverviewWallets {
+  display: none;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+#mainOverview.expenses-mode #expenseOverviewWallets {
+  display: grid;
+}
+#mainOverview.expenses-mode #statsGrid,
+#mainOverview.expenses-mode .overview-top {
+  display: none !important;
+}
+
+/* ── Mobile: wallet boxes — 3 per row, last row fills ── */
+@media (max-width: 560px) {
+  .expense-wallet-scroll {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+  .expense-wallet-card-wrap {
+    flex: unset;
+    min-width: unset;
+    max-width: unset;
+  }
+  /* 1 item in last row → full width */
+  .expense-wallet-card-wrap:last-child:nth-child(3n+1) {
+    grid-column: 1 / -1;
+  }
+  /* 2 items in last row → last spans 2 cols */
+  .expense-wallet-card-wrap:last-child:nth-child(3n+2) {
+    grid-column: span 2;
+  }
+  .expense-wallet-card {
+    min-width: unset;
+    max-width: unset;
+    padding: 6px 7px;
+    gap: 4px;
+  }
+  .expense-wallet-title { font-size: .75rem; }
+  .expense-wallet-sub { font-size: .62rem; }
+  .expense-wallet-stats { font-size: .6rem; }
+  .expense-wallet-actions { gap: 4px 8px; padding-top: 4px; margin-top: 3px; }
+  .expense-wallet-actions button { font-size: .62rem; }
+}
+#expensesPanel .expense-wallet-block {
+  display: none !important;
+}
