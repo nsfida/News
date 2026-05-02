@@ -851,20 +851,113 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
     width:100%;
   }
 }
-/* ── Expense tab: overview switches to wallet card mode ── */
-#expenseOverviewWallets {
-  display: none;
+/* ── Wallets Overview Section ── */
+.wallets-overview-section {
+  margin-top: 14px;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  display: none; /* Hidden by default, shown only in expense tab */
+}
+
+.wallets-overview-section.collapsed {
+  margin-bottom: 0;
+}
+
+.wallets-overview-section .overview-top {
+  cursor: pointer;
+  user-select: none;
+}
+
+.wallets-overview-section .overview-top:hover {
+  background: var(--panel-2);
+}
+
+.wallets-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.wallets-overview-section.expanded .wallets-content {
+  max-height: 1000px;
+  opacity: 1;
+  padding-top: 14px;
+}
+
+.wallets-overview-section #expenseOverviewWallets {
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 10px;
   margin-bottom: 10px;
 }
-#mainOverview.expenses-mode #expenseOverviewWallets {
-  display: grid;
+
+.wallets-overview-section .icon-btn {
+  transition: transform 0.3s ease-in-out;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
-#mainOverview.expenses-mode #statsGrid,
-#mainOverview.expenses-mode .overview-top {
-  display: none !important;
+
+.wallets-overview-section .icon-btn:hover {
+  background: transparent !important;
+  transform: rotate(180deg) translateY(-1px);
 }
+
+.wallets-overview-section.expanded .icon-btn {
+  transform: rotate(180deg);
+}
+
+/* ── Main Overview Section ── */
+.main-overview-section {
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.main-overview-section.collapsed {
+  margin-bottom: 0;
+}
+
+.main-overview-section .overview-top {
+  cursor: pointer;
+  user-select: none;
+}
+
+.main-overview-section .overview-top:hover {
+  background: var(--panel-2);
+}
+
+.main-overview-content {
+  max-height: 1000px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
+  padding-top: 14px;
+}
+
+.main-overview-section.collapsed .main-overview-content {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+}
+
+.main-overview-section .icon-btn {
+  transition: transform 0.3s ease-in-out;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.main-overview-section .icon-btn:hover {
+  background: transparent !important;
+  transform: rotate(180deg) translateY(-1px);
+}
+
+.main-overview-section.collapsed .icon-btn {
+  transform: rotate(0deg);
+}
+
+/* ── Main overview visibility is handled by JavaScript in activate function ── */
 
 /* ── Mobile: wallet boxes — 3 per row, last row fills ── */
 @media (max-width: 560px) {
