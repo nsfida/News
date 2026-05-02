@@ -516,6 +516,11 @@ function renderOverviewCards(){
         ${overviewOneLine("Given Open:", money(s.givenOpen, currency))}
         ${overviewOneLine("Taken Principal:", money(s.takenPrincipal, currency))}
         ${overviewOneLine("Taken Open:", money(s.takenOpen, currency))}
+        <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="tiny ghost" onclick="window.location.href='#givenPanel'">View Given</button>
+          <button class="tiny ghost" onclick="window.location.href='#takenPanel'">View Taken</button>
+          <button class="tiny ghost" onclick="downloadCurrencyPDF('${currency}')">Download PDF</button>
+        </div>
       </div>
     `;
   }).join("");
@@ -528,6 +533,11 @@ function renderOverviewCards(){
       ${overviewOneLine("Sold qty:", `<strong>${escapeHtml(String(goodsSoldQty))}</strong>`)}
       ${overviewOneLine("In stock qty:", `<strong>${escapeHtml(String(goodsStockQty))}</strong>`)}
       ${overviewOneLine("Net P/L:", `<strong>${escapeHtml(goodsNetPLText)}</strong>`)}
+      <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+        <button class="tiny ghost" onclick="window.location.href='#goodsPanel'">View Goods</button>
+        <button class="tiny ghost" onclick="openGoodsModal('bought')">Add Item</button>
+        <button class="tiny ghost" onclick="downloadGoodsPDF()">Download PDF</button>
+      </div>
     </div>
   `;
 
@@ -546,6 +556,11 @@ function renderOverviewCards(){
           ${overviewExpenseLine(currency, "Available Balance:", money(s.availableBalance, currency))}
         `;
       }).join("")}
+      <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+        <button class="tiny ghost" onclick="window.location.href='#expensesPanel'">View Expenses</button>
+        <button class="tiny ghost" onclick="openExpenseModal('account')">Add Account</button>
+        <button class="tiny ghost" onclick="downloadExpensesPDF()">Download PDF</button>
+      </div>
     </div>
   ` : "";
 
@@ -1336,6 +1351,7 @@ function collectExpenseSpendRows(accounts){
   return out;
 }
 
+
 function groupExpenseItems(spendAttached){
   const map = new Map();
   for (const { row, account } of spendAttached){
@@ -1402,7 +1418,7 @@ function renderExpenseWalletBar(accounts){
       <div class="expense-wallet-card-wrap">
         <input type="radio" id="${rid}" name="f_exp_wallet" value="${gid}" class="filter-radio expense-wallet-radio" ${ck}>
         <label for="${rid}" class="expense-wallet-card">
-          <span class="expense-wallet-title">${escapeHtml(a.person_name || "Wallet")}</span>
+          <span class="expense-wallet-title">${escapeHtml(a.person_name || "Wallet")} (${escapeHtml(formatReportAmount(totalTopup, a.currency))})</span>
           <span class="expense-wallet-sub">${escapeHtml(a.accountType || "")} · ${currencySymbolHtml(a.currency)}</span>
           <div class="expense-wallet-stats">
             <span><em>Top-up</em> <strong>${escapeHtml(formatReportAmount(totalTopup, a.currency))}</strong></span>
@@ -1679,62 +1695,150 @@ function renderExpensesList(){
     return;
   }
 
-  const spendAttached = collectExpenseSpendRows(accounts);
-  const items = groupExpenseItems(spendAttached);
-  if (!items.length){
-    els.expensesList.innerHTML = `<div class="empty">No expense transactions match this filter.</div>`;
-    return;
+  let html = "";
+
+  // Add Top-Up section first
+  const topupTransactions = [];
+  for (const account of accounts) {
+    if (state.expenseWalletFilter !== "all" && account.group_id !== state.expenseWalletFilter) continue;
+    
+    // Add opening balance as top-up
+    if (account.principal && Number(account.principal.principal_amount || 0) > 0) {
+      topupTransactions.push({
+        ...account.principal,
+        action_date: account.principal.loan_date,
+        action_amount: account.principal.principal_amount,
+        person_name: account.person_name,
+        currency: account.currency,
+        accountType: account.accountType,
+        isOpeningBalance: true
+      });
+    }
+    
+    // Add top-up transactions
+    for (const topup of account.topups) {
+      topupTransactions.push({
+        ...topup,
+        person_name: account.person_name,
+        currency: account.currency,
+        accountType: account.accountType,
+        isTopup: true
+      });
+    }
   }
 
-  els.expensesList.innerHTML = items.map(item => `
-    <details class="loan expense-item-row">
-      <summary>
-        <div class="loan-top">
-          <div class="lt-main">
-            <div class="loan-name">${escapeHtml(item.displayName)}</div>
-            <div class="loan-sub">
-              ${item.expenseType ? `<span class="badge blue">${escapeHtml(item.expenseType)}</span>` : `<span class="badge blue">Other</span>`}
-              <span>${item.txs.length} transaction(s)</span>
-              <span>${currencySymbolHtml(item.currency || "")}</span>
+  if (topupTransactions.length > 0) {
+    topupTransactions.sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date));
+    html += `
+      <details class="loan expense-item-row">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">Top-Up Records</div>
+              <div class="loan-sub">
+                <span class="badge green">Money In</span>
+                <span>${topupTransactions.length} transaction(s)</span>
+              </div>
+            </div>
+            <div class="cell expense-item-total">
+              <small>Total Top-up</small>
+              <strong>${topupTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            </div>
+            <div class="lt-action"></div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Wallet</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${topupTransactions.map(tx => `
+                  <tr>
+                    <td>${escapeHtml(displayDate(tx.action_date || "—"))}</td>
+                    <td>${escapeHtml(tx.person_name || "—")} (${escapeHtml(tx.accountType || "")})</td>
+                    <td><span class="badge green">${tx.isOpeningBalance ? "Opening Balance" : "Top-up"}</span></td>
+                    <td style="color: var(--success);">${money(tx.action_amount, tx.currency)}</td>
+                    <td class="expense-item-detail-note">${escapeHtml(cleanExpenseNote(tx.notes))}</td>
+                    <td>
+                      <div style="display:flex;gap:4px;">
+                        <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                        <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    `;
+  }
+
+  // Add the original expense items section
+  const spendAttached = collectExpenseSpendRows(accounts);
+  const items = groupExpenseItems(spendAttached);
+  
+  if (items.length > 0) {
+    html += items.map(item => `
+      <details class="loan expense-item-row">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">${escapeHtml(item.displayName)}</div>
+              <div class="loan-sub">
+                ${item.expenseType ? `<span class="badge blue">${escapeHtml(item.expenseType)}</span>` : `<span class="badge blue">Other</span>`}
+                <span>${item.txs.length} transaction(s)</span>
+                <span>${currencySymbolHtml(item.currency || "")}</span>
+              </div>
+            </div>
+            <div class="cell expense-item-total">
+              <small>Total spent</small>
+              <strong>${money(item.total, item.currency)}</strong>
+            </div>
+            <div class="lt-action">
+              <button class="icon-btn ghost" onclick="downloadExpenseItemPDF('${escapeHtml(item.key)}')" title="Download PDF" style="font-size: 0.9rem;">📄</button>
             </div>
           </div>
-          <div class="cell expense-item-total">
-            <small>Total spent</small>
-            <strong>${money(item.total, item.currency)}</strong>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Wallet</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${item.txs.map(tx => `
+                  <tr>
+                    <td>${escapeHtml(displayDate(tx.date || "—"))}</td>
+                    <td>${escapeHtml(tx.wallet || "—")}</td>
+                    <td>${escapeHtml(tx.expenseType || "—")}</td>
+                    <td>${money(tx.amount, item.currency)}</td>
+                    <td class="expense-item-detail-note">${escapeHtml(tx.notes)}</td>
+                    <td>
+                      <div style="display:flex;gap:4px;">
+                        <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                        <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
           </div>
-          <div class="lt-action"></div>
         </div>
-      </summary>
-      <div class="detail">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Date</th><th>Wallet</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
-            <tbody>
-              ${item.txs.map(tx => `
-                <tr>
-                  <td>${escapeHtml(displayDate(tx.date || "—"))}</td>
-                  <td>${escapeHtml(tx.wallet || "—")}</td>
-                  <td>${escapeHtml(tx.expenseType || "—")}</td>
-                  <td>${money(tx.amount, item.currency)}</td>
-                  <td class="expense-item-detail-note">${escapeHtml(tx.notes)}</td>
-                  <td>
-                    <div style="display:flex;gap:4px;">
-                      <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
-                      <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
-                    </div>
-                  </td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-  `).join("");
+      </details>
+    `).join("");
+  }
+
+  if (!html) {
+    els.expensesList.innerHTML = `<div class="empty">No transactions found.</div>`;
+  } else {
+    els.expensesList.innerHTML = html;
+  }
 
   els.expensesList.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
   els.expensesList.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
 }
+
 
 function defaultDateInputs(root = document){
   root.querySelectorAll('input[type="date"]').forEach(i => {
@@ -1959,6 +2063,12 @@ function renderExpenseOverviewWallets(){
         ${overviewOneLine("Top-up:", money(totalTopup, a.currency))}
         ${overviewOneLine("Spent:", money(a.spentMoney, a.currency))}
         ${overviewOneLine("Balance:", money(a.balance, a.currency))}
+        <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="tiny ghost" onclick="openExpenseModal('topup', '${escapeHtml(a.group_id)}')">Add Money</button>
+          <button class="tiny ghost" onclick="openExpenseModal('expense', '${escapeHtml(a.group_id)}')">Add Expense</button>
+          <button class="tiny ghost" onclick="downloadExpenseAccountPDF('${escapeHtml(a.group_id)}')">Download PDF</button>
+          <button class="tiny ghost" onclick="openEditModal('${escapeHtml(a.principal?.id || '')}')">Edit</button>
+        </div>
       </div>
     `;
   }).join("");
@@ -2773,6 +2883,209 @@ async function exportSectionPDF(searchKey){
   });
 
   doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
+}
+
+async function downloadCurrencyPDF(currency){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  
+  // Get currency-specific data
+  const givenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "given" &&
+    !hasGoodsTag(e.notes)
+  ));
+  const takenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "taken" &&
+    !hasGoodsTag(e.notes) &&
+    !hasExpenseAccountTag(e.notes)
+  ));
+
+  drawPdfHeader(doc, logoData, `Currency Report - ${currency}`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Given Loans: ${givenGroups.length}`, 132, 48);
+  doc.text(`Taken Loans: ${takenGroups.length}`, 132, 54);
+
+  // Build given loans data
+  const givenRows = givenGroups.map(group => {
+    const calc = calculateLoan(group);
+    return [
+      group.person_name || "Unnamed",
+      displayDate(group.loan_date || "—"),
+      "Principal",
+      formatReportAmount(group.principal?.principal_amount || 0, currency),
+      formatReportAmount(calc.remaining, currency),
+      group.notes || "—"
+    ];
+  });
+
+  // Build taken loans data
+  const takenRows = takenGroups.map(group => {
+    const calc = calculateLoan(group);
+    return [
+      group.person_name || "Unnamed",
+      displayDate(group.loan_date || "—"),
+      "Principal",
+      formatReportAmount(group.principal?.principal_amount || 0, currency),
+      formatReportAmount(calc.remaining, currency),
+      group.notes || "—"
+    ];
+  });
+
+  // Add given loans section
+  if (givenRows.length > 0) {
+    doc.autoTable({
+      startY: 72,
+      head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+      body: givenRows,
+      theme: "grid",
+      headStyles: { fillColor: [36, 87, 214] },
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+      didDrawPage: () => drawPdfFooter(doc)
+    });
+  }
+
+  // Add taken loans section if there's space or on new page
+  if (takenRows.length > 0) {
+    if (givenRows.length > 0) doc.addPage();
+    drawPdfHeader(doc, logoData, `Currency Report - ${currency} (Taken Loans)`, `Generated: ${new Date().toLocaleString()}`);
+    drawPdfOwnerBlock(doc, 48);
+    doc.autoTable({
+      startY: 72,
+      head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+      body: takenRows,
+      theme: "grid",
+      headStyles: { fillColor: [36, 87, 214] },
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+      didDrawPage: () => drawPdfFooter(doc)
+    });
+  }
+
+  doc.save(`Currency_${currency}_Report.pdf`);
+}
+
+async function downloadGoodsPDF(){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const goodsAll = getGoodsGroups({ applyUiFilters: false });
+  if (!goodsAll.length){
+    alert("No goods entries found.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  
+  drawPdfHeader(doc, logoData, "Goods Report - Full Summary", `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Total Items: ${goodsAll.length}`, 132, 48);
+
+  const goodsRows = goodsAll.map(group => {
+    const meta = goodsMetaFromNotes(group.principal?.notes);
+    return [
+      group.person_name || "Unnamed",
+      String(meta.boughtQty || 1),
+      String(meta.soldQty || 0),
+      String(group.remainingQty || 0),
+      formatReportAmount(group.profitLoss || 0, group.currency),
+      group.currency || ""
+    ];
+  });
+
+  doc.autoTable({
+    startY: 72,
+    head: [["Item", "Bought Qty", "Sold Qty", "In Stock", "P/L", "Currency"]],
+    body: goodsRows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.save("Goods_Report.pdf");
+}
+
+async function downloadExpenseItemPDF(itemKey){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  // Parse the item key to get currency and item name
+  const [currency, itemName] = itemKey.split('||');
+  
+  // Get all expense accounts
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  
+  // Collect all expense transactions
+  const spendAttached = collectExpenseSpendRows(accounts);
+  const items = groupExpenseItems(spendAttached);
+  
+  // Find the specific item
+  const targetItem = items.find(item => item.key === itemKey);
+  if (!targetItem) {
+    alert("Expense item not found.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  
+  drawPdfHeader(doc, logoData, `Expense Report - ${targetItem.displayName}`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Item: ${targetItem.displayName}`, 132, 48);
+  doc.text(`Type: ${targetItem.expenseType || 'Other'}`, 132, 54);
+  doc.text(`Transactions: ${targetItem.txs.length}`, 132, 60);
+
+  const rows = targetItem.txs.map(tx => [
+    displayDate(tx.date || "—"),
+    tx.wallet || "—",
+    tx.expenseType || "—",
+    formatReportAmount(tx.amount, targetItem.currency),
+    cleanExpenseNote(tx.notes)
+  ]);
+
+  doc.autoTable({
+    startY: 72,
+    head: [["Date", "Wallet", "Type", "Amount", "Notes"]],
+    body: rows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+    columnStyles: { 3: { cellWidth: 30 }, 4: { cellWidth: 60 } },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  // Add summary at the bottom
+  const finalY = doc.lastAutoTable.finalY || 72;
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Total Amount: ${formatReportAmount(targetItem.total, targetItem.currency)}`, 14, finalY + 10);
+
+  const fileName = `Expense_${targetItem.displayName.replace(/\s+/g, "_")}_${targetItem.currency}.pdf`;
+  doc.save(fileName);
+}
+
+async function downloadExpensesPDF(){
+  return exportSectionPDF("expenses");
 }
 
 async function exportAllSectionsPDF(){
