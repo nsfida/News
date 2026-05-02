@@ -92,7 +92,17 @@ const els = {
   openExpenseEntryBtn: document.getElementById("openExpenseEntryBtn"),
   expenseWalletFilters: document.getElementById("expenseWalletFilters"),
   expenseItemNameInput: document.getElementById("expenseItemNameInput"),
-  expenseItemIntentWrap: document.getElementById("expenseItemIntentWrap")
+  expenseItemIntentWrap: document.getElementById("expenseItemIntentWrap"),
+  transferModal: document.getElementById("transferModal"),
+  transferModalTitle: document.getElementById("transferModalTitle"),
+  transferModalDesc: document.getElementById("transferModalDesc"),
+  transferForm: document.getElementById("transferForm"),
+  transferFromWallet: document.getElementById("transferFromWallet"),
+  transferToWallet: document.getElementById("transferToWallet"),
+  conversionRateInput: document.getElementById("conversionRateInput"),
+  conversionHelp: document.getElementById("conversionHelp"),
+  fromCurrencyIndicator: document.getElementById("fromCurrencyIndicator"),
+  toCurrencyIndicator: document.getElementById("toCurrencyIndicator")
 };
 
 const INSTALLMENT_TAG = "[INSTALLMENT]";
@@ -1775,6 +1785,91 @@ function renderExpensesList(){
     `;
   }
 
+  // Add Transfer section
+  const transferTransactions = [];
+  for (const account of accounts) {
+    if (state.expenseWalletFilter !== "all" && account.group_id !== state.expenseWalletFilter) continue;
+    
+    // Add transfer expense records (money out)
+    for (const row of account.spends) {
+      const meta = expenseMetaFromNotes(row.notes);
+      if (meta.expenseType === "Transfer") {
+        transferTransactions.push({
+          ...row,
+          person_name: account.person_name,
+          currency: account.currency,
+          accountType: account.accountType,
+          isTransfer: true,
+          transferType: "expense"
+        });
+      }
+    }
+  }
+
+  if (transferTransactions.length > 0) {
+    transferTransactions.sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date));
+    html += `
+      <details class="loan expense-item-row">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">Transfer Records</div>
+              <div class="loan-sub">
+                <span class="badge orange">Money Transferred</span>
+                <span>${transferTransactions.length} transaction(s)</span>
+              </div>
+            </div>
+            <div class="cell expense-item-total">
+              <small>Total Transferred</small>
+              <strong>${transferTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            </div>
+            <div class="lt-action"></div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>From Wallet</th><th>To Wallet</th><th>Amount</th><th>Conversion Rate</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${transferTransactions.map(tx => {
+                  const meta = expenseMetaFromNotes(tx.notes);
+                  const transferMatch = tx.notes.match(/Transfer to ([^:]+): ([\d.]+) (\w+) → ([\d.]+) (\w+) \(Rate: ([\d.]+)\)/);
+                  let toWallet = "Unknown";
+                  let conversionRate = "N/A";
+                  
+                  if (transferMatch) {
+                    toWallet = transferMatch[1];
+                    conversionRate = transferMatch[6];
+                  } else {
+                    const simpleMatch = tx.notes.match(/Transfer to ([^:]+)/);
+                    if (simpleMatch) toWallet = simpleMatch[1];
+                  }
+                  
+                  return `
+                    <tr>
+                      <td>${escapeHtml(displayDate(tx.action_date || "—"))}</td>
+                      <td>${escapeHtml(tx.person_name || "—")} (${escapeHtml(tx.accountType || "")})</td>
+                      <td>${escapeHtml(toWallet)}</td>
+                      <td style="color: var(--danger);">${money(tx.action_amount, tx.currency)}</td>
+                      <td>${escapeHtml(conversionRate)}</td>
+                      <td class="expense-item-detail-note">${escapeHtml(cleanExpenseNote(tx.notes))}</td>
+                      <td>
+                        <div style="display:flex;gap:4px;">
+                          <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                          <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    `;
+  }
+
   // Add the original expense items section
   const spendAttached = collectExpenseSpendRows(accounts);
   const items = groupExpenseItems(spendAttached);
@@ -2066,8 +2161,10 @@ function renderExpenseOverviewWallets(){
         <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
           <button class="tiny ghost" onclick="openExpenseModal('topup', '${escapeHtml(a.group_id)}')">Add Money</button>
           <button class="tiny ghost" onclick="openExpenseModal('expense', '${escapeHtml(a.group_id)}')">Add Expense</button>
+          <button class="tiny ghost" onclick="openTransferModal('${escapeHtml(a.group_id)}', '${escapeHtml(a.person_name || 'Wallet')}', '${escapeHtml(a.currency)}')">Transfer</button>
           <button class="tiny ghost" onclick="downloadExpenseAccountPDF('${escapeHtml(a.group_id)}')">Download PDF</button>
           <button class="tiny ghost" onclick="openEditModal('${escapeHtml(a.principal?.id || '')}')">Edit</button>
+          <button class="tiny danger" onclick="deleteExpenseWallet('${escapeHtml(a.group_id)}', '${escapeHtml(a.person_name || 'Wallet')}')">Delete Wallet</button>
         </div>
       </div>
     `;
@@ -2527,6 +2624,10 @@ async function deleteEntry(id){
   const entry = state.entries.find(e => e.id === id);
   if (!entry) return;
 
+  // Check if this is a transfer record
+  const isTransfer = hasExpenseAccountTag(entry.notes) && 
+                     expenseMetaFromNotes(entry.notes).expenseType === "Transfer";
+
   if(entry.entry_kind === "principal"){
     if (!confirm(`Delete the entire loan for ${entry.person_name}? This will also remove ALL linked repayments.`)) return;
     if (isBackupMode()){
@@ -2534,8 +2635,11 @@ async function deleteEntry(id){
     } else {
       await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(entry.group_id)}`, { method: "DELETE" });
     }
+  } else if (isTransfer) {
+    // Handle transfer deletion - delete both expense and top-up parts
+    await deleteTransfer(entry);
   } else {
-    if (!confirm(`Delete this specific repayment entry?`)) return;
+    if (!confirm(`Delete this specific entry?`)) return;
     if (isBackupMode()){
       state.entries = state.entries.filter(e => e.id !== id);
     } else {
@@ -2544,6 +2648,70 @@ async function deleteEntry(id){
   }
   if (isBackupMode()) refreshBackupView();
   else await loadEntriesFromSupabase();
+}
+
+async function deleteTransfer(entry) {
+  const meta = expenseMetaFromNotes(entry.notes);
+  const isExpenseTransfer = meta.rowType === "EXPENSE";
+  const isTopupTransfer = meta.rowType === "TOPUP";
+  
+  // Find the matching transfer partner
+  let transferPartner = null;
+  let transferType = "";
+  
+  if (isExpenseTransfer) {
+    // This is the expense (money out) part, find the top-up (money in) part
+    const transferMatch = entry.notes.match(/Transfer to ([^:]+):/);
+    if (transferMatch) {
+      const toWalletName = transferMatch[1];
+      transferPartner = state.entries.find(e => 
+        e.id !== entry.id &&
+        hasExpenseAccountTag(e.notes) &&
+        expenseMetaFromNotes(e.notes).rowType === "TOPUP" &&
+        e.notes.includes(`Transfer from ${entry.person_name}`)
+      );
+      transferType = "expense";
+    }
+  } else if (isTopupTransfer) {
+    // This is the top-up (money in) part, find the expense (money out) part
+    const transferMatch = entry.notes.match(/Transfer from ([^:]+):/);
+    if (transferMatch) {
+      const fromWalletName = transferMatch[1];
+      transferPartner = state.entries.find(e => 
+        e.id !== entry.id &&
+        hasExpenseAccountTag(e.notes) &&
+        expenseMetaFromNotes(e.notes).rowType === "EXPENSE" &&
+        e.notes.includes(`Transfer to ${entry.person_name}`)
+      );
+      transferType = "topup";
+    }
+  }
+  
+  if (!transferPartner) {
+    // No partner found, just delete this entry
+    if (!confirm(`Delete this transfer record? No matching transfer partner found.`)) return;
+    if (isBackupMode()) {
+      state.entries = state.entries.filter(e => e.id !== entry.id);
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { method: "DELETE" });
+    }
+    return;
+  }
+  
+  // Found transfer partner, ask to delete both
+  const confirmMessage = transferType === "expense" 
+    ? `Delete this transfer from ${entry.person_name} to ${transferPartner.person_name}?\n\nThis will remove BOTH:\n- The expense record (money out) from ${entry.person_name}\n- The top-up record (money in) to ${transferPartner.person_name}\n\nThis action cannot be undone!`
+    : `Delete this transfer from ${transferPartner.person_name} to ${entry.person_name}?\n\nThis will remove BOTH:\n- The expense record (money out) from ${transferPartner.person_name}\n- The top-up record (money in) to ${entry.person_name}\n\nThis action cannot be undone!`;
+  
+  if (!confirm(confirmMessage)) return;
+  
+  // Delete both transfer records
+  if (isBackupMode()) {
+    state.entries = state.entries.filter(e => e.id !== entry.id && e.id !== transferPartner.id);
+  } else {
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { method: "DELETE" });
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(transferPartner.id)}`, { method: "DELETE" });
+  }
 }
 
 async function deletePersonRecords(personNameEncoded, direction){
@@ -3084,6 +3252,205 @@ async function downloadExpenseItemPDF(itemKey){
   doc.save(fileName);
 }
 
+async function deleteExpenseWallet(groupId, walletName) {
+  if (!groupId) return;
+  
+  // Get all entries related to this wallet
+  const walletEntries = state.entries.filter(e => e.group_id === groupId);
+  
+  if (!walletEntries.length) {
+    alert("No records found for this wallet.");
+    return;
+  }
+
+  const confirmMessage = `Are you sure you want to delete the wallet "${walletName}"?\n\nThis will permanently delete ALL records related to this wallet:\n- ${walletEntries.length} total transactions\n- Including opening balance, top-ups, and expenses\n\nThis action cannot be undone!`;
+  
+  if (!confirm(confirmMessage)) return;
+
+  if (isBackupMode()) {
+    // In backup mode, remove from local state
+    state.entries = state.entries.filter(e => e.group_id !== groupId);
+    refreshBackupView();
+  } else {
+    // In database mode, delete all entries with this group_id
+    try {
+      await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(groupId)}`, { method: "DELETE" });
+      await loadEntriesFromSupabase();
+    } catch (error) {
+      alert("Error deleting wallet: " + error.message);
+      return;
+    }
+  }
+}
+
+function openTransferModal(fromGroupId, fromWalletName, currency) {
+  els.transferModal.classList.remove("hide");
+  els.transferModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  
+  els.transferModalTitle.textContent = "Transfer Money";
+  els.transferModalDesc.textContent = `Move money from ${fromWalletName} to another wallet.`;
+  els.transferForm.reset();
+  defaultDateInputs(els.transferForm);
+  
+  // Populate wallet options
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  
+  // Set from wallet (all wallets)
+  els.transferFromWallet.innerHTML = accounts.map(a => 
+    `<option value="${escapeHtml(a.group_id)}" ${a.group_id === fromGroupId ? 'selected' : ''}>${escapeHtml(a.person_name)} (${escapeHtml(formatReportAmount(a.balance, a.currency))}) - ${escapeHtml(a.currency)}</option>`
+  ).join("");
+  
+  // Set to wallet (exclude from wallet)
+  els.transferToWallet.innerHTML = accounts.filter(a => a.group_id !== fromGroupId).map(a => 
+    `<option value="${escapeHtml(a.group_id)}">${escapeHtml(a.person_name)} (${escapeHtml(formatReportAmount(a.balance, a.currency))}) - ${escapeHtml(a.currency)}</option>`
+  ).join("");
+  
+  if (els.transferToWallet.options.length === 0) {
+    els.transferToWallet.innerHTML = '<option value="">No other wallets available</option>';
+  }
+  
+  // Set currency indicators
+  updateTransferCurrencyIndicators();
+  
+  // Add event listeners for currency changes
+  els.transferFromWallet.addEventListener("change", updateTransferCurrencyIndicators);
+  els.transferToWallet.addEventListener("change", updateTransferCurrencyIndicators);
+  els.transferForm.querySelector('input[name="amount"]').addEventListener("input", calculateReceivedAmount);
+  els.conversionRateInput.addEventListener("input", calculateReceivedAmount);
+}
+
+function updateTransferCurrencyIndicators() {
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const fromGroupId = els.transferFromWallet.value;
+  const toGroupId = els.transferToWallet.value;
+  
+  const fromAccount = accounts.find(a => a.group_id === fromGroupId);
+  const toAccount = accounts.find(a => a.group_id === toGroupId);
+  
+  if (fromAccount) {
+    els.fromCurrencyIndicator.textContent = fromAccount.currency;
+  }
+  
+  if (toAccount) {
+    els.toCurrencyIndicator.textContent = toAccount.currency;
+  }
+  
+  // Update conversion rate field visibility and help text
+  if (fromAccount && toAccount) {
+    const isSameCurrency = fromAccount.currency === toAccount.currency;
+    els.conversionRateInput.style.display = isSameCurrency ? "none" : "block";
+    els.conversionHelp.style.display = isSameCurrency ? "none" : "inline";
+    
+    if (isSameCurrency) {
+      els.conversionRateInput.value = "1";
+      calculateReceivedAmount();
+    } else {
+      els.conversionRateInput.value = "";
+      els.transferForm.querySelector('input[name="received_amount"]').value = "";
+    }
+    
+    // Update help text
+    if (!isSameCurrency) {
+      els.conversionHelp.textContent = `(1 ${fromAccount.currency} = ? ${toAccount.currency})`;
+    }
+  }
+  
+  calculateReceivedAmount();
+}
+
+function calculateReceivedAmount() {
+  const amount = parseFloat(els.transferForm.querySelector('input[name="amount"]').value) || 0;
+  const conversionRate = parseFloat(els.conversionRateInput.value) || 1;
+  const receivedAmount = amount * conversionRate;
+  
+  els.transferForm.querySelector('input[name="received_amount"]').value = receivedAmount.toFixed(2);
+}
+
+async function saveTransfer(form) {
+  const fd = new FormData(form);
+  const fromGroupId = String(fd.get("from_wallet") || "").trim();
+  const toGroupId = String(fd.get("to_wallet") || "").trim();
+  const amount = Number(fd.get("amount") || 0);
+  const conversionRate = Number(fd.get("conversion_rate") || 1);
+  const receivedAmount = Number(fd.get("received_amount") || 0);
+  const date = String(fd.get("date") || "");
+  const notes = String(fd.get("notes") || "").trim() || null;
+  
+  if (!fromGroupId || !toGroupId) throw new Error("Please select both wallets.");
+  if (fromGroupId === toGroupId) throw new Error("Cannot transfer to the same wallet.");
+  if (!amount || amount <= 0) throw new Error("Please enter a valid amount.");
+  if (!date) throw new Error("Please select a date.");
+  
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const fromAccount = accounts.find(a => a.group_id === fromGroupId);
+  const toAccount = accounts.find(a => a.group_id === toGroupId);
+  
+  if (!fromAccount || !toAccount) throw new Error("Selected wallet not found.");
+  if (amount > fromAccount.balance) throw new Error(`Insufficient balance. Available: ${formatReportAmount(fromAccount.balance, fromAccount.currency)}`);
+  
+  // Validate conversion rate for cross-currency transfers
+  const isCrossCurrency = fromAccount.currency !== toAccount.currency;
+  if (isCrossCurrency && (!conversionRate || conversionRate <= 0)) {
+    throw new Error("Please enter a valid conversion rate for cross-currency transfer.");
+  }
+  
+  // Create transfer records
+  let transferNote, receiveNote;
+  
+  if (isCrossCurrency) {
+    transferNote = notes 
+      ? `Transfer to ${toAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate}) - ${notes}`
+      : `Transfer to ${toAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate})`;
+    receiveNote = notes 
+      ? `Transfer from ${fromAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate}) - ${notes}`
+      : `Transfer from ${fromAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate})`;
+  } else {
+    transferNote = notes ? `Transfer to ${toAccount.person_name}: ${notes}` : `Transfer to ${toAccount.person_name}`;
+    receiveNote = notes ? `Transfer from ${fromAccount.person_name}: ${notes}` : `Transfer from ${fromAccount.person_name}`;
+  }
+  
+  const expensePayload = {
+    group_id: fromGroupId,
+    direction: "taken",
+    entry_kind: "full",
+    person_name: fromAccount.person_name,
+    currency: fromAccount.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: fromAccount.principal?.loan_date || date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(transferNote, { rowType: "EXPENSE", expenseType: "Transfer" })
+  };
+  
+  const topupPayload = {
+    group_id: toGroupId,
+    direction: "taken",
+    entry_kind: "full",
+    person_name: toAccount.person_name,
+    currency: toAccount.currency,
+    principal_amount: null,
+    action_amount: receivedAmount,
+    loan_date: toAccount.principal?.loan_date || date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(receiveNote, { rowType: "TOPUP" })
+  };
+  
+  if (isBackupMode()) {
+    const now = new Date().toISOString();
+    state.entries.unshift({ ...expensePayload, id: crypto.randomUUID(), created_at: now });
+    state.entries.unshift({ ...topupPayload, id: crypto.randomUUID(), created_at: now });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(expensePayload) });
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(topupPayload) });
+    await loadEntriesFromSupabase();
+  }
+  
+  closeModal("transferModal");
+  form.reset();
+}
+
 async function downloadExpensesPDF(){
   return exportSectionPDF("expenses");
 }
@@ -3484,6 +3851,11 @@ function attachEvents(){
   els.expenseEntryForm.addEventListener("submit", async e => {
     e.preventDefault();
     try { await saveExpenseEntry(els.expenseEntryForm); } catch (err) { alert(err.message); }
+  });
+
+  els.transferForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveTransfer(els.transferForm); } catch (err) { alert(err.message); }
   });
   els.expenseCurrencySelect.addEventListener("change", () => {
     renderExpenseAccountSelectors();
