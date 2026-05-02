@@ -274,9 +274,19 @@ a{color:inherit}
 .summary-watermark-expense .summary-watermark-symbol .symbol{
   font-size:1em;
 }
+
+/* Wallet logo watermark styling */
+.summary-watermark img{
+  max-width:80%;
+  max-height:80%;
+  object-fit:contain;
+  opacity:0.45 !important;
+  filter:grayscale(0.1) brightness(1.0);
+  transition:opacity 0.3s ease;
+}
 @keyframes summary-watermark-pulse{
-  0%,100%{transform:scale(.94);opacity:.05}
-  50%{transform:scale(1.06);opacity:.11}
+  0%,100%{transform:scale(.94);opacity:.40}
+  50%{transform:scale(1.06);opacity:.50}
 }
 .summary .currency-head,
 .summary-line-one{
