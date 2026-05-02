@@ -2621,23 +2621,53 @@ async function submitEdit(){
     const nm = document.getElementById('editName').value.trim();
     const curr = document.getElementById('editCurrency').value;
     if (!nm || !curr || !amt || !dt) throw new Error("Complete required fields.");
+    
+    let updatedNotes = nt;
+    
+    // Handle goods entries - update metadata when price/amount changes
+    if (hasGoodsTag(currentEntry.notes)) {
+      const currentMeta = goodsMetaFromNotes(currentEntry.notes);
+      const currentBoughtQty = Math.max(1, Number(currentMeta.boughtQty || 1));
+      const newUnitActualPrice = amt / currentBoughtQty;
+      
+      updatedNotes = upsertGoodsMetaInNote(nt, {
+        boughtQty: currentBoughtQty,
+        unitActualPrice: newUnitActualPrice
+      });
+    } else if (hasExpenseAccountTag(currentEntry.notes)) {
+      updatedNotes = upsertExpenseMetaInNote(nt, { ...expenseMetaFromNotes(currentEntry.notes), rowType: "ACCOUNT" });
+    }
+    
     if (isBackupMode()){
       state.entries = state.entries.map(entry => entry.id === id
-        ? { ...entry, person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: hasExpenseAccountTag(currentEntry.notes) ? upsertExpenseMetaInNote(nt, { ...expenseMetaFromNotes(currentEntry.notes), rowType: "ACCOUNT" }) : nt }
+        ? { ...entry, person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: updatedNotes }
         : entry
       );
     } else {
       await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
         method: "PATCH",
-        body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: hasExpenseAccountTag(currentEntry.notes) ? upsertExpenseMetaInNote(nt, { ...expenseMetaFromNotes(currentEntry.notes), rowType: "ACCOUNT" }) : nt })
+        body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: updatedNotes })
       });
     }
   } else {
     if (!amt || !dt) throw new Error("Complete required fields.");
-    const expenseMeta = expenseMetaFromNotes(currentEntry.notes);
-    const editedNotes = hasExpenseAccountTag(currentEntry.notes)
-      ? upsertExpenseMetaInNote(nt, expenseMeta)
-      : nt;
+    let editedNotes = nt;
+    
+    // Handle goods sold entries - update metadata when sold amount changes
+    if (hasGoodsTag(currentEntry.notes)) {
+      const currentMeta = goodsMetaFromNotes(currentEntry.notes);
+      const currentSoldQty = Math.max(1, Number(currentMeta.soldQty || 1));
+      const newUnitSoldPrice = amt / currentSoldQty;
+      
+      editedNotes = upsertGoodsMetaInNote(nt, {
+        soldQty: currentSoldQty,
+        unitSoldPrice: newUnitSoldPrice
+      });
+    } else if (hasExpenseAccountTag(currentEntry.notes)) {
+      const expenseMeta = expenseMetaFromNotes(currentEntry.notes);
+      editedNotes = upsertExpenseMetaInNote(nt, expenseMeta);
+    }
+    
     if (isBackupMode()){
       state.entries = state.entries.map(entry => entry.id === id
         ? { ...entry, action_amount: amt, action_date: dt, notes: editedNotes }
