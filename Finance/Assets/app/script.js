@@ -21,7 +21,8 @@ const state = {
   lastCurrency: "AED",
   modalDirection: "given",
   editId: null,
-  editKind: null
+  editKind: null,
+  expenseWalletFilter: "all"
 };
 
 const els = {
@@ -88,7 +89,10 @@ const els = {
   expenseTypeSelect: document.getElementById("expenseTypeSelect"),
   openExpenseAccountBtn: document.getElementById("openExpenseAccountBtn"),
   openExpenseTopupBtn: document.getElementById("openExpenseTopupBtn"),
-  openExpenseEntryBtn: document.getElementById("openExpenseEntryBtn")
+  openExpenseEntryBtn: document.getElementById("openExpenseEntryBtn"),
+  expenseWalletFilters: document.getElementById("expenseWalletFilters"),
+  expenseItemNameInput: document.getElementById("expenseItemNameInput"),
+  expenseItemIntentWrap: document.getElementById("expenseItemIntentWrap")
 };
 
 const INSTALLMENT_TAG = "[INSTALLMENT]";
@@ -1288,6 +1292,159 @@ function getExpenseAccounts(options = {}){
   });
 }
 
+function getExistingItemNamesLowerForCurrency(currency){
+  const set = new Set();
+  const cur = String(currency || "").trim();
+  for (const account of getExpenseAccounts({ applyUiFilters: false })){
+    if (account.currency !== cur) continue;
+    for (const row of account.spends){
+      const meta = expenseMetaFromNotes(row.notes);
+      const n = String(meta.itemName || "").trim().toLowerCase();
+      if (n) set.add(n);
+    }
+  }
+  return set;
+}
+
+function refreshExpenseItemIntentUi(){
+  const wrap = els.expenseItemIntentWrap;
+  if (!wrap || !els.expenseEntryForm || els.expenseEntryForm.classList.contains("hide")) return;
+  const fd = new FormData(els.expenseEntryForm);
+  const item = String(fd.get("item_name") || "").trim().toLowerCase();
+  const cur = String(fd.get("currency") || "").trim();
+  if (!item || !cur){
+    wrap.classList.add("hide");
+    return;
+  }
+  const exists = getExistingItemNamesLowerForCurrency(cur).has(item);
+  wrap.classList.toggle("hide", !exists);
+  if (!exists){
+    const r = els.expenseEntryForm.querySelector('input[name="expense_item_intent"][value="additional"]');
+    if (r) r.checked = true;
+  }
+}
+
+function collectExpenseSpendRows(accounts){
+  const out = [];
+  const wf = state.expenseWalletFilter;
+  for (const account of accounts){
+    if (wf !== "all" && account.group_id !== wf) continue;
+    for (const row of account.spends){
+      out.push({ row, account });
+    }
+  }
+  return out;
+}
+
+function groupExpenseItems(spendAttached){
+  const map = new Map();
+  for (const { row, account } of spendAttached){
+    const meta = expenseMetaFromNotes(row.notes);
+    const nameRaw = String(meta.itemName || "").trim();
+    if (!nameRaw) continue;
+    const currency = account.currency || "AED";
+    const key = `${currency}||${nameRaw.toLowerCase()}`;
+    if (!map.has(key)){
+      map.set(key, {
+        key,
+        displayName: nameRaw,
+        expenseType: meta.expenseType || "",
+        currency,
+        total: 0,
+        txs: []
+      });
+    }
+    const g = map.get(key);
+    g.total += Number(row.action_amount || 0);
+    g.txs.push({
+      id: row.id,
+      date: row.action_date,
+      wallet: account.person_name,
+      group_id: account.group_id,
+      amount: Number(row.action_amount || 0),
+      expenseType: meta.expenseType || "",
+      notes: cleanExpenseNote(row.notes)
+    });
+  }
+  for (const g of map.values()){
+    g.txs.sort((a, b) => dateStamp(b.date) - dateStamp(a.date));
+  }
+  return [...map.values()].sort((a, b) => b.total - a.total);
+}
+
+function walletRadioSafeId(groupId){
+  return String(groupId || "").replace(/[^a-zA-Z0-9-]/g, "-");
+}
+
+function renderExpenseWalletBar(accounts){
+  const host = els.expenseWalletFilters;
+  if (!host) return;
+
+  const blocks = [];
+  const allId = "f_exp_wallet_all";
+  const allChecked = state.expenseWalletFilter === "all" ? "checked" : "";
+  blocks.push(`
+    <div class="expense-wallet-card-wrap">
+      <input type="radio" id="${allId}" name="f_exp_wallet" value="all" class="filter-radio expense-wallet-radio" ${allChecked}>
+      <label for="${allId}" class="expense-wallet-card expense-wallet-card-all">
+        <span class="expense-wallet-title">All wallets</span>
+        <span class="expense-wallet-sub">Expense statement includes every wallet below.</span>
+      </label>
+    </div>
+  `);
+
+  for (const a of accounts){
+    const rid = `f_exp_wallet_${walletRadioSafeId(a.group_id)}`;
+    const ck = state.expenseWalletFilter === a.group_id ? "checked" : "";
+    const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
+    const gid = escapeHtml(a.group_id);
+    blocks.push(`
+      <div class="expense-wallet-card-wrap">
+        <input type="radio" id="${rid}" name="f_exp_wallet" value="${gid}" class="filter-radio expense-wallet-radio" ${ck}>
+        <label for="${rid}" class="expense-wallet-card">
+          <span class="expense-wallet-title">${escapeHtml(a.person_name || "Wallet")}</span>
+          <span class="expense-wallet-sub">${escapeHtml(a.accountType || "")} · ${currencySymbolHtml(a.currency)}</span>
+          <div class="expense-wallet-stats">
+            <span><em>Top-up</em> <strong>${escapeHtml(formatReportAmount(totalTopup, a.currency))}</strong></span>
+            <span><em>Spent</em> <strong>${escapeHtml(formatReportAmount(a.spentMoney, a.currency))}</strong></span>
+            <span><em>Available</em> <strong>${escapeHtml(formatReportAmount(a.balance, a.currency))}</strong></span>
+          </div>
+        </label>
+        <div class="expense-wallet-actions">
+          <button type="button" class="expenseWalletQuick" data-action="topup" data-group-id="${gid}">Add money</button>
+          <button type="button" class="expenseWalletQuick" data-action="expense" data-group-id="${gid}">Add expense</button>
+          <button type="button" class="expenseWalletQuick" data-action="pdf" data-group-id="${gid}">PDF</button>
+          <button type="button" class="expenseWalletQuick" data-action="edit-account" data-entry-id="${escapeHtml(a.principal?.id || "")}">Edit</button>
+          <button type="button" class="expenseWalletQuick danger" data-action="delete-account" data-entry-id="${escapeHtml(a.principal?.id || "")}">Delete</button>
+        </div>
+      </div>
+    `);
+  }
+
+  host.innerHTML = blocks.join("");
+
+  host.querySelectorAll('input[name="f_exp_wallet"]').forEach(inp => {
+    inp.addEventListener("change", () => {
+      if (!inp.checked) return;
+      state.expenseWalletFilter = inp.value === "all" ? "all" : inp.value;
+      renderAll();
+    });
+  });
+
+  host.querySelectorAll(".expenseWalletQuick").forEach(btn => {
+    btn.addEventListener("click", async e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      if (action === "pdf") await downloadExpenseAccountPDF(btn.dataset.groupId);
+      if (action === "topup") openExpenseModal("topup", btn.dataset.groupId);
+      if (action === "expense") openExpenseModal("expense", btn.dataset.groupId);
+      if (action === "edit-account") openEditModal(btn.dataset.entryId);
+      if (action === "delete-account") await deleteEntry(btn.dataset.entryId);
+    });
+  });
+}
+
 function renderExpenseAccountSelectors(){
   const accounts = getExpenseAccounts({ applyUiFilters: false });
   const byCurrency = accounts.reduce((acc, account) => {
@@ -1337,6 +1494,10 @@ function openExpenseModal(mode, presetGroupId = ""){
     renderExpenseAccountSelectors();
     defaultDateInputs(els.expenseEntryForm);
     if (presetGroupId) els.expenseSpendAccountSelect.value = presetGroupId;
+    const intentAdd = els.expenseEntryForm.querySelector('input[name="expense_item_intent"][value="additional"]');
+    if (intentAdd) intentAdd.checked = true;
+    if (els.expenseItemIntentWrap) els.expenseItemIntentWrap.classList.add("hide");
+    refreshExpenseItemIntentUi();
   }
 }
 
@@ -1413,11 +1574,17 @@ async function saveExpenseEntry(form){
   const itemName = String(fd.get("item_name") || "").trim();
   const expenseType = String(fd.get("custom_expense_type") || "").trim() || String(fd.get("expense_type") || "").trim() || "Other";
   const notes = String(fd.get("notes") || "").trim() || null;
+  const itemIntent = String(fd.get("expense_item_intent") || "additional");
   if (!groupId || !amount || !date || !itemName) throw new Error("Complete all required fields.");
   const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === groupId);
   if (!account) throw new Error("Account not found.");
   if (selectedCurrency && account.currency !== selectedCurrency){
     throw new Error("Selected currency does not match the account currency.");
+  }
+  const nameLower = itemName.toLowerCase();
+  const existingNames = getExistingItemNamesLowerForCurrency(account.currency);
+  if (existingNames.has(nameLower) && itemIntent === "new_distinct"){
+    throw new Error("This item name already exists. Either choose \"More spending on the same item\" or enter a different item name.");
   }
   if (amount > account.balance) throw new Error(`Insufficient balance. Available: ${formatReportAmount(account.balance, account.currency)}.`);
   const payload = {
@@ -1501,99 +1668,72 @@ async function downloadExpenseAccountPDF(groupId){
 
 function renderExpensesList(){
   const accounts = getExpenseAccounts();
+  const validIds = new Set(accounts.map(a => a.group_id));
+  if (state.expenseWalletFilter !== "all" && !validIds.has(state.expenseWalletFilter)){
+    state.expenseWalletFilter = "all";
+  }
+  renderExpenseWalletBar(accounts);
+
   if (!accounts.length){
     els.expensesList.innerHTML = `<div class="empty">No expense accounts found.</div>`;
     return;
   }
-  els.expensesList.innerHTML = accounts.map(account => {
-    const statusClass = account.status === "Closed" ? "green" : "orange";
-    const timeline = account.actions.slice().sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date));
-    return `
-      <details class="loan">
-        <summary>
-          <div class="loan-top">
-            <div class="lt-main">
-              <div class="loan-name">${escapeHtml(account.person_name || "Account")}</div>
-              <div class="loan-sub">
-                <span>${escapeHtml(account.accountType)}</span>
-                <span>Opened ${escapeHtml(displayDate(account.principal?.loan_date || "—"))}</span>
-                <span>${currencySymbolHtml(account.currency || "")}</span>
-                <span class="badge ${statusClass}">${account.status === "Closed" ? "Zero Balance" : "Active Balance"}</span>
-              </div>
-            </div>
-            <div class="cell lt-principal"><small>Opening</small><strong>${money(account.openingBalance, account.currency)}</strong></div>
-            <div class="cell lt-movement"><small>Added</small><strong>${money(account.addedMoney, account.currency)}</strong></div>
-            <div class="cell lt-status"><small>Spent</small><strong>${money(account.spentMoney, account.currency)}</strong></div>
-            <div class="cell lt-remaining"><small>Balance</small><strong>${money(account.balance, account.currency)}</strong></div>
-            <div class="lt-action">
-              <div class="menu-wrap">
-                <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" data-expense-menu="${escapeHtml(account.group_id)}">☰</button>
-                <div class="menu-dropdown" data-expense-menu-panel="${escapeHtml(account.group_id)}">
-                  <button class="menu-item expenseActionBtn" type="button" data-action="pdf" data-group-id="${escapeHtml(account.group_id)}">Download PDF</button>
-                  <button class="menu-item expenseActionBtn" type="button" data-action="topup" data-group-id="${escapeHtml(account.group_id)}">Add Money</button>
-                  <button class="menu-item expenseActionBtn" type="button" data-action="expense" data-group-id="${escapeHtml(account.group_id)}">Add Expense</button>
-                  <button class="menu-item expenseActionBtn" type="button" data-action="edit-account" data-entry-id="${escapeHtml(account.principal?.id || "")}">Edit Account</button>
-                  <button class="menu-item danger expenseActionBtn" type="button" data-action="delete-account" data-entry-id="${escapeHtml(account.principal?.id || "")}">Delete Account</button>
-                </div>
-              </div>
+
+  const spendAttached = collectExpenseSpendRows(accounts);
+  const items = groupExpenseItems(spendAttached);
+  if (!items.length){
+    els.expensesList.innerHTML = `<div class="empty">No expense transactions match this filter.</div>`;
+    return;
+  }
+
+  els.expensesList.innerHTML = items.map(item => `
+    <details class="loan expense-item-row">
+      <summary>
+        <div class="loan-top">
+          <div class="lt-main">
+            <div class="loan-name">${escapeHtml(item.displayName)}</div>
+            <div class="loan-sub">
+              ${item.expenseType ? `<span class="badge blue">${escapeHtml(item.expenseType)}</span>` : `<span class="badge blue">Other</span>`}
+              <span>${item.txs.length} transaction(s)</span>
+              <span>${currencySymbolHtml(item.currency || "")}</span>
             </div>
           </div>
-        </summary>
-        <div class="detail">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
-              <tbody>
-                ${timeline.length ? timeline.map(row => {
-                  const meta = expenseMetaFromNotes(row.notes);
-                  const isExpense = meta.rowType === "EXPENSE";
-                  return `
-                    <tr>
-                      <td>${escapeHtml(displayDate(row.action_date || "—"))}</td>
-                      <td><span class="badge ${isExpense ? "orange" : "blue"}">${isExpense ? "Expense" : "Topup"}</span></td>
-                      <td>${escapeHtml(meta.itemName || "—")} ${meta.expenseType ? `<span class="badge blue">${escapeHtml(meta.expenseType)}</span>` : ""}</td>
-                      <td>${money(row.action_amount || 0, account.currency)}</td>
-                      <td>${escapeHtml(cleanExpenseNote(row.notes))}</td>
-                      <td>
-                        <div style="display:flex;gap:4px;">
-                          <button class="tiny ghost editRowBtn" data-id="${escapeHtml(row.id)}">✎</button>
-                          <button class="tiny danger delRowBtn" data-id="${escapeHtml(row.id)}">✕</button>
-                        </div>
-                      </td>
-                    </tr>
-                  `;
-                }).join("") : `<tr><td colspan="6">No transactions yet.</td></tr>`}
-              </tbody>
-            </table>
+          <div class="cell expense-item-total">
+            <small>Total spent</small>
+            <strong>${money(item.total, item.currency)}</strong>
           </div>
+          <div class="lt-action"></div>
         </div>
-      </details>
-    `;
-  }).join("");
+      </summary>
+      <div class="detail">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Wallet</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+            <tbody>
+              ${item.txs.map(tx => `
+                <tr>
+                  <td>${escapeHtml(displayDate(tx.date || "—"))}</td>
+                  <td>${escapeHtml(tx.wallet || "—")}</td>
+                  <td>${escapeHtml(tx.expenseType || "—")}</td>
+                  <td>${money(tx.amount, item.currency)}</td>
+                  <td class="expense-item-detail-note">${escapeHtml(tx.notes)}</td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                      <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  `).join("");
 
   els.expensesList.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
   els.expensesList.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
-  els.expensesList.querySelectorAll(".expenseActionBtn").forEach(btn => btn.addEventListener("click", async e => {
-    e.preventDefault();
-    const action = btn.dataset.action;
-    if (action === "pdf") await downloadExpenseAccountPDF(btn.dataset.groupId);
-    if (action === "topup") openExpenseModal("topup", btn.dataset.groupId);
-    if (action === "expense") openExpenseModal("expense", btn.dataset.groupId);
-    if (action === "edit-account") openEditModal(btn.dataset.entryId);
-    if (action === "delete-account") await deleteEntry(btn.dataset.entryId);
-  }));
-  els.expensesList.querySelectorAll("[data-expense-menu]").forEach(btn => btn.addEventListener("click", e => {
-    e.preventDefault();
-    e.stopPropagation();
-    const key = btn.dataset.expenseMenu;
-    const panel = els.expensesList.querySelector(`[data-expense-menu-panel="${key}"]`);
-    if (!panel) return;
-    document.querySelectorAll(".menu-dropdown.open").forEach(openPanel => {
-      if (openPanel !== panel) openPanel.classList.remove("open");
-    });
-    const nowOpen = panel.classList.toggle("open");
-    btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
-  }));
 }
 
 function defaultDateInputs(root = document){
@@ -2527,35 +2667,21 @@ function formatReportAmount(amount, currency){
 function buildSectionReportRows(direction, searchKey){
   if (searchKey === "expenses"){
     const accounts = getExpenseAccounts();
-    const rows = [];
-    accounts.forEach(account => {
-      let runningBalance = Number(account.openingBalance || 0);
-      rows.push([
-        account.person_name || "Account",
-        displayDate(account.principal?.loan_date || "—"),
-        "Opening",
-        formatReportAmount(account.openingBalance, account.currency),
-        formatReportAmount(runningBalance, account.currency),
-        cleanExpenseNote(account.principal?.notes)
-      ]);
-      account.actions
-        .slice()
-        .sort((a, b) => dateStamp(a.action_date) - dateStamp(b.action_date))
-        .forEach(row => {
-          const meta = expenseMetaFromNotes(row.notes);
-          const isExpense = meta.rowType === "EXPENSE";
-          const amount = Number(row.action_amount || 0);
-          runningBalance = isExpense ? Math.max(runningBalance - amount, 0) : runningBalance + amount;
-          rows.push([
-            `${account.person_name || "Account"}${meta.expenseType ? ` (${meta.expenseType})` : ""}`,
-            displayDate(row.action_date || "—"),
-            isExpense ? `Expense${meta.itemName ? `: ${meta.itemName}` : ""}` : "Topup",
-            formatReportAmount(amount, account.currency),
-            formatReportAmount(runningBalance, account.currency),
-            cleanExpenseNote(row.notes)
-          ]);
-        });
-    });
+    const spendRows = collectExpenseSpendRows(accounts);
+    const rows = spendRows
+      .slice()
+      .sort((a, b) => dateStamp(a.row.action_date) - dateStamp(b.row.action_date))
+      .map(({ row, account }) => {
+        const meta = expenseMetaFromNotes(row.notes);
+        return [
+          meta.itemName || "—",
+          displayDate(row.action_date || "—"),
+          `${account.person_name || "Wallet"} · ${meta.expenseType || "Other"}`,
+          formatReportAmount(Number(row.action_amount || 0), account.currency),
+          "—",
+          cleanExpenseNote(row.notes)
+        ];
+      });
     return { groups: accounts, rows };
   }
 
@@ -2599,12 +2725,17 @@ async function exportSectionPDF(searchKey){
   drawPdfOwnerBlock(doc, 48);
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
-  doc.text(`Members: ${report.groups.length}`, 132, 48);
+  const expensePdf = searchKey === "expenses";
+  doc.text(`${expensePdf ? "Wallets in view" : "Members"}: ${report.groups.length}`, 132, 48);
   doc.text(`Rows: ${report.rows.length}`, 132, 54);
+
+  const tableHead = expensePdf
+    ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
+    : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
 
   doc.autoTable({
     startY: 72,
-    head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+    head: tableHead,
     body: report.rows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
@@ -2658,12 +2789,17 @@ async function exportAllSectionsPDF(){
     drawPdfOwnerBlock(doc, 48);
     doc.setTextColor(23, 33, 43);
     doc.setFontSize(10);
-    doc.text(`Members: ${section.groups.length}`, 132, 48);
+    const secExpense = section.key === "expenses";
+    doc.text(`${secExpense ? "Wallets in view" : "Members"}: ${section.groups.length}`, 132, 48);
     doc.text(`Rows: ${section.rows.length}`, 132, 54);
+
+    const secHead = secExpense
+      ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
+      : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
 
     doc.autoTable({
       startY: 72,
-      head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+      head: secHead,
       body: section.rows,
       theme: "grid",
       headStyles: { fillColor: [36, 87, 214] },
@@ -3008,7 +3144,15 @@ function attachEvents(){
     e.preventDefault();
     try { await saveExpenseEntry(els.expenseEntryForm); } catch (err) { alert(err.message); }
   });
-  els.expenseCurrencySelect.addEventListener("change", () => renderExpenseAccountSelectors());
+  els.expenseCurrencySelect.addEventListener("change", () => {
+    renderExpenseAccountSelectors();
+    refreshExpenseItemIntentUi();
+  });
+  if (els.expenseItemNameInput){
+    els.expenseItemNameInput.addEventListener("input", refreshExpenseItemIntentUi);
+    els.expenseItemNameInput.addEventListener("blur", refreshExpenseItemIntentUi);
+  }
+  els.expenseSpendAccountSelect.addEventListener("change", refreshExpenseItemIntentUi);
   els.goodsNewItemToggleBtn.addEventListener("click", () => {
     const open = els.goodsNewItemFields.classList.toggle("hide");
     els.goodsNewItemToggleBtn.textContent = open ? "+ Add New" : "− Use Existing";
