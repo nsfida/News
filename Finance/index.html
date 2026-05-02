@@ -346,12 +346,16 @@
                     </div>
                   </div>
                 </div>
-                <p>Track account balances and spending by account type and expense category.</p>
+                <p>Wallets show top-up, spent, and balance. The list is an expense statement by item; open an item for wallet-level transactions.</p>
               </div>
               <div class="tools">
-                <input id="searchExpenses" class="input" style="min-width:180px" placeholder="Search account, item or note" />
+                <input id="searchExpenses" class="input" style="min-width:180px" placeholder="Search item, wallet or note" />
                 <button class="btn soft" id="downloadExpensesPdfBtn" type="button">📄 Download</button>
               </div>
+            </div>
+            <div class="expense-wallet-block">
+              <div class="filter-block-label">Wallets</div>
+              <div id="expenseWalletFilters" class="expense-wallet-scroll" aria-label="Filter by wallet"></div>
             </div>
             <div class="filter-group">
               <input type="radio" id="f_exp_all" name="f_exp" value="All" class="filter-radio" data-filter="expenses" checked>
@@ -607,7 +611,7 @@
           <div class="modal-grid">
             <div class="field w6">
               <label>Item name</label>
-              <input class="input" name="item_name" required placeholder="What did you buy/pay?" />
+              <input class="input" name="item_name" id="expenseItemNameInput" required placeholder="What did you buy/pay?" autocomplete="off" />
             </div>
             <div class="field w6">
               <label>Amount spent</label>
@@ -645,6 +649,19 @@
             <div class="field w6">
               <label>Expense date</label>
               <input class="input" name="date" type="date" required data-default-today="true" />
+            </div>
+            <div id="expenseItemIntentWrap" class="field w12 hide">
+              <p class="expense-intent-hint">This item name already exists for this currency. Choose how to record it.</p>
+              <div class="expense-intent-radios">
+                <label class="expense-intent-label">
+                  <input type="radio" name="expense_item_intent" value="additional" checked />
+                  <span>More spending on the same item</span>
+                </label>
+                <label class="expense-intent-label">
+                  <input type="radio" name="expense_item_intent" value="new_distinct" />
+                  <span>New item — I will use a different name</span>
+                </label>
+              </div>
             </div>
             <div class="field w12">
               <label>Notes</label>
