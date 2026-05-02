@@ -479,6 +479,15 @@ function overviewOneLine(label, amountHtml){
   `;
 }
 
+function overviewAvailableLine(amountHtml){
+  return `
+    <div class="summary-line summary-line-one">
+      <span class="summary-line-one-label available-label" style="color: var(--success) !important;">Available:</span>
+      <span class="summary-line-one-value available-amount">${amountHtml}</span>
+    </div>
+  `;
+}
+
 function overviewExpenseLine(currency, suffix, amountHtml){
   return `
     <div class="summary-line summary-line-one">
@@ -1456,7 +1465,7 @@ function renderExpenseWalletBar(accounts){
           <div class="expense-wallet-stats">
             <span><em>Top-up</em> <strong>${escapeHtml(formatReportAmount(totalTopup, a.currency))}</strong></span>
             <span><em>Spent</em> <strong>${escapeHtml(formatReportAmount(a.spentMoney, a.currency))}</strong></span>
-            <span><em>Available</em> <strong>${escapeHtml(formatReportAmount(a.balance, a.currency))}</strong></span>
+            <span class="available-label"><em style="color: var(--success) !important;">Available</em> <strong class="available-amount">${escapeHtml(formatReportAmount(a.balance, a.currency))}</strong></span>
           </div>
         </label>
         <div class="expense-wallet-actions">
@@ -1778,7 +1787,7 @@ function renderExpensesList(){
               <strong>${topupTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div class="lt-action">
-              <button class="icon-btn ghost" onclick="downloadAllTopupsPDF()" title="Download All Top-ups PDF" style="font-size: 0.9rem;">📄</button>
+              <button class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download All Top-ups PDF" style="font-size: 0.9rem;">📄</button>
             </div>
           </div>
         </summary>
@@ -1797,7 +1806,7 @@ function renderExpensesList(){
                     <td>
                       <div style="display:flex;gap:4px;">
                         <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
-                        <button class="tiny ghost" onclick="downloadExpenseTopupPDF('${escapeHtml(tx.id)}')" title="Download PDF">📄</button>
+                        <button class="tiny ghost expenseActionBtn" data-action="pdf" data-id="${escapeHtml(tx.id)}" data-type="topup" title="Download PDF">📄</button>
                         <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
                       </div>
                     </td>
@@ -1850,7 +1859,7 @@ function renderExpensesList(){
               <strong>${transferTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
             <div class="lt-action">
-              <button class="icon-btn ghost" onclick="downloadAllTransfersPDF()" title="Download All Transfers PDF" style="font-size: 0.9rem;">📄</button>
+              <button class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download All Transfers PDF" style="font-size: 0.9rem;">📄</button>
             </div>
           </div>
         </summary>
@@ -1884,7 +1893,7 @@ function renderExpensesList(){
                       <td>
                         <div style="display:flex;gap:4px;">
                           <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
-                          <button class="tiny ghost" onclick="downloadExpenseTransferPDF('${escapeHtml(tx.id)}')" title="Download PDF">📄</button>
+                          <button class="tiny ghost expenseActionBtn" data-action="pdf" data-id="${escapeHtml(tx.id)}" data-type="transfer" title="Download PDF">📄</button>
                           <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
                         </div>
                       </td>
@@ -1961,35 +1970,25 @@ function renderExpensesList(){
 
   els.expensesList.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
   els.expensesList.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
-  // Add event listeners for PDF download buttons
-  els.expensesList.querySelectorAll('[onclick^="downloadExpenseTopupPDF"]').forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const onclickAttr = btn.getAttribute("onclick");
-      const match = onclickAttr.match(/downloadExpenseTopupPDF\('([^']+)'\)/);
-      if (match) downloadExpenseTopupPDF(match[1]);
-    });
-  });
-  els.expensesList.querySelectorAll('[onclick^="downloadExpenseTransferPDF"]').forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const onclickAttr = btn.getAttribute("onclick");
-      const match = onclickAttr.match(/downloadExpenseTransferPDF\('([^']+)'\)/);
-      if (match) downloadExpenseTransferPDF(match[1]);
-    });
-  });
-  els.expensesList.querySelectorAll('[onclick^="downloadAllTopupsPDF"]').forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      downloadAllTopupsPDF();
-    });
-  });
-  els.expensesList.querySelectorAll('[onclick^="downloadAllTransfersPDF"]').forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      downloadAllTransfersPDF();
-    });
-  });
+  // Add event listeners for expense action buttons
+  els.expensesList.querySelectorAll(".expenseActionBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    const type = btn.dataset.type;
+    
+    if (action === "pdf") {
+      if (type === "topup") {
+        await downloadExpenseTopupPDF(id);
+      } else if (type === "transfer") {
+        await downloadExpenseTransferPDF(id);
+      } else if (type === "all-topups") {
+        await downloadAllTopupsPDF();
+      } else if (type === "all-transfers") {
+        await downloadAllTransfersPDF();
+      }
+    }
+  }));
 }
 
 
@@ -2215,7 +2214,7 @@ function renderExpenseOverviewWallets(){
         </div>
         ${overviewOneLine("Top-up:", money(totalTopup, a.currency))}
         ${overviewOneLine("Spent:", money(a.spentMoney, a.currency))}
-        ${overviewOneLine("Balance:", money(a.balance, a.currency))}
+        ${overviewAvailableLine(money(a.balance, a.currency))}
         <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
           <button class="tiny ghost" onclick="openExpenseModal('topup', '${escapeHtml(a.group_id)}')">Add Money</button>
           <button class="tiny ghost" onclick="openExpenseModal('expense', '${escapeHtml(a.group_id)}')">Add Expense</button>
