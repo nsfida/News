@@ -495,6 +495,21 @@ function overviewWatermarkCurrency(currency){
   return `<div class="summary-watermark" aria-hidden="true">${currencySymbolHtml(currency)}</div>`;
 }
 
+function overviewWatermarkWallet(walletName, currency){
+  // Try to load wallet logo, fallback to currency symbol if logo doesn't exist
+  const logoPath = `Assets/logo/wallet_logos/${escapeHtml(walletName)}.png`;
+  const uniqueId = `wallet-logo-${escapeHtml(walletName).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+  return `
+    <div class="summary-watermark" aria-hidden="true">
+      <img id="${uniqueId}" src="${logoPath}" alt="${escapeHtml(walletName)} logo" 
+           style="width: 100%; height: 100%; object-fit: contain; opacity: 0.45;"
+           onload="this.style.display='block'; document.getElementById('${uniqueId}-fallback').style.display='none';"
+           onerror="this.style.display='none'; document.getElementById('${uniqueId}-fallback').style.display='block';">
+      <div id="${uniqueId}-fallback" style="display:block; font-size:clamp(4.5rem, 28vw, 7.5rem); line-height:1; color:var(--text); opacity:.07; animation:summary-watermark-pulse 3.8s ease-in-out infinite;">${currencySymbolHtml(currency)}</div>
+    </div>
+  `;
+}
+
 function overviewWatermarkGoods(){
   return `<div class="summary-watermark summary-watermark-goods" aria-hidden="true">🛒</div>`;
 }
@@ -1762,7 +1777,9 @@ function renderExpensesList(){
               <small>Total Top-up</small>
               <strong>${topupTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
-            <div class="lt-action"></div>
+            <div class="lt-action">
+              <button class="icon-btn ghost" onclick="downloadAllTopupsPDF()" title="Download All Top-ups PDF" style="font-size: 0.9rem;">📄</button>
+            </div>
           </div>
         </summary>
         <div class="detail">
@@ -1780,6 +1797,7 @@ function renderExpensesList(){
                     <td>
                       <div style="display:flex;gap:4px;">
                         <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                        <button class="tiny ghost" onclick="downloadExpenseTopupPDF('${escapeHtml(tx.id)}')" title="Download PDF">📄</button>
                         <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
                       </div>
                     </td>
@@ -1831,7 +1849,9 @@ function renderExpensesList(){
               <small>Total Transferred</small>
               <strong>${transferTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
-            <div class="lt-action"></div>
+            <div class="lt-action">
+              <button class="icon-btn ghost" onclick="downloadAllTransfersPDF()" title="Download All Transfers PDF" style="font-size: 0.9rem;">📄</button>
+            </div>
           </div>
         </summary>
         <div class="detail">
@@ -1864,6 +1884,7 @@ function renderExpensesList(){
                       <td>
                         <div style="display:flex;gap:4px;">
                           <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                          <button class="tiny ghost" onclick="downloadExpenseTransferPDF('${escapeHtml(tx.id)}')" title="Download PDF">📄</button>
                           <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
                         </div>
                       </td>
@@ -1940,6 +1961,35 @@ function renderExpensesList(){
 
   els.expensesList.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
   els.expensesList.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
+  // Add event listeners for PDF download buttons
+  els.expensesList.querySelectorAll('[onclick^="downloadExpenseTopupPDF"]').forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const onclickAttr = btn.getAttribute("onclick");
+      const match = onclickAttr.match(/downloadExpenseTopupPDF\('([^']+)'\)/);
+      if (match) downloadExpenseTopupPDF(match[1]);
+    });
+  });
+  els.expensesList.querySelectorAll('[onclick^="downloadExpenseTransferPDF"]').forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const onclickAttr = btn.getAttribute("onclick");
+      const match = onclickAttr.match(/downloadExpenseTransferPDF\('([^']+)'\)/);
+      if (match) downloadExpenseTransferPDF(match[1]);
+    });
+  });
+  els.expensesList.querySelectorAll('[onclick^="downloadAllTopupsPDF"]').forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      downloadAllTopupsPDF();
+    });
+  });
+  els.expensesList.querySelectorAll('[onclick^="downloadAllTransfersPDF"]').forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      downloadAllTransfersPDF();
+    });
+  });
 }
 
 
@@ -2158,7 +2208,7 @@ function renderExpenseOverviewWallets(){
     const balClass = a.balance > 0 ? "" : "style=\"opacity:.6\"";
     return `
       <div class="summary currency-summary" ${balClass}>
-        ${overviewWatermarkCurrency(a.currency)}
+        ${overviewWatermarkWallet(a.person_name || "Wallet", a.currency)}
         <div class="currency-head" style="font-size:1.1rem;gap:6px;justify-content:flex-start;">
           ${currencySymbolHtml(a.currency)}
           <span style="font-size:.8rem;font-weight:750;line-height:1.2;">${escapeHtml(a.person_name || "Wallet")}</span>
@@ -3211,6 +3261,221 @@ async function downloadGoodsPDF(){
   });
 
   doc.save("Goods_Report.pdf");
+}
+
+async function downloadExpenseTopupPDF(entryId){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const entry = state.entries.find(e => e.id === entryId);
+  if (!entry){
+    alert("Top-up record not found.");
+    return;
+  }
+
+  const { doc } = window.jspdf.jsPDF();
+  doc.setFont("helvetica");
+  
+  // Title
+  doc.setFontSize(16);
+  doc.text("Top-Up Record", 14, 20);
+  
+  // Record details
+  doc.setFontSize(12);
+  doc.text(`Date: ${displayDate(entry.action_date)}`, 14, 35);
+  doc.text(`Wallet: ${entry.person_name || "—"} (${entry.accountType || ""})`, 14, 45);
+  doc.text(`Type: ${entry.isOpeningBalance ? "Opening Balance" : "Top-up"}`, 14, 55);
+  doc.text(`Amount: ${formatReportAmount(entry.action_amount, entry.currency)}`, 14, 65);
+  doc.text(`Notes: ${cleanExpenseNote(entry.notes)}`, 14, 75);
+  
+  drawPdfFooter(doc);
+  doc.save(`Topup_${entry.person_name?.replace(/\s+/g, "_") || "wallet"}_${displayDate(entry.action_date)}.pdf`);
+}
+
+async function downloadExpenseTransferPDF(entryId){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const entry = state.entries.find(e => e.id === entryId);
+  if (!entry){
+    alert("Transfer record not found.");
+    return;
+  }
+
+  const { doc } = window.jspdf.jsPDF();
+  doc.setFont("helvetica");
+  
+  // Title
+  doc.setFontSize(16);
+  doc.text("Transfer Record", 14, 20);
+  
+  // Parse transfer details
+  const transferMatch = entry.notes.match(/Transfer to ([^:]+): ([\d.]+) (\w+) → ([\d.]+) (\w+) \(Rate: ([\d.]+)\)/);
+  let toWallet = "Unknown";
+  let conversionRate = "N/A";
+  
+  if (transferMatch) {
+    toWallet = transferMatch[1];
+    conversionRate = transferMatch[6];
+  } else {
+    const simpleMatch = entry.notes.match(/Transfer to ([^:]+)/);
+    if (simpleMatch) toWallet = simpleMatch[1];
+  }
+  
+  // Record details
+  doc.setFontSize(12);
+  doc.text(`Date: ${displayDate(entry.action_date)}`, 14, 35);
+  doc.text(`From Wallet: ${entry.person_name || "—"} (${entry.accountType || ""})`, 14, 45);
+  doc.text(`To Wallet: ${toWallet}`, 14, 55);
+  doc.text(`Amount: ${formatReportAmount(entry.action_amount, entry.currency)}`, 14, 65);
+  doc.text(`Conversion Rate: ${conversionRate}`, 14, 75);
+  doc.text(`Notes: ${cleanExpenseNote(entry.notes)}`, 14, 85);
+  
+  drawPdfFooter(doc);
+  doc.save(`Transfer_${entry.person_name?.replace(/\s+/g, "_") || "wallet"}_${displayDate(entry.action_date)}.pdf`);
+}
+
+async function downloadAllTopupsPDF(){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  // Collect all top-up transactions across all accounts
+  const allTopupTransactions = [];
+  for (const account of getExpenseAccounts({ applyUiFilters: false })) {
+    for (const topup of account.topups) {
+      allTopupTransactions.push({
+        ...topup,
+        person_name: account.person_name,
+        currency: account.currency,
+        accountType: account.accountType,
+        isOpeningBalance: topup.id === account.principal?.id
+      });
+    }
+  }
+
+  if (allTopupTransactions.length === 0) {
+    alert("No top-up records found.");
+    return;
+  }
+
+  const { doc } = window.jspdf.jsPDF();
+  doc.setFont("helvetica");
+  
+  // Title
+  doc.setFontSize(16);
+  doc.text("All Top-Up Records", 14, 20);
+  
+  // Summary
+  doc.setFontSize(12);
+  const totalAmount = allTopupTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
+  doc.text(`Total Records: ${allTopupTransactions.length}`, 14, 35);
+  doc.text(`Total Amount: ${formatReportAmount(totalAmount, allTopupTransactions[0]?.currency || "AED")}`, 14, 45);
+  
+  // Table headers
+  let yPosition = 65;
+  doc.setFontSize(10);
+  doc.text("Date", 14, yPosition);
+  doc.text("Wallet", 40, yPosition);
+  doc.text("Type", 80, yPosition);
+  doc.text("Amount", 120, yPosition);
+  doc.text("Notes", 160, yPosition);
+  
+  // Table rows
+  yPosition += 10;
+  for (const tx of allTopupTransactions) {
+    doc.text(displayDate(tx.action_date || "—"), 14, yPosition);
+    doc.text(`${tx.person_name || "—"} (${tx.accountType || ""})`, 40, yPosition);
+    doc.text(tx.isOpeningBalance ? "Opening Balance" : "Top-up", 80, yPosition);
+    doc.text(formatReportAmount(tx.action_amount, tx.currency), 120, yPosition);
+    doc.text(cleanExpenseNote(tx.notes), 160, yPosition);
+    yPosition += 8;
+  }
+  
+  drawPdfFooter(doc);
+  doc.save(`All_Topup_Records_${todayISO()}.pdf`);
+}
+
+async function downloadAllTransfersPDF(){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  // Collect all transfer transactions across all accounts
+  const allTransferTransactions = [];
+  for (const account of getExpenseAccounts({ applyUiFilters: false })) {
+    for (const row of account.spends) {
+      const meta = expenseMetaFromNotes(row.notes);
+      if (meta.expenseType === "Transfer") {
+        allTransferTransactions.push({
+          ...row,
+          person_name: account.person_name,
+          currency: account.currency,
+          accountType: account.accountType
+        });
+      }
+    }
+  }
+
+  if (allTransferTransactions.length === 0) {
+    alert("No transfer records found.");
+    return;
+  }
+
+  const { doc } = window.jspdf.jsPDF();
+  doc.setFont("helvetica");
+  
+  // Title
+  doc.setFontSize(16);
+  doc.text("All Transfer Records", 14, 20);
+  
+  // Summary
+  doc.setFontSize(12);
+  const totalAmount = allTransferTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
+  doc.text(`Total Records: ${allTransferTransactions.length}`, 14, 35);
+  doc.text(`Total Amount: ${formatReportAmount(totalAmount, allTransferTransactions[0]?.currency || "AED")}`, 14, 45);
+  
+  // Table headers
+  let yPosition = 65;
+  doc.setFontSize(10);
+  doc.text("Date", 14, yPosition);
+  doc.text("From Wallet", 40, yPosition);
+  doc.text("To Wallet", 90, yPosition);
+  doc.text("Amount", 140, yPosition);
+  doc.text("Notes", 180, yPosition);
+  
+  // Table rows
+  yPosition += 10;
+  for (const tx of allTransferTransactions) {
+    const transferMatch = tx.notes.match(/Transfer to ([^:]+): ([\d.]+) (\w+) → ([\d.]+) (\w+) \(Rate: ([\d.]+)\)/);
+    let toWallet = "Unknown";
+    let conversionRate = "N/A";
+    
+    if (transferMatch) {
+      toWallet = transferMatch[1];
+      conversionRate = transferMatch[6];
+    } else {
+      const simpleMatch = tx.notes.match(/Transfer to ([^:]+)/);
+      if (simpleMatch) toWallet = simpleMatch[1];
+    }
+    
+    doc.text(displayDate(tx.action_date || "—"), 14, yPosition);
+    doc.text(`${tx.person_name || "—"} (${tx.accountType || ""})`, 40, yPosition);
+    doc.text(toWallet, 90, yPosition);
+    doc.text(formatReportAmount(tx.action_amount, tx.currency), 140, yPosition);
+    doc.text(conversionRate, 180, yPosition);
+    doc.text(cleanExpenseNote(tx.notes), 220, yPosition);
+    yPosition += 8;
+  }
+  
+  drawPdfFooter(doc);
+  doc.save(`All_Transfer_Records_${todayISO()}.pdf`);
 }
 
 async function downloadExpenseItemPDF(itemKey){
