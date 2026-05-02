@@ -433,6 +433,21 @@ a{color:inherit}
 .expense-wallet-stats{font-size:.7rem;color:var(--text);line-height:1.45;display:grid;gap:2px;width:100%;}
 .expense-wallet-stats span{display:flex;justify-content:space-between;gap:8px;}
 .expense-wallet-stats em{font-style:normal;color:var(--muted);font-weight:600;}
+/* Available amount styling for expense wallet filter */
+.expense-wallet-stats .available-label{color:var(--success);}
+.expense-wallet-stats .available-label em{color:var(--success) !important;}
+.expense-wallet-stats .available-label .available-amount{color:var(--success);}
+.expense-wallet-stats .available-label .available-amount .money{color:var(--success);}
+.expense-wallet-stats .available-label .available-amount .money .symbol{color:var(--success);}
+.expense-wallet-stats .available-label .available-amount .money .amount{color:var(--success);}
+
+/* Available amount styling for summary cards */
+.summary-line-one.available-label{color:var(--success) !important;}
+.summary-line-one-value.available-amount{color:var(--success) !important;}
+.available-amount{color:var(--success);}
+.available-amount .money{color:var(--success);}
+.available-amount .money .symbol{color:var(--success);}
+.available-amount .money .amount{color:var(--success);}
 .expense-wallet-actions{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(16,24,40,.08);width:100%;}
 .expense-wallet-actions button{
   appearance:none;border:none;background:none;padding:0;font-size:.7rem;font-weight:700;color:var(--primary);
