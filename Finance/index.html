@@ -14,21 +14,66 @@
   <div class="page-currency-bg" id="pageCurrencyBg" aria-hidden="true"></div>
   <div id="lockScreen" class="lock">
     <div class="lock-card">
-      <div class="brand" style="margin-bottom:12px">
-        <img class="mark" src="Assets/logo/logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
-        <div>
-          <h1>MMM by NSF</h1>
-          <p>Money Management Module (Powered by Nadeem Shahzad Fida)</p>
+      <div class="lock-header">
+        <div class="brand">
+          <img class="mark" src="Assets/logo/logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+          <div>
+            <h1>MMM by NSF</h1>
+            <p>Money Management Module</p>
+          </div>
         </div>
       </div>
-      <h2>Login</h2>
-      <p>Enter your username and password. (If you don't have your account, please contact on WhatsApp <code>+923339004564</code>).</p>
-      <div class="lock-grid">
-        <input id="zipUsernameInput" class="input lock-input-full" type="text" placeholder="Username" autocomplete="username" autocapitalize="off" spellcheck="false" />
-        <input id="zipPasswordInput" class="input" type="password" placeholder="Password" autocomplete="current-password" />
-        <button id="unlockBtn" class="btn primary" type="button">Unlock</button>
+      
+      <div class="lock-content">
+        <div class="lock-welcome">
+          <h2>Welcome Back</h2>
+          <p>Sign in to access your financial dashboard</p>
+        </div>
+        
+        <form id="loginForm" class="login-form">
+          <div class="form-group">
+            <label for="zipUsernameInput" class="form-label">Username</label>
+            <div class="input-wrapper">
+              <div class="input-icon">👤</div>
+              <input id="zipUsernameInput" class="input lock-input-full" type="text" placeholder="Enter your username" autocomplete="username" autocapitalize="off" spellcheck="false" />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="zipPasswordInput" class="form-label">Password</label>
+            <div class="input-wrapper">
+              <div class="input-icon">🔒</div>
+              <input id="zipPasswordInput" class="input" type="password" placeholder="Enter your password" autocomplete="current-password" />
+              <button type="button" id="togglePasswordBtn" class="password-toggle" title="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+          
+          <div class="form-options">
+            <label class="checkbox-wrapper">
+              <input type="checkbox" id="rememberMe" />
+              <span class="checkmark"></span>
+              <span class="checkbox-label">Remember me for 30 days</span>
+            </label>
+          </div>
+          
+          <button id="unlockBtn" class="btn primary login-btn" type="submit">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-loader" style="display: none;">⏳</span>
+          </button>
+        </form>
+        
+        <div class="lock-help">
+          <p class="help-text">
+            Don't have an account? Contact us on 
+            <a href="https://wa.me/923339004564" target="_blank" class="whatsapp-link">WhatsApp +923339004564</a>
+          </p>
+        </div>
+        
+        <div id="lockError" class="lock-error">
+          <div class="error-icon">⚠️</div>
+          <div class="error-message"></div>
+        </div>
       </div>
-      <div id="lockError" class="lock-error"></div>
     </div>
   </div>
 
