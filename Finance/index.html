@@ -396,6 +396,13 @@
               <input type="radio" id="f_exp_cur_pkr" name="f_exp_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="expenses">
               <label for="f_exp_cur_pkr" class="filter-label">Rs.</label>
             </div>
+            <div class="filter-group" style="align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:.78rem;color:var(--muted);font-weight:600;white-space:nowrap;">Date Range:</span>
+              <input type="date" id="expenseDateFrom" class="input" style="width:auto;min-width:130px;" />
+              <span style="color:var(--muted);font-size:.82rem;">to</span>
+              <input type="date" id="expenseDateTo" class="input" style="width:auto;min-width:130px;" />
+              <button type="button" class="btn ghost" id="clearExpenseDateBtn">Clear</button>
+            </div>
           </div>
           <div id="expensesList" class="list"></div>
         </div>
