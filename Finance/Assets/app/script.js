@@ -573,15 +573,17 @@ function overviewWatermarkFloatingWalletLogos(accounts){
     const r3 = hash01(`${name}::3`);
     const r4 = hash01(`${name}::4`);
     const r5 = hash01(`${name}::5`);
-    const dur = (14 + Math.floor(r1 * 18)); // 14..31s
-    const zoom = (6 + Math.floor(r2 * 7));  // 6..12s
-    const delay = (Math.floor(r3 * 10) * -1); // negative delay
-    const scale = (0.75 + r4 * 0.55).toFixed(2);
-const left = (4 + r1 * 88).toFixed(2);
-    const top  = (4 + r2 * 88).toFixed(2);
+    const dur = (18 + Math.floor(r1 * 24)); // 18..41s
+    const zoom = (8 + Math.floor(r2 * 9));  // 8..16s
+    const rotate = (12 + Math.floor(r3 * 12)); // 12..23s
+    const delay = (Math.floor(r4 * 15) * -1); // negative delay
+    const scale = (0.85 + r5 * 0.45).toFixed(2);
+const left = (2 + r1 * 92).toFixed(2);
+    const top  = (2 + r2 * 92).toFixed(2);
     const cssVars = [
       `--d:${dur}s`,
       `--z:${zoom}s`,
+      `--r:${rotate}s`,
       `--delay:${delay}s`,
       `--s:${scale}`
     ].join(";");
@@ -1972,10 +1974,18 @@ function renderExpensesList(){
   const topupCurrencies = sortCurrenciesList([...topupByCurrency.keys()]);
 
   if (topupTransactions.length > 0){
-    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Top-Up Records</h4>`;
-    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">PDF per currency row below. Combined report covers every currency.</span>
-      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
-    </div></div>`;
+    html += `<section class="overview expense-section collapsed" id="topupRecordsSection">
+      <div class="overview-top" id="topupRecordsBanner">
+        <div>
+          <h2>Top-Up Records</h2>
+          <p>Money added to wallets. PDF per currency row below. Combined report covers every currency.</p>
+        </div>
+        <div class="tools">
+          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
+          <button class="icon-btn ghost" id="toggleTopupRecordsBtn" type="button" title="Expand Top-Up Records">▶</button>
+        </div>
+      </div>
+      <div class="expense-section-content" id="topupRecordsContent">`;
     for (const cur of topupCurrencies){
       const txs = topupByCurrency.get(cur).slice().sort((a, b) => dateStamp(b.action_date || b.loan_date) - dateStamp(a.action_date || a.loan_date));
       const totalCur = txs.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
@@ -2026,6 +2036,7 @@ function renderExpensesList(){
         </div>
       </details>`;
     }
+    html += `</div></section>`;
   }
 
   const transferEvents = buildTransferEvents();
@@ -2037,10 +2048,18 @@ function renderExpensesList(){
   const transferCurrencies = sortCurrenciesList([...transferCurrencySet]);
 
   if (transferEvents.length > 0 && transferCurrencies.length > 0){
-    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Transfer Records</h4>`;
-    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">Sent and received are shown per currency using the conversion rate recorded on transfer.</span>
-      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
-    </div></div>`;
+    html += `<section class="overview expense-section collapsed" id="transferRecordsSection">
+      <div class="overview-top" id="transferRecordsBanner">
+        <div>
+          <h2>Transfer Records</h2>
+          <p>Sent and received are shown per currency using the conversion rate recorded on transfer.</p>
+        </div>
+        <div class="tools">
+          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
+          <button class="icon-btn ghost" id="toggleTransferRecordsBtn" type="button" title="Expand Transfer Records">▶</button>
+        </div>
+      </div>
+      <div class="expense-section-content" id="transferRecordsContent">`;
     for (const cur of transferCurrencies){
       const rows = getTransferRowsForCurrency(cur, transferEvents);
       if (!rows.length) continue;
@@ -2098,6 +2117,7 @@ function renderExpensesList(){
         </div>
       </details>`;
     }
+    html += `</div></section>`;
   }
 
   // Expense items (non-transfer spending), grouped by item
@@ -2105,6 +2125,17 @@ function renderExpensesList(){
   const items = groupExpenseItems(spendAttached);
   
   if (items.length > 0) {
+    html += `<section class="overview expense-section collapsed" id="spendingHistorySection">
+      <div class="overview-top" id="spendingHistoryBanner">
+        <div>
+          <h2>Spending History</h2>
+          <p>Non-transfer spending grouped by item and category.</p>
+        </div>
+        <div class="tools">
+          <button class="icon-btn ghost" id="toggleSpendingHistoryBtn" type="button" title="Expand Spending History">▶</button>
+        </div>
+      </div>
+      <div class="expense-section-content" id="spendingHistoryContent">`;
     html += items.map(item => `
       <details class="loan expense-item-row">
         <summary>
@@ -2152,6 +2183,7 @@ function renderExpensesList(){
         </div>
       </details>
     `).join("");
+    html += `</div></section>`;
   }
 
   if (!html) {
@@ -4295,6 +4327,108 @@ function toggleMainOverview() {
   }
 }
 
+function expandTopupRecords() {
+  const section = document.getElementById("topupRecordsSection");
+  const btn = document.getElementById("toggleTopupRecordsBtn");
+  if (section && btn) {
+    section.classList.remove("collapsed");
+    section.classList.add("expanded");
+    btn.textContent = "▼";
+    btn.title = "Collapse Top-Up Records";
+  }
+}
+
+function collapseTopupRecords() {
+  const section = document.getElementById("topupRecordsSection");
+  const btn = document.getElementById("toggleTopupRecordsBtn");
+  if (section && btn) {
+    section.classList.remove("expanded");
+    section.classList.add("collapsed");
+    btn.textContent = "▶";
+    btn.title = "Expand Top-Up Records";
+  }
+}
+
+function toggleTopupRecords() {
+  const section = document.getElementById("topupRecordsSection");
+  if (section) {
+    const isExpanded = section.classList.contains("expanded");
+    if (isExpanded) {
+      collapseTopupRecords();
+    } else {
+      expandTopupRecords();
+    }
+  }
+}
+
+function expandTransferRecords() {
+  const section = document.getElementById("transferRecordsSection");
+  const btn = document.getElementById("toggleTransferRecordsBtn");
+  if (section && btn) {
+    section.classList.remove("collapsed");
+    section.classList.add("expanded");
+    btn.textContent = "▼";
+    btn.title = "Collapse Transfer Records";
+  }
+}
+
+function collapseTransferRecords() {
+  const section = document.getElementById("transferRecordsSection");
+  const btn = document.getElementById("toggleTransferRecordsBtn");
+  if (section && btn) {
+    section.classList.remove("expanded");
+    section.classList.add("collapsed");
+    btn.textContent = "▶";
+    btn.title = "Expand Transfer Records";
+  }
+}
+
+function toggleTransferRecords() {
+  const section = document.getElementById("transferRecordsSection");
+  if (section) {
+    const isExpanded = section.classList.contains("expanded");
+    if (isExpanded) {
+      collapseTransferRecords();
+    } else {
+      expandTransferRecords();
+    }
+  }
+}
+
+function expandSpendingHistory() {
+  const section = document.getElementById("spendingHistorySection");
+  const btn = document.getElementById("toggleSpendingHistoryBtn");
+  if (section && btn) {
+    section.classList.remove("collapsed");
+    section.classList.add("expanded");
+    btn.textContent = "▼";
+    btn.title = "Collapse Spending History";
+  }
+}
+
+function collapseSpendingHistory() {
+  const section = document.getElementById("spendingHistorySection");
+  const btn = document.getElementById("toggleSpendingHistoryBtn");
+  if (section && btn) {
+    section.classList.remove("expanded");
+    section.classList.add("collapsed");
+    btn.textContent = "▶";
+    btn.title = "Expand Spending History";
+  }
+}
+
+function toggleSpendingHistory() {
+  const section = document.getElementById("spendingHistorySection");
+  if (section) {
+    const isExpanded = section.classList.contains("expanded");
+    if (isExpanded) {
+      collapseSpendingHistory();
+    } else {
+      expandSpendingHistory();
+    }
+  }
+}
+
 function attachEvents(){
   const closeAllMenus = () => {
     document.querySelectorAll(".menu-dropdown.open").forEach(panel => panel.classList.remove("open"));
@@ -4344,6 +4478,33 @@ function attachEvents(){
     toggleMainOverview();
   });
   els.mainOverviewBanner.addEventListener("click", toggleMainOverview);
+
+  // Expense section toggle events
+  document.addEventListener("click", (e) => {
+    const topupBtn = e.target.closest("#toggleTopupRecordsBtn");
+    const topupBanner = e.target.closest("#topupRecordsBanner");
+    const transferBtn = e.target.closest("#toggleTransferRecordsBtn");
+    const transferBanner = e.target.closest("#transferRecordsBanner");
+    const spendingBtn = e.target.closest("#toggleSpendingHistoryBtn");
+    const spendingBanner = e.target.closest("#spendingHistoryBanner");
+    
+    if (topupBtn) {
+      e.stopPropagation();
+      toggleTopupRecords();
+    } else if (topupBanner) {
+      toggleTopupRecords();
+    } else if (transferBtn) {
+      e.stopPropagation();
+      toggleTransferRecords();
+    } else if (transferBanner) {
+      toggleTransferRecords();
+    } else if (spendingBtn) {
+      e.stopPropagation();
+      toggleSpendingHistory();
+    } else if (spendingBanner) {
+      toggleSpendingHistory();
+    }
+  });
 
   document.querySelectorAll("[data-entry-menu]").forEach(btn => {
     btn.addEventListener("click", e => {
