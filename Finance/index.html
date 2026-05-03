@@ -59,11 +59,11 @@
     </header>
 
     <section class="tabs">
-      <button class="tab active" data-tab="given" type="button">Loan Given / Received Back</button>
+      <button class="tab active" data-tab="expenses" type="button">Expenses</button>
+      <button class="tab" data-tab="given" type="button">Loan Given / Received Back</button>
       <button class="tab" data-tab="taken" type="button">Loan Taken / Returned Back</button>
       <button class="tab" data-tab="installments" type="button">Installment Plans</button>
       <button class="tab" data-tab="goods" type="button">Goods Bought / Sold</button>
-      <button class="tab" data-tab="expenses" type="button">Expenses</button>
     </section>
 
 <section class="overview main-overview-section collapsed" id="mainOverview">
@@ -112,7 +112,7 @@
     </section>
 
     <main class="center-wrap">
-      <section id="givenPanel" class="panel active">
+      <section id="givenPanel" class="panel">
         <div class="card section">
           <div class="section-head">
             <div class="section-head-top">
@@ -351,7 +351,7 @@
         </div>
       </section>
 
-      <section id="expensesPanel" class="panel">
+      <section id="expensesPanel" class="panel active">
         <div class="card section">
           <div class="section-head">
             <div class="section-head-top">
@@ -817,6 +817,16 @@
               <label>Notes</label>
               <input class="input" name="notes" placeholder="Optional note" />
             </div>
+            <div class="field w12" id="principalWalletGroup">
+              <label id="principalWalletLabel" style="display:flex;align-items:center;gap:6px;">
+                Wallet
+                <span class="badge blue" id="principalWalletBadge" style="font-size:.68rem;padding:3px 7px;">Loan Given → Deduct from wallet</span>
+              </label>
+              <select class="select" name="loan_wallet_id" id="modalLoanWalletSelect">
+                <option value="">Skip wallet entry</option>
+              </select>
+              <small style="color:var(--muted);font-size:.74rem;margin-top:3px;display:block;">Select a wallet to automatically record this loan as an expense/top-up in your expense tracker.</small>
+            </div>
             <div class="field w12 modal-footer">
               <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
               <button class="btn primary" type="submit" id="principalSubmitBtn">Save</button>
@@ -837,6 +847,16 @@
             </div>
             <div id="multiEntryContainer" style="grid-column: span 12; margin-top: 5px;">
               </div>
+            <div class="field w12" id="paymentWalletGroup">
+              <label id="paymentWalletLabel" style="display:flex;align-items:center;gap:6px;">
+                Wallet
+                <span class="badge blue" id="paymentWalletBadge" style="font-size:.68rem;padding:3px 7px;">Received Back → Add to wallet</span>
+              </label>
+              <select class="select" name="payment_wallet_id" id="modalPaymentWalletSelect">
+                <option value="">Skip wallet entry</option>
+              </select>
+              <small style="color:var(--muted);font-size:.74rem;margin-top:3px;display:block;">Select a wallet to automatically record this payment as a top-up/deduction in your expense tracker.</small>
+            </div>
             <div class="field w12 modal-footer">
               <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
               <button class="btn primary" type="submit" id="paymentSubmitBtn">Save</button>
