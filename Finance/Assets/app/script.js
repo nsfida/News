@@ -4,9 +4,6 @@ const CONFIG = {
 };
 
 const ZIP_USERNAME_SESSION_KEY = "loanledger-zip-username-v1";
-const REMEMBER_ME_KEY = "loanledger-remember-me-v1";
-const REMEMBER_ME_EXPIRY_KEY = "loanledger-remember-me-expiry-v1";
-const REMEMBER_ME_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
 
 function sanitizeZipUsername(raw){
   const username = String(raw || "").trim();
@@ -53,9 +50,6 @@ const els = {
   unlockBtn: document.getElementById("unlockBtn"),
   lockError: document.getElementById("lockError"),
   app: document.getElementById("app"),
-  loginForm: document.getElementById("loginForm"),
-  rememberMe: document.getElementById("rememberMe"),
-  togglePasswordBtn: document.getElementById("togglePasswordBtn"),
   logoutBtn: document.getElementById("logoutBtn"),
   mainOverview: document.getElementById("mainOverview"),
   statsGrid: document.getElementById("statsGrid"),
@@ -190,45 +184,6 @@ function escapeHtml(str){
 
 function todayISO(){
   return new Date().toISOString().slice(0,10);
-}
-
-function setRememberMe(username, password) {
-  const expiryTime = Date.now() + REMEMBER_ME_DURATION;
-  localStorage.setItem(REMEMBER_ME_KEY, JSON.stringify({
-    username: username,
-    password: password,
-    timestamp: expiryTime
-  }));
-  localStorage.setItem(REMEMBER_ME_EXPIRY_KEY, expiryTime.toString());
-}
-
-function getRememberMe() {
-  const expiryTime = localStorage.getItem(REMEMBER_ME_EXPIRY_KEY);
-  if (!expiryTime || Date.now() > parseInt(expiryTime)) {
-    clearRememberMe();
-    return null;
-  }
-  
-  const data = localStorage.getItem(REMEMBER_ME_KEY);
-  if (!data) return null;
-  
-  try {
-    const parsed = JSON.parse(data);
-    return parsed;
-  } catch {
-    clearRememberMe();
-    return null;
-  }
-}
-
-function clearRememberMe() {
-  localStorage.removeItem(REMEMBER_ME_KEY);
-  localStorage.removeItem(REMEMBER_ME_EXPIRY_KEY);
-}
-
-function isRememberMeActive() {
-  const expiryTime = localStorage.getItem(REMEMBER_ME_EXPIRY_KEY);
-  return expiryTime && Date.now() <= parseInt(expiryTime);
 }
 
 function displayDate(value){
@@ -618,17 +573,15 @@ function overviewWatermarkFloatingWalletLogos(accounts){
     const r3 = hash01(`${name}::3`);
     const r4 = hash01(`${name}::4`);
     const r5 = hash01(`${name}::5`);
-    const dur = (18 + Math.floor(r1 * 24)); // 18..41s
-    const zoom = (8 + Math.floor(r2 * 9));  // 8..16s
-    const rotate = (12 + Math.floor(r3 * 12)); // 12..23s
-    const delay = (Math.floor(r4 * 15) * -1); // negative delay
-    const scale = (0.85 + r5 * 0.45).toFixed(2);
-const left = (2 + r1 * 92).toFixed(2);
-    const top  = (2 + r2 * 92).toFixed(2);
+    const dur = (14 + Math.floor(r1 * 18)); // 14..31s
+    const zoom = (6 + Math.floor(r2 * 7));  // 6..12s
+    const delay = (Math.floor(r3 * 10) * -1); // negative delay
+    const scale = (0.75 + r4 * 0.55).toFixed(2);
+const left = (4 + r1 * 88).toFixed(2);
+    const top  = (4 + r2 * 88).toFixed(2);
     const cssVars = [
       `--d:${dur}s`,
       `--z:${zoom}s`,
-      `--r:${rotate}s`,
       `--delay:${delay}s`,
       `--s:${scale}`
     ].join(";");
@@ -2019,18 +1972,10 @@ function renderExpensesList(){
   const topupCurrencies = sortCurrenciesList([...topupByCurrency.keys()]);
 
   if (topupTransactions.length > 0){
-    html += `<section class="overview expense-section collapsed" id="topupRecordsSection">
-      <div class="overview-top" id="topupRecordsBanner">
-        <div>
-          <h2>Top-Up Records</h2>
-          <p>Money added to wallets. PDF per currency row below. Combined report covers every currency.</p>
-        </div>
-        <div class="tools">
-          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
-          <button class="icon-btn ghost" id="toggleTopupRecordsBtn" type="button" title="Expand Top-Up Records">▶</button>
-        </div>
-      </div>
-      <div class="expense-section-content" id="topupRecordsContent">`;
+    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Top-Up Records</h4>`;
+    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">PDF per currency row below. Combined report covers every currency.</span>
+      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
+    </div></div>`;
     for (const cur of topupCurrencies){
       const txs = topupByCurrency.get(cur).slice().sort((a, b) => dateStamp(b.action_date || b.loan_date) - dateStamp(a.action_date || a.loan_date));
       const totalCur = txs.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
@@ -2081,7 +2026,6 @@ function renderExpensesList(){
         </div>
       </details>`;
     }
-    html += `</div></section>`;
   }
 
   const transferEvents = buildTransferEvents();
@@ -2093,18 +2037,10 @@ function renderExpensesList(){
   const transferCurrencies = sortCurrenciesList([...transferCurrencySet]);
 
   if (transferEvents.length > 0 && transferCurrencies.length > 0){
-    html += `<section class="overview expense-section collapsed" id="transferRecordsSection">
-      <div class="overview-top" id="transferRecordsBanner">
-        <div>
-          <h2>Transfer Records</h2>
-          <p>Sent and received are shown per currency using the conversion rate recorded on transfer.</p>
-        </div>
-        <div class="tools">
-          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
-          <button class="icon-btn ghost" id="toggleTransferRecordsBtn" type="button" title="Expand Transfer Records">▶</button>
-        </div>
-      </div>
-      <div class="expense-section-content" id="transferRecordsContent">`;
+    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Transfer Records</h4>`;
+    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">Sent and received are shown per currency using the conversion rate recorded on transfer.</span>
+      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
+    </div></div>`;
     for (const cur of transferCurrencies){
       const rows = getTransferRowsForCurrency(cur, transferEvents);
       if (!rows.length) continue;
@@ -2162,7 +2098,6 @@ function renderExpensesList(){
         </div>
       </details>`;
     }
-    html += `</div></section>`;
   }
 
   // Expense items (non-transfer spending), grouped by item
@@ -2170,17 +2105,6 @@ function renderExpensesList(){
   const items = groupExpenseItems(spendAttached);
   
   if (items.length > 0) {
-    html += `<section class="overview expense-section collapsed" id="spendingHistorySection">
-      <div class="overview-top" id="spendingHistoryBanner">
-        <div>
-          <h2>Spending History</h2>
-          <p>Non-transfer spending grouped by item and category.</p>
-        </div>
-        <div class="tools">
-          <button class="icon-btn ghost" id="toggleSpendingHistoryBtn" type="button" title="Expand Spending History">▶</button>
-        </div>
-      </div>
-      <div class="expense-section-content" id="spendingHistoryContent">`;
     html += items.map(item => `
       <details class="loan expense-item-row">
         <summary>
@@ -2228,7 +2152,6 @@ function renderExpensesList(){
         </div>
       </details>
     `).join("");
-    html += `</div></section>`;
   }
 
   if (!html) {
@@ -4372,108 +4295,6 @@ function toggleMainOverview() {
   }
 }
 
-function expandTopupRecords() {
-  const section = document.getElementById("topupRecordsSection");
-  const btn = document.getElementById("toggleTopupRecordsBtn");
-  if (section && btn) {
-    section.classList.remove("collapsed");
-    section.classList.add("expanded");
-    btn.textContent = "▼";
-    btn.title = "Collapse Top-Up Records";
-  }
-}
-
-function collapseTopupRecords() {
-  const section = document.getElementById("topupRecordsSection");
-  const btn = document.getElementById("toggleTopupRecordsBtn");
-  if (section && btn) {
-    section.classList.remove("expanded");
-    section.classList.add("collapsed");
-    btn.textContent = "▶";
-    btn.title = "Expand Top-Up Records";
-  }
-}
-
-function toggleTopupRecords() {
-  const section = document.getElementById("topupRecordsSection");
-  if (section) {
-    const isExpanded = section.classList.contains("expanded");
-    if (isExpanded) {
-      collapseTopupRecords();
-    } else {
-      expandTopupRecords();
-    }
-  }
-}
-
-function expandTransferRecords() {
-  const section = document.getElementById("transferRecordsSection");
-  const btn = document.getElementById("toggleTransferRecordsBtn");
-  if (section && btn) {
-    section.classList.remove("collapsed");
-    section.classList.add("expanded");
-    btn.textContent = "▼";
-    btn.title = "Collapse Transfer Records";
-  }
-}
-
-function collapseTransferRecords() {
-  const section = document.getElementById("transferRecordsSection");
-  const btn = document.getElementById("toggleTransferRecordsBtn");
-  if (section && btn) {
-    section.classList.remove("expanded");
-    section.classList.add("collapsed");
-    btn.textContent = "▶";
-    btn.title = "Expand Transfer Records";
-  }
-}
-
-function toggleTransferRecords() {
-  const section = document.getElementById("transferRecordsSection");
-  if (section) {
-    const isExpanded = section.classList.contains("expanded");
-    if (isExpanded) {
-      collapseTransferRecords();
-    } else {
-      expandTransferRecords();
-    }
-  }
-}
-
-function expandSpendingHistory() {
-  const section = document.getElementById("spendingHistorySection");
-  const btn = document.getElementById("toggleSpendingHistoryBtn");
-  if (section && btn) {
-    section.classList.remove("collapsed");
-    section.classList.add("expanded");
-    btn.textContent = "▼";
-    btn.title = "Collapse Spending History";
-  }
-}
-
-function collapseSpendingHistory() {
-  const section = document.getElementById("spendingHistorySection");
-  const btn = document.getElementById("toggleSpendingHistoryBtn");
-  if (section && btn) {
-    section.classList.remove("expanded");
-    section.classList.add("collapsed");
-    btn.textContent = "▶";
-    btn.title = "Expand Spending History";
-  }
-}
-
-function toggleSpendingHistory() {
-  const section = document.getElementById("spendingHistorySection");
-  if (section) {
-    const isExpanded = section.classList.contains("expanded");
-    if (isExpanded) {
-      collapseSpendingHistory();
-    } else {
-      expandSpendingHistory();
-    }
-  }
-}
-
 function attachEvents(){
   const closeAllMenus = () => {
     document.querySelectorAll(".menu-dropdown.open").forEach(panel => panel.classList.remove("open"));
@@ -4523,33 +4344,6 @@ function attachEvents(){
     toggleMainOverview();
   });
   els.mainOverviewBanner.addEventListener("click", toggleMainOverview);
-
-  // Expense section toggle events
-  document.addEventListener("click", (e) => {
-    const topupBtn = e.target.closest("#toggleTopupRecordsBtn");
-    const topupBanner = e.target.closest("#topupRecordsBanner");
-    const transferBtn = e.target.closest("#toggleTransferRecordsBtn");
-    const transferBanner = e.target.closest("#transferRecordsBanner");
-    const spendingBtn = e.target.closest("#toggleSpendingHistoryBtn");
-    const spendingBanner = e.target.closest("#spendingHistoryBanner");
-    
-    if (topupBtn) {
-      e.stopPropagation();
-      toggleTopupRecords();
-    } else if (topupBanner) {
-      toggleTopupRecords();
-    } else if (transferBtn) {
-      e.stopPropagation();
-      toggleTransferRecords();
-    } else if (transferBanner) {
-      toggleTransferRecords();
-    } else if (spendingBtn) {
-      e.stopPropagation();
-      toggleSpendingHistory();
-    } else if (spendingBanner) {
-      toggleSpendingHistory();
-    }
-  });
 
   document.querySelectorAll("[data-entry-menu]").forEach(btn => {
     btn.addEventListener("click", e => {
@@ -4755,23 +4549,6 @@ function attachEvents(){
   }
   els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   els.unlockBtn.addEventListener("click", attemptUnlock);
-  
-  // Login form submission
-  if (els.loginForm) {
-    els.loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      attemptUnlock();
-    });
-  }
-  
-  // Password visibility toggle
-  if (els.togglePasswordBtn && els.zipPasswordInput) {
-    els.togglePasswordBtn.addEventListener("click", () => {
-      const type = els.zipPasswordInput.type === "password" ? "text" : "password";
-      els.zipPasswordInput.type = type;
-      els.togglePasswordBtn.textContent = type === "password" ? "👁️" : "👁️‍🗨️";
-    });
-  }
 
   [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"],["searchGoods","goods"],["searchExpenses","expenses"]].forEach(([id,key]) => {
     document.getElementById(id).addEventListener("input", e => {
@@ -4783,32 +4560,10 @@ function attachEvents(){
 
 function focusUnlockForm(){
   els.lockError.textContent = "";
-  const errorMessage = els.lockError.querySelector('.error-message');
-  if (errorMessage) {
-    errorMessage.textContent = "";
+  const savedUser = sessionStorage.getItem(ZIP_USERNAME_SESSION_KEY);
+  if (els.zipUsernameInput && savedUser && !els.zipUsernameInput.value.trim()){
+    els.zipUsernameInput.value = savedUser;
   }
-  
-  // Check for Remember Me data first
-  const rememberMeData = getRememberMe();
-  if (rememberMeData && els.rememberMe) {
-    els.rememberMe.checked = true;
-    if (els.zipUsernameInput && !els.zipUsernameInput.value.trim()) {
-      els.zipUsernameInput.value = rememberMeData.username;
-    }
-    if (els.zipPasswordInput && !els.zipPasswordInput.value.trim()) {
-      els.zipPasswordInput.value = rememberMeData.password;
-    }
-  } else {
-    // Fall back to sessionStorage
-    const savedUser = sessionStorage.getItem(ZIP_USERNAME_SESSION_KEY);
-    if (els.zipUsernameInput && savedUser && !els.zipUsernameInput.value.trim()){
-      els.zipUsernameInput.value = savedUser;
-    }
-    if (els.rememberMe) {
-      els.rememberMe.checked = false;
-    }
-  }
-  
   const focusEl = els.zipUsernameInput && !els.zipUsernameInput.value.trim()
     ? els.zipUsernameInput
     : els.zipPasswordInput;
@@ -4820,7 +4575,6 @@ function doLogout(){
   state.unlocked = false;
   sessionStorage.removeItem("loanledger-unlocked");
   sessionStorage.removeItem(ZIP_USERNAME_SESSION_KEY);
-  clearRememberMe(); // Clear Remember Me data on logout
   if (els.zipPasswordInput) els.zipPasswordInput.value = "";
   if (els.app) els.app.classList.add("hide");
   if (els.lockScreen) els.lockScreen.classList.remove("hide");
@@ -4828,35 +4582,20 @@ function doLogout(){
 }
 
 async function attemptUnlock(){
-  // Clear previous errors
-  const errorMessage = els.lockError.querySelector('.error-message');
-  if (errorMessage) {
-    errorMessage.textContent = "";
-  }
-  els.lockError.style.display = "none";
-  
+  els.lockError.textContent = "";
   const zipUsernameRaw = els.zipUsernameInput ? els.zipUsernameInput.value.trim() : "";
   const zipPassword = els.zipPasswordInput.value.trim();
-  const rememberMeChecked = els.rememberMe ? els.rememberMe.checked : false;
-  
   if (!zipUsernameRaw){
-    showError("Please enter your username.");
+    els.lockError.textContent = "Please enter your username.";
     return;
   }
   if (!zipPassword){
-    showError("Please enter the ZIP password.");
+    els.lockError.textContent = "Please enter the ZIP password.";
     return;
   }
-  
-  // Show loading state
-  const btnText = els.unlockBtn.querySelector('.btn-text');
-  const btnLoader = els.unlockBtn.querySelector('.btn-loader');
-  if (btnText) btnText.style.display = "none";
-  if (btnLoader) btnLoader.style.display = "block";
   els.unlockBtn.disabled = true;
-  
+  els.unlockBtn.textContent = "Unlocking…";
   const keepCurrentBackup = state.hasImportedFile && state.dataSource === "backup";
-  
   try{
     const safeUser = sanitizeZipUsername(zipUsernameRaw);
     const zipBlob = await fetchProtectedZipBlob(safeUser);
@@ -4865,100 +4604,31 @@ async function attemptUnlock(){
     if (!configData?.supabaseUrl || !configData?.supabaseKey){
       throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
     }
-    
-    runtimeConfig = configData;
-    state.dataSource = "backup";
+
+    runtimeConfig = {
+      supabaseUrl: String(configData.supabaseUrl).trim(),
+      supabaseKey: String(configData.supabaseKey).trim()
+    };
+    sessionStorage.setItem("loanledger-unlocked", "true");
+    sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
     state.unlocked = true;
-    
-    // Handle Remember Me
-    if (rememberMeChecked) {
-      setRememberMe(safeUser, zipPassword);
+    els.lockScreen.classList.add("hide");
+    els.app.classList.remove("hide");
+
+    defaultDateInputs(document);
+    if (keepCurrentBackup){
+      await refreshDbSnapshot();
+      updateUploadButtonVisibility();
+      updateConnectButtonVisibility();
+      renderAll();
     } else {
-      clearRememberMe();
+      await loadEntriesFromSupabase();
     }
-    
-    sessionStorage.setItem("loanledger-unlocked", "true");
-    sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
-    
-    els.lockScreen.classList.add("hide");
-    els.app.classList.remove("hide");
-
-    defaultDateInputs(document);
-    renderAll();
   }catch(err){
-    showError(err.message);
+    els.lockError.textContent = err.message;
   }finally{
-    // Reset loading state
-    if (btnText) btnText.style.display = "block";
-    if (btnLoader) btnLoader.style.display = "none";
     els.unlockBtn.disabled = false;
-  }
-}
-
-function showError(message) {
-  const errorMessage = els.lockError.querySelector('.error-message');
-  if (errorMessage) {
-    errorMessage.textContent = message;
-  }
-  els.lockError.style.display = "flex";
-}
-
-async function attemptAutoLogin() {
-  const rememberMeData = getRememberMe();
-  if (!rememberMeData || !els.zipUsernameInput || !els.zipPasswordInput) {
-    return false;
-  }
-  
-  // Fill in the form
-  els.zipUsernameInput.value = rememberMeData.username;
-  els.zipPasswordInput.value = rememberMeData.password;
-  if (els.rememberMe) {
-    els.rememberMe.checked = true;
-  }
-  
-  try {
-    // Show loading state briefly to indicate auto-login is happening
-    const btnText = els.unlockBtn.querySelector('.btn-text');
-    const btnLoader = els.unlockBtn.querySelector('.btn-loader');
-    if (btnText) btnText.style.display = "none";
-    if (btnLoader) btnLoader.style.display = "block";
-    els.unlockBtn.disabled = true;
-    
-    const safeUser = sanitizeZipUsername(rememberMeData.username);
-    const zipBlob = await fetchProtectedZipBlob(safeUser);
-    const zipFile = new File([zipBlob], `${safeUser}.zip`, { type: "application/zip" });
-    const configData = await readConfigFromZip(zipFile, rememberMeData.password);
-    
-    if (!configData?.supabaseUrl || !configData?.supabaseKey){
-      throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
-    }
-    
-    runtimeConfig = configData;
-    state.dataSource = "backup";
-    state.unlocked = true;
-    
-    sessionStorage.setItem("loanledger-unlocked", "true");
-    sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
-    
-    els.lockScreen.classList.add("hide");
-    els.app.classList.remove("hide");
-
-    defaultDateInputs(document);
-    renderAll();
-    
-    return true;
-  } catch (err) {
-    // Clear Remember Me data if auto-login fails
-    clearRememberMe();
-    focusUnlockForm();
-    return false;
-  } finally {
-    // Reset loading state
-    const btnText = els.unlockBtn.querySelector('.btn-text');
-    const btnLoader = els.unlockBtn.querySelector('.btn-loader');
-    if (btnText) btnText.style.display = "block";
-    if (btnLoader) btnLoader.style.display = "none";
-    els.unlockBtn.disabled = false;
+    els.unlockBtn.textContent = "Unlock";
   }
 }
 
@@ -5060,22 +4730,6 @@ async function boot(){
   defaultDateInputs(document);
   const resumedImport = sessionStorage.getItem(IMPORT_SESSION_KEY) === "1";
   applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: resumedImport });
-  
-  // Check if user is already logged in via sessionStorage
-  const isLoggedIn = sessionStorage.getItem("loanledger-unlocked") === "true";
-  
-  if (!isLoggedIn) {
-    // Try auto-login with Remember Me data
-    const autoLoginSuccess = await attemptAutoLogin();
-    if (!autoLoginSuccess) {
-      focusUnlockForm();
-    }
-  } else {
-    // User is already logged in, hide lock screen
-    if (els.lockScreen) els.lockScreen.classList.add("hide");
-    if (els.app) els.app.classList.remove("hide");
-  }
-  
   activate("expenses");
 }
 
