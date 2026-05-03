@@ -1,7 +1,23 @@
 const CONFIG = {
-  protectedZipPath: "https://livenews.live/Finance/Assets/app/key.zip",
+  zipBaseUrl: "https://livenews.live/Finance/Assets/app/",
   table: "loan_ledger_entries"
 };
+
+const ZIP_USERNAME_SESSION_KEY = "loanledger-zip-username-v1";
+
+function sanitizeZipUsername(raw){
+  const username = String(raw || "").trim();
+  if (!username) throw new Error("Please enter your username.");
+  if (!/^[a-zA-Z0-9_-]+$/.test(username)){
+    throw new Error("Username may only contain letters, numbers, underscores, and hyphens.");
+  }
+  return username;
+}
+
+function zipUrlForUsername(raw){
+  const username = sanitizeZipUsername(raw);
+  return `${CONFIG.zipBaseUrl}${encodeURIComponent(username)}.zip`;
+}
 
 let runtimeConfig = null;
 
@@ -27,6 +43,7 @@ const state = {
 
 const els = {
   lockScreen: document.getElementById("lockScreen"),
+  zipUsernameInput: document.getElementById("zipUsernameInput"),
   zipPasswordInput: document.getElementById("zipPasswordInput"),
   unlockBtn: document.getElementById("unlockBtn"),
   lockError: document.getElementById("lockError"),
@@ -255,11 +272,12 @@ async function readConfigFromZip(file, password){
   return JSON.parse(jsonText);
 }
 
-async function fetchProtectedZipBlob(){
-  const zipRes = await fetch(CONFIG.protectedZipPath, { cache: "no-store" });
+async function fetchProtectedZipBlob(username){
+  const url = zipUrlForUsername(username);
+  const zipRes = await fetch(url, { cache: "no-store" });
 
   if (!zipRes.ok){
-    throw new Error(`Unable to load ${CONFIG.protectedZipPath}.`);
+    throw new Error(`Unable to load ${url}. Check username and that the ZIP exists on the server.`);
   }
   return zipRes.blob();
 }
@@ -701,6 +719,171 @@ function cleanExpenseNote(noteValue){
     .replace(/\[(ATYPE|ETYPE|ITEM|XTYPE):[^\]]+\]/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim() || "—";
+}
+
+function sortCurrenciesList(values){
+  const rank = c => {
+    const i = SUPPORTED_CURRENCIES.indexOf(String(c || "").toUpperCase());
+    return i === -1 ? 100 : i;
+  };
+  return [...new Set(values.filter(Boolean))].sort((a, b) =>
+    rank(a) - rank(b) || String(a).localeCompare(String(b))
+  );
+}
+
+function findTransferPartnerForExpense(expenseEntry){
+  const transferMatch = String(expenseEntry.notes || "").match(/Transfer to ([^:]+)/);
+  if (!transferMatch) return null;
+  const toWalletName = transferMatch[1].trim();
+  return state.entries.find(e =>
+    e.id !== expenseEntry.id &&
+    hasExpenseAccountTag(e.notes) &&
+    expenseMetaFromNotes(e.notes).rowType === "TOPUP" &&
+    String(e.person_name || "").trim() === toWalletName &&
+    e.notes.includes(`Transfer from ${expenseEntry.person_name}`)
+  ) || null;
+}
+
+function parseTransferExpenseDetails(tx, fromAccount){
+  const raw = String(tx.notes || "");
+  const detailed = raw.match(/Transfer to ([^:]+):\s*([\d.]+)\s+(\w+)\s*→\s*([\d.]+)\s+(\w+)\s*\(\s*Rate:\s*([\d.]+)\s*\)/);
+  const simple = raw.match(/Transfer to ([^:]+)/);
+  const toWallet = detailed ? detailed[1].trim() : (simple ? simple[1].trim() : "—");
+  const amtOut = Number(tx.action_amount || 0);
+  const curOut = fromAccount.currency || "AED";
+  if (detailed){
+    const amtIn = Number(detailed[4]);
+    const curIn = detailed[5];
+    const rate = Number(detailed[6]);
+    return {
+      toWallet,
+      amtOut,
+      curOut,
+      amtIn,
+      curIn,
+      rate: Number.isFinite(rate) && rate > 0 ? rate : 1,
+      sameCurrency: String(detailed[3]).toUpperCase() === String(detailed[5]).toUpperCase()
+    };
+  }
+  return {
+    toWallet,
+    amtOut,
+    curOut,
+    amtIn: amtOut,
+    curIn: curOut,
+    rate: 1,
+    sameCurrency: true
+  };
+}
+
+function buildTransferEvents(){
+  const wf = state.expenseWalletFilter;
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const accountsByGroup = new Map(accounts.map(a => [a.group_id, a]));
+  const out = [];
+  for (const account of accounts){
+    for (const row of account.spends){
+      const meta = expenseMetaFromNotes(row.notes);
+      if (meta.expenseType !== "Transfer") continue;
+      const partner = findTransferPartnerForExpense(row);
+      if (wf !== "all"){
+        const hit = account.group_id === wf || (partner && partner.group_id === wf);
+        if (!hit) continue;
+      }
+      const p = parseTransferExpenseDetails(row, account);
+      const toAcc = partner ? accountsByGroup.get(partner.group_id) : null;
+      out.push({
+        expenseId: row.id,
+        topupId: partner?.id || null,
+        date: row.action_date,
+        fromWallet: account.person_name,
+        toWallet: p.toWallet,
+        fromAccountType: account.accountType,
+        toAccountType: toAcc?.accountType || "",
+        amtOut: p.amtOut,
+        curOut: p.curOut,
+        amtIn: p.amtIn,
+        curIn: p.curIn,
+        rate: p.rate,
+        sameCurrency: p.sameCurrency,
+        notesExpense: row.notes,
+        notesTopup: partner?.notes || ""
+      });
+    }
+  }
+  return out.sort((a, b) => dateStamp(b.date) - dateStamp(a.date));
+}
+
+function getTransferRowsForCurrency(cur, events){
+  const rows = [];
+  for (const ev of events){
+    if (ev.curOut === cur){
+      rows.push({
+        kind: "Sent",
+        date: ev.date,
+        walletLabel: `${ev.fromWallet}${ev.fromAccountType ? ` (${ev.fromAccountType})` : ""}`,
+        counterparty: ev.toWallet,
+        amount: ev.amtOut,
+        rateDisplay: ev.sameCurrency ? "1" : String(ev.rate),
+        otherLegDisplay: ev.sameCurrency ? "—" : `${formatReportAmount(ev.amtIn, ev.curIn)}`,
+        notes: cleanExpenseNote(ev.notesExpense),
+        editId: ev.expenseId
+      });
+    }
+    if (ev.curIn === cur){
+      rows.push({
+        kind: "Received",
+        date: ev.date,
+        walletLabel: `${ev.toWallet}${ev.toAccountType ? ` (${ev.toAccountType})` : ""}`,
+        counterparty: ev.fromWallet,
+        amount: ev.amtIn,
+        rateDisplay: ev.sameCurrency ? "1" : String(ev.rate),
+        otherLegDisplay: ev.sameCurrency ? "—" : `${formatReportAmount(ev.amtOut, ev.curOut)}`,
+        notes: cleanExpenseNote(ev.notesTopup || ev.notesExpense),
+        editId: ev.topupId || ev.expenseId
+      });
+    }
+  }
+  return rows.sort((a, b) => dateStamp(b.date) - dateStamp(a.date));
+}
+
+function transferCurrencyTotals(cur, events){
+  let sent = 0;
+  let received = 0;
+  for (const ev of events){
+    if (ev.curOut === cur) sent += Number(ev.amtOut || 0);
+    if (ev.curIn === cur) received += Number(ev.amtIn || 0);
+  }
+  return { sent, received };
+}
+
+function collectTopupTransactionsFlat(accounts){
+  const wf = state.expenseWalletFilter;
+  const topupTransactions = [];
+  for (const account of accounts){
+    if (wf !== "all" && account.group_id !== wf) continue;
+    if (account.principal && Number(account.principal.principal_amount || 0) > 0){
+      topupTransactions.push({
+        ...account.principal,
+        action_date: account.principal.loan_date,
+        action_amount: account.principal.principal_amount,
+        person_name: account.person_name,
+        currency: account.currency,
+        accountType: account.accountType,
+        isOpeningBalance: true
+      });
+    }
+    for (const topup of account.topups){
+      topupTransactions.push({
+        ...topup,
+        person_name: account.person_name,
+        currency: account.currency,
+        accountType: account.accountType,
+        isTopup: true
+      });
+    }
+  }
+  return topupTransactions;
 }
 
 function filterPrincipal(direction, searchKey = direction){
@@ -1739,55 +1922,42 @@ function renderExpensesList(){
 
   let html = "";
 
-  // Add Top-Up section first
-  const topupTransactions = [];
-  for (const account of accounts) {
-    if (state.expenseWalletFilter !== "all" && account.group_id !== state.expenseWalletFilter) continue;
-    
-    // Add opening balance as top-up
-    if (account.principal && Number(account.principal.principal_amount || 0) > 0) {
-      topupTransactions.push({
-        ...account.principal,
-        action_date: account.principal.loan_date,
-        action_amount: account.principal.principal_amount,
-        person_name: account.person_name,
-        currency: account.currency,
-        accountType: account.accountType,
-        isOpeningBalance: true
-      });
-    }
-    
-    // Add top-up transactions
-    for (const topup of account.topups) {
-      topupTransactions.push({
-        ...topup,
-        person_name: account.person_name,
-        currency: account.currency,
-        accountType: account.accountType,
-        isTopup: true
-      });
-    }
+  const accountsForTopups = getExpenseAccounts({ applyUiFilters: false });
+  const topupTransactions = collectTopupTransactionsFlat(accountsForTopups);
+  const topupByCurrency = new Map();
+  for (const tx of topupTransactions){
+    const c = tx.currency || "AED";
+    if (!topupByCurrency.has(c)) topupByCurrency.set(c, []);
+    topupByCurrency.get(c).push(tx);
   }
+  const topupCurrencies = sortCurrenciesList([...topupByCurrency.keys()]);
 
-  if (topupTransactions.length > 0) {
-    topupTransactions.sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date));
-    html += `
-      <details class="loan expense-item-row">
+  if (topupTransactions.length > 0){
+    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Top-Up Records</h4>`;
+    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">PDF per currency row below. Combined report covers every currency.</span>
+      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
+    </div></div>`;
+    for (const cur of topupCurrencies){
+      const txs = topupByCurrency.get(cur).slice().sort((a, b) => dateStamp(b.action_date || b.loan_date) - dateStamp(a.action_date || a.loan_date));
+      const totalCur = txs.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
+      html += `
+      <details class="loan expense-item-row expense-by-currency">
         <summary>
           <div class="loan-top">
             <div class="lt-main">
-              <div class="loan-name">Top-Up Records</div>
+              <div class="loan-name">Top-Up — ${escapeHtml(cur)}</div>
               <div class="loan-sub">
                 <span class="badge green">Money In</span>
-                <span>${topupTransactions.length} transaction(s)</span>
+                <span>${txs.length} transaction(s)</span>
+                ${currencySymbolHtml(cur)}
               </div>
             </div>
             <div class="cell expense-item-total">
-              <small>Total Top-up</small>
-              <strong>${topupTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+              <small>Total (${escapeHtml(cur)})</small>
+              <strong>${escapeHtml(formatReportAmount(totalCur, cur))}</strong>
             </div>
             <div class="lt-action">
-              <button class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download All Top-ups PDF" style="font-size: 0.9rem;">📄</button>
+              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="topups-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
             </div>
           </div>
         </summary>
@@ -1796,17 +1966,16 @@ function renderExpensesList(){
             <table>
               <thead><tr><th>Date</th><th>Wallet</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
               <tbody>
-                ${topupTransactions.map(tx => `
+                ${txs.map(tx => `
                   <tr>
-                    <td>${escapeHtml(displayDate(tx.action_date || "—"))}</td>
+                    <td>${escapeHtml(displayDate(tx.action_date || tx.loan_date || "—"))}</td>
                     <td>${escapeHtml(tx.person_name || "—")} (${escapeHtml(tx.accountType || "")})</td>
                     <td><span class="badge green">${tx.isOpeningBalance ? "Opening Balance" : "Top-up"}</span></td>
-                    <td style="color: var(--success);">${money(tx.action_amount, tx.currency)}</td>
+                    <td style="color: var(--success);">${money(tx.action_amount, cur)}</td>
                     <td class="expense-item-detail-note">${escapeHtml(cleanExpenseNote(tx.notes))}</td>
                     <td>
                       <div style="display:flex;gap:4px;">
                         <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
-                        <button class="tiny ghost expenseActionBtn" data-action="pdf" data-id="${escapeHtml(tx.id)}" data-type="topup" title="Download PDF">📄</button>
                         <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
                       </div>
                     </td>
@@ -1816,99 +1985,83 @@ function renderExpensesList(){
             </table>
           </div>
         </div>
-      </details>
-    `;
-  }
-
-  // Add Transfer section
-  const transferTransactions = [];
-  for (const account of accounts) {
-    if (state.expenseWalletFilter !== "all" && account.group_id !== state.expenseWalletFilter) continue;
-    
-    // Add transfer expense records (money out)
-    for (const row of account.spends) {
-      const meta = expenseMetaFromNotes(row.notes);
-      if (meta.expenseType === "Transfer") {
-        transferTransactions.push({
-          ...row,
-          person_name: account.person_name,
-          currency: account.currency,
-          accountType: account.accountType,
-          isTransfer: true,
-          transferType: "expense"
-        });
-      }
+      </details>`;
     }
   }
 
-  if (transferTransactions.length > 0) {
-    transferTransactions.sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date));
-    html += `
-      <details class="loan expense-item-row">
+  const transferEvents = buildTransferEvents();
+  const transferCurrencySet = new Set();
+  for (const ev of transferEvents){
+    transferCurrencySet.add(ev.curOut);
+    transferCurrencySet.add(ev.curIn);
+  }
+  const transferCurrencies = sortCurrenciesList([...transferCurrencySet]);
+
+  if (transferEvents.length > 0 && transferCurrencies.length > 0){
+    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Transfer Records</h4>`;
+    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">Sent and received are shown per currency using the conversion rate recorded on transfer.</span>
+      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
+    </div></div>`;
+    for (const cur of transferCurrencies){
+      const rows = getTransferRowsForCurrency(cur, transferEvents);
+      if (!rows.length) continue;
+      const { sent, received } = transferCurrencyTotals(cur, transferEvents);
+      html += `
+      <details class="loan expense-item-row expense-by-currency">
         <summary>
           <div class="loan-top">
             <div class="lt-main">
-              <div class="loan-name">Transfer Records</div>
+              <div class="loan-name">Transfers — ${escapeHtml(cur)}</div>
               <div class="loan-sub">
-                <span class="badge orange">Money Transferred</span>
-                <span>${transferTransactions.length} transaction(s)</span>
+                <span class="badge orange">Money moved</span>
+                <span>${rows.length} row(s)</span>
+                ${currencySymbolHtml(cur)}
               </div>
             </div>
-            <div class="cell expense-item-total">
-              <small>Total Transferred</small>
-              <strong>${transferTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            <div class="cell expense-item-total expense-transfer-totals">
+              <div><small>Sent (${escapeHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(sent, cur))}</strong></div>
+              <div><small>Received (${escapeHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(received, cur))}</strong></div>
             </div>
             <div class="lt-action">
-              <button class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download All Transfers PDF" style="font-size: 0.9rem;">📄</button>
+              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="transfers-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
             </div>
           </div>
         </summary>
         <div class="detail">
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Date</th><th>From Wallet</th><th>To Wallet</th><th>Amount</th><th>Conversion Rate</th><th>Notes</th><th>Action</th></tr></thead>
+              <thead><tr><th>Date</th><th>Type</th><th>Wallet</th><th>With</th><th>Amount</th><th>Rate<br/><span style="font-weight:normal">(1 From = ? To)</span></th><th>Converted leg</th><th>Notes</th><th>Action</th></tr></thead>
               <tbody>
-                ${transferTransactions.map(tx => {
-                  const meta = expenseMetaFromNotes(tx.notes);
-                  const transferMatch = tx.notes.match(/Transfer to ([^:]+): ([\d.]+) (\w+) → ([\d.]+) (\w+) \(Rate: ([\d.]+)\)/);
-                  let toWallet = "Unknown";
-                  let conversionRate = "N/A";
-                  
-                  if (transferMatch) {
-                    toWallet = transferMatch[1];
-                    conversionRate = transferMatch[6];
-                  } else {
-                    const simpleMatch = tx.notes.match(/Transfer to ([^:]+)/);
-                    if (simpleMatch) toWallet = simpleMatch[1];
-                  }
-                  
+                ${rows.map(r => {
+                  const amountStyle = r.kind === "Sent" ? "color: var(--danger);" : "color: var(--success);";
+                  const badgeCls = r.kind === "Sent" ? "orange" : "green";
                   return `
                     <tr>
-                      <td>${escapeHtml(displayDate(tx.action_date || "—"))}</td>
-                      <td>${escapeHtml(tx.person_name || "—")} (${escapeHtml(tx.accountType || "")})</td>
-                      <td>${escapeHtml(toWallet)}</td>
-                      <td style="color: var(--danger);">${money(tx.action_amount, tx.currency)}</td>
-                      <td>${escapeHtml(conversionRate)}</td>
-                      <td class="expense-item-detail-note">${escapeHtml(cleanExpenseNote(tx.notes))}</td>
+                      <td>${escapeHtml(displayDate(r.date || "—"))}</td>
+                      <td><span class="badge ${badgeCls}">${escapeHtml(r.kind)}</span></td>
+                      <td>${escapeHtml(r.walletLabel)}</td>
+                      <td>${escapeHtml(r.counterparty || "—")}</td>
+                      <td style="${amountStyle}">${money(r.amount, cur)}</td>
+                      <td>${escapeHtml(r.rateDisplay)}</td>
+                      <td>${escapeHtml(r.otherLegDisplay)}</td>
+                      <td class="expense-item-detail-note">${escapeHtml(r.notes)}</td>
                       <td>
                         <div style="display:flex;gap:4px;">
-                          <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
-                          <button class="tiny ghost expenseActionBtn" data-action="pdf" data-id="${escapeHtml(tx.id)}" data-type="transfer" title="Download PDF">📄</button>
-                          <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
+                          <button class="tiny ghost editRowBtn" data-id="${escapeHtml(r.editId)}">✎</button>
+                          <button class="tiny danger delRowBtn" data-id="${escapeHtml(r.editId)}">✕</button>
                         </div>
                       </td>
-                    </tr>
-                  `;
+                    </tr>`;
                 }).join("")}
               </tbody>
             </table>
           </div>
         </div>
-      </details>
-    `;
+      </details>`;
+    }
   }
 
-  // Add the original expense items section
+  // Expense items (non-transfer spending), grouped by item
   const spendAttached = collectExpenseSpendRows(accounts);
   const items = groupExpenseItems(spendAttached);
   
@@ -1974,18 +2127,17 @@ function renderExpensesList(){
   els.expensesList.querySelectorAll(".expenseActionBtn").forEach(btn => btn.addEventListener("click", async e => {
     e.preventDefault();
     const action = btn.dataset.action;
-    const id = btn.dataset.id;
     const type = btn.dataset.type;
     
     if (action === "pdf") {
-      if (type === "topup") {
-        await downloadExpenseTopupPDF(id);
-      } else if (type === "transfer") {
-        await downloadExpenseTransferPDF(id);
-      } else if (type === "all-topups") {
-        await downloadAllTopupsPDF();
-      } else if (type === "all-transfers") {
-        await downloadAllTransfersPDF();
+      if (type === "topups-by-currency"){
+        await downloadAllTopupsPDF(btn.dataset.currency);
+      } else if (type === "all-topups"){
+        await downloadAllTopupsPDF(null);
+      } else if (type === "transfers-by-currency"){
+        await downloadAllTransfersPDF(btn.dataset.currency);
+      } else if (type === "all-transfers"){
+        await downloadAllTransfersPDF(null);
       }
     }
   }));
@@ -3292,219 +3444,163 @@ async function downloadGoodsPDF(){
   doc.save("Goods_Report.pdf");
 }
 
-async function downloadExpenseTopupPDF(entryId){
+async function downloadAllTopupsPDF(currencyFilter = null){
   if (!window.jspdf){
     alert("PDF library loading. Please try again in a moment.");
     return;
   }
 
-  const entry = state.entries.find(e => e.id === entryId);
-  if (!entry){
-    alert("Top-up record not found.");
+  const allTopups = collectTopupTransactionsFlat(getExpenseAccounts({ applyUiFilters: false }));
+  const filtered = currencyFilter
+    ? allTopups.filter(t => String(t.currency || "").toUpperCase() === String(currencyFilter).toUpperCase())
+    : allTopups;
+  filtered.sort((a, b) => dateStamp(a.action_date || a.loan_date) - dateStamp(b.action_date || b.loan_date));
+
+  if (!filtered.length){
+    alert("No top-up records found for this selection.");
     return;
   }
 
-  const { doc } = window.jspdf.jsPDF();
-  doc.setFont("helvetica");
-  
-  // Title
-  doc.setFontSize(16);
-  doc.text("Top-Up Record", 14, 20);
-  
-  // Record details
-  doc.setFontSize(12);
-  doc.text(`Date: ${displayDate(entry.action_date)}`, 14, 35);
-  doc.text(`Wallet: ${entry.person_name || "—"} (${entry.accountType || ""})`, 14, 45);
-  doc.text(`Type: ${entry.isOpeningBalance ? "Opening Balance" : "Top-up"}`, 14, 55);
-  doc.text(`Amount: ${formatReportAmount(entry.action_amount, entry.currency)}`, 14, 65);
-  doc.text(`Notes: ${cleanExpenseNote(entry.notes)}`, 14, 75);
-  
-  drawPdfFooter(doc);
-  doc.save(`Topup_${entry.person_name?.replace(/\s+/g, "_") || "wallet"}_${displayDate(entry.action_date)}.pdf`);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  const subtitle = currencyFilter
+    ? `Currency: ${currencyFilter}`
+    : "All currencies (separate totals per currency)";
+  drawPdfHeader(
+    doc,
+    logoData,
+    currencyFilter ? `Top-Up Records — ${currencyFilter}` : "Top-Up Records — all currencies",
+    subtitle
+  );
+  drawPdfOwnerBlock(doc, 48);
+
+  let tableStartY = 72;
+  if (currencyFilter){
+    const sum = filtered.reduce((s, t) => s + Number(t.action_amount || 0), 0);
+    doc.setFontSize(10);
+    doc.setTextColor(23, 33, 43);
+    doc.text(`Transactions: ${filtered.length}`, 14, 58);
+    doc.text(`Total: ${formatReportAmount(sum, currencyFilter)}`, 14, 64);
+    tableStartY = 72;
+  }else{
+    const totals = {};
+    for (const t of filtered){
+      const c = t.currency || "—";
+      totals[c] = (totals[c] || 0) + Number(t.action_amount || 0);
+    }
+    let y = 58;
+    doc.setFontSize(10);
+    doc.setTextColor(23, 33, 43);
+    doc.text(`Transactions: ${filtered.length}`, 14, y);
+    y += 6;
+    sortCurrenciesList(Object.keys(totals)).forEach(c => {
+      doc.text(`Total (${c}): ${formatReportAmount(totals[c], c)}`, 14, y);
+      y += 6;
+    });
+    tableStartY = y + 8;
+  }
+
+  const bodyRows = filtered.map(tx => {
+    const d = displayDate(tx.action_date || tx.loan_date || "—");
+    const w = `${tx.person_name || "—"} (${tx.accountType || ""})`;
+    const ty = tx.isOpeningBalance ? "Opening Balance" : "Top-up";
+    const amt = formatReportAmount(Number(tx.action_amount || 0), tx.currency);
+    const note = cleanExpenseNote(tx.notes);
+    if (currencyFilter) return [d, w, ty, amt, note];
+    return [d, w, ty, amt, tx.currency || "—", note];
+  });
+
+  doc.autoTable({
+    startY: tableStartY,
+    head: currencyFilter ? [["Date", "Wallet", "Type", "Amount", "Notes"]] : [["Date", "Wallet", "Type", "Amount", "Cur", "Notes"]],
+    body: bodyRows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 8.5 },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.save(currencyFilter
+    ? `Topups_${currencyFilter}_${todayISO()}.pdf`
+    : `All_Topup_Records_${todayISO()}.pdf`);
 }
 
-async function downloadExpenseTransferPDF(entryId){
+async function downloadAllTransfersPDF(currencyFilter = null){
   if (!window.jspdf){
     alert("PDF library loading. Please try again in a moment.");
     return;
   }
 
-  const entry = state.entries.find(e => e.id === entryId);
-  if (!entry){
-    alert("Transfer record not found.");
-    return;
-  }
+  const events = buildTransferEvents();
+  const currencies = currencyFilter ? [currencyFilter] : sortCurrenciesList([...new Set(events.flatMap(e => [e.curOut, e.curIn]))]);
 
-  const { doc } = window.jspdf.jsPDF();
-  doc.setFont("helvetica");
-  
-  // Title
-  doc.setFontSize(16);
-  doc.text("Transfer Record", 14, 20);
-  
-  // Parse transfer details
-  const transferMatch = entry.notes.match(/Transfer to ([^:]+): ([\d.]+) (\w+) → ([\d.]+) (\w+) \(Rate: ([\d.]+)\)/);
-  let toWallet = "Unknown";
-  let conversionRate = "N/A";
-  
-  if (transferMatch) {
-    toWallet = transferMatch[1];
-    conversionRate = transferMatch[6];
-  } else {
-    const simpleMatch = entry.notes.match(/Transfer to ([^:]+)/);
-    if (simpleMatch) toWallet = simpleMatch[1];
-  }
-  
-  // Record details
-  doc.setFontSize(12);
-  doc.text(`Date: ${displayDate(entry.action_date)}`, 14, 35);
-  doc.text(`From Wallet: ${entry.person_name || "—"} (${entry.accountType || ""})`, 14, 45);
-  doc.text(`To Wallet: ${toWallet}`, 14, 55);
-  doc.text(`Amount: ${formatReportAmount(entry.action_amount, entry.currency)}`, 14, 65);
-  doc.text(`Conversion Rate: ${conversionRate}`, 14, 75);
-  doc.text(`Notes: ${cleanExpenseNote(entry.notes)}`, 14, 85);
-  
-  drawPdfFooter(doc);
-  doc.save(`Transfer_${entry.person_name?.replace(/\s+/g, "_") || "wallet"}_${displayDate(entry.action_date)}.pdf`);
-}
-
-async function downloadAllTopupsPDF(){
-  if (!window.jspdf){
-    alert("PDF library loading. Please try again in a moment.");
-    return;
-  }
-
-  // Collect all top-up transactions across all accounts
-  const allTopupTransactions = [];
-  for (const account of getExpenseAccounts({ applyUiFilters: false })) {
-    for (const topup of account.topups) {
-      allTopupTransactions.push({
-        ...topup,
-        person_name: account.person_name,
-        currency: account.currency,
-        accountType: account.accountType,
-        isOpeningBalance: topup.id === account.principal?.id
+  let tableRows = [];
+  for (const cur of currencies){
+    const rows = getTransferRowsForCurrency(cur, events);
+    for (const r of rows){
+      tableRows.push({
+        currency: cur,
+        dateRaw: r.date,
+        date: displayDate(r.date || "—"),
+        type: r.kind,
+        wallet: r.walletLabel,
+        withParty: r.counterparty || "—",
+        amount: formatReportAmount(r.amount, cur),
+        rate: r.rateDisplay,
+        convertedLeg: r.otherLegDisplay,
+        notes: r.notes
       });
     }
   }
 
-  if (allTopupTransactions.length === 0) {
-    alert("No top-up records found.");
+  tableRows.sort((a, b) => dateStamp(b.dateRaw) - dateStamp(a.dateRaw));
+
+  if (!tableRows.length){
+    alert("No transfer rows found for this selection.");
     return;
   }
 
-  const { doc } = window.jspdf.jsPDF();
-  doc.setFont("helvetica");
-  
-  // Title
-  doc.setFontSize(16);
-  doc.text("All Top-Up Records", 14, 20);
-  
-  // Summary
-  doc.setFontSize(12);
-  const totalAmount = allTopupTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
-  doc.text(`Total Records: ${allTopupTransactions.length}`, 14, 35);
-  doc.text(`Total Amount: ${formatReportAmount(totalAmount, allTopupTransactions[0]?.currency || "AED")}`, 14, 45);
-  
-  // Table headers
-  let yPosition = 65;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(
+    doc,
+    logoData,
+    currencyFilter ? `Transfer Records — ${currencyFilter}` : "Transfer Records — all currencies",
+    "Sent and received legs per currency; rate matches the booking on each transfer."
+  );
+  drawPdfOwnerBlock(doc, 48);
   doc.setFontSize(10);
-  doc.text("Date", 14, yPosition);
-  doc.text("Wallet", 40, yPosition);
-  doc.text("Type", 80, yPosition);
-  doc.text("Amount", 120, yPosition);
-  doc.text("Notes", 160, yPosition);
-  
-  // Table rows
-  yPosition += 10;
-  for (const tx of allTopupTransactions) {
-    doc.text(displayDate(tx.action_date || "—"), 14, yPosition);
-    doc.text(`${tx.person_name || "—"} (${tx.accountType || ""})`, 40, yPosition);
-    doc.text(tx.isOpeningBalance ? "Opening Balance" : "Top-up", 80, yPosition);
-    doc.text(formatReportAmount(tx.action_amount, tx.currency), 120, yPosition);
-    doc.text(cleanExpenseNote(tx.notes), 160, yPosition);
-    yPosition += 8;
-  }
-  
-  drawPdfFooter(doc);
-  doc.save(`All_Topup_Records_${todayISO()}.pdf`);
-}
+  doc.setTextColor(23, 33, 43);
 
-async function downloadAllTransfersPDF(){
-  if (!window.jspdf){
-    alert("PDF library loading. Please try again in a moment.");
-    return;
+  let ySummary = 58;
+  for (const cur of currencies){
+    const { sent, received } = transferCurrencyTotals(cur, events);
+    doc.text(`${cur} — Sent: ${formatReportAmount(sent, cur)}   Received: ${formatReportAmount(received, cur)}`, 14, ySummary);
+    ySummary += 5;
   }
 
-  // Collect all transfer transactions across all accounts
-  const allTransferTransactions = [];
-  for (const account of getExpenseAccounts({ applyUiFilters: false })) {
-    for (const row of account.spends) {
-      const meta = expenseMetaFromNotes(row.notes);
-      if (meta.expenseType === "Transfer") {
-        allTransferTransactions.push({
-          ...row,
-          person_name: account.person_name,
-          currency: account.currency,
-          accountType: account.accountType
-        });
-      }
-    }
-  }
+  const body = tableRows.map(r => currencyFilter
+    ? [r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, r.notes]
+    : [r.currency, r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, r.notes]
+  );
 
-  if (allTransferTransactions.length === 0) {
-    alert("No transfer records found.");
-    return;
-  }
+  doc.autoTable({
+    startY: ySummary + 6,
+    head: currencyFilter
+      ? [["Date", "Type", "Wallet", "With", "Amount", "Rate", "Converted leg", "Notes"]]
+      : [["Cur", "Date", "Type", "Wallet", "With", "Amount", "Rate", "Converted leg", "Notes"]],
+    body,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 7.5 },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
 
-  const { doc } = window.jspdf.jsPDF();
-  doc.setFont("helvetica");
-  
-  // Title
-  doc.setFontSize(16);
-  doc.text("All Transfer Records", 14, 20);
-  
-  // Summary
-  doc.setFontSize(12);
-  const totalAmount = allTransferTransactions.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
-  doc.text(`Total Records: ${allTransferTransactions.length}`, 14, 35);
-  doc.text(`Total Amount: ${formatReportAmount(totalAmount, allTransferTransactions[0]?.currency || "AED")}`, 14, 45);
-  
-  // Table headers
-  let yPosition = 65;
-  doc.setFontSize(10);
-  doc.text("Date", 14, yPosition);
-  doc.text("From Wallet", 40, yPosition);
-  doc.text("To Wallet", 90, yPosition);
-  doc.text("Amount", 140, yPosition);
-  doc.text("Notes", 180, yPosition);
-  
-  // Table rows
-  yPosition += 10;
-  for (const tx of allTransferTransactions) {
-    const transferMatch = tx.notes.match(/Transfer to ([^:]+): ([\d.]+) (\w+) → ([\d.]+) (\w+) \(Rate: ([\d.]+)\)/);
-    let toWallet = "Unknown";
-    let conversionRate = "N/A";
-    
-    if (transferMatch) {
-      toWallet = transferMatch[1];
-      conversionRate = transferMatch[6];
-    } else {
-      const simpleMatch = tx.notes.match(/Transfer to ([^:]+)/);
-      if (simpleMatch) toWallet = simpleMatch[1];
-    }
-    
-    doc.text(displayDate(tx.action_date || "—"), 14, yPosition);
-    doc.text(`${tx.person_name || "—"} (${tx.accountType || ""})`, 40, yPosition);
-    doc.text(toWallet, 90, yPosition);
-    doc.text(formatReportAmount(tx.action_amount, tx.currency), 140, yPosition);
-    doc.text(conversionRate, 180, yPosition);
-    doc.text(cleanExpenseNote(tx.notes), 220, yPosition);
-    yPosition += 8;
-  }
-  
-  drawPdfFooter(doc);
-  doc.save(`All_Transfer_Records_${todayISO()}.pdf`);
+  doc.save(currencyFilter
+    ? `Transfers_${currencyFilter}_${todayISO()}.pdf`
+    : `All_Transfer_Records_${todayISO()}.pdf`);
 }
 
 async function downloadExpenseItemPDF(itemKey){
@@ -3957,10 +4053,9 @@ async function uploadBackupToDatabase(){
     return;
   }
   if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey){
-    alert("Please connect to database first using ZIP password.");
+    alert("Please connect to the database first using your username and ZIP password.");
     els.lockScreen.classList.remove("hide");
-    els.lockError.textContent = "";
-    els.zipPasswordInput.focus();
+    focusUnlockForm();
     return;
   }
 
@@ -3986,10 +4081,9 @@ async function savePersonRecordsToDatabase(personNameEncoded, direction){
   const personName = decodeURIComponent(personNameEncoded || "").trim();
   if (!personName || !direction) return;
   if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey){
-    alert("Please connect to database first using ZIP password.");
+    alert("Please connect to the database first using your username and ZIP password.");
     els.lockScreen.classList.remove("hide");
-    els.lockError.textContent = "";
-    els.zipPasswordInput.focus();
+    focusUnlockForm();
     return;
   }
 
@@ -4282,10 +4376,12 @@ function attachEvents(){
   });
   els.connectSupabaseBtn.addEventListener("click", () => {
     els.lockScreen.classList.remove("hide");
-    els.lockError.textContent = "";
-    els.zipPasswordInput.focus();
+    focusUnlockForm();
   });
 
+  if (els.zipUsernameInput){
+    els.zipUsernameInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
+  }
   els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   els.unlockBtn.addEventListener("click", attemptUnlock);
 
@@ -4297,8 +4393,26 @@ function attachEvents(){
   });
 }
 
+function focusUnlockForm(){
+  els.lockError.textContent = "";
+  const savedUser = sessionStorage.getItem(ZIP_USERNAME_SESSION_KEY);
+  if (els.zipUsernameInput && savedUser && !els.zipUsernameInput.value.trim()){
+    els.zipUsernameInput.value = savedUser;
+  }
+  const focusEl = els.zipUsernameInput && !els.zipUsernameInput.value.trim()
+    ? els.zipUsernameInput
+    : els.zipPasswordInput;
+  focusEl.focus();
+}
+
 async function attemptUnlock(){
+  els.lockError.textContent = "";
+  const zipUsernameRaw = els.zipUsernameInput ? els.zipUsernameInput.value.trim() : "";
   const zipPassword = els.zipPasswordInput.value.trim();
+  if (!zipUsernameRaw){
+    els.lockError.textContent = "Please enter your username.";
+    return;
+  }
   if (!zipPassword){
     els.lockError.textContent = "Please enter the ZIP password.";
     return;
@@ -4307,8 +4421,9 @@ async function attemptUnlock(){
   els.unlockBtn.textContent = "Unlocking…";
   const keepCurrentBackup = state.hasImportedFile && state.dataSource === "backup";
   try{
-    const zipBlob = await fetchProtectedZipBlob();
-    const zipFile = new File([zipBlob], "key.zip", { type: "application/zip" });
+    const safeUser = sanitizeZipUsername(zipUsernameRaw);
+    const zipBlob = await fetchProtectedZipBlob(safeUser);
+    const zipFile = new File([zipBlob], `${safeUser}.zip`, { type: "application/zip" });
     const configData = await readConfigFromZip(zipFile, zipPassword);
     if (!configData?.supabaseUrl || !configData?.supabaseKey){
       throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
@@ -4319,6 +4434,7 @@ async function attemptUnlock(){
       supabaseKey: String(configData.supabaseKey).trim()
     };
     sessionStorage.setItem("loanledger-unlocked", "true");
+    sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
     state.unlocked = true;
     els.lockScreen.classList.add("hide");
     els.app.classList.remove("hide");
