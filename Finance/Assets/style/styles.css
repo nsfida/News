@@ -662,17 +662,125 @@ tbody tr:hover{background:#fbfdff}
 .currency-chip .symbol{display:inline-block;font-size:1.05rem;line-height:1;}
 
 .lock{
-  position:fixed;inset:0;background:rgba(246,247,249,.96);backdrop-filter:blur(7px);display:grid;place-items:center;z-index:100;padding:16px;
+  position:fixed;inset:0;background:var(--bg);backdrop-filter:blur(10px);display:grid;place-items:center;z-index:100;padding:20px;
 }
 .lock-card{
-  width:min(460px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;
+  width:min(480px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:0;overflow:hidden;max-height:90vh;overflow-y:auto;
 }
-.lock-card h2{margin:0 0 8px;font-size:1.08rem}
-.lock-card p{margin:0 0 14px;color:var(--muted);font-size:.9rem;line-height:1.6}
-.lock-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-.lock-grid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-.lock-grid .lock-input-full{grid-column:1/-1}
-.lock-error{min-height:1.1em;margin-top:10px;color:var(--danger);font-size:.88rem}
+.lock-header{
+  background:var(--panel-2);padding:24px 24px 20px;text-align:center;border-bottom:1px solid var(--line);
+}
+.lock-header .brand{
+  flex-direction:column;gap:12px;align-items:center;
+}
+.lock-header .mark{
+  width:56px;height:56px;border-radius:12px;box-shadow:var(--shadow);
+}
+.lock-header h1{
+  color:var(--text);font-size:1.4rem;margin:0;font-weight:700;
+}
+.lock-header p{
+  color:var(--muted);font-size:.85rem;margin:0;font-weight:500;
+}
+.lock-content{
+  padding:32px 24px 24px;
+}
+.lock-welcome{
+  text-align:center;margin-bottom:32px;
+}
+.lock-welcome h2{
+  margin:0 0 8px;font-size:1.5rem;font-weight:700;color:var(--text);letter-spacing:-0.02em;
+}
+.lock-welcome p{
+  margin:0;color:var(--muted);font-size:.95rem;line-height:1.5;
+}
+.login-form{
+  display:flex;flex-direction:column;gap:20px;
+}
+.form-group{
+  display:flex;flex-direction:column;gap:6px;
+}
+.form-label{
+  font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:2px;
+}
+.input-wrapper{
+  position:relative;display:flex;align-items:center;
+}
+.input-icon{
+  position:absolute;left:12px;z-index:1;font-size:1.1rem;opacity:0.6;
+}
+.lock-input-full{
+  padding-left:40px !important;
+}
+.input-wrapper input {
+  padding-left:40px !important;
+}
+.password-toggle{
+  position:absolute;right:12px;z-index:1;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px;border-radius:4px;transition:all 0.2s ease;
+}
+.password-toggle:hover{
+  color:var(--primary);background:var(--primary-soft);
+}
+.form-options{
+  display:flex;align-items:center;justify-content:space-between;margin:4px 0;
+}
+.checkbox-wrapper{
+  display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem;color:var(--text);cursor:pointer;
+}
+.checkbox-wrapper input[type="checkbox"]{
+  display:none;
+}
+.checkmark{
+  width:18px;height:18px;border:2px solid var(--line-strong);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;background:#fff;
+}
+.checkbox-wrapper input[type="checkbox"]:checked + .checkmark{
+  background:var(--primary);border-color:var(--primary);
+}
+.checkbox-wrapper input[type="checkbox"]:checked + .checkmark::after{
+  content:"✓";color:#fff;font-size:12px;font-weight:700;
+}
+.checkbox-label{
+  font-weight:500;
+}
+.login-btn{
+  padding:14px 20px;font-size:1rem;font-weight:600;border-radius:12px;transition:all 0.2s ease;position:relative;overflow:hidden;
+}
+.login-btn:hover:not(:disabled){
+  transform:translateY(-1px);box-shadow:0 8px 24px rgba(36,87,214,0.2);
+}
+.login-btn:disabled{
+  opacity:0.7;cursor:not-allowed;
+}
+.btn-text{
+  transition:opacity 0.2s ease;
+}
+.login-btn:disabled .btn-text{
+  opacity:0.6;
+}
+.btn-loader{
+  position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);
+}
+.lock-help{
+  margin-top:24px;text-align:center;
+}
+.help-text{
+  font-size:.82rem;color:var(--muted);line-height:1.5;margin:0;
+}
+.whatsapp-link{
+  color:#25D366;font-weight:600;text-decoration:none;
+}
+.whatsapp-link:hover{
+  text-decoration:underline;
+}
+.lock-error{
+  display:flex;align-items:center;gap:8px;margin-top:16px;padding:12px;border-radius:8px;background:rgba(180,35,24,0.08);border:1px solid rgba(180,35,24,0.15);min-height:auto;
+}
+.error-icon{
+  font-size:1rem;
+}
+.error-message{
+  font-size:.85rem;color:var(--danger);font-weight:500;
+}
 .hide{display:none !important}
 
 .modal{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:14px;}
