@@ -2485,7 +2485,6 @@ function activate(tab){
       mainOverview.style.display = "none";
     } else {
       mainOverview.style.display = "block";
-      // Keep main overview in collapsed state (don't auto-expand)
     }
   }
   
@@ -2503,6 +2502,10 @@ function setCurrencyChoice(form, currency){
   if (hidden) hidden.value = currency;
   form.querySelectorAll(".currency-chip").forEach(btn => btn.classList.toggle("active", btn.dataset.currency === currency));
   state.lastCurrency = currency;
+
+  // Refresh loan wallet selector if present in this form
+  const walletSel = form.querySelector('[name="loan_wallet_id"]') || form.querySelector('[name="payment_wallet_id"]');
+  if (walletSel) populateLoanWalletSelector(currency, walletSel);
 }
 
 function openEntryModal(mode, direction){
@@ -2523,6 +2526,19 @@ function openEntryModal(mode, direction){
     els.principalSubmitBtn.textContent = direction === "given" ? "Save given loan" : "Save taken loan";
     setCurrencyChoice(els.principalModalForm, state.lastCurrency || "AED");
     defaultDateInputs(els.principalModalForm);
+
+    // Wallet selector badge & population
+    const walletBadge = document.getElementById("principalWalletBadge");
+    if (walletBadge) {
+      if (direction === "given") {
+        walletBadge.textContent = "Loan Given → Deduct from wallet";
+        walletBadge.className = "badge orange";
+      } else {
+        walletBadge.textContent = "Loan Taken → Add to wallet";
+        walletBadge.className = "badge green";
+      }
+    }
+    populateLoanWalletSelector(state.lastCurrency || "AED", document.getElementById("modalLoanWalletSelect"));
   } else {
     els.modalTitle.textContent = direction === "given" ? "New received back entry" : "New returned back entry";
     els.modalDesc.textContent = direction === "given" ? "Record money received against a given loan." : "Record repayment against a taken loan.";
@@ -2534,6 +2550,27 @@ function openEntryModal(mode, direction){
     els.multiEntryCount.value = 1;
     renderMultiEntries(1);
     renderLoanSelectors();
+
+    // Wallet selector badge
+    const walletBadge = document.getElementById("paymentWalletBadge");
+    if (walletBadge) {
+      if (direction === "given") {
+        walletBadge.textContent = "Received Back → Add to wallet";
+        walletBadge.className = "badge green";
+      } else {
+        walletBadge.textContent = "Returned Back → Deduct from wallet";
+        walletBadge.className = "badge orange";
+      }
+    }
+    // Populate wallet selector based on first open loan's currency (if available)
+    const firstLoanOption = els.modalLoanSelect.options[els.modalLoanSelect.selectedIndex];
+    const selectedGroup = firstLoanOption?.value;
+    let loanCurrency = null;
+    if (selectedGroup) {
+      const principalEntry = state.entries.find(e => e.group_id === selectedGroup && e.entry_kind === "principal");
+      if (principalEntry) loanCurrency = principalEntry.currency;
+    }
+    populateLoanWalletSelector(loanCurrency, document.getElementById("modalPaymentWalletSelect"));
   }
 }
 
@@ -2727,6 +2764,8 @@ async function createPrincipal(form){
   const fd = new FormData(form);
   const direction = String(fd.get("direction") || "");
   const groupId = crypto.randomUUID();
+  const walletId = String(fd.get("loan_wallet_id") || "").trim();
+
   const payload = {
     group_id: groupId,
     direction,
@@ -2742,6 +2781,15 @@ async function createPrincipal(form){
 
   if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date) throw new Error("Complete all required fields.");
 
+  // Validate wallet balance before saving (loan given = money out)
+  if (walletId && direction === "given") {
+    const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === walletId);
+    if (account) {
+      if (account.currency !== payload.currency) throw new Error("Selected wallet currency does not match the loan currency.");
+      if (payload.principal_amount > account.balance) throw new Error(`Insufficient wallet balance. Available: ${formatReportAmount(account.balance, account.currency)}.`);
+    }
+  }
+
   if (isBackupMode()){
     state.entries.unshift({
       ...payload,
@@ -2751,6 +2799,12 @@ async function createPrincipal(form){
   } else {
     await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
   }
+
+  // Create linked wallet entry
+  if (walletId) {
+    await createWalletEntryForLoanPrincipal(walletId, payload.principal_amount, payload.loan_date, payload.person_name, direction, payload.currency);
+  }
+
   form.reset();
   setCurrencyChoice(form, "AED");
   defaultDateInputs(form);
@@ -2764,6 +2818,7 @@ async function createPayment(form){
   const direction = String(fd.get("direction") || "");
   const groupId = String(fd.get("group_id") || "");
   const count = parseInt(els.multiEntryCount.value) || 1;
+  const walletId = String(fd.get("payment_wallet_id") || "").trim();
 
   if (!groupId) throw new Error("Please choose a loan.");
 
@@ -2780,6 +2835,15 @@ async function createPayment(form){
 
   if (totalAmount > currentRemaining){
     throw new Error(`Total amount (${totalAmount}) exceeds remaining balance (${currentRemaining}).`);
+  }
+
+  // Validate wallet for returned back (money goes out)
+  if (walletId && direction === "taken") {
+    const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === walletId);
+    if (account) {
+      if (account.currency !== principalEntry.currency) throw new Error("Selected wallet currency does not match the loan currency.");
+      if (totalAmount > account.balance) throw new Error(`Insufficient wallet balance for this repayment. Available: ${formatReportAmount(account.balance, account.currency)}.`);
+    }
   }
 
   const payloads = [];
@@ -2814,6 +2878,13 @@ async function createPayment(form){
     });
   } else {
     await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payloads) });
+  }
+
+  // Create linked wallet entries for each payment row
+  if (walletId) {
+    for (const p of payloads) {
+      await createWalletEntryForPayment(walletId, p.action_amount, p.action_date, principalEntry.person_name, direction, principalEntry.currency);
+    }
   }
 
   form.reset();
@@ -4358,6 +4429,15 @@ function attachEvents(){
     renderMultiEntries(cnt);
   });
 
+  // When a loan is selected in the payment modal, update wallet selector currency
+  els.modalLoanSelect.addEventListener("change", () => {
+    const selectedGroupId = els.modalLoanSelect.value;
+    if (!selectedGroupId) return;
+    const principalEntry = state.entries.find(e => e.group_id === selectedGroupId && e.entry_kind === "principal");
+    const currency = principalEntry?.currency || null;
+    populateLoanWalletSelector(currency, document.getElementById("modalPaymentWalletSelect"));
+  });
+
   els.principalModalForm.addEventListener("submit", async e => {
     e.preventDefault();
     try { await createPrincipal(els.principalModalForm); } catch (err) { alert(err.message); }
@@ -4552,12 +4632,105 @@ async function attemptUnlock(){
   }
 }
 
+function populateLoanWalletSelector(currency, selectEl) {
+  if (!selectEl) return;
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const matchingAccounts = currency
+    ? accounts.filter(a => a.currency === currency)
+    : accounts;
+
+  selectEl.innerHTML = `<option value="">Skip wallet entry</option>` +
+    matchingAccounts.map(a => {
+      const balDisplay = formatReportAmount(a.balance, a.currency);
+      return `<option value="${escapeHtml(a.group_id)}">${escapeHtml(a.person_name)} (${escapeHtml(a.accountType)}) — ${escapeHtml(balDisplay)}</option>`;
+    }).join("");
+}
+
+async function createWalletEntryForLoanPrincipal(walletGroupId, amount, date, personName, direction, currency) {
+  const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === walletGroupId);
+  if (!account) return;
+  if (account.currency !== currency) {
+    console.warn("Wallet currency mismatch, skipping wallet entry.");
+    return;
+  }
+  // Loan Given  → money GOES OUT of wallet → EXPENSE
+  // Loan Taken  → money COMES INTO wallet  → TOPUP
+  const isExpense = direction === "given";
+  const noteText = isExpense
+    ? `Loan Given to ${personName}`
+    : `Loan Received from ${personName}`;
+
+  const payload = {
+    group_id: walletGroupId,
+    direction: "taken",
+    entry_kind: "partial",
+    person_name: account.person_name,
+    currency: account.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: account.principal?.loan_date || date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(noteText, {
+      accountType: account.accountType,
+      rowType: isExpense ? "EXPENSE" : "TOPUP",
+      itemName: personName,
+      expenseType: isExpense ? "Loan Given" : "Loan Received"
+    })
+  };
+
+  if (isBackupMode()) {
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+  }
+}
+
+async function createWalletEntryForPayment(walletGroupId, amount, date, personName, direction, currency) {
+  const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === walletGroupId);
+  if (!account) return;
+  if (account.currency !== currency) {
+    console.warn("Wallet currency mismatch, skipping wallet entry.");
+    return;
+  }
+  // Received Back (given)  → money COMES BACK   → TOPUP
+  // Returned Back (taken)  → money GOES OUT      → EXPENSE
+  const isTopup = direction === "given";
+  const noteText = isTopup
+    ? `Received Back from ${personName}`
+    : `Returned Back to ${personName}`;
+
+  const payload = {
+    group_id: walletGroupId,
+    direction: "taken",
+    entry_kind: "partial",
+    person_name: account.person_name,
+    currency: account.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: account.principal?.loan_date || date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(noteText, {
+      accountType: account.accountType,
+      rowType: isTopup ? "TOPUP" : "EXPENSE",
+      itemName: personName,
+      expenseType: isTopup ? "Received Back" : "Returned Back"
+    })
+  };
+
+  if (isBackupMode()) {
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+  }
+}
+
 async function boot(){
   attachEvents();
   initFloatingCurrencyBackground();
   defaultDateInputs(document);
   const resumedImport = sessionStorage.getItem(IMPORT_SESSION_KEY) === "1";
   applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: resumedImport });
+  activate("expenses");
 }
 
 boot();
