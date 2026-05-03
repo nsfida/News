@@ -48,6 +48,7 @@ const els = {
   unlockBtn: document.getElementById("unlockBtn"),
   lockError: document.getElementById("lockError"),
   app: document.getElementById("app"),
+  logoutBtn: document.getElementById("logoutBtn"),
   mainOverview: document.getElementById("mainOverview"),
   statsGrid: document.getElementById("statsGrid"),
   givenList: document.getElementById("givenList"),
@@ -601,30 +602,9 @@ function renderOverviewCards(){
     </div>
   `;
 
-  const expenseCurrencies = [...new Set(
-    getExpenseAccounts({ applyUiFilters: false }).map(account => account.currency).filter(Boolean)
-  )];
-  const expenseCard = expenseCurrencies.length ? `
-    <div class="summary currency-summary expense-overview">
-      ${overviewWatermarkExpenses(expenseCurrencies)}
-      <div class="currency-head">💸</div>
-      ${expenseCurrencies.map(currency => {
-        const s = summarizeExpenseByCurrency(currency);
-        return `
-          ${overviewExpenseLine(currency, "Total Amount:", money(s.totalAmount, currency))}
-          ${overviewExpenseLine(currency, "Total Expenses:", money(s.totalExpenses, currency))}
-          ${overviewExpenseLine(currency, "Available Balance:", money(s.availableBalance, currency))}
-        `;
-      }).join("")}
-      <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
-        <button class="tiny ghost" onclick="window.location.href='#expensesPanel'">View Expenses</button>
-        <button class="tiny ghost" onclick="openExpenseModal('account')">Add Account</button>
-        <button class="tiny ghost" onclick="downloadExpensesPDF()">Download PDF</button>
-      </div>
-    </div>
-  ` : "";
-
-  els.statsGrid.innerHTML = currencyCards + goodsCard + expenseCard;
+  // Expense summary is intentionally rendered inside Wallets Overview (Expenses tab),
+  // not inside the main Overview grid.
+  els.statsGrid.innerHTML = currencyCards + goodsCard;
 }
 
 function matchesSearch(entry, term){
@@ -2354,7 +2334,28 @@ function renderExpenseOverviewWallets(){
     container.innerHTML = `<div class="empty" style="grid-column:1/-1">No expense accounts yet.</div>`;
     return;
   }
-  container.innerHTML = accounts.map(a => {
+  const expenseCurrencies = [...new Set(accounts.map(account => account.currency).filter(Boolean))];
+  const expenseSummaryCard = expenseCurrencies.length ? `
+      <div class="summary currency-summary expense-overview">
+        ${overviewWatermarkExpenses(expenseCurrencies)}
+        <div class="currency-head">💸</div>
+        ${expenseCurrencies.map(currency => {
+          const s = summarizeExpenseByCurrency(currency);
+          return `
+            ${overviewExpenseLine(currency, "Total Amount:", money(s.totalAmount, currency))}
+            ${overviewExpenseLine(currency, "Total Expenses:", money(s.totalExpenses, currency))}
+            ${overviewExpenseLine(currency, "Available Balance:", money(s.availableBalance, currency))}
+          `;
+        }).join("")}
+        <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="tiny ghost" onclick="window.location.href='#expensesPanel'">View Expenses</button>
+          <button class="tiny ghost" onclick="openExpenseModal('account')">Add Account</button>
+          <button class="tiny ghost" onclick="downloadExpensesPDF()">Download PDF</button>
+        </div>
+      </div>
+  ` : "";
+
+  container.innerHTML = expenseSummaryCard + accounts.map(a => {
     const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
     const balClass = a.balance > 0 ? "" : "style=\"opacity:.6\"";
     return `
@@ -3060,7 +3061,7 @@ const PDF_BRAND = {
   mobile: "+971 55 921 6280",
   whatsapp: "+92 333 900 4564",
   facebook: "facebook.com/nadeemshahzadfida",
-  systemName: "NSF's Loan Management System"
+  systemName: "MMM by NSF"
 };
 
 let cachedPdfLogo = null;
@@ -3594,7 +3595,10 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     body,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 7.5 },
+    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2 },
+    columnStyles: currencyFilter
+      ? { 7: { cellWidth: 62 } } // Notes
+      : { 8: { cellWidth: 56 } }, // Notes
     didDrawPage: () => drawPdfFooter(doc)
   });
 
@@ -4379,6 +4383,10 @@ function attachEvents(){
     focusUnlockForm();
   });
 
+  if (els.logoutBtn){
+    els.logoutBtn.addEventListener("click", () => doLogout());
+  }
+
   if (els.zipUsernameInput){
     els.zipUsernameInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   }
@@ -4403,6 +4411,17 @@ function focusUnlockForm(){
     ? els.zipUsernameInput
     : els.zipPasswordInput;
   focusEl.focus();
+}
+
+function doLogout(){
+  runtimeConfig = null;
+  state.unlocked = false;
+  sessionStorage.removeItem("loanledger-unlocked");
+  sessionStorage.removeItem(ZIP_USERNAME_SESSION_KEY);
+  if (els.zipPasswordInput) els.zipPasswordInput.value = "";
+  if (els.app) els.app.classList.add("hide");
+  if (els.lockScreen) els.lockScreen.classList.remove("hide");
+  focusUnlockForm();
 }
 
 async function attemptUnlock(){
