@@ -38,7 +38,9 @@ const state = {
   modalDirection: "given",
   editId: null,
   editKind: null,
-  expenseWalletFilter: "all"
+  expenseWalletFilter: "all",
+  expenseDateFrom: "",
+  expenseDateTo: ""
 };
 
 const els = {
@@ -808,6 +810,7 @@ function buildTransferEvents(){
     for (const row of account.spends){
       const meta = expenseMetaFromNotes(row.notes);
       if (meta.expenseType !== "Transfer") continue;
+      if (!isInDateRange(row.action_date)) continue;
       const partner = findTransferPartnerForExpense(row);
       if (wf !== "all"){
         const hit = account.group_id === wf || (partner && partner.group_id === wf);
@@ -886,17 +889,20 @@ function collectTopupTransactionsFlat(accounts){
   for (const account of accounts){
     if (wf !== "all" && account.group_id !== wf) continue;
     if (account.principal && Number(account.principal.principal_amount || 0) > 0){
-      topupTransactions.push({
-        ...account.principal,
-        action_date: account.principal.loan_date,
-        action_amount: account.principal.principal_amount,
-        person_name: account.person_name,
-        currency: account.currency,
-        accountType: account.accountType,
-        isOpeningBalance: true
-      });
+      if (isInDateRange(account.principal.loan_date)){
+        topupTransactions.push({
+          ...account.principal,
+          action_date: account.principal.loan_date,
+          action_amount: account.principal.principal_amount,
+          person_name: account.person_name,
+          currency: account.currency,
+          accountType: account.accountType,
+          isOpeningBalance: true
+        });
+      }
     }
     for (const topup of account.topups){
+      if (!isInDateRange(topup.action_date)) continue;
       topupTransactions.push({
         ...topup,
         person_name: account.person_name,
@@ -1587,12 +1593,22 @@ function refreshExpenseItemIntentUi(){
   }
 }
 
+function isInDateRange(dateStr){
+  if (!state.expenseDateFrom && !state.expenseDateTo) return true;
+  const d = dateStamp(dateStr);
+  if (!d) return true;
+  if (state.expenseDateFrom && d < dateStamp(state.expenseDateFrom)) return false;
+  if (state.expenseDateTo && d > dateStamp(state.expenseDateTo + "T23:59:59")) return false;
+  return true;
+}
+
 function collectExpenseSpendRows(accounts){
   const out = [];
   const wf = state.expenseWalletFilter;
   for (const account of accounts){
     if (wf !== "all" && account.group_id !== wf) continue;
     for (const row of account.spends){
+      if (!isInDateRange(row.action_date)) continue;
       out.push({ row, account });
     }
   }
@@ -4426,6 +4442,18 @@ function attachEvents(){
     }finally{
       e.target.value = "";
     }
+  });
+  const expDateFrom = document.getElementById("expenseDateFrom");
+  const expDateTo = document.getElementById("expenseDateTo");
+  const clearExpDateBtn = document.getElementById("clearExpenseDateBtn");
+  if (expDateFrom) expDateFrom.addEventListener("change", e => { state.expenseDateFrom = e.target.value; renderAll(); });
+  if (expDateTo) expDateTo.addEventListener("change", e => { state.expenseDateTo = e.target.value; renderAll(); });
+  if (clearExpDateBtn) clearExpDateBtn.addEventListener("click", () => {
+    state.expenseDateFrom = "";
+    state.expenseDateTo = "";
+    if (expDateFrom) expDateFrom.value = "";
+    if (expDateTo) expDateTo.value = "";
+    renderAll();
   });
   els.connectSupabaseBtn.addEventListener("click", () => {
     els.lockScreen.classList.remove("hide");
