@@ -462,7 +462,16 @@ a{color:inherit}
 }
 .expense-item-row .expense-item-total{text-align:right;}
 .expense-item-row .expense-item-total small{display:block;}
+.expense-transfer-totals{display:flex;flex-direction:column;gap:6px;align-items:flex-end;text-align:right;}
+.expense-transfer-totals > div{display:flex;flex-direction:column;gap:2px;}
 .expense-item-detail-note{font-size:.74rem;color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.expense-section-anchor{margin-top:16px;margin-bottom:2px;}
+.expense-section-anchor:first-child{margin-top:0;}
+.expense-section-title{margin:0 0 8px;font-size:1rem;font-weight:760;color:var(--text);}
+.expense-section-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}
+.expense-toolbar-hint{font-size:.8rem;color:var(--muted);flex:1;min-width:200px;line-height:1.45;}
+.expense-by-currency{margin-top:4px;}
 
 .expense-intent-hint{margin:0 0 8px;font-size:.82rem;color:var(--muted);line-height:1.45;}
 .expense-intent-radios{display:flex;flex-direction:column;gap:8px;}
@@ -612,6 +621,8 @@ tbody tr:hover{background:#fbfdff}
 .lock-card h2{margin:0 0 8px;font-size:1.08rem}
 .lock-card p{margin:0 0 14px;color:var(--muted);font-size:.9rem;line-height:1.6}
 .lock-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.lock-grid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.lock-grid .lock-input-full{grid-column:1/-1}
 .lock-error{min-height:1.1em;margin-top:10px;color:var(--danger);font-size:.88rem}
 .hide{display:none !important}
 
