@@ -275,6 +275,43 @@ a{color:inherit}
   font-size:1em;
 }
 
+/* Floating wallet logos watermark (expense summary card) */
+.wallet-float-watermark{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  overflow:hidden;
+}
+.wallet-float-watermark .wallet-float-logo{
+  position:absolute;
+  width:clamp(18px, 4.2vw, 34px);
+  height:clamp(18px, 4.2vw, 34px);
+  opacity:.10;
+  filter:grayscale(.15) brightness(1.05);
+  will-change:transform;
+  transform:translate3d(0,0,0) scale(var(--s, 1));
+  animation:
+    wallet-drift var(--d, 18s) ease-in-out var(--delay, 0s) infinite alternate,
+    wallet-zoom var(--z, 7s) ease-in-out calc(var(--delay, 0s) * .5) infinite alternate;
+}
+.wallet-float-watermark .wallet-float-logo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+@keyframes wallet-drift{
+  0%   { transform:translate3d(var(--x1, 8%),  var(--y1, 12%), 0) rotate(-8deg) scale(var(--s, 1)); }
+  33%  { transform:translate3d(var(--x2, 72%), var(--y2, 22%), 0) rotate(6deg)  scale(var(--s, 1)); }
+  66%  { transform:translate3d(var(--x3, 35%), var(--y3, 78%), 0) rotate(-4deg) scale(var(--s, 1)); }
+  100% { transform:translate3d(var(--x4, 88%), var(--y4, 60%), 0) rotate(10deg) scale(var(--s, 1)); }
+}
+@keyframes wallet-zoom{
+  0% { filter:grayscale(.15) brightness(1.0); opacity:.08; }
+  100% { filter:grayscale(.05) brightness(1.12); opacity:.13; }
+}
+
 /* Wallet logo watermark styling */
 .summary-watermark img{
   max-width:80%;
@@ -442,12 +479,15 @@ a{color:inherit}
 .expense-wallet-stats .available-label .available-amount .money .amount{color:var(--success);}
 
 /* Available amount styling for summary cards */
-.summary-line-one.available-label{color:var(--success) !important;}
-.summary-line-one-value.available-amount{color:var(--success) !important;}
+.summary-line-one.available-label{color:var(--success) !important;font-weight:900;}
+.summary-line-one-value.available-amount{color:var(--success) !important;font-weight:900;}
 .available-amount{color:var(--success);}
 .available-amount .money{color:var(--success);}
 .available-amount .money .symbol{color:var(--success);}
 .available-amount .money .amount{color:var(--success);}
+
+/* Make strong-success always green + bold */
+.strong-success{color:var(--success) !important;font-weight:900;}
 .expense-wallet-actions{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(16,24,40,.08);width:100%;}
 .expense-wallet-actions button{
   appearance:none;border:none;background:none;padding:0;font-size:.7rem;font-weight:700;color:var(--primary);
