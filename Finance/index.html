@@ -17,14 +17,15 @@
       <div class="brand" style="margin-bottom:12px">
         <img class="mark" src="Assets/logo/logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
         <div>
-          <h1>NSF's Loan Management System</h1>
+          <h1>MMM by NSF</h1>
           <p>Private loan tracking workspace</p>
         </div>
       </div>
       <h2>Unlock Database Config</h2>
-      <p>Enter the ZIP password to unlock `Assets/app/key.zip` and load Supabase access.</p>
-      <div class="lock-row">
-        <input id="zipPasswordInput" class="input" type="password" placeholder="ZIP Password" autocomplete="current-password" />
+      <p>Enter your workspace username and the ZIP password. The config is loaded from <code>username.zip</code> on the server (for example <code>bilal.zip</code>).</p>
+      <div class="lock-grid">
+        <input id="zipUsernameInput" class="input lock-input-full" type="text" placeholder="Username (ZIP name, e.g. bilal)" autocomplete="username" autocapitalize="off" spellcheck="false" />
+        <input id="zipPasswordInput" class="input" type="password" placeholder="ZIP password" autocomplete="current-password" />
         <button id="unlockBtn" class="btn primary" type="button">Unlock</button>
       </div>
       <div id="lockError" class="lock-error"></div>
@@ -36,8 +37,8 @@
       <div class="brand">
         <img class="mark" src="Assets/logo/logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
         <div>
-          <h1>NSF's Loan Management System</h1>
-          <p>Loan Given/Received Back and Loan Taken/Returned Back</p>
+          <h1>MMM by NSF</h1>
+          <p>Money Management Module (Powered by Nadeem Shahzad Fida)</p>
         </div>
       </div>
       <div class="chips">
