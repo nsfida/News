@@ -1,1072 +1,4535 @@
-@font-face{
-  font-family:"DirhamSymbol";
-  src:url("fonts/AED.ttf") format("truetype");
-  font-display:swap;
-}
-@font-face{
-  font-family:"RiyalSymbol";
-  src:url("fonts/SAR.otf") format("opentype");
-  font-display:swap;
+const CONFIG = {
+  zipBaseUrl: "https://livenews.live/Finance/Assets/app/",
+  table: "loan_ledger_entries"
+};
+
+const ZIP_USERNAME_SESSION_KEY = "loanledger-zip-username-v1";
+
+function sanitizeZipUsername(raw){
+  const username = String(raw || "").trim();
+  if (!username) throw new Error("Please enter your username.");
+  if (!/^[a-zA-Z0-9_-]+$/.test(username)){
+    throw new Error("Username may only contain letters, numbers, underscores, and hyphens.");
+  }
+  return username;
 }
 
-:root{
-  --bg:#f6f7f9;
-  --panel:#ffffff;
-  --panel-2:#fbfcfd;
-  --text:#17212b;
-  --muted:#667085;
-  --line:#e4e7ec;
-  --line-strong:#d0d5dd;
-  --primary:#2457d6;
-  --primary-soft:#eef3ff;
-  --success:#067647;
-  --warning:#b54708;
-  --danger:#b42318;
-  --shadow:0 6px 18px rgba(16,24,40,.05);
-  --radius:14px;
-  --max:1240px;
-  --content-max:1040px;
+function zipUrlForUsername(raw){
+  const username = sanitizeZipUsername(raw);
+  return `${CONFIG.zipBaseUrl}${encodeURIComponent(username)}.zip`;
 }
 
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
+let runtimeConfig = null;
 
-body{
-  font-family: "DirhamSymbol", "RiyalSymbol", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;
-  position:relative;
-}
+const SUPPORTED_CURRENCIES = ["AED", "SAR", "PKR"];
 
-.page-currency-bg{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-  overflow:hidden;
-  contain:strict;
-}
-.float-currency{
-  position:absolute;
-  margin:0;
-  font-weight:800;
-  line-height:1;
-  user-select:none;
-  will-change:transform, opacity;
-  transform:translate(-50%, -50%);
-  animation-timing-function:ease-in-out;
-  animation-iteration-count:infinite;
-}
-@media (prefers-reduced-motion: reduce){
-  .float-currency{
-    animation:none !important;
-    opacity:.04 !important;
+const state = {
+  entries: [],
+  dataSource: "backup",
+  hasImportedFile: false,
+  dbEntryIds: new Set(),
+  dbSignatures: new Set(),
+  dbSignaturesById: new Map(),
+  unlocked: false,
+  search: { given: "", received: "", taken: "", returned: "", installments: "", goods: "", expenses: "" },
+  statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All", expenses: "All" },
+  currencyFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All", expenses: "All" },
+  lastCurrency: "AED",
+  modalDirection: "given",
+  editId: null,
+  editKind: null,
+  expenseWalletFilter: "all"
+};
+
+const els = {
+  lockScreen: document.getElementById("lockScreen"),
+  zipUsernameInput: document.getElementById("zipUsernameInput"),
+  zipPasswordInput: document.getElementById("zipPasswordInput"),
+  unlockBtn: document.getElementById("unlockBtn"),
+  lockError: document.getElementById("lockError"),
+  app: document.getElementById("app"),
+  logoutBtn: document.getElementById("logoutBtn"),
+  mainOverview: document.getElementById("mainOverview"),
+  statsGrid: document.getElementById("statsGrid"),
+  givenList: document.getElementById("givenList"),
+  receivedList: document.getElementById("receivedList"),
+  takenList: document.getElementById("takenList"),
+  returnedList: document.getElementById("returnedList"),
+  installmentsList: document.getElementById("installmentsList"),
+  goodsList: document.getElementById("goodsList"),
+  expensesList: document.getElementById("expensesList"),
+  openGivenCount: document.getElementById("openGivenCount"),
+  openTakenCount: document.getElementById("openTakenCount"),
+  receivedCount: document.getElementById("receivedCount"),
+  returnedCount: document.getElementById("returnedCount"),
+  connectSupabaseBtn: document.getElementById("connectSupabaseBtn"),
+  importJsonInput: document.getElementById("importJsonInput"),
+  importCsvInput: document.getElementById("importCsvInput"),
+  downloadAllDataJsonBtn: document.getElementById("downloadAllDataJsonBtn"),
+  downloadAllDataCsvBtn: document.getElementById("downloadAllDataCsvBtn"),
+  uploadBackupBtn: document.getElementById("uploadBackupBtn"),
+  downloadAllSectionsPdfBtn: document.getElementById("downloadAllSectionsPdfBtn"),
+  downloadGivenPdfBtn: document.getElementById("downloadGivenPdfBtn"),
+  downloadReceivedPdfBtn: document.getElementById("downloadReceivedPdfBtn"),
+  downloadTakenPdfBtn: document.getElementById("downloadTakenPdfBtn"),
+  downloadReturnedPdfBtn: document.getElementById("downloadReturnedPdfBtn"),
+  downloadExpensesPdfBtn: document.getElementById("downloadExpensesPdfBtn"),
+  entryModal: document.getElementById("entryModal"),
+  editModal: document.getElementById("editModal"),
+  modalTitle: document.getElementById("modalTitle"),
+  modalDesc: document.getElementById("modalDesc"),
+  principalModalForm: document.getElementById("principalModalForm"),
+  paymentModalForm: document.getElementById("paymentModalForm"),
+  editForm: document.getElementById("editForm"),
+  modalLoanSelect: document.getElementById("modalLoanSelect"),
+  principalSubmitBtn: document.getElementById("principalSubmitBtn"),
+  paymentSubmitBtn: document.getElementById("paymentSubmitBtn"),
+  multiEntryCount: document.getElementById("multiEntryCount"),
+  multiEntryContainer: document.getElementById("multiEntryContainer"),
+  goodsModal: document.getElementById("goodsModal"),
+  goodsModalTitle: document.getElementById("goodsModalTitle"),
+  goodsModalDesc: document.getElementById("goodsModalDesc"),
+  goodsBoughtForm: document.getElementById("goodsBoughtForm"),
+  goodsSoldForm: document.getElementById("goodsSoldForm"),
+  goodsItemSelect: document.getElementById("goodsItemSelect"),
+  goodsNewItemToggleBtn: document.getElementById("goodsNewItemToggleBtn"),
+  goodsNewItemFields: document.getElementById("goodsNewItemFields"),
+  openGoodsBoughtBtn: document.getElementById("openGoodsBoughtBtn"),
+  openGoodsSoldBtn: document.getElementById("openGoodsSoldBtn"),
+  expenseModal: document.getElementById("expenseModal"),
+  expenseModalTitle: document.getElementById("expenseModalTitle"),
+  expenseModalDesc: document.getElementById("expenseModalDesc"),
+  expenseAccountForm: document.getElementById("expenseAccountForm"),
+  expenseTopupForm: document.getElementById("expenseTopupForm"),
+  expenseEntryForm: document.getElementById("expenseEntryForm"),
+  expenseTopupAccountSelect: document.getElementById("expenseTopupAccountSelect"),
+  expenseSpendAccountSelect: document.getElementById("expenseSpendAccountSelect"),
+  expenseCurrencySelect: document.getElementById("expenseCurrencySelect"),
+  expenseTypeSelect: document.getElementById("expenseTypeSelect"),
+  openExpenseAccountBtn: document.getElementById("openExpenseAccountBtn"),
+  openExpenseTopupBtn: document.getElementById("openExpenseTopupBtn"),
+  openExpenseEntryBtn: document.getElementById("openExpenseEntryBtn"),
+  expenseWalletFilters: document.getElementById("expenseWalletFilters"),
+  expenseItemNameInput: document.getElementById("expenseItemNameInput"),
+  expenseItemIntentWrap: document.getElementById("expenseItemIntentWrap"),
+  transferModal: document.getElementById("transferModal"),
+  transferModalTitle: document.getElementById("transferModalTitle"),
+  transferModalDesc: document.getElementById("transferModalDesc"),
+  transferForm: document.getElementById("transferForm"),
+  transferFromWallet: document.getElementById("transferFromWallet"),
+  transferToWallet: document.getElementById("transferToWallet"),
+  conversionRateInput: document.getElementById("conversionRateInput"),
+  conversionHelp: document.getElementById("conversionHelp"),
+  fromCurrencyIndicator: document.getElementById("fromCurrencyIndicator"),
+  toCurrencyIndicator: document.getElementById("toCurrencyIndicator"),
+  toggleWalletsBtn: document.getElementById("toggleWalletsBtn"),
+  walletsOverviewSection: document.getElementById("walletsOverviewSection"),
+  walletsBanner: document.getElementById("walletsBanner"),
+  walletsContent: document.getElementById("walletsContent"),
+  toggleMainOverviewBtn: document.getElementById("toggleMainOverviewBtn"),
+  mainOverviewBanner: document.getElementById("mainOverviewBanner"),
+  mainOverviewContent: document.getElementById("mainOverviewContent")
+};
+
+const INSTALLMENT_TAG = "[INSTALLMENT]";
+const GOODS_TAG = "[GOODS]";
+const EXPENSE_ACCOUNT_TAG = "[EXPENSE_ACCOUNT]";
+const BACKUP_STORAGE_KEY = "loanledger-json-backup-v1";
+const IMPORT_SESSION_KEY = "loanledger-imported-file-v1";
+const FLOAT_CURRENCY_PATHS = ["currency-float-path-1", "currency-float-path-2", "currency-float-path-3", "currency-float-path-4"];
+
+function initFloatingCurrencyBackground(){
+  const root = document.getElementById("pageCurrencyBg");
+  if (!root) return;
+  root.replaceChildren();
+  const specs = [
+    { type: "aed", cls: "float-currency-aed", html: '<span class="symbol symbol-dirham">~</span>' },
+    { type: "sar", cls: "float-currency-sar", html: '<span class="symbol symbol-riyal">$</span>' },
+    { type: "pkr", cls: "float-currency-pkr", html: '<span class="symbol">Rs.</span>' }
+  ];
+  const colorPools = {
+    aed: ["rgba(36,87,214,", "rgba(99,140,235,", "rgba(55,105,200,", "rgba(130,160,240,"],
+    sar: ["rgba(6,118,71,", "rgba(46,160,110,", "rgba(20,90,65,", "rgba(80,175,120,"],
+    pkr: ["rgba(181,71,8,", "rgba(210,110,35,", "rgba(160,85,20,", "rgba(200,95,45,"]
+  };
+  const count = 16;
+  for (let i = 0; i < count; i++){
+    const spec = specs[i % 3];
+    const el = document.createElement("span");
+    el.className = `float-currency ${spec.cls}`;
+    el.innerHTML = spec.html;
+    el.style.left = `${5 + Math.random() * 90}%`;
+    el.style.top = `${3 + Math.random() * 88}%`;
+    const fsMin = 2.4;
+    const fsMax = 9.5;
+    el.style.fontSize = `${fsMin + Math.random() * (fsMax - fsMin)}rem`;
+    const pool = colorPools[spec.type];
+    const alpha = 0.055 + Math.random() * 0.055;
+    el.style.color = `${pool[Math.floor(Math.random() * pool.length)]}${alpha})`;
+    const dur = 24 + Math.random() * 32;
+    el.style.animationDuration = `${dur}s`;
+    el.style.animationDelay = `${-Math.random() * dur}s`;
+    el.style.animationName = FLOAT_CURRENCY_PATHS[Math.floor(Math.random() * FLOAT_CURRENCY_PATHS.length)];
+    root.appendChild(el);
   }
 }
-.float-currency .symbol{
-  display:inline-block;
-  line-height:1;
-}
-.float-currency-aed .symbol-dirham{
-  font-family:"DirhamSymbol", Inter, system-ui, sans-serif !important;
-}
-.float-currency-sar .symbol-riyal{
-  font-family:"RiyalSymbol", Inter, system-ui, sans-serif !important;
-}
-.float-currency-pkr .symbol{
-  font-family:Inter, system-ui, sans-serif;
-  font-weight:750;
-  letter-spacing:-0.02em;
+
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[m]));
 }
 
-@keyframes currency-float-path-1{
-  0%,100%{transform:translate(-50%,-50%) translate(0,0) rotate(-8deg) scale(1);opacity:.035}
-  12%{transform:translate(-50%,-50%) translate(6vw,-10vh) rotate(5deg) scale(1.04);opacity:.055}
-  28%{transform:translate(-50%,-50%) translate(-8vw,4vh) rotate(-4deg) scale(.97);opacity:.045}
-  44%{transform:translate(-50%,-50%) translate(10vw,8vh) rotate(6deg) scale(1.06);opacity:.065}
-  61%{transform:translate(-50%,-50%) translate(-5vw,-12vh) rotate(-3deg) scale(1);opacity:.05}
-  78%{transform:translate(-50%,-50%) translate(-12vw,6vh) rotate(4deg) scale(.98);opacity:.04}
-}
-@keyframes currency-float-path-2{
-  0%,100%{transform:translate(-50%,-50%) translate(0,0) rotate(6deg) scale(1);opacity:.03}
-  18%{transform:translate(-50%,-50%) translate(-10vw,12vh) rotate(-7deg) scale(1.08);opacity:.055}
-  33%{transform:translate(-50%,-50%) translate(12vw,-5vh) rotate(5deg) scale(.95);opacity:.045}
-  50%{transform:translate(-50%,-50%) translate(4vw,-14vh) rotate(-5deg) scale(1.03);opacity:.06}
-  67%{transform:translate(-50%,-50%) translate(-7vw,9vh) rotate(8deg) scale(1);opacity:.04}
-  84%{transform:translate(-50%,-50%) translate(8vw,5vh) rotate(-4deg) scale(1.05);opacity:.05}
-}
-@keyframes currency-float-path-3{
-  0%,100%{transform:translate(-50%,-50%) translate(0,0) rotate(0deg) scale(1);opacity:.04}
-  15%{transform:translate(-50%,-50%) translate(14vw,6vh) rotate(-9deg) scale(1.02);opacity:.06}
-  30%{transform:translate(-50%,-50%) translate(-6vw,-11vh) rotate(7deg) scale(.96);opacity:.035}
-  48%{transform:translate(-50%,-50%) translate(-14vw,3vh) rotate(-5deg) scale(1.07);opacity:.055}
-  64%{transform:translate(-50%,-50%) translate(7vw,11vh) rotate(4deg) scale(.99);opacity:.045}
-  82%{transform:translate(-50%,-50%) translate(3vw,-8vh) rotate(-6deg) scale(1.04);opacity:.05}
-}
-@keyframes currency-float-path-4{
-  0%,100%{transform:translate(-50%,-50%) translate(0,0) rotate(-4deg) scale(1);opacity:.032}
-  20%{transform:translate(-50%,-50%) translate(-9vw,-9vh) rotate(8deg) scale(1.05);opacity:.052}
-  38%{transform:translate(-50%,-50%) translate(11vw,10vh) rotate(-6deg) scale(.94);opacity:.042}
-  55%{transform:translate(-50%,-50%) translate(-4vw,14vh) rotate(5deg) scale(1.06);opacity:.058}
-  72%{transform:translate(-50%,-50%) translate(9vw,-6vh) rotate(-7deg) scale(1);opacity:.038}
-  88%{transform:translate(-50%,-50%) translate(-11vw,-4vh) rotate(3deg) scale(1.03);opacity:.048}
+function todayISO(){
+  return new Date().toISOString().slice(0,10);
 }
 
-.shell{
-  position:relative;
-  z-index:1;
-}
-.site-footer{
-  position:relative;
-  z-index:1;
-}
-button,input,select,textarea,option{
-  font-family: inherit;
-}
-
-.symbol-dirham, .currency-chip .symbol-dirham { font-family: "DirhamSymbol", Inter, system-ui, sans-serif !important; }
-.symbol-riyal, .currency-chip .symbol-riyal { font-family: "RiyalSymbol", Inter, system-ui, sans-serif !important; }
-
-a{color:inherit}
-
-.shell{max-width:var(--max);margin:0 auto;padding:16px}
-
-.header{
-  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
-  margin-bottom:14px;
-}
-.brand{display:flex;gap:12px;align-items:center;min-width:0}
-.mark{
-  width:40px;height:40px;border-radius:12px;flex:0 0 auto;box-shadow:var(--shadow);
-  object-fit:contain;background:transparent;
-}
-.brand h1{margin:0;font-size:1rem;line-height:1.2;letter-spacing:-.03em}
-.brand p{margin:4px 0 0;color:var(--muted);font-size:.85rem}
-.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.chip{
-  border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:.77rem;color:var(--muted);
-  box-shadow:0 2px 10px rgba(16,24,40,.03);
-}
-.icon-chip{
-  width:36px;height:36px;padding:0;
-  display:grid;place-items:center;
-  overflow:hidden;
-}
-.finance-chip{
-  position:relative;
-  isolation:isolate;
-  background:linear-gradient(145deg,#f9fbff,#eef3ff);
-  border-color:#dbe5ff;
-}
-.db-core,.db-ring,.cash-note,.cash-dot,.coin{
-  position:absolute;
-  display:block;
-}
-.db-core{
-  width:12px;height:12px;border-radius:50%;
-  background:radial-gradient(circle at 30% 30%,#8cb0ff,#2457d6);
-  box-shadow:0 0 0 3px rgba(36,87,214,.15);
-  animation:pulse-core 1.8s ease-in-out infinite;
-}
-.db-ring{
-  width:22px;height:22px;border-radius:50%;
-  border:2px dashed rgba(36,87,214,.45);
-  animation:spin-ring 3.5s linear infinite;
-}
-.cash-note{
-  width:18px;height:12px;border-radius:4px;
-  background:linear-gradient(135deg,#4caf7b,#1e8f5f);
-  transform:rotate(-14deg);
-  box-shadow:0 3px 6px rgba(30,143,95,.22);
-  animation:float-cash 2s ease-in-out infinite;
-}
-.cash-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:#d6ffe8;
-  left:50%;top:50%;transform:translate(-50%,-50%);
-}
-.coin{
-  width:13px;height:13px;border-radius:50%;
-  background:radial-gradient(circle at 30% 30%,#ffe79c,#f6ba2a);
-  border:1px solid rgba(209,147,17,.45);
-}
-.coin-a{left:9px;top:12px;animation:bounce-coin 1.9s ease-in-out infinite}
-.coin-b{left:16px;top:9px;animation:bounce-coin 1.9s ease-in-out infinite .2s}
-@keyframes pulse-core{
-  0%,100%{transform:scale(1)}
-  50%{transform:scale(1.1)}
-}
-@keyframes spin-ring{to{transform:rotate(360deg)}}
-@keyframes float-cash{
-  0%,100%{transform:rotate(-14deg) translateY(0)}
-  50%{transform:rotate(-14deg) translateY(-2px)}
-}
-@keyframes bounce-coin{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-2px)}
-}
-.chip-emoji{
-  font-size:1.02rem;
-  display:inline-block;
-  animation:float-chip 1.9s ease-in-out infinite;
-}
-.icon-chip:nth-child(2) .chip-emoji{animation-delay:.2s}
-.icon-chip:nth-child(3) .chip-emoji{animation-delay:.4s}
-@keyframes float-chip{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-2px)}
-}
-
-.overview{
-  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:14px;margin-bottom:14px;
-}
-.overview-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.overview-top h2{margin:0;font-size:1.02rem;letter-spacing:-.03em}
-.overview-top p{margin:4px 0 0;color:var(--muted);font-size:.86rem;line-height:1.5}
-.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
-.summary{
-  background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:82px;
-  display:flex;flex-direction:column;justify-content:space-between;gap:8px;
-}
-.summary.currency-summary{
-  position:relative;
-  overflow:hidden;
-}
-.summary-watermark{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-  z-index:0;
-  font-size:clamp(4.5rem, 28vw, 7.5rem);
-  line-height:1;
-  color:var(--text);
-  opacity:.07;
-  animation:summary-watermark-pulse 3.8s ease-in-out infinite;
-}
-.summary-watermark .symbol{
-  font-size:1em;
-  line-height:1;
-}
-.summary-watermark-goods{
-  font-size:clamp(3.8rem, 24vw, 6.2rem);
-  filter:grayscale(.15);
-}
-.summary-watermark-expense{
-  flex-wrap:wrap;
-  gap:1.2rem;
-  padding:8%;
-  animation:none;
-  opacity:1;
-}
-.summary-watermark-expense .summary-watermark-symbol{
-  position:relative;
-  font-size:clamp(2.8rem, 16vw, 4.2rem);
-  opacity:.06;
-  animation:summary-watermark-pulse 3.6s ease-in-out infinite;
-}
-.summary-watermark-expense .summary-watermark-symbol .symbol{
-  font-size:1em;
-}
-
-/* Floating wallet logos watermark (expense summary card) */
-.wallet-float-watermark{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-  overflow:hidden;
-}
-.wallet-float-watermark .wallet-float-logo{
-  position:absolute;
-  width:clamp(18px, 4.2vw, 34px);
-  height:clamp(18px, 4.2vw, 34px);
-  opacity:.10;
-  filter:grayscale(.15) brightness(1.05);
-  will-change:transform;
-  transform:translate3d(0,0,0) scale(var(--s, 1));
-  animation:
-    wallet-drift var(--d, 18s) ease-in-out var(--delay, 0s) infinite alternate,
-    wallet-zoom var(--z, 7s) ease-in-out calc(var(--delay, 0s) * .5) infinite alternate;
-}
-.wallet-float-watermark .wallet-float-logo img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  display:block;
-}
-@keyframes wallet-drift{
-  0%   { transform:translate3d(var(--x1, 8%),  var(--y1, 12%), 0) rotate(-8deg) scale(var(--s, 1)); }
-  33%  { transform:translate3d(var(--x2, 72%), var(--y2, 22%), 0) rotate(6deg)  scale(var(--s, 1)); }
-  66%  { transform:translate3d(var(--x3, 35%), var(--y3, 78%), 0) rotate(-4deg) scale(var(--s, 1)); }
-  100% { transform:translate3d(var(--x4, 88%), var(--y4, 60%), 0) rotate(10deg) scale(var(--s, 1)); }
-}
-@keyframes wallet-zoom{
-  0% { filter:grayscale(.15) brightness(1.0); opacity:.08; }
-  100% { filter:grayscale(.05) brightness(1.12); opacity:.13; }
-}
-
-/* Wallet logo watermark styling */
-.summary-watermark img{
-  max-width:80%;
-  max-height:80%;
-  object-fit:contain;
-  opacity:0.45 !important;
-  filter:grayscale(0.1) brightness(1.0);
-  transition:opacity 0.3s ease;
-}
-@keyframes summary-watermark-pulse{
-  0%,100%{transform:scale(.94);opacity:.40}
-  50%{transform:scale(1.06);opacity:.50}
-}
-.summary .currency-head,
-.summary-line-one{
-  position:relative;
-  z-index:1;
-}
-.summary span{font-size:.74rem;color:var(--muted)}
-.summary strong{font-size:1rem;letter-spacing:-.02em}
-.currency-summary{gap:7px}
-.currency-head{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:2rem;line-height:1;}
-.summary-line{
-  display:flex;justify-content:space-between;gap:10px;align-items:baseline;
-  font-size:.82rem;line-height:1.4;
-}
-.summary-line span{color:var(--muted)}
-.summary-line strong{font-size:.84rem;white-space:nowrap}
-.summary-line-one{
-  display:flex;
-  flex-direction:row;
-  flex-wrap:nowrap;
-  justify-content:space-between;
-  align-items:baseline;
-  gap:8px;
-  width:100%;
-  line-height:1.35;
-}
-.summary-line-one-label{
-  flex:0 1 auto;
-  color:var(--muted);
-  font-size:.74rem;
-  font-weight:650;
-  white-space:nowrap;
-}
-.summary-line-one-value{
-  flex:0 0 auto;
-  min-width:0;
-  text-align:right;
-  font-size:.84rem;
-  font-weight:700;
-  color:var(--text);
-}
-.summary-line-one-value .money{
-  font-size:inherit;
-  font-weight:inherit;
-}
-.summary-line-one-value strong{
-  font-size:inherit;
-  white-space:nowrap;
-}
-.summary-line-one-label--with-symbol{
-  display:inline-flex;
-  align-items:baseline;
-  gap:0.35em;
-  flex-wrap:nowrap;
-  max-width:100%;
-}
-.summary-currency-mark{
-  display:inline-flex;
-  align-items:baseline;
-  flex-shrink:0;
-  line-height:1;
-}
-.summary-currency-mark .symbol{
-  font-size:1.08em;
-  line-height:1;
-}
-.summary-label-suffix{
-  color:var(--muted);
-  font-weight:650;
-}
-
-.tabs{
-  display:flex;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;
-  margin-bottom:14px;box-shadow:var(--shadow);position:sticky;top:12px;z-index:20;
-}
-.tab{
-  border:none;background:transparent;color:var(--muted);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:650;
-  font-size:.9rem;line-height:1;transition:background .15s ease,color .15s ease;
-}
-.tab.active{background:var(--primary);color:#fff}
-
-.panel{display:none}
-.panel.active{display:block}
-
-.center-wrap{
-  max-width:var(--content-max);
-  margin:0 auto;
-}
-
-.card{
-  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
-}
-.section{padding:14px}
-.section-head{
-  display:flex;flex-direction:column;align-items:stretch;gap:12px;
-  margin-bottom:12px;
-}
-.section-head-top{
-  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
-}
-.section-head h3{margin:0;font-size:.98rem;letter-spacing:-.02em}
-.section-head p{margin:4px 0 0;color:var(--muted);font-size:.84rem;line-height:1.55}
-
-.title-group{display:flex;flex-direction:column;gap:0;min-width:0}
-.title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.menu-wrap{position:relative;display:inline-flex;align-items:center}
-.menu-dropdown{
-  position:absolute;top:calc(100% + 6px);right:0;min-width:180px;display:none;flex-direction:column;
-  background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:4px;z-index:30;
-}
-.menu-dropdown.open{display:flex}
-.menu-item{
-  border:none;background:#fff;color:var(--text);text-align:left;padding:9px 10px;border-radius:8px;
-  font-size:.82rem;cursor:pointer;
-}
-.menu-item:hover{background:var(--primary-soft);color:var(--primary)}
-.menu-item.danger{color:var(--danger)}
-.menu-item.danger:hover{background:#fff1f0;color:var(--danger)}
-.file-import-input{display:none}
-.file-import-btn{margin:0}
-
-.filter-block-label{
-  font-size:.72rem;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;
-}
-.expense-wallet-block{margin-top:8px;margin-bottom:2px;}
-.expense-wallet-scroll{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;}
-.expense-wallet-card-wrap{display:flex;flex-direction:column;gap:4px;flex:1 1 200px;max-width:300px;min-width:168px;}
-.expense-wallet-card-wrap:has(.expense-wallet-radio:checked){
-  outline:2px solid rgba(36,87,214,.22);border-radius:14px;padding:4px;margin:-4px;
-}
-.expense-wallet-radio{display:none;}
-.expense-wallet-card{
-  display:flex;flex-direction:column;gap:6px;align-items:flex-start;
-  padding:10px 12px;border:1px solid var(--line-strong);border-radius:12px;
-  cursor:pointer;min-width:168px;flex:1 1 200px;max-width:300px;background:#fff;
-  transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
-}
-.expense-wallet-radio:checked + .expense-wallet-card{
-  border-color:rgba(36,87,214,.5);background:var(--primary-soft);box-shadow:0 0 0 2px rgba(36,87,214,.08);
-}
-.expense-wallet-title{font-weight:780;font-size:.88rem;line-height:1.2;color:var(--text);max-width:100%;}
-.expense-wallet-sub{font-size:.72rem;color:var(--muted);line-height:1.35;}
-.expense-wallet-stats{font-size:.7rem;color:var(--text);line-height:1.45;display:grid;gap:2px;width:100%;}
-.expense-wallet-stats span{display:flex;justify-content:space-between;gap:8px;}
-.expense-wallet-stats em{font-style:normal;color:var(--muted);font-weight:600;}
-/* Available amount styling for expense wallet filter */
-.expense-wallet-stats .available-label{color:var(--success);}
-.expense-wallet-stats .available-label em{color:var(--success) !important;}
-.expense-wallet-stats .available-label .available-amount{color:var(--success);}
-.expense-wallet-stats .available-label .available-amount .money{color:var(--success);}
-.expense-wallet-stats .available-label .available-amount .money .symbol{color:var(--success);}
-.expense-wallet-stats .available-label .available-amount .money .amount{color:var(--success);}
-
-/* Available amount styling for summary cards */
-.summary-line-one.available-label{color:var(--success) !important;font-weight:900;}
-.summary-line-one-value.available-amount{color:var(--success) !important;font-weight:900;}
-.available-amount{color:var(--success);}
-.available-amount .money{color:var(--success);}
-.available-amount .money .symbol{color:var(--success);}
-.available-amount .money .amount{color:var(--success);}
-
-/* Make strong-success always green + bold */
-.strong-success{color:var(--success) !important;font-weight:900;}
-.expense-wallet-actions{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(16,24,40,.08);width:100%;}
-.expense-wallet-actions button{
-  appearance:none;border:none;background:none;padding:0;font-size:.7rem;font-weight:700;color:var(--primary);
-  cursor:pointer;text-decoration:underline;text-underline-offset:2px;
-}
-.expense-wallet-actions button:hover{color:#1a4ab8;}
-.expense-wallet-actions button.danger{color:var(--danger);text-decoration:none;font-weight:750}
-.expense-wallet-actions button.danger:hover{color:#9b1c1c;}
-
-.expense-item-row .loan-top{
-  grid-template-columns:minmax(0,2fr) minmax(100px,1fr) minmax(72px,auto) 40px;
-}
-.expense-item-row .expense-item-total{text-align:right;}
-.expense-item-row .expense-item-total small{display:block;}
-.expense-transfer-totals{display:flex;flex-direction:column;gap:6px;align-items:flex-end;text-align:right;}
-.expense-transfer-totals > div{display:flex;flex-direction:column;gap:2px;}
-.expense-item-detail-note{font-size:.74rem;color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-
-.expense-section-anchor{margin-top:16px;margin-bottom:2px;}
-.expense-section-anchor:first-child{margin-top:0;}
-.expense-section-title{margin:0 0 8px;font-size:1rem;font-weight:760;color:var(--text);}
-.expense-section-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}
-.expense-toolbar-hint{font-size:.8rem;color:var(--muted);flex:1;min-width:200px;line-height:1.45;}
-.expense-by-currency{margin-top:4px;}
-
-.expense-intent-hint{margin:0 0 8px;font-size:.82rem;color:var(--muted);line-height:1.45;}
-.expense-intent-radios{display:flex;flex-direction:column;gap:8px;}
-.expense-intent-label{
-  display:flex;align-items:flex-start;gap:10px;font-size:.84rem;line-height:1.4;cursor:pointer;
-  padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fcfdff;
-}
-.expense-intent-label input{margin-top:3px;flex-shrink:0;}
-
-.filter-group{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
-.filter-radio{display:none;}
-.filter-label{
-  padding:6px 12px;border:1px solid var(--line-strong);border-radius:999px;
-  font-size:.78rem;font-weight:650;cursor:pointer;color:var(--muted);
-  background:#fff;transition:all .15s ease;
-}
-.filter-radio:checked + .filter-label{
-  background:var(--primary-soft);border-color:rgba(36,87,214,.42);color:var(--primary);
-}
-
-.input,.select{
-  width:100%;border:1px solid var(--line-strong);border-radius:11px;background:#fff;color:var(--text);
-  padding:10px 11px;outline:none;font-size:.92rem;min-width:0;
-}
-.input:focus,.select:focus{border-color:rgba(36,87,214,.45);box-shadow:0 0 0 3px rgba(36,87,214,.08)}
-
-.btn{
-  appearance:none;border:none;border-radius:11px;padding:10px 12px;font-weight:650;cursor:pointer;
-  transition:background .15s ease, transform .15s ease, opacity .15s ease;font-size:.88rem;line-height:1;
-  white-space:nowrap;
-}
-.btn:hover{transform:translateY(-1px)}
-.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.btn.primary{background:var(--primary);color:#fff}
-.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
-.btn.soft{background:var(--primary-soft);color:var(--primary)}
-.btn.danger{background:#fff1f0;color:var(--danger);border:1px solid #ffd5d1}
-
-.icon-btn{
-  width:38px;height:38px;border:none;border-radius:12px;display:grid;place-items:center;cursor:pointer;
-  background:var(--primary-soft);color:var(--primary);font-size:1.15rem;font-weight:800;line-height:1;flex:0 0 auto;
-  box-shadow:0 2px 10px rgba(16,24,40,.03);
-}
-.icon-btn:hover{transform:translateY(-1px)}
-.icon-btn.danger{background:#fff1f0;color:var(--danger)}
-.icon-btn.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
-
-.list{display:grid;gap:10px}
-.loan{
-  border:1px solid var(--line);border-radius:14px;overflow:visible;background:#fff;
-}
-.loan summary{list-style:none;cursor:pointer}
-.loan summary::-webkit-details-marker{display:none}
-
-.loan-top{
-  display:grid;grid-template-columns:minmax(0,1.8fr) repeat(4,minmax(80px,1fr)) 40px;gap:10px;align-items:center;
-  padding:12px 13px;background:#fff;
-}
-.loan-top:hover{background:#fcfdff}
-.lt-main{min-width:0;display:flex;flex-direction:column;}
-.loan-name{font-size:1rem;font-weight:780;line-height:1.2;letter-spacing:-.03em;}
-.loan-sub{margin-top:5px;color:var(--muted);font-size:.76rem;line-height:1.45;display:flex;gap:8px;flex-wrap:wrap}
-.cell{display:flex;flex-direction:column;gap:4px;min-width:0}
-.cell small{font-size:.71rem;color:var(--muted)}
-.cell strong{font-size:.92rem;line-height:1.25}
-.lt-action{display:flex;align-items:center;justify-content:flex-end;}
-.person-menu-btn{width:32px;height:32px;font-size:1rem}
-
-details[open] .loan-top{border-bottom:1px solid var(--line)}
-.detail{padding:12px 13px 13px;background:#fcfdff}
-.detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.detail-head h4{margin:0;font-size:.92rem}
-.detail-head p{margin:4px 0 0;color:var(--muted);font-size:.82rem;line-height:1.5}
-
-.table-wrap{
-  overflow-x:auto;
-  overflow-y:visible;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:#fff;
-}
-table{width:100%;border-collapse:separate;border-spacing:0}
-thead th{
-  background:#f8fafc;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;
-  color:var(--muted);font-size:.76rem;white-space:nowrap;
-}
-tbody td{padding:9px 10px;border-bottom:1px solid rgba(16,24,40,.06);font-size:.82rem;vertical-align:middle}
-tbody tr:last-child td{border-bottom:none}
-tbody tr:hover{background:#fbfdff}
-
-.badge{
-  display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 8px;font-size:.71rem;font-weight:700;line-height:1;
-  white-space:nowrap;
-}
-.blue{background:var(--primary-soft);color:var(--primary)}
-.green{background:rgba(6,118,71,.10);color:var(--success)}
-.orange{background:rgba(181,71,8,.12);color:var(--warning)}
-.red{background:rgba(180,35,24,.10);color:var(--danger)}
-
-.tiny{
-  border:none;border-radius:8px;padding:5px 8px;background:var(--primary-soft);color:var(--primary);
-  cursor:pointer;font-size:.75rem;font-weight:650;
-}
-.tiny.danger{background:#fff1f0;color:var(--danger)}
-.tiny.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
-.note-close{display:none}
-.note-wrap{position:relative;z-index:2}
-.note-popover{
-  position:absolute;
-  left:0;
-  top:calc(100% + 4px);
-  z-index:9999;
-  min-width:220px;
-  max-width:min(320px, 78vw);
-}
-.note-backdrop{
-  position:fixed;
-  inset:0;
-  z-index:9998;
-}
-
-.empty{
-  border:1px dashed var(--line-strong);border-radius:12px;background:#fff;padding:16px;text-align:center;
-  color:var(--muted);font-size:.88rem;line-height:1.6;
-}
-
-.money{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap;font-variant-numeric:tabular-nums}
-.money .symbol{display:inline-block;line-height:1}
-.money .amount{letter-spacing:-.01em}
-
-.currency-picker{display:flex;gap:8px;flex-wrap:wrap;}
-.currency-chip{
-  border:1px solid var(--line-strong);background:#fff;color:var(--text);border-radius:999px;
-  padding:9px 11px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;
-  line-height:1;transition:all .15s ease;
-}
-.currency-chip:hover{transform:translateY(-1px)}
-.currency-chip.active{border-color:rgba(36,87,214,.42);background:var(--primary-soft);color:var(--primary);}
-.currency-chip .symbol{display:inline-block;font-size:1.05rem;line-height:1;}
-
-.lock{
-  position:fixed;inset:0;background:rgba(246,247,249,.96);backdrop-filter:blur(7px);display:grid;place-items:center;z-index:100;padding:16px;
-}
-.lock-card{
-  width:min(460px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;
-}
-.lock-card h2{margin:0 0 8px;font-size:1.08rem}
-.lock-card p{margin:0 0 14px;color:var(--muted);font-size:.9rem;line-height:1.6}
-.lock-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-.lock-grid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-.lock-grid .lock-input-full{grid-column:1/-1}
-.lock-error{min-height:1.1em;margin-top:10px;color:var(--danger);font-size:.88rem}
-.hide{display:none !important}
-
-.modal{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:14px;}
-.modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.48);backdrop-filter:blur(4px);}
-.modal-dialog{
-  position:relative;width:min(760px,100%);max-height:calc(100vh - 28px);overflow:auto;
-  background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 50px rgba(16,24,40,.18);
-}
-.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 16px 0 16px;}
-.modal-head h3{margin:0;font-size:1.02rem;letter-spacing:-.02em}
-.modal-head p{margin:4px 0 0;color:var(--muted);font-size:.84rem;line-height:1.5}
-.modal-body{padding:16px}
-.modal-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;}
-
-.field{grid-column:span 12;display:flex;flex-direction:column;gap:6px}
-.field.w3{grid-column:span 3}
-.field.w4{grid-column:span 4}
-.field.w6{grid-column:span 6}
-.field.w8{grid-column:span 8}
-.field.w12{grid-column:span 12}
-.modal-footer{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px;}
-label{font-size:.78rem;color:var(--muted);font-weight:600}
-
-.multi-row-header {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1.5fr;
-  gap: 8px;
-  padding-left: 10px;
-  margin-bottom: 4px;
-  font-size: .75rem;
-  color: var(--muted);
-  font-weight: 600;
-}
-.multi-row {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1.5fr;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding-left: 8px;
-  border-left: 2px solid var(--primary);
-  align-items: center;
-}
-.multi-row .input {
-  font-size: 0.88rem;
-}
-
-@media (max-width: 820px){
-  .shell{padding:12px}
-  .header{flex-direction:column;align-items:flex-start}
-  .chips{justify-content:flex-start}
-  .loan-top{grid-template-columns:1fr 1fr;gap:8px}
-  .loan-top .cell:nth-child(1){grid-column:1 / -1}
-  .modal-grid .field.w3,.modal-grid .field.w4,.modal-grid .field.w6,.modal-grid .field.w8{grid-column:span 6}
-}
-
-@media (max-width: 560px){
-  html{
-    -webkit-text-size-adjust:100%;
-    text-size-adjust:100%;
+function displayDate(value){
+  if (!value) return "—";
+  const str = String(value);
+  if (str.length >= 10) {
+    const yyyy = str.slice(0, 4);
+    const mm = str.slice(5, 7);
+    const dd = str.slice(8, 10);
+    if (yyyy && mm && dd && yyyy.length === 4) {
+      return `${dd}/${mm}/${yyyy}`;
+    }
   }
-  body{
-    touch-action:pan-x pan-y;
-  }
-  .tabs{padding:6px;gap:4px;}
-  .tab{font-size:.78rem;padding:8px 10px}
-  .brand h1{font-size:.9rem}
-  .brand p{font-size:.74rem}
-  .chip{font-size:.7rem;padding:5px 8px}
+  return str;
+}
 
-  .overview-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-  }
-  .expense-overview{
-    grid-column: 1 / -1;
-  }
-  .overview{padding:10px;margin-bottom:10px}
-  .overview-top h2{font-size:.92rem}
-  .overview-top p{font-size:.78rem}
+function dateStamp(value){
+  if (!value) return 0;
+  const str = String(value).trim();
+  const normalized = str.length === 10 ? `${str}T23:59:59` : str;
+  const time = new Date(normalized).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
 
-  .summary{
-    padding: 6px;
-    gap: 4px;
-    min-height: auto;
-    align-items: center;
-    text-align: center;
-  }
-  .summary.currency-summary{
-    align-items:stretch;
-    text-align:left;
-  }
-  .currency-head { font-size: 1.4rem !important; justify-content: center; margin-bottom: 2px; width: 100%; }
-  .summary-line:not(.summary-line-one) {
-    flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    align-items: center;
-  }
-  .summary-line:not(.summary-line-one) span { font-size: .55rem; line-height: 1; }
-  .summary-line:not(.summary-line-one) strong { font-size: .65rem; line-height: 1; }
-  .summary-line-one{
-    flex-direction:row !important;
-    align-items:baseline !important;
-    justify-content:space-between !important;
-    width:100% !important;
-    gap:6px !important;
-  }
-  .summary-line-one-label{
-    font-size:.62rem !important;
-    white-space:nowrap;
-  }
-  .summary-line-one-value{
-    font-size:.68rem !important;
-    text-align:right;
-  }
-  .summary-line-one-value .money .amount{
-    font-size:inherit !important;
+function normalizeDateForDb(value){
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+  const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch){
+    const dd = slashMatch[1].padStart(2, "0");
+    const mm = slashMatch[2].padStart(2, "0");
+    const yyyy = slashMatch[3];
+    return `${yyyy}-${mm}-${dd}`;
   }
 
-  .section{padding:10px}
-  .section-head{gap:10px}
-  .section-head h3{font-size:.92rem}
-  .section-head p{font-size:.78rem}
-  .list{gap:6px}
-  .loan{border-radius:10px;border-color:rgba(16,24,40,.12)}
-
-  .input,.select{font-size:.8rem;padding:8px 9px}
-  .btn{font-size:.8rem;padding:8px 10px}
-  .filter-label{font-size:.72rem;padding:5px 10px}
-
-  /* Row wise list mobile (compact but full summary visible) */
-  .loan-top {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 2px 6px;
-    padding: 6px 7px;
-    align-items: start;
-  }
-  .lt-main{
-    grid-column: 1 / 2;
-    grid-row: 1 / 2;
-    overflow: hidden;
-  }
-  .loan-sub{
-    margin-top: 2px;
-    font-size: .61rem;
-    line-height: 1.18;
-    gap: 4px;
-  }
-  .loan-name { font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lt-status,
-  .lt-principal,
-  .lt-movement,
-  .lt-remaining{
-    grid-column: 1 / 2;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 8px;
-  }
-  .lt-status{ grid-row: 2 / 3; }
-  .lt-principal{ grid-row: 3 / 4; }
-  .lt-movement{ grid-row: 4 / 5; }
-  .lt-remaining{ grid-row: 5 / 6; }
-  .loan-top .cell small{ font-size: .58rem; line-height:1.1; }
-  .loan-top .cell strong{ font-size: .64rem; text-align: right; line-height:1.12; }
-  .lt-action{
-    grid-column: 2 / 3;
-    grid-row: 1 / 6;
-    align-self: center;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .loan-top .lt-action .icon-btn{
-    width: 22px !important;
-    height: 22px !important;
-    min-width: 22px;
-    border-radius: 7px;
-    font-size: .64rem !important;
-    margin-left: 0 !important;
-  }
-  .menu-dropdown{right:0;min-width:160px}
-
-  .detail{padding:8px}
-  .detail-head h4{font-size:.76rem}
-  .detail-head p{font-size:.66rem;line-height:1.25}
-  .table-wrap{border-radius:10px;max-width:100%}
-  .table-wrap{overflow-x:auto;overflow-y:visible}
-  tbody td{overflow:visible}
-  table{table-layout:fixed}
-  thead th,tbody td{
-    font-size:.56rem;
-    padding:3px 3px;
-    white-space:normal;
-    word-break:break-word;
-    overflow-wrap:anywhere;
-    line-height:1.12;
-  }
-  thead th:nth-child(1),tbody td:nth-child(1){font-size:.52rem;white-space:nowrap}
-  thead th:nth-child(5),tbody td:nth-child(5){font-size:.5rem;line-height:1.08}
-  thead th:nth-child(5),tbody td:nth-child(5){min-width:90px}
-  thead th:nth-child(6),tbody td:nth-child(6){min-width:56px}
-  .tiny{font-size:.52rem;padding:2px 4px;line-height:1}
-  .badge{font-size:.5rem;padding:2px 4px;line-height:1}
-  .money .amount{font-size:.56rem}
-  .detail .hide{font-size:.52rem !important;line-height:1.15}
-  .detail [onclick*="toggle"]{font-size:.52rem !important}
-  .note-popover{
-    left:auto;
-    right:0;
-    top:calc(100% + 4px);
-    width:min(86vw,320px);
-    max-height:50vh;
-    overflow:auto;
-    background:#fff !important;
-    border:1px solid var(--line-strong);
-    border-radius:10px !important;
-    box-shadow:0 14px 40px rgba(16,24,40,.25);
-    padding:10px 10px 8px !important;
-  }
-  .note-close{
-    display:block;
-    position:absolute;
-    right:6px;
-    top:6px;
-    border:none;
-    background:transparent;
-    color:var(--muted);
-    font-size:.9rem;
-    line-height:1;
-    cursor:pointer;
-    padding:2px 4px;
+  const dotMatch = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (dotMatch){
+    const dd = dotMatch[1].padStart(2, "0");
+    const mm = dotMatch[2].padStart(2, "0");
+    const yyyy = dotMatch[3];
+    return `${yyyy}-${mm}-${dd}`;
   }
 
-  .modal{padding:8px}
-  .modal-dialog{max-height:calc(100vh - 16px);border-radius:16px}
-  .modal-head{padding:12px 12px 0;gap:8px}
-  .modal-body{padding:12px}
-  .modal-grid{gap:8px}
-  .modal-grid .field{grid-column:span 12}
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+  return null;
+}
 
-  .multi-row-header { font-size: .68rem; gap: 4px; padding-left: 6px; }
-  .multi-row {
-    grid-template-columns: 1.3fr 1fr 1.2fr;
-    gap: 4px;
-    padding-left: 4px;
-    margin-bottom: 6px;
-    border-left-width: 1.5px;
+function entrySignature(entry){
+  const person = String(entry.person_name || "").trim().toLowerCase();
+  const notes = String(entry.notes || "").trim().toLowerCase();
+  const principal = entry.principal_amount == null || entry.principal_amount === "" ? "" : Number(entry.principal_amount).toFixed(2);
+  const action = entry.action_amount == null || entry.action_amount === "" ? "" : Number(entry.action_amount).toFixed(2);
+  const loanDate = normalizeDateForDb(entry.loan_date) || "";
+  const actionDate = normalizeDateForDb(entry.action_date) || "";
+  return [
+    String(entry.group_id || "").trim().toLowerCase(),
+    String(entry.direction || "").trim().toLowerCase(),
+    String(entry.entry_kind || "").trim().toLowerCase(),
+    person,
+    String(entry.currency || "").trim().toUpperCase(),
+    principal,
+    action,
+    loanDate,
+    actionDate,
+    notes
+  ].join("|");
+}
+
+function getSupabaseConfig(){
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey){
+    throw new Error("Supabase config is locked. Please unlock the ZIP file first.");
   }
-  .multi-row .input { padding: 6px 5px; font-size: .75rem; border-radius: 8px;}
+  return runtimeConfig;
+}
 
-  .expense-item-row .loan-top{
-    grid-template-columns:minmax(0,1fr) auto;
+async function readConfigFromZip(file, password){
+  if (!window.zip?.ZipReader) throw new Error("ZIP library failed to load.");
+
+  const reader = new zip.ZipReader(new zip.BlobReader(file), { password });
+  const entries = await reader.getEntries();
+  const configEntry = entries.find(e => /(^|\/)db-config\.json$/i.test(e.filename) || /\.json$/i.test(e.filename));
+  if (!configEntry) throw new Error("No JSON config found in ZIP.");
+  const jsonText = await configEntry.getData(new zip.TextWriter());
+  await reader.close();
+  return JSON.parse(jsonText);
+}
+
+async function fetchProtectedZipBlob(username){
+  const url = zipUrlForUsername(username);
+  const zipRes = await fetch(url, { cache: "no-store" });
+
+  if (!zipRes.ok){
+    throw new Error(`Unable to load ${url}. Check username and that the ZIP exists on the server.`);
   }
-  .expense-item-row .expense-item-total{
-    grid-column:1 / -1;
-    flex-direction:row;
-    justify-content:space-between;
-    align-items:baseline;
-    width:100%;
+  return zipRes.blob();
+}
+
+function apiHeaders(extra = {}){
+  const dbConfig = getSupabaseConfig();
+  return {
+    "apikey": dbConfig.supabaseKey,
+    "Authorization": `Bearer ${dbConfig.supabaseKey}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation",
+    ...extra
+  };
+}
+
+async function supabase(path, options = {}){
+  const dbConfig = getSupabaseConfig();
+  let res;
+  try{
+    res = await fetch(`${dbConfig.supabaseUrl}/rest/v1/${path}`, {
+      ...options,
+      headers: apiHeaders(options.headers || {})
+    });
+  }catch{
+    throw new Error("Database request failed. Please check connection and unlock again.");
+  }
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+  if (!res.ok) throw new Error(data?.message || data?.error || text || `Request failed (${res.status})`);
+  return data;
+}
+
+function currencySymbol(currency){
+  return currency === "AED" ? "~" : currency === "SAR" ? "$" : currency === "PKR" ? "Rs." : currency || "";
+}
+
+function currencySymbolHtml(currency){
+  const symbol = currencySymbol(currency);
+  if (currency === "AED") return `<span class="symbol symbol-dirham">${escapeHtml(symbol)}</span>`;
+  if (currency === "SAR") return `<span class="symbol symbol-riyal">${escapeHtml(symbol)}</span>`;
+  return `<span class="symbol">${escapeHtml(symbol)}</span>`;
+}
+
+function moneyText(amount, currency){
+  const n = Number(amount || 0);
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const symbol = currencySymbol(currency);
+  return `${symbol ? symbol + " " : ""}${formatted}`;
+}
+
+function money(amount, currency){
+  const n = Number(amount || 0);
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `<span class="money">${currencySymbolHtml(currency)}<span class="amount">${formatted}</span></span>`;
+}
+
+function shortId(id){
+  return id ? `#${String(id).slice(0,8).toUpperCase()}` : "";
+}
+
+function groupSortStamp(group){
+  return group.activityStamp || 0;
+}
+
+function groupByLoan(entries){
+  const groups = new Map();
+
+  for (const entry of entries){
+    if (!entry.group_id) continue;
+
+    if (!groups.has(entry.group_id)){
+      groups.set(entry.group_id, {
+        group_id: entry.group_id,
+        direction: entry.direction,
+        person_name: entry.person_name,
+        currency: entry.currency,
+        principal: null,
+        actions: [],
+        notes: entry.notes || "",
+        loan_date: entry.loan_date || null,
+        activityStamp: 0,
+        lastActivity: null
+      });
+    }
+
+    const g = groups.get(entry.group_id);
+
+    if (entry.entry_kind === "principal"){
+      g.principal = entry;
+      g.loan_date = entry.loan_date || g.loan_date;
+    } else {
+      g.actions.push(entry);
+    }
+
+    const candidateStamp = Math.max(dateStamp(entry.loan_date), dateStamp(entry.action_date));
+    if (candidateStamp >= g.activityStamp){
+      g.activityStamp = candidateStamp;
+      g.lastActivity = entry.action_date || entry.loan_date || g.lastActivity;
+    }
+  }
+
+  for (const g of groups.values()){
+    if (!g.principal && g.actions.length){
+      const first = g.actions[0];
+      g.principal = {
+        id: first.id,
+        group_id: first.group_id,
+        direction: first.direction,
+        entry_kind: "principal",
+        person_name: first.person_name,
+        currency: first.currency,
+        principal_amount: first.principal_amount,
+        action_amount: null,
+        loan_date: first.loan_date,
+        action_date: null,
+        notes: first.notes || null
+      };
+    }
+
+    const principalStamp = dateStamp(g.principal?.loan_date || g.loan_date);
+    const actionStamps = g.actions.map(a => dateStamp(a.action_date)).filter(Boolean);
+    const latestActionStamp = actionStamps.length ? Math.max(...actionStamps) : 0;
+
+    g.activityStamp = Math.max(g.activityStamp, principalStamp, latestActionStamp);
+
+    if (!g.lastActivity){
+      g.lastActivity =
+        g.actions.length
+          ? g.actions.slice().sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date))[0]?.action_date
+          : g.principal?.loan_date || g.loan_date || null;
+    }
+  }
+
+  return Array.from(groups.values()).sort((a, b) => {
+    const diff = groupSortStamp(b) - groupSortStamp(a);
+    if (diff !== 0) return diff;
+    return String(b.group_id || "").localeCompare(String(a.group_id || ""));
+  });
+}
+
+function calculateLoan(group){
+  const principal = Number(group.principal?.principal_amount || 0);
+  const actions = group.actions
+    .slice()
+    .sort((a, b) => {
+      const ad = dateStamp(a.action_date);
+      const bd = dateStamp(b.action_date);
+      if (ad !== bd) return ad - bd;
+      return 0;
+    });
+
+  let remaining = principal;
+  const rows = [];
+
+  rows.push({
+    kind: "principal",
+    date: group.principal?.loan_date || group.loan_date || "—",
+    amount: principal,
+    remainingAfter: principal,
+    note: group.principal?.notes || group.notes || "—",
+    entryId: group.principal?.id || ""
+  });
+
+  for (const a of actions){
+    remaining = Math.max(remaining - Number(a.action_amount || 0), 0);
+    rows.push({
+      kind: a.entry_kind === "partial" ? "partial" : "full",
+      date: a.action_date || "—",
+      amount: Number(a.action_amount || 0),
+      remainingAfter: remaining,
+      note: a.notes || "—",
+      entryId: a.id
+    });
+  }
+
+  const paid = principal - remaining;
+  const status = remaining <= 0 ? "Closed" : paid > 0 ? "Partial" : "Open";
+  return { principal, paid, remaining, status, rows };
+}
+
+function summarizeCurrency(currency){
+  const givenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "given" &&
+    !hasGoodsTag(e.notes)
+  ));
+  const takenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "taken" &&
+    !hasGoodsTag(e.notes) &&
+    !hasExpenseAccountTag(e.notes)
+  ));
+
+  const givenPrincipal = givenGroups.reduce((s, g) => s + Number(g.principal?.principal_amount || 0), 0);
+  const givenOpen = givenGroups.reduce((s, g) => s + calculateLoan(g).remaining, 0);
+  const takenPrincipal = takenGroups.reduce((s, g) => s + Number(g.principal?.principal_amount || 0), 0);
+  const takenOpen = takenGroups.reduce((s, g) => s + calculateLoan(g).remaining, 0);
+
+  return { currency, givenPrincipal, givenOpen, takenPrincipal, takenOpen };
+}
+
+function summarizeExpenseByCurrency(currency){
+  const accounts = getExpenseAccounts({ applyUiFilters: false }).filter(a => a.currency === currency);
+  const totalAmount = accounts.reduce((sum, account) => sum + Number(account.openingBalance || 0) + Number(account.addedMoney || 0), 0);
+  const totalExpenses = accounts.reduce((sum, account) => sum + Number(account.spentMoney || 0), 0);
+  const availableBalance = accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  return { currency, totalAmount, totalExpenses, availableBalance };
+}
+
+function overviewOneLine(label, amountHtml){
+  return `
+    <div class="summary-line summary-line-one">
+      <span class="summary-line-one-label">${escapeHtml(label)}</span>
+      <span class="summary-line-one-value">${amountHtml}</span>
+    </div>
+  `;
+}
+
+function overviewAvailableLine(amountHtml){
+  return `
+    <div class="summary-line summary-line-one">
+      <span class="summary-line-one-label available-label" style="color: var(--success) !important;">Available:</span>
+      <span class="summary-line-one-value available-amount">${amountHtml}</span>
+    </div>
+  `;
+}
+
+function overviewExpenseLine(currency, suffix, amountHtml){
+  return `
+    <div class="summary-line summary-line-one">
+      <span class="summary-line-one-label summary-line-one-label--with-symbol">
+        <span class="summary-currency-mark">${currencySymbolHtml(currency)}</span>
+        <span class="summary-label-suffix">${escapeHtml(suffix)}</span>
+      </span>
+      <span class="summary-line-one-value">${amountHtml}</span>
+    </div>
+  `;
+}
+
+function overviewWatermarkCurrency(currency){
+  return `<div class="summary-watermark" aria-hidden="true">${currencySymbolHtml(currency)}</div>`;
+}
+
+function overviewWatermarkWallet(walletName, currency){
+  // Try to load wallet logo, fallback to currency symbol if logo doesn't exist
+  const logoPath = `Assets/logo/wallet_logos/${escapeHtml(walletName)}.png`;
+  const uniqueId = `wallet-logo-${escapeHtml(walletName).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+  return `
+    <div class="summary-watermark" aria-hidden="true">
+      <img id="${uniqueId}" src="${logoPath}" alt="${escapeHtml(walletName)} logo" 
+           style="width: 100%; height: 100%; object-fit: contain; opacity: 0.45;"
+           onload="this.style.display='block'; document.getElementById('${uniqueId}-fallback').style.display='none';"
+           onerror="this.style.display='none'; document.getElementById('${uniqueId}-fallback').style.display='block';">
+      <div id="${uniqueId}-fallback" style="display:block; font-size:clamp(4.5rem, 28vw, 7.5rem); line-height:1; color:var(--text); opacity:.07; animation:summary-watermark-pulse 3.8s ease-in-out infinite;">${currencySymbolHtml(currency)}</div>
+    </div>
+  `;
+}
+
+function overviewWatermarkGoods(){
+  return `<div class="summary-watermark summary-watermark-goods" aria-hidden="true">🛒</div>`;
+}
+
+function overviewWatermarkExpenses(currencies){
+  if (!currencies.length) return "";
+  const layers = currencies.map((currency, index) =>
+    `<span class="summary-watermark-symbol" style="animation-delay:${index * 0.55}s">${currencySymbolHtml(currency)}</span>`
+  ).join("");
+  return `<div class="summary-watermark summary-watermark-expense" aria-hidden="true">${layers}</div>`;
+}
+
+function hash01(str){
+  const s = String(str || "");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++){
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  // unsigned → [0,1)
+  return ((h >>> 0) % 100000) / 100000;
+}
+
+function overviewWatermarkFloatingWalletLogos(accounts){
+  const list = Array.isArray(accounts) ? accounts : [];
+  if (!list.length) return "";
+  const logos = list.map(a => {
+    const name = String(a.person_name || "Wallet").trim() || "Wallet";
+    const r1 = hash01(`${name}::1`);
+    const r2 = hash01(`${name}::2`);
+    const r3 = hash01(`${name}::3`);
+    const r4 = hash01(`${name}::4`);
+    const r5 = hash01(`${name}::5`);
+    const dur = (14 + Math.floor(r1 * 18)); // 14..31s
+    const zoom = (6 + Math.floor(r2 * 7));  // 6..12s
+    const delay = (Math.floor(r3 * 10) * -1); // negative delay
+    const scale = (0.75 + r4 * 0.55).toFixed(2);
+const left = (4 + r1 * 88).toFixed(2);
+    const top  = (4 + r2 * 88).toFixed(2);
+    const cssVars = [
+      `--d:${dur}s`,
+      `--z:${zoom}s`,
+      `--delay:${delay}s`,
+      `--s:${scale}`
+    ].join(";");
+    const logoPath = `Assets/logo/wallet_logos/${escapeHtml(name)}.png`;
+    return `
+      <span class="wallet-float-logo" style="${cssVars}; left:${left}%; top:${top}%;">
+        <img src="${logoPath}" alt="" aria-hidden="true" loading="lazy" onerror="this.parentElement.style.display='none'"/>
+      </span>
+    `;
+  }).join("");
+  return `<div class="wallet-float-watermark" aria-hidden="true">${logos}</div>`;
+}
+
+function renderOverviewCards(){
+  const currencies = [...new Set([...SUPPORTED_CURRENCIES, ...state.entries.map(e => e.currency).filter(Boolean)])];
+  const goodsAll = getGoodsGroups({ applyUiFilters: false });
+  const goodsBoughtQty = goodsAll.reduce((sum, g) => sum + Number(g.boughtQty || 0), 0);
+  const goodsSoldQty = goodsAll.reduce((sum, g) => sum + Number(g.soldQty || 0), 0);
+  const goodsStockQty = goodsAll.reduce((sum, g) => sum + Number(g.remainingQty || 0), 0);
+  const goodsNetPLByCurrency = goodsAll.reduce((acc, g) => {
+    const key = g.currency || "";
+    acc[key] = (acc[key] || 0) + Number(g.profitLoss || 0);
+    return acc;
+  }, {});
+  const goodsNetPLText = Object.keys(goodsNetPLByCurrency).length
+    ? Object.entries(goodsNetPLByCurrency).map(([currency, amount]) => formatReportAmount(amount, currency)).join(" | ")
+    : "0";
+
+  const currencyCards = currencies.map(currency => {
+    const s = summarizeCurrency(currency);
+    return `
+      <div class="summary currency-summary">
+        ${overviewWatermarkCurrency(currency)}
+        <div class="currency-head">
+          ${currencySymbolHtml(currency)}
+        </div>
+        ${overviewOneLine("Given Principal:", money(s.givenPrincipal, currency))}
+        ${overviewOneLine("Given Open:", money(s.givenOpen, currency))}
+        ${overviewOneLine("Taken Principal:", money(s.takenPrincipal, currency))}
+        ${overviewOneLine("Taken Open:", money(s.takenOpen, currency))}
+        <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="tiny ghost" onclick="window.location.href='#givenPanel'">View Given</button>
+          <button class="tiny ghost" onclick="window.location.href='#takenPanel'">View Taken</button>
+          <button class="tiny ghost" onclick="downloadCurrencyPDF('${currency}')">Download PDF</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const goodsCard = `
+    <div class="summary currency-summary goods-overview">
+      ${overviewWatermarkGoods()}
+      <div class="currency-head">🛒</div>
+      ${overviewOneLine("Bought qty:", `<strong>${escapeHtml(String(goodsBoughtQty))}</strong>`)}
+      ${overviewOneLine("Sold qty:", `<strong>${escapeHtml(String(goodsSoldQty))}</strong>`)}
+      ${overviewOneLine("In stock qty:", `<strong>${escapeHtml(String(goodsStockQty))}</strong>`)}
+      ${overviewOneLine("Net P/L:", `<strong>${escapeHtml(goodsNetPLText)}</strong>`)}
+      <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+        <button class="tiny ghost" onclick="window.location.href='#goodsPanel'">View Goods</button>
+        <button class="tiny ghost" onclick="openGoodsModal('bought')">Add Item</button>
+        <button class="tiny ghost" onclick="downloadGoodsPDF()">Download PDF</button>
+      </div>
+    </div>
+  `;
+
+  // Expense summary is intentionally rendered inside Wallets Overview (Expenses tab),
+  // not inside the main Overview grid.
+  els.statsGrid.innerHTML = currencyCards + goodsCard;
+}
+
+function matchesSearch(entry, term){
+  if (!term) return true;
+  const blob = `${entry.person_name || ""} ${entry.notes || ""} ${entry.currency || ""} ${displayDate(entry.loan_date)} ${displayDate(entry.action_date)}`.toLowerCase();
+  return blob.includes(term.toLowerCase());
+}
+
+function hasInstallmentTag(noteValue){
+  return String(noteValue || "").includes(INSTALLMENT_TAG);
+}
+
+function hasGoodsTag(noteValue){
+  return String(noteValue || "").includes(GOODS_TAG);
+}
+
+function normalizeInstallmentNote(noteValue, markInstallment){
+  const base = String(noteValue || "").replace(INSTALLMENT_TAG, "").trim();
+  if (!markInstallment) return base || null;
+  return base ? `${INSTALLMENT_TAG} ${base}` : INSTALLMENT_TAG;
+}
+
+function normalizeGoodsNote(noteValue, markGoods){
+  const base = String(noteValue || "").replace(GOODS_TAG, "").trim();
+  if (!markGoods) return base || null;
+  return base ? `${GOODS_TAG} ${base}` : GOODS_TAG;
+}
+
+function goodsMetaFromNotes(noteValue){
+  const text = String(noteValue || "");
+  const readNum = (key) => {
+    const m = text.match(new RegExp(`\\[${key}:([^\\]]+)\\]`, "i"));
+    if (!m) return null;
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : null;
+  };
+  return {
+    boughtQty: readNum("BQTY"),
+    soldQty: readNum("SQTY"),
+    unitActualPrice: readNum("UAP"),
+    unitSoldPrice: readNum("USP")
+  };
+}
+
+function upsertGoodsMetaInNote(noteValue, meta = {}){
+  let note = normalizeGoodsNote(noteValue, true) || GOODS_TAG;
+  note = note.replace(/\[(BQTY|SQTY|UAP|USP):[^\]]+\]/gi, "").replace(/\s{2,}/g, " ").trim();
+  const tags = [];
+  if (meta.boughtQty != null) tags.push(`[BQTY:${meta.boughtQty}]`);
+  if (meta.soldQty != null) tags.push(`[SQTY:${meta.soldQty}]`);
+  if (meta.unitActualPrice != null) tags.push(`[UAP:${meta.unitActualPrice}]`);
+  if (meta.unitSoldPrice != null) tags.push(`[USP:${meta.unitSoldPrice}]`);
+  return `${note} ${tags.join(" ")}`.trim();
+}
+
+function hasExpenseAccountTag(noteValue){
+  return String(noteValue || "").includes(EXPENSE_ACCOUNT_TAG);
+}
+
+function expenseMetaFromNotes(noteValue){
+  const text = String(noteValue || "");
+  const readText = key => {
+    const m = text.match(new RegExp(`\\[${key}:([^\\]]+)\\]`, "i"));
+    return m ? m[1] : "";
+  };
+  return {
+    accountType: readText("ATYPE"),
+    rowType: readText("ETYPE"),
+    itemName: readText("ITEM"),
+    expenseType: readText("XTYPE")
+  };
+}
+
+function upsertExpenseMetaInNote(noteValue, meta = {}){
+  const base = String(noteValue || "")
+    .replace(EXPENSE_ACCOUNT_TAG, "")
+    .replace(/\[(ATYPE|ETYPE|ITEM|XTYPE):[^\]]+\]/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  const tags = [];
+  if (meta.accountType) tags.push(`[ATYPE:${meta.accountType}]`);
+  if (meta.rowType) tags.push(`[ETYPE:${meta.rowType}]`);
+  if (meta.itemName) tags.push(`[ITEM:${meta.itemName}]`);
+  if (meta.expenseType) tags.push(`[XTYPE:${meta.expenseType}]`);
+  const withTag = `${EXPENSE_ACCOUNT_TAG} ${base}`.trim();
+  return `${withTag} ${tags.join(" ")}`.trim();
+}
+
+function cleanExpenseNote(noteValue){
+  return String(noteValue || "")
+    .replace(EXPENSE_ACCOUNT_TAG, "")
+    .replace(/\[(ATYPE|ETYPE|ITEM|XTYPE):[^\]]+\]/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim() || "—";
+}
+
+function sortCurrenciesList(values){
+  const rank = c => {
+    const i = SUPPORTED_CURRENCIES.indexOf(String(c || "").toUpperCase());
+    return i === -1 ? 100 : i;
+  };
+  return [...new Set(values.filter(Boolean))].sort((a, b) =>
+    rank(a) - rank(b) || String(a).localeCompare(String(b))
+  );
+}
+
+function findTransferPartnerForExpense(expenseEntry){
+  const transferMatch = String(expenseEntry.notes || "").match(/Transfer to ([^:]+)/);
+  if (!transferMatch) return null;
+  const toWalletName = transferMatch[1].trim();
+  return state.entries.find(e =>
+    e.id !== expenseEntry.id &&
+    hasExpenseAccountTag(e.notes) &&
+    expenseMetaFromNotes(e.notes).rowType === "TOPUP" &&
+    String(e.person_name || "").trim() === toWalletName &&
+    e.notes.includes(`Transfer from ${expenseEntry.person_name}`)
+  ) || null;
+}
+
+function parseTransferExpenseDetails(tx, fromAccount){
+  const raw = String(tx.notes || "");
+  const detailed = raw.match(/Transfer to ([^:]+):\s*([\d.]+)\s+(\w+)\s*→\s*([\d.]+)\s+(\w+)\s*\(\s*Rate:\s*([\d.]+)\s*\)/);
+  const simple = raw.match(/Transfer to ([^:]+)/);
+  const toWallet = detailed ? detailed[1].trim() : (simple ? simple[1].trim() : "—");
+  const amtOut = Number(tx.action_amount || 0);
+  const curOut = fromAccount.currency || "AED";
+  if (detailed){
+    const amtIn = Number(detailed[4]);
+    const curIn = detailed[5];
+    const rate = Number(detailed[6]);
+    return {
+      toWallet,
+      amtOut,
+      curOut,
+      amtIn,
+      curIn,
+      rate: Number.isFinite(rate) && rate > 0 ? rate : 1,
+      sameCurrency: String(detailed[3]).toUpperCase() === String(detailed[5]).toUpperCase()
+    };
+  }
+  return {
+    toWallet,
+    amtOut,
+    curOut,
+    amtIn: amtOut,
+    curIn: curOut,
+    rate: 1,
+    sameCurrency: true
+  };
+}
+
+function buildTransferEvents(){
+  const wf = state.expenseWalletFilter;
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const accountsByGroup = new Map(accounts.map(a => [a.group_id, a]));
+  const out = [];
+  for (const account of accounts){
+    for (const row of account.spends){
+      const meta = expenseMetaFromNotes(row.notes);
+      if (meta.expenseType !== "Transfer") continue;
+      const partner = findTransferPartnerForExpense(row);
+      if (wf !== "all"){
+        const hit = account.group_id === wf || (partner && partner.group_id === wf);
+        if (!hit) continue;
+      }
+      const p = parseTransferExpenseDetails(row, account);
+      const toAcc = partner ? accountsByGroup.get(partner.group_id) : null;
+      out.push({
+        expenseId: row.id,
+        topupId: partner?.id || null,
+        date: row.action_date,
+        fromWallet: account.person_name,
+        toWallet: p.toWallet,
+        fromAccountType: account.accountType,
+        toAccountType: toAcc?.accountType || "",
+        amtOut: p.amtOut,
+        curOut: p.curOut,
+        amtIn: p.amtIn,
+        curIn: p.curIn,
+        rate: p.rate,
+        sameCurrency: p.sameCurrency,
+        notesExpense: row.notes,
+        notesTopup: partner?.notes || ""
+      });
+    }
+  }
+  return out.sort((a, b) => dateStamp(b.date) - dateStamp(a.date));
+}
+
+function getTransferRowsForCurrency(cur, events){
+  const rows = [];
+  for (const ev of events){
+    if (ev.curOut === cur){
+      rows.push({
+        kind: "Sent",
+        date: ev.date,
+        walletLabel: `${ev.fromWallet}${ev.fromAccountType ? ` (${ev.fromAccountType})` : ""}`,
+        counterparty: ev.toWallet,
+        amount: ev.amtOut,
+        rateDisplay: ev.sameCurrency ? "1" : String(ev.rate),
+        otherLegDisplay: ev.sameCurrency ? "—" : `${formatReportAmount(ev.amtIn, ev.curIn)}`,
+        notes: cleanExpenseNote(ev.notesExpense),
+        editId: ev.expenseId
+      });
+    }
+    if (ev.curIn === cur){
+      rows.push({
+        kind: "Received",
+        date: ev.date,
+        walletLabel: `${ev.toWallet}${ev.toAccountType ? ` (${ev.toAccountType})` : ""}`,
+        counterparty: ev.fromWallet,
+        amount: ev.amtIn,
+        rateDisplay: ev.sameCurrency ? "1" : String(ev.rate),
+        otherLegDisplay: ev.sameCurrency ? "—" : `${formatReportAmount(ev.amtOut, ev.curOut)}`,
+        notes: cleanExpenseNote(ev.notesTopup || ev.notesExpense),
+        editId: ev.topupId || ev.expenseId
+      });
+    }
+  }
+  return rows.sort((a, b) => dateStamp(b.date) - dateStamp(a.date));
+}
+
+function transferCurrencyTotals(cur, events){
+  let sent = 0;
+  let received = 0;
+  for (const ev of events){
+    if (ev.curOut === cur) sent += Number(ev.amtOut || 0);
+    if (ev.curIn === cur) received += Number(ev.amtIn || 0);
+  }
+  return { sent, received };
+}
+
+function collectTopupTransactionsFlat(accounts){
+  const wf = state.expenseWalletFilter;
+  const topupTransactions = [];
+  for (const account of accounts){
+    if (wf !== "all" && account.group_id !== wf) continue;
+    if (account.principal && Number(account.principal.principal_amount || 0) > 0){
+      topupTransactions.push({
+        ...account.principal,
+        action_date: account.principal.loan_date,
+        action_amount: account.principal.principal_amount,
+        person_name: account.person_name,
+        currency: account.currency,
+        accountType: account.accountType,
+        isOpeningBalance: true
+      });
+    }
+    for (const topup of account.topups){
+      topupTransactions.push({
+        ...topup,
+        person_name: account.person_name,
+        currency: account.currency,
+        accountType: account.accountType,
+        isTopup: true
+      });
+    }
+  }
+  return topupTransactions;
+}
+
+function filterPrincipal(direction, searchKey = direction){
+  return groupByLoan(state.entries.filter(e => e.direction === direction))
+    .filter(group => matchesSearch(group.principal || group.actions[0] || {}, state.search[searchKey]));
+}
+
+function groupByPerson(direction, searchKey = direction){
+  const personMap = new Map();
+  const directionEntries = state.entries.filter(e => e.direction === direction);
+  const searchTerm = state.search[searchKey];
+  const selectedCurrency = state.currencyFilter[searchKey] || "All";
+
+  for (const entry of directionEntries){
+    if (!matchesSearch(entry, searchTerm)) continue;
+    if (selectedCurrency !== "All" && entry.currency !== selectedCurrency) continue;
+
+    const personKey = String(entry.person_name || "").trim();
+    if (!personMap.has(personKey)){
+      personMap.set(personKey, {
+        person_name: personKey,
+        entries: [],
+        groupIds: new Set(),
+        activityStamp: 0,
+        lastActivity: null
+      });
+    }
+
+    const person = personMap.get(personKey);
+    person.entries.push(entry);
+    if (entry.group_id) person.groupIds.add(entry.group_id);
+
+    const stamp = Math.max(dateStamp(entry.loan_date), dateStamp(entry.action_date));
+    if (stamp >= person.activityStamp){
+      person.activityStamp = stamp;
+      person.lastActivity = entry.action_date || entry.loan_date || person.lastActivity;
+    }
+  }
+
+  const people = [];
+  for (const person of personMap.values()){
+    const principalRows = person.entries.filter(e => e.entry_kind === "principal");
+    const actionRows = person.entries.filter(e => e.entry_kind !== "principal");
+
+    const principalTotal = principalRows.reduce((sum, e) => sum + Number(e.principal_amount || 0), 0);
+    const paidTotal = actionRows.reduce((sum, e) => sum + Number(e.action_amount || 0), 0);
+    const remaining = Math.max(principalTotal - paidTotal, 0);
+    const status = remaining <= 0 ? "Closed" : paidTotal > 0 ? "Partial" : "Open";
+
+    const currency = principalRows[0]?.currency || actionRows[0]?.currency || "";
+
+    const timeline = person.entries
+      .slice()
+      .sort((a, b) => {
+        const aStamp = dateStamp(a.entry_kind === "principal" ? a.loan_date : a.action_date);
+        const bStamp = dateStamp(b.entry_kind === "principal" ? b.loan_date : b.action_date);
+        if (aStamp !== bStamp) return aStamp - bStamp;
+        return (a.entry_kind === "principal" ? -1 : 1) - (b.entry_kind === "principal" ? -1 : 1);
+      });
+
+    let runningRemaining = 0;
+    const rows = timeline.map(entry => {
+      const isPrincipal = entry.entry_kind === "principal";
+      const amount = Number(isPrincipal ? entry.principal_amount : entry.action_amount || 0);
+      runningRemaining = isPrincipal
+        ? runningRemaining + amount
+        : Math.max(runningRemaining - amount, 0);
+
+      return {
+        kind: isPrincipal ? "principal" : (entry.entry_kind === "partial" ? "partial" : "full"),
+        date: isPrincipal ? (entry.loan_date || "—") : (entry.action_date || "—"),
+        amount,
+        remainingAfter: runningRemaining,
+        note: entry.notes || "—",
+        entryId: entry.id
+      };
+    });
+
+    const firstDate = timeline[0]
+      ? (timeline[0].entry_kind === "principal" ? timeline[0].loan_date : timeline[0].action_date)
+      : null;
+
+    people.push({
+      person_name: person.person_name,
+      currency,
+      principalTotal,
+      paidTotal,
+      remaining,
+      status,
+      rows,
+      loan_date: firstDate || null,
+      activityStamp: person.activityStamp,
+      lastActivity: person.lastActivity,
+      groupCount: person.groupIds.size,
+      primaryGroupId: principalRows[0]?.group_id || actionRows[0]?.group_id || ""
+    });
+  }
+
+  return people.sort((a, b) => {
+    const diff = (b.activityStamp || 0) - (a.activityStamp || 0);
+    if (diff !== 0) return diff;
+    return String(a.person_name || "").localeCompare(String(b.person_name || ""));
+  });
+}
+
+function getFilteredGroups(direction, searchKey, options = {}){
+  let groups = groupByPerson(direction, searchKey);
+  if (typeof options.groupFilter === "function"){
+    groups = groups.filter(options.groupFilter);
+  }
+  const filterValue = state.statusFilter[searchKey];
+  if (filterValue !== "All"){
+    if (filterValue === "Active"){
+      groups = groups.filter(g => g.status === "Open" || g.status === "Partial");
+    } else {
+      groups = groups.filter(g => g.status.toLowerCase() === filterValue.toLowerCase());
+    }
+  }
+  return groups;
+}
+
+function renderLoanCards(container, direction, searchKey = direction, options = {}){
+  let groups = getFilteredGroups(direction, searchKey, options);
+
+  if (!groups.length){
+    container.innerHTML = `<div class="empty">No entries found.</div>`;
+    return;
+  }
+
+  container.innerHTML = groups.map(group => {
+    const statusClass = group.status === "Closed" ? "green" : group.status === "Partial" ? "orange" : "blue";
+    const directionLabel = direction === "given" ? "Given" : "Taken";
+    const movementLabel = direction === "given" ? "Received back" : "Returned back";
+    const openOnly = group.remaining > 0;
+
+    const showInstallmentMove = direction === "taken" && !options.hideMoveToInstallments;
+    const personName = String(group.person_name || "").trim();
+    const unsyncedEntries = getUnsyncedEntriesForPerson(personName, direction);
+    const hasUnsynced = unsyncedEntries.length > 0;
+    return `
+      <details class="loan">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">${escapeHtml(group.person_name || "Unnamed")}</div>
+              <div class="loan-sub">
+                <span>${escapeHtml(directionLabel)}</span>
+                <span>Opened ${escapeHtml(displayDate(group.loan_date || "—"))}</span>
+                <span>Updated ${escapeHtml(displayDate(group.lastActivity || group.loan_date || "—"))}</span>
+                <span>${currencySymbolHtml(group.currency || "")}</span>
+                <span>${escapeHtml(`${group.groupCount || 1} loan${(group.groupCount || 1) > 1 ? "s" : ""}`)}</span>
+                ${hasUnsynced ? `<span class="badge orange">Not in DB (${unsyncedEntries.length})</span>` : ""}
+                ${openOnly ? '<span class="badge orange">Open</span>' : '<span class="badge green">Closed</span>'}
+              </div>
+            </div>
+            <div class="cell lt-status"><small>Status</small><strong><span class="badge ${statusClass}">${escapeHtml(group.status)}</span></strong></div>
+            <div class="cell lt-principal"><small>Principal</small><strong>${money(group.principalTotal, group.currency)}</strong></div>
+            <div class="cell lt-movement"><small>${escapeHtml(movementLabel)}</small><strong>${money(group.paidTotal, group.currency)}</strong></div>
+            <div class="cell lt-remaining"><small>Remaining</small><strong>${money(group.remaining, group.currency)}</strong></div>
+            <div class="lt-action">
+              <div class="menu-wrap">
+                <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" aria-label="More actions" data-person-menu="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">☰</button>
+                <div class="menu-dropdown" data-person-menu-panel="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">
+                  <button class="menu-item personActionBtn" type="button" data-action="pdf" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Download PDF</button>
+                  ${hasUnsynced ? `<button class="menu-item personActionBtn" type="button" data-action="save-db" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Save to Database</button>` : ""}
+                  <button class="menu-item personActionBtn" type="button" data-action="edit-name" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Edit Name</button>
+                  ${showInstallmentMove ? `<button class="menu-item personActionBtn" type="button" data-action="move-installment" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Move to Installments</button>` : ""}
+                  <button class="menu-item danger personActionBtn" type="button" data-action="delete" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Delete Record</button>
+                </div>
+              </div>
+              ${hasUnsynced ? `<button class="icon-btn savePersonBtn" type="button" title="Save missing records to database" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">💾</button>` : ""}
+            </div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="detail-head">
+            <div>
+              <h4>Timeline</h4>
+              <p>Oldest to newest inside each loan. New activity still brings the loan card to the top.</p>
+            </div>
+            <div class="badge ${statusClass}">${currencySymbolHtml(group.currency || "")}</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Remaining</th>
+                  <th>Notes</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${group.rows.map((row, index) => `
+                  <tr>
+                    <td>${escapeHtml(displayDate(row.date))}</td>
+                    <td><span class="badge ${row.kind === "principal" ? "blue" : row.kind === "partial" ? "orange" : "green"}">${row.kind === "principal" ? "Principal" : row.kind === "partial" ? "Partial" : "Full"}</span></td>
+                    <td>${money(row.amount, group.currency)}</td>
+                    <td><strong>${money(row.remainingAfter, group.currency)}</strong></td>
+                    <td>
+                      <div class="note-wrap">
+                        <button type="button" class="note-toggle" data-note-toggle style="color:var(--primary);cursor:pointer;font-weight:600;font-size:.72rem;line-height:1.1;background:none;border:none;padding:0;font-family:inherit;">Note ▾</button>
+                        <div class="hide note-popover" style="margin-top:4px;padding:6px;background:var(--bg);border-radius:6px;font-size:.76rem;">
+                          <button class="note-close" type="button" data-note-close aria-label="Close note">×</button>
+                          ${escapeHtml(row.note)}
+                          <div style="color:var(--muted);font-size:.7rem;margin-top:3px">${index === 0 ? "Opening row" : `Linked ${escapeHtml(shortId(row.entryId))}`}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                       <div style="display:flex;gap:4px;">
+                         <button class="tiny ghost editRowBtn" data-id="${escapeHtml(row.entryId)}" title="Edit entry">✎</button>
+                         <button class="tiny danger delRowBtn" data-id="${escapeHtml(row.entryId)}" title="Delete entry">✕</button>
+                       </div>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    `;
+  }).join("");
+
+  container.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
+  container.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
+  container.querySelectorAll(".personActionBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const action = btn.dataset.action;
+    const person = btn.dataset.person;
+    const dir = btn.dataset.direction;
+    if (action === "pdf") {
+      await downloadPersonPDF(person, dir);
+    } else if (action === "save-db") {
+      await savePersonRecordsToDatabase(person, dir);
+    } else if (action === "delete") {
+      await deletePersonRecords(person, dir);
+    } else if (action === "edit-name") {
+      await renamePersonRecords(person, dir);
+    } else if (action === "move-installment") {
+      await movePersonToInstallments(person, dir);
+    }
+  }));
+  container.querySelectorAll(".savePersonBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    await savePersonRecordsToDatabase(btn.dataset.person, btn.dataset.direction);
+  }));
+  container.querySelectorAll("[data-note-toggle]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    const popover = btn.parentElement?.querySelector(".note-popover");
+    if (!popover) return;
+    document.querySelectorAll(".note-popover").forEach(p => {
+      if (p !== popover) p.classList.add("hide");
+    });
+    popover.classList.toggle("hide");
+    if (!popover.classList.contains("hide")) {
+      positionNotePopover(btn, popover);
+    }
+    updateNoteBackdropVisibility();
+  }));
+  container.querySelectorAll("[data-note-close]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    btn.closest(".note-popover")?.classList.add("hide");
+    updateNoteBackdropVisibility();
+  }));
+  container.querySelectorAll("[data-person-menu]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = btn.dataset.personMenu;
+    const panel = container.querySelector(`[data-person-menu-panel="${key}"]`);
+    if (!panel) return;
+    document.querySelectorAll(".menu-dropdown.open").forEach(openPanel => {
+      if (openPanel !== panel) openPanel.classList.remove("open");
+    });
+    document.querySelectorAll(".menu-trigger[aria-expanded='true']").forEach(trigger => {
+      if (trigger !== btn) trigger.setAttribute("aria-expanded", "false");
+    });
+    const nowOpen = panel.classList.toggle("open");
+    btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+  }));
+}
+
+function positionNotePopover(toggleBtn, popover){
+  if (!toggleBtn || !popover) return;
+  const rect = toggleBtn.getBoundingClientRect();
+  const viewportPadding = 8;
+  const gap = 6;
+
+  popover.style.position = "fixed";
+  popover.style.left = `${Math.max(viewportPadding, rect.left)}px`;
+  popover.style.top = `${rect.bottom + gap}px`;
+  popover.style.right = "auto";
+  popover.style.transform = "none";
+  popover.style.zIndex = "9999";
+
+  let popRect = popover.getBoundingClientRect();
+  const overflowRight = popRect.right - (window.innerWidth - viewportPadding);
+  if (overflowRight > 0){
+    popover.style.left = `${Math.max(viewportPadding, rect.left - overflowRight)}px`;
+    popRect = popover.getBoundingClientRect();
+  }
+
+  const overflowBottom = popRect.bottom - (window.innerHeight - viewportPadding);
+  if (overflowBottom > 0){
+    const top = Math.max(viewportPadding, rect.top - popRect.height - gap);
+    popover.style.top = `${top}px`;
   }
 }
-/* ── Wallets Overview Section ── */
-.wallets-overview-section {
-  margin-top: 14px;
-  overflow: hidden;
-  transition: all 0.3s ease-in-out;
-  display: none; /* Hidden by default, shown only in expense tab */
-}
 
-.wallets-overview-section.collapsed {
-  margin-bottom: 0;
-}
-
-.wallets-overview-section .overview-top {
-  cursor: pointer;
-  user-select: none;
-}
-
-.wallets-overview-section .overview-top:hover {
-  background: var(--panel-2);
-}
-
-.wallets-content {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
-}
-
-.wallets-overview-section.expanded .wallets-content {
-  max-height: 1000px;
-  opacity: 1;
-  padding-top: 14px;
-}
-
-.wallets-overview-section #expenseOverviewWallets {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.wallets-overview-section .icon-btn {
-  transition: transform 0.3s ease-in-out;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.wallets-overview-section .icon-btn:hover {
-  background: transparent !important;
-  transform: rotate(180deg) translateY(-1px);
-}
-
-.wallets-overview-section.expanded .icon-btn {
-  transform: rotate(180deg);
-}
-
-/* ── Main Overview Section ── */
-.main-overview-section {
-  overflow: hidden;
-  transition: all 0.3s ease-in-out;
-}
-
-.main-overview-section.collapsed {
-  margin-bottom: 0;
-}
-
-.main-overview-section .overview-top {
-  cursor: pointer;
-  user-select: none;
-}
-
-.main-overview-section .overview-top:hover {
-  background: var(--panel-2);
-}
-
-.main-overview-content {
-  max-height: 1000px;
-  overflow: hidden;
-  opacity: 1;
-  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
-  padding-top: 14px;
-}
-
-.main-overview-section.collapsed .main-overview-content {
-  max-height: 0;
-  opacity: 0;
-  padding-top: 0;
-}
-
-.main-overview-section .icon-btn {
-  transition: transform 0.3s ease-in-out;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.main-overview-section .icon-btn:hover {
-  background: transparent !important;
-  transform: rotate(180deg) translateY(-1px);
-}
-
-.main-overview-section.collapsed .icon-btn {
-  transform: rotate(0deg);
-}
-
-/* ── Main overview visibility is handled by JavaScript in activate function ── */
-
-/* ── Mobile: wallet boxes — 3 per row, last row fills ── */
-@media (max-width: 560px) {
-  .expense-wallet-scroll {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
+function ensureNoteBackdrop(){
+  let backdrop = document.getElementById("noteBackdrop");
+  if (!backdrop){
+    backdrop = document.createElement("div");
+    backdrop.id = "noteBackdrop";
+    backdrop.className = "note-backdrop hide";
+    backdrop.addEventListener("click", () => {
+      document.querySelectorAll(".note-popover").forEach(pop => pop.classList.add("hide"));
+      backdrop.classList.add("hide");
+    });
+    document.body.appendChild(backdrop);
   }
-  .expense-wallet-card-wrap {
-    flex: unset;
-    min-width: unset;
-    max-width: unset;
-  }
-  /* 1 item in last row → full width */
-  .expense-wallet-card-wrap:last-child:nth-child(3n+1) {
-    grid-column: 1 / -1;
-  }
-  /* 2 items in last row → last spans 2 cols */
-  .expense-wallet-card-wrap:last-child:nth-child(3n+2) {
-    grid-column: span 2;
-  }
-  .expense-wallet-card {
-    min-width: unset;
-    max-width: unset;
-    padding: 6px 7px;
-    gap: 4px;
-  }
-  .expense-wallet-title { font-size: .75rem; }
-  .expense-wallet-sub { font-size: .62rem; }
-  .expense-wallet-stats { font-size: .6rem; }
-  .expense-wallet-actions { gap: 4px 8px; padding-top: 4px; margin-top: 3px; }
-  .expense-wallet-actions button { font-size: .62rem; }
+  return backdrop;
 }
-#expensesPanel .expense-wallet-block {
-  display: none !important;
+
+function updateNoteBackdropVisibility(){
+  const backdrop = ensureNoteBackdrop();
+  const hasOpenPopover = Array.from(document.querySelectorAll(".note-popover")).some(pop => !pop.classList.contains("hide"));
+  backdrop.classList.toggle("hide", !hasOpenPopover);
 }
+
+function repositionOpenNotePopovers(){
+  document.querySelectorAll(".note-wrap").forEach(wrap => {
+    const popover = wrap.querySelector(".note-popover");
+    const toggle = wrap.querySelector("[data-note-toggle]");
+    if (!popover || !toggle || popover.classList.contains("hide")) return;
+    positionNotePopover(toggle, popover);
+  });
+}
+
+function renderLoanSelectors(){
+  const givenGroups = groupByLoan(state.entries.filter(e => e.direction === "given")).filter(g => calculateLoan(g).remaining > 0);
+  const takenGroups = groupByLoan(state.entries.filter(e => e.direction === "taken")).filter(g => calculateLoan(g).remaining > 0);
+
+  const makeOptions = groups => groups.length
+    ? `<option value="">Choose one</option>` + groups.map(g => {
+        const remaining = calculateLoan(g).remaining;
+        return `<option value="${escapeHtml(g.group_id)}">${escapeHtml(g.person_name)} — ${escapeHtml(formatReportAmount(remaining, g.currency))} remaining</option>`;
+      }).join("")
+    : `<option value="">No open loans available</option>`;
+
+  els.modalLoanSelect.innerHTML = state.modalDirection === "given" ? makeOptions(givenGroups) : makeOptions(takenGroups);
+
+  const hasOptions = (state.modalDirection === "given" ? givenGroups : takenGroups).length > 0;
+  els.modalLoanSelect.disabled = !hasOptions;
+  els.paymentSubmitBtn.disabled = !hasOptions;
+}
+
+function getGoodsGroups(options = {}){
+  const applyUiFilters = options.applyUiFilters !== false;
+  const groups = groupByLoan(state.entries.filter(e =>
+    e.direction === "goods" || (e.direction === "taken" && hasGoodsTag(e.notes))
+  ))
+    .map(group => {
+      const principalMeta = goodsMetaFromNotes(group.principal?.notes);
+      const boughtQty = Math.max(1, Number(principalMeta.boughtQty || 1));
+      const bought = Number(group.principal?.principal_amount || 0);
+      const unitActualPrice = principalMeta.unitActualPrice != null
+        ? Number(principalMeta.unitActualPrice)
+        : boughtQty ? (bought / boughtQty) : bought;
+      const soldQty = group.actions.reduce((sum, row) => sum + Math.max(1, Number(goodsMetaFromNotes(row.notes).soldQty || 1)), 0);
+      const soldTotal = group.actions.reduce((sum, row) => sum + Number(row.action_amount || 0), 0);
+      const remainingQty = Math.max(boughtQty - soldQty, 0);
+      const status = soldQty >= boughtQty ? "Sold" : soldQty > 0 ? "Partial" : "In Stock";
+      const soldCostBasis = soldQty > 0 ? unitActualPrice * soldQty : 0;
+      const profitLoss = soldQty > 0 ? (soldTotal - soldCostBasis) : 0;
+      return {
+        ...group,
+        bought,
+        boughtQty,
+        soldQty,
+        remainingQty,
+        unitActualPrice,
+        soldTotal,
+        soldCostBasis,
+        soldCount: group.actions.length,
+        profitLoss,
+        status,
+        latestSoldDate: group.actions.length
+          ? group.actions.slice().sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date))[0]?.action_date
+          : null
+      };
+    });
+
+  if (!applyUiFilters) return groups;
+
+  return groups.filter(group => {
+      if (!matchesSearch(group.principal || {}, state.search.goods)) return false;
+      const f = state.statusFilter.goods;
+      if (f === "Open") return group.status === "In Stock" || group.status === "Partial";
+      if (f === "Closed") return group.status === "Sold";
+      return true;
+    });
+}
+
+function renderGoodsSelectors(){
+  const groups = getGoodsGroups().filter(g => g.remainingQty > 0);
+  els.goodsItemSelect.innerHTML = groups.length
+    ? `<option value="">Choose bought item</option>${groups.map(g => `<option value="${escapeHtml(g.group_id)}">${escapeHtml(g.person_name)} — Qty ${escapeHtml(String(g.remainingQty))} left</option>`).join("")}`
+    : `<option value="">No in-stock items</option>`;
+}
+
+async function downloadGoodsItemPDF(groupId){
+  const group = getGoodsGroups().find(g => g.group_id === groupId);
+  if (!group){
+    alert("Item not found.");
+    return;
+  }
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "Goods Invoice / Receipt", `Item: ${group.person_name || "Unnamed"}`);
+  drawPdfOwnerBlock(doc, 48);
+
+  const fmt = amt => formatReportAmount(amt, group.currency);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Status: ${group.status}`, 132, 48);
+  doc.text(`Bought Price: ${fmt(group.bought)}`, 132, 54);
+  doc.text(`Sold Total: ${fmt(group.soldTotal)}`, 132, 60);
+  doc.text(`Bought Date: ${displayDate(group.principal?.loan_date || "—")}`, 132, 66);
+
+  const rows = [
+    ["Bought", displayDate(group.principal?.loan_date || "—"), fmt(group.bought), group.principal?.notes || "—"],
+    ...group.actions.map(a => ["Sold", displayDate(a.action_date || "—"), fmt(a.action_amount || 0), a.notes || "—"])
+  ];
+  doc.autoTable({
+    startY: 78,
+    head: [["Type", "Date", "Amount", "Note"]],
+    body: rows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+  doc.save(`Goods_${String(group.person_name || "item").replace(/\s+/g, "_")}.pdf`);
+}
+
+async function downloadGoodsSoldReceiptPDF(entryId){
+  const saleEntry = state.entries.find(e => e.id === entryId && (e.direction === "goods" || e.direction === "taken") && e.entry_kind !== "principal" && hasGoodsTag(e.notes));
+  if (!saleEntry){
+    alert("Sold entry not found.");
+    return;
+  }
+  const principalEntry = state.entries.find(e => e.group_id === saleEntry.group_id && e.entry_kind === "principal");
+  if (!principalEntry){
+    alert("Original bought record not found.");
+    return;
+  }
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again.");
+    return;
+  }
+  const meta = goodsMetaFromNotes(saleEntry.notes);
+  const soldQty = Math.max(1, Number(meta.soldQty || 1));
+  const unitSoldPrice = meta.unitSoldPrice != null ? Number(meta.unitSoldPrice) : (Number(saleEntry.action_amount || 0) / soldQty);
+  const soldTotal = Number(saleEntry.action_amount || 0);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "Goods Sold Receipt", `Receipt ID: ${shortId(saleEntry.id) || "N/A"}`);
+  drawPdfOwnerBlock(doc, 48);
+
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Item: ${principalEntry.person_name || "Unnamed"}`, 132, 48);
+  doc.text(`Date: ${displayDate(saleEntry.action_date || "—")}`, 132, 54);
+  doc.text(`Currency: ${saleEntry.currency || ""}`, 132, 60);
+  doc.text(`Qty Sold: ${soldQty}`, 132, 66);
+
+  doc.autoTable({
+    startY: 78,
+    head: [["Description", "Qty", "Unit Price", "Total"]],
+    body: [[
+      principalEntry.person_name || "Goods item",
+      String(soldQty),
+      formatReportAmount(unitSoldPrice, saleEntry.currency),
+      formatReportAmount(soldTotal, saleEntry.currency)
+    ]],
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.setFontSize(9.5);
+  doc.setTextColor(102, 112, 133);
+  doc.text(`Notes: ${String(saleEntry.notes || "—").replace(GOODS_TAG, "").trim() || "—"}`, 14, doc.lastAutoTable.finalY + 10);
+  doc.save(`Sold_Receipt_${String(principalEntry.person_name || "item").replace(/\s+/g, "_")}_${String(saleEntry.id || "").slice(0, 6)}.pdf`);
+}
+
+function renderGoodsList(){
+  const groups = getGoodsGroups();
+  if (!groups.length){
+    els.goodsList.innerHTML = `<div class="empty">No goods entries found.</div>`;
+    return;
+  }
+  const boughtCount = groups.reduce((sum, g) => sum + Number(g.boughtQty || 0), 0);
+  const soldCount = groups.reduce((sum, g) => sum + Number(g.soldQty || 0), 0);
+  const stockCount = groups.reduce((sum, g) => sum + Number(g.remainingQty || 0), 0);
+  els.goodsList.innerHTML = groups.map(group => {
+    const statusClass = group.status === "Sold" ? "green" : "orange";
+    const pnlClass = group.profitLoss >= 0 ? "green" : "red";
+    const pnlLabel = group.profitLoss >= 0 ? "Profit" : "Loss";
+    const soldRows = group.actions
+      .slice()
+      .sort((a, b) => dateStamp(b.action_date) - dateStamp(a.action_date));
+    return `
+      <details class="loan">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">${escapeHtml(group.person_name || "Unnamed item")}</div>
+              <div class="loan-sub">
+                <span>Bought ${escapeHtml(displayDate(group.principal?.loan_date || "—"))}</span>
+                <span>${currencySymbolHtml(group.currency || "")}</span>
+                <span>Qty ${escapeHtml(String(group.soldQty))}/${escapeHtml(String(group.boughtQty))}</span>
+                <span class="badge ${statusClass}">${escapeHtml(group.status)}</span>
+              </div>
+            </div>
+            <div class="cell lt-principal"><small>Actual total</small><strong>${money(group.bought, group.currency)}</strong></div>
+            <div class="cell lt-movement"><small>Sold total</small><strong>${money(group.soldTotal, group.currency)}</strong></div>
+            <div class="cell lt-remaining"><small>${pnlLabel}</small><strong><span class="badge ${pnlClass}">${money(Math.abs(group.profitLoss), group.currency)}</span></strong></div>
+            <div class="lt-action">
+              <div class="menu-wrap">
+                <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" data-goods-menu="${escapeHtml(group.group_id)}">☰</button>
+                <div class="menu-dropdown" data-goods-menu-panel="${escapeHtml(group.group_id)}">
+                  <button class="menu-item goodsActionBtn" type="button" data-action="pdf" data-group-id="${escapeHtml(group.group_id)}">Download PDF</button>
+                  <button class="menu-item goodsActionBtn" type="button" data-action="edit-bought" data-entry-id="${escapeHtml(group.principal?.id || "")}">Edit Bought</button>
+                  <button class="menu-item danger goodsActionBtn" type="button" data-action="delete-item" data-entry-id="${escapeHtml(group.principal?.id || "")}">Delete Item</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Type</th><th>Date</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${soldRows.length ? soldRows.map(row => `
+                  <tr>
+                    <td><span class="badge green">Sold</span></td>
+                    <td>${escapeHtml(displayDate(row.action_date || "—"))}</td>
+                    <td>${money(row.action_amount || 0, group.currency)}</td>
+                    <td>${escapeHtml(row.notes || "—")}</td>
+                    <td>
+                      <div style="display:flex;gap:4px;">
+                        <button class="tiny soldReceiptBtn" data-id="${escapeHtml(row.id)}">PDF</button>
+                        <button class="tiny ghost editRowBtn" data-id="${escapeHtml(row.id)}">✎</button>
+                        <button class="tiny danger delRowBtn" data-id="${escapeHtml(row.id)}">✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join("") : `<tr><td colspan="5">No sold entries yet.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    `;
+  }).join("") + `
+    <div class="summary" style="margin-top:8px">
+      <span>Goods Summary</span>
+      <strong>Bought Qty: ${boughtCount} | Sold Qty: ${soldCount} | In Stock Qty: ${stockCount}</strong>
+    </div>
+  `;
+
+  els.goodsList.querySelectorAll(".goodsActionBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const action = btn.dataset.action;
+    if (action === "pdf") await downloadGoodsItemPDF(btn.dataset.groupId);
+    if (action === "edit-bought") openEditModal(btn.dataset.entryId);
+    if (action === "delete-item") await deleteEntry(btn.dataset.entryId);
+  }));
+  els.goodsList.querySelectorAll(".soldReceiptBtn").forEach(btn => btn.addEventListener("click", () => downloadGoodsSoldReceiptPDF(btn.dataset.id)));
+  els.goodsList.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
+  els.goodsList.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
+  els.goodsList.querySelectorAll("[data-goods-menu]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = btn.dataset.goodsMenu;
+    const panel = els.goodsList.querySelector(`[data-goods-menu-panel="${key}"]`);
+    if (!panel) return;
+    document.querySelectorAll(".menu-dropdown.open").forEach(openPanel => {
+      if (openPanel !== panel) openPanel.classList.remove("open");
+    });
+    const nowOpen = panel.classList.toggle("open");
+    btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+  }));
+}
+
+function getExpenseAccounts(options = {}){
+  const applyUiFilters = options.applyUiFilters !== false;
+  const groups = groupByLoan(state.entries.filter(e => e.direction === "taken" && hasExpenseAccountTag(e.notes)))
+    .map(group => {
+      const principal = group.principal;
+      const principalMeta = expenseMetaFromNotes(principal?.notes);
+      const topups = group.actions.filter(a => expenseMetaFromNotes(a.notes).rowType === "TOPUP");
+      const spends = group.actions.filter(a => expenseMetaFromNotes(a.notes).rowType === "EXPENSE");
+      const openingBalance = Number(principal?.principal_amount || 0);
+      const addedMoney = topups.reduce((sum, row) => sum + Number(row.action_amount || 0), 0);
+      const spentMoney = spends.reduce((sum, row) => sum + Number(row.action_amount || 0), 0);
+      const balance = Math.max(openingBalance + addedMoney - spentMoney, 0);
+      const status = balance > 0 ? "Open" : "Closed";
+      return {
+        ...group,
+        accountType: principalMeta.accountType || "Bank Account",
+        openingBalance,
+        addedMoney,
+        spentMoney,
+        balance,
+        status,
+        topups,
+        spends
+      };
+    });
+
+  if (!applyUiFilters) return groups;
+
+  const searchTerm = state.search.expenses;
+  const status = state.statusFilter.expenses;
+  const currency = state.currencyFilter.expenses || "All";
+  return groups.filter(group => {
+    const blob = `${group.person_name || ""} ${group.accountType || ""} ${group.principal?.notes || ""} ${group.spends.map(s => expenseMetaFromNotes(s.notes).itemName).join(" ")} ${group.spends.map(s => expenseMetaFromNotes(s.notes).expenseType).join(" ")}`;
+    if (searchTerm && !blob.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (currency !== "All" && group.currency !== currency) return false;
+    if (status === "Active") return group.status === "Open";
+    if (status === "Closed") return group.status === "Closed";
+    return true;
+  });
+}
+
+function getExistingItemNamesLowerForCurrency(currency){
+  const set = new Set();
+  const cur = String(currency || "").trim();
+  for (const account of getExpenseAccounts({ applyUiFilters: false })){
+    if (account.currency !== cur) continue;
+    for (const row of account.spends){
+      const meta = expenseMetaFromNotes(row.notes);
+      const n = String(meta.itemName || "").trim().toLowerCase();
+      if (n) set.add(n);
+    }
+  }
+  return set;
+}
+
+function refreshExpenseItemIntentUi(){
+  const wrap = els.expenseItemIntentWrap;
+  if (!wrap || !els.expenseEntryForm || els.expenseEntryForm.classList.contains("hide")) return;
+  const fd = new FormData(els.expenseEntryForm);
+  const item = String(fd.get("item_name") || "").trim().toLowerCase();
+  const cur = String(fd.get("currency") || "").trim();
+  if (!item || !cur){
+    wrap.classList.add("hide");
+    return;
+  }
+  const exists = getExistingItemNamesLowerForCurrency(cur).has(item);
+  wrap.classList.toggle("hide", !exists);
+  if (!exists){
+    const r = els.expenseEntryForm.querySelector('input[name="expense_item_intent"][value="additional"]');
+    if (r) r.checked = true;
+  }
+}
+
+function collectExpenseSpendRows(accounts){
+  const out = [];
+  const wf = state.expenseWalletFilter;
+  for (const account of accounts){
+    if (wf !== "all" && account.group_id !== wf) continue;
+    for (const row of account.spends){
+      out.push({ row, account });
+    }
+  }
+  return out;
+}
+
+
+function groupExpenseItems(spendAttached){
+  const map = new Map();
+  for (const { row, account } of spendAttached){
+    const meta = expenseMetaFromNotes(row.notes);
+    const nameRaw = String(meta.itemName || "").trim();
+    if (!nameRaw) continue;
+    const currency = account.currency || "AED";
+    const key = `${currency}||${nameRaw.toLowerCase()}`;
+    if (!map.has(key)){
+      map.set(key, {
+        key,
+        displayName: nameRaw,
+        expenseType: meta.expenseType || "",
+        currency,
+        total: 0,
+        txs: []
+      });
+    }
+    const g = map.get(key);
+    g.total += Number(row.action_amount || 0);
+    g.txs.push({
+      id: row.id,
+      date: row.action_date,
+      wallet: account.person_name,
+      group_id: account.group_id,
+      amount: Number(row.action_amount || 0),
+      expenseType: meta.expenseType || "",
+      notes: cleanExpenseNote(row.notes)
+    });
+  }
+  for (const g of map.values()){
+    g.txs.sort((a, b) => dateStamp(b.date) - dateStamp(a.date));
+  }
+  return [...map.values()].sort((a, b) => b.total - a.total);
+}
+
+function walletRadioSafeId(groupId){
+  return String(groupId || "").replace(/[^a-zA-Z0-9-]/g, "-");
+}
+
+function renderExpenseWalletBar(accounts){
+  const host = els.expenseWalletFilters;
+  if (!host) return;
+
+  const blocks = [];
+  const allId = "f_exp_wallet_all";
+  const allChecked = state.expenseWalletFilter === "all" ? "checked" : "";
+  blocks.push(`
+    <div class="expense-wallet-card-wrap">
+      <input type="radio" id="${allId}" name="f_exp_wallet" value="all" class="filter-radio expense-wallet-radio" ${allChecked}>
+      <label for="${allId}" class="expense-wallet-card expense-wallet-card-all">
+        <span class="expense-wallet-title">All wallets</span>
+        <span class="expense-wallet-sub">Expense statement includes every wallet below.</span>
+      </label>
+    </div>
+  `);
+
+  for (const a of accounts){
+    const rid = `f_exp_wallet_${walletRadioSafeId(a.group_id)}`;
+    const ck = state.expenseWalletFilter === a.group_id ? "checked" : "";
+    const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
+    const gid = escapeHtml(a.group_id);
+    blocks.push(`
+      <div class="expense-wallet-card-wrap">
+        <input type="radio" id="${rid}" name="f_exp_wallet" value="${gid}" class="filter-radio expense-wallet-radio" ${ck}>
+        <label for="${rid}" class="expense-wallet-card">
+          <span class="expense-wallet-title">${escapeHtml(a.person_name || "Wallet")} (${escapeHtml(formatReportAmount(totalTopup, a.currency))})</span>
+          <span class="expense-wallet-sub">${escapeHtml(a.accountType || "")} · ${currencySymbolHtml(a.currency)}</span>
+          <div class="expense-wallet-stats">
+            <span><em>Top-up</em> <strong>${escapeHtml(formatReportAmount(totalTopup, a.currency))}</strong></span>
+            <span><em>Spent</em> <strong>${escapeHtml(formatReportAmount(a.spentMoney, a.currency))}</strong></span>
+            <span class="available-label"><em style="color: var(--success) !important;">Available</em> <strong class="available-amount">${escapeHtml(formatReportAmount(a.balance, a.currency))}</strong></span>
+          </div>
+        </label>
+        <div class="expense-wallet-actions">
+          <button type="button" class="expenseWalletQuick" data-action="topup" data-group-id="${gid}">Add money</button>
+          <button type="button" class="expenseWalletQuick" data-action="expense" data-group-id="${gid}">Add expense</button>
+          <button type="button" class="expenseWalletQuick" data-action="pdf" data-group-id="${gid}">PDF</button>
+          <button type="button" class="expenseWalletQuick" data-action="edit-account" data-entry-id="${escapeHtml(a.principal?.id || "")}">Edit</button>
+          <button type="button" class="expenseWalletQuick danger" data-action="delete-account" data-entry-id="${escapeHtml(a.principal?.id || "")}">Delete</button>
+        </div>
+      </div>
+    `);
+  }
+
+  host.innerHTML = blocks.join("");
+
+  host.querySelectorAll('input[name="f_exp_wallet"]').forEach(inp => {
+    inp.addEventListener("change", () => {
+      if (!inp.checked) return;
+      state.expenseWalletFilter = inp.value === "all" ? "all" : inp.value;
+      renderAll();
+    });
+  });
+
+  host.querySelectorAll(".expenseWalletQuick").forEach(btn => {
+    btn.addEventListener("click", async e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      if (action === "pdf") await downloadExpenseAccountPDF(btn.dataset.groupId);
+      if (action === "topup") openExpenseModal("topup", btn.dataset.groupId);
+      if (action === "expense") openExpenseModal("expense", btn.dataset.groupId);
+      if (action === "edit-account") openEditModal(btn.dataset.entryId);
+      if (action === "delete-account") await deleteEntry(btn.dataset.entryId);
+    });
+  });
+}
+
+function renderExpenseAccountSelectors(){
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const byCurrency = accounts.reduce((acc, account) => {
+    const key = account.currency || "";
+    acc[key] = acc[key] || [];
+    acc[key].push(account);
+    return acc;
+  }, {});
+
+  els.expenseTopupAccountSelect.innerHTML = accounts.length
+    ? `<option value="">Choose account</option>${accounts.map(a => `<option value="${escapeHtml(a.group_id)}">${escapeHtml(a.person_name)} (${escapeHtml(a.accountType)}) - ${escapeHtml(formatReportAmount(a.balance, a.currency))}</option>`).join("")}`
+    : `<option value="">No accounts found</option>`;
+
+  const chosenCurrency = els.expenseCurrencySelect.value || "AED";
+  const currencyAccounts = byCurrency[chosenCurrency] || [];
+  els.expenseSpendAccountSelect.innerHTML = currencyAccounts.length
+    ? `<option value="">Choose account</option>${currencyAccounts.map(a => `<option value="${escapeHtml(a.group_id)}">${escapeHtml(a.person_name)} (${escapeHtml(a.accountType)}) - ${escapeHtml(formatReportAmount(a.balance, a.currency))}</option>`).join("")}`
+    : `<option value="">No account in ${escapeHtml(chosenCurrency)}</option>`;
+}
+
+function openExpenseModal(mode, presetGroupId = ""){
+  els.expenseModal.classList.remove("hide");
+  els.expenseModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  els.expenseAccountForm.classList.toggle("hide", mode !== "account");
+  els.expenseTopupForm.classList.toggle("hide", mode !== "topup");
+  els.expenseEntryForm.classList.toggle("hide", mode !== "expense");
+  renderExpenseAccountSelectors();
+
+  if (mode === "account"){
+    els.expenseModalTitle.textContent = "Add Expense Account";
+    els.expenseModalDesc.textContent = "Create Bank or Cash account with opening balance.";
+    els.expenseAccountForm.reset();
+    setCurrencyChoice(els.expenseAccountForm, state.lastCurrency || "AED");
+    defaultDateInputs(els.expenseAccountForm);
+  } else if (mode === "topup"){
+    els.expenseModalTitle.textContent = "Add Money";
+    els.expenseModalDesc.textContent = "Add funds to an existing expense account.";
+    els.expenseTopupForm.reset();
+    defaultDateInputs(els.expenseTopupForm);
+    if (presetGroupId) els.expenseTopupAccountSelect.value = presetGroupId;
+  } else {
+    els.expenseModalTitle.textContent = "Add Expense";
+    els.expenseModalDesc.textContent = "Record expense item, amount, type and source account.";
+    els.expenseEntryForm.reset();
+    els.expenseCurrencySelect.value = state.lastCurrency || "AED";
+    renderExpenseAccountSelectors();
+    defaultDateInputs(els.expenseEntryForm);
+    if (presetGroupId) els.expenseSpendAccountSelect.value = presetGroupId;
+    const intentAdd = els.expenseEntryForm.querySelector('input[name="expense_item_intent"][value="additional"]');
+    if (intentAdd) intentAdd.checked = true;
+    if (els.expenseItemIntentWrap) els.expenseItemIntentWrap.classList.add("hide");
+    refreshExpenseItemIntentUi();
+  }
+}
+
+async function saveExpenseAccount(form){
+  const fd = new FormData(form);
+  const payload = {
+    group_id: crypto.randomUUID(),
+    direction: "taken",
+    entry_kind: "principal",
+    person_name: String(fd.get("account_name") || "").trim(),
+    currency: String(fd.get("currency") || "AED").trim(),
+    principal_amount: Number(fd.get("opening_balance") || 0),
+    action_amount: null,
+    loan_date: String(fd.get("account_date") || ""),
+    action_date: null,
+    notes: upsertExpenseMetaInNote(String(fd.get("notes") || "").trim() || null, {
+      accountType: String(fd.get("account_type") || "Bank Account"),
+      rowType: "ACCOUNT"
+    })
+  };
+  if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date){
+    throw new Error("Complete all required fields.");
+  }
+  if (isBackupMode()){
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("expenseModal");
+}
+
+async function saveExpenseTopup(form){
+  const fd = new FormData(form);
+  const groupId = String(fd.get("group_id") || "");
+  const amount = Number(fd.get("amount") || 0);
+  const date = String(fd.get("date") || "");
+  const notes = String(fd.get("notes") || "").trim() || null;
+  if (!groupId || !amount || !date) throw new Error("Complete all required fields.");
+  const principal = state.entries.find(e => e.group_id === groupId && e.direction === "taken" && e.entry_kind === "principal" && hasExpenseAccountTag(e.notes));
+  if (!principal) throw new Error("Account not found.");
+  const payload = {
+    group_id: groupId,
+    direction: "taken",
+    entry_kind: "partial",
+    person_name: principal.person_name,
+    currency: principal.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: principal.loan_date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(notes, {
+      accountType: expenseMetaFromNotes(principal.notes).accountType || "Bank Account",
+      rowType: "TOPUP"
+    })
+  };
+  if (isBackupMode()){
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("expenseModal");
+}
+
+async function saveExpenseEntry(form){
+  const fd = new FormData(form);
+  const groupId = String(fd.get("group_id") || "");
+  const selectedCurrency = String(fd.get("currency") || "").trim();
+  const amount = Number(fd.get("amount") || 0);
+  const date = String(fd.get("date") || "");
+  const itemName = String(fd.get("item_name") || "").trim();
+  const expenseType = String(fd.get("custom_expense_type") || "").trim() || String(fd.get("expense_type") || "").trim() || "Other";
+  const notes = String(fd.get("notes") || "").trim() || null;
+  const itemIntent = String(fd.get("expense_item_intent") || "additional");
+  if (!groupId || !amount || !date || !itemName) throw new Error("Complete all required fields.");
+  const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === groupId);
+  if (!account) throw new Error("Account not found.");
+  if (selectedCurrency && account.currency !== selectedCurrency){
+    throw new Error("Selected currency does not match the account currency.");
+  }
+  const nameLower = itemName.toLowerCase();
+  const existingNames = getExistingItemNamesLowerForCurrency(account.currency);
+  if (existingNames.has(nameLower) && itemIntent === "new_distinct"){
+    throw new Error("This item name already exists. Either choose \"More spending on the same item\" or enter a different item name.");
+  }
+  if (amount > account.balance) throw new Error(`Insufficient balance. Available: ${formatReportAmount(account.balance, account.currency)}.`);
+  const payload = {
+    group_id: groupId,
+    direction: "taken",
+    entry_kind: "partial",
+    person_name: account.person_name,
+    currency: account.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: account.principal?.loan_date || todayISO(),
+    action_date: date,
+    notes: upsertExpenseMetaInNote(notes, {
+      accountType: account.accountType,
+      rowType: "EXPENSE",
+      itemName,
+      expenseType
+    })
+  };
+  if (isBackupMode()){
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("expenseModal");
+}
+
+async function downloadExpenseAccountPDF(groupId){
+  const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === groupId);
+  if (!account){
+    alert("Account not found.");
+    return;
+  }
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "Expense Account Report", `Account: ${account.person_name}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setFontSize(10);
+  doc.setTextColor(23, 33, 43);
+  doc.text(`Type: ${account.accountType}`, 132, 48);
+  doc.text(`Currency: ${account.currency}`, 132, 54);
+  doc.text(`Balance: ${formatReportAmount(account.balance, account.currency)}`, 132, 60);
+
+  let runningBalance = Number(account.openingBalance || 0);
+  const rows = [
+    ["Opening", displayDate(account.principal?.loan_date || "—"), "—", formatReportAmount(account.openingBalance, account.currency), formatReportAmount(runningBalance, account.currency), cleanExpenseNote(account.principal?.notes)]
+  ];
+  const timeline = account.actions.slice().sort((a, b) => dateStamp(a.action_date) - dateStamp(b.action_date));
+  timeline.forEach(row => {
+    const meta = expenseMetaFromNotes(row.notes);
+    const isExpense = meta.rowType === "EXPENSE";
+    const amt = Number(row.action_amount || 0);
+    runningBalance = isExpense ? Math.max(runningBalance - amt, 0) : runningBalance + amt;
+    rows.push([
+      isExpense ? `Expense (${meta.expenseType || "Other"})` : "Topup",
+      displayDate(row.action_date || "—"),
+      isExpense ? (meta.itemName || "—") : "—",
+      formatReportAmount(amt, account.currency),
+      formatReportAmount(runningBalance, account.currency),
+      cleanExpenseNote(row.notes)
+    ]);
+  });
+
+  doc.autoTable({
+    startY: 72,
+    head: [["Type", "Date", "Item", "Amount", "Balance", "Remarks"]],
+    body: rows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+  doc.save(`Expense_Account_${String(account.person_name || "account").replace(/\s+/g, "_")}.pdf`);
+}
+
+function renderExpensesList(){
+  const accounts = getExpenseAccounts();
+  const validIds = new Set(accounts.map(a => a.group_id));
+  if (state.expenseWalletFilter !== "all" && !validIds.has(state.expenseWalletFilter)){
+    state.expenseWalletFilter = "all";
+  }
+  renderExpenseWalletBar(accounts);
+
+  if (!accounts.length){
+    els.expensesList.innerHTML = `<div class="empty">No expense accounts found.</div>`;
+    return;
+  }
+
+  let html = "";
+
+  const accountsForTopups = getExpenseAccounts({ applyUiFilters: false });
+  const topupTransactions = collectTopupTransactionsFlat(accountsForTopups);
+  const topupByCurrency = new Map();
+  for (const tx of topupTransactions){
+    const c = tx.currency || "AED";
+    if (!topupByCurrency.has(c)) topupByCurrency.set(c, []);
+    topupByCurrency.get(c).push(tx);
+  }
+  const topupCurrencies = sortCurrenciesList([...topupByCurrency.keys()]);
+
+  if (topupTransactions.length > 0){
+    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Top-Up Records</h4>`;
+    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">PDF per currency row below. Combined report covers every currency.</span>
+      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
+    </div></div>`;
+    for (const cur of topupCurrencies){
+      const txs = topupByCurrency.get(cur).slice().sort((a, b) => dateStamp(b.action_date || b.loan_date) - dateStamp(a.action_date || a.loan_date));
+      const totalCur = txs.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
+      html += `
+      <details class="loan expense-item-row expense-by-currency">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">Top-Up — ${escapeHtml(cur)}</div>
+              <div class="loan-sub">
+                <span class="badge green">Money In</span>
+                <span>${txs.length} transaction(s)</span>
+                ${currencySymbolHtml(cur)}
+              </div>
+            </div>
+            <div class="cell expense-item-total">
+              <small>Total (${escapeHtml(cur)})</small>
+              <strong>${escapeHtml(formatReportAmount(totalCur, cur))}</strong>
+            </div>
+            <div class="lt-action">
+              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="topups-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
+            </div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Wallet</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${txs.map(tx => `
+                  <tr>
+                    <td>${escapeHtml(displayDate(tx.action_date || tx.loan_date || "—"))}</td>
+                    <td>${escapeHtml(tx.person_name || "—")} (${escapeHtml(tx.accountType || "")})</td>
+                    <td><span class="badge green">${tx.isOpeningBalance ? "Opening Balance" : "Top-up"}</span></td>
+                    <td style="color: var(--success);">${money(tx.action_amount, cur)}</td>
+                    <td class="expense-item-detail-note">${escapeHtml(cleanExpenseNote(tx.notes))}</td>
+                    <td>
+                      <div style="display:flex;gap:4px;">
+                        <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                        <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>`;
+    }
+  }
+
+  const transferEvents = buildTransferEvents();
+  const transferCurrencySet = new Set();
+  for (const ev of transferEvents){
+    transferCurrencySet.add(ev.curOut);
+    transferCurrencySet.add(ev.curIn);
+  }
+  const transferCurrencies = sortCurrenciesList([...transferCurrencySet]);
+
+  if (transferEvents.length > 0 && transferCurrencies.length > 0){
+    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Transfer Records</h4>`;
+    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">Sent and received are shown per currency using the conversion rate recorded on transfer.</span>
+      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
+    </div></div>`;
+    for (const cur of transferCurrencies){
+      const rows = getTransferRowsForCurrency(cur, transferEvents);
+      if (!rows.length) continue;
+      const { sent, received } = transferCurrencyTotals(cur, transferEvents);
+      html += `
+      <details class="loan expense-item-row expense-by-currency">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">Transfers — ${escapeHtml(cur)}</div>
+              <div class="loan-sub">
+                <span class="badge orange">Money moved</span>
+                <span>${rows.length} row(s)</span>
+                ${currencySymbolHtml(cur)}
+              </div>
+            </div>
+            <div class="cell expense-item-total expense-transfer-totals">
+              <div><small>Sent (${escapeHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(sent, cur))}</strong></div>
+              <div><small>Received (${escapeHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(received, cur))}</strong></div>
+            </div>
+            <div class="lt-action">
+              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="transfers-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
+            </div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Type</th><th>Wallet</th><th>With</th><th>Amount</th><th>Rate<br/><span style="font-weight:normal">(1 From = ? To)</span></th><th>Converted leg</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${rows.map(r => {
+                  const amountStyle = r.kind === "Sent" ? "color: var(--danger);" : "color: var(--success);";
+                  const badgeCls = r.kind === "Sent" ? "orange" : "green";
+                  return `
+                    <tr>
+                      <td>${escapeHtml(displayDate(r.date || "—"))}</td>
+                      <td><span class="badge ${badgeCls}">${escapeHtml(r.kind)}</span></td>
+                      <td>${escapeHtml(r.walletLabel)}</td>
+                      <td>${escapeHtml(r.counterparty || "—")}</td>
+                      <td style="${amountStyle}">${money(r.amount, cur)}</td>
+                      <td>${escapeHtml(r.rateDisplay)}</td>
+                      <td>${escapeHtml(r.otherLegDisplay)}</td>
+                      <td class="expense-item-detail-note">${escapeHtml(r.notes)}</td>
+                      <td>
+                        <div style="display:flex;gap:4px;">
+                          <button class="tiny ghost editRowBtn" data-id="${escapeHtml(r.editId)}">✎</button>
+                          <button class="tiny danger delRowBtn" data-id="${escapeHtml(r.editId)}">✕</button>
+                        </div>
+                      </td>
+                    </tr>`;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>`;
+    }
+  }
+
+  // Expense items (non-transfer spending), grouped by item
+  const spendAttached = collectExpenseSpendRows(accounts);
+  const items = groupExpenseItems(spendAttached);
+  
+  if (items.length > 0) {
+    html += items.map(item => `
+      <details class="loan expense-item-row">
+        <summary>
+          <div class="loan-top">
+            <div class="lt-main">
+              <div class="loan-name">${escapeHtml(item.displayName)}</div>
+              <div class="loan-sub">
+                ${item.expenseType ? `<span class="badge blue">${escapeHtml(item.expenseType)}</span>` : `<span class="badge blue">Other</span>`}
+                <span>${item.txs.length} transaction(s)</span>
+                <span>${currencySymbolHtml(item.currency || "")}</span>
+              </div>
+            </div>
+            <div class="cell expense-item-total">
+              <small>Total spent</small>
+              <strong>${money(item.total, item.currency)}</strong>
+            </div>
+            <div class="lt-action">
+              <button class="icon-btn ghost" onclick="downloadExpenseItemPDF('${escapeHtml(item.key)}')" title="Download PDF" style="font-size: 0.9rem;">📄</button>
+            </div>
+          </div>
+        </summary>
+        <div class="detail">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Wallet</th><th>Type</th><th>Amount</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody>
+                ${item.txs.map(tx => `
+                  <tr>
+                    <td>${escapeHtml(displayDate(tx.date || "—"))}</td>
+                    <td>${escapeHtml(tx.wallet || "—")}</td>
+                    <td>${escapeHtml(tx.expenseType || "—")}</td>
+                    <td>${money(tx.amount, item.currency)}</td>
+                    <td class="expense-item-detail-note">${escapeHtml(tx.notes)}</td>
+                    <td>
+                      <div style="display:flex;gap:4px;">
+                        <button class="tiny ghost editRowBtn" data-id="${escapeHtml(tx.id)}">✎</button>
+                        <button class="tiny danger delRowBtn" data-id="${escapeHtml(tx.id)}">✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    `).join("");
+  }
+
+  if (!html) {
+    els.expensesList.innerHTML = `<div class="empty">No transactions found.</div>`;
+  } else {
+    els.expensesList.innerHTML = html;
+  }
+
+  els.expensesList.querySelectorAll(".editRowBtn").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
+  els.expensesList.querySelectorAll(".delRowBtn").forEach(btn => btn.addEventListener("click", () => deleteEntry(btn.dataset.id)));
+  // Add event listeners for expense action buttons
+  els.expensesList.querySelectorAll(".expenseActionBtn").forEach(btn => btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const action = btn.dataset.action;
+    const type = btn.dataset.type;
+    
+    if (action === "pdf") {
+      if (type === "topups-by-currency"){
+        await downloadAllTopupsPDF(btn.dataset.currency);
+      } else if (type === "all-topups"){
+        await downloadAllTopupsPDF(null);
+      } else if (type === "transfers-by-currency"){
+        await downloadAllTransfersPDF(btn.dataset.currency);
+      } else if (type === "all-transfers"){
+        await downloadAllTransfersPDF(null);
+      }
+    }
+  }));
+}
+
+
+function defaultDateInputs(root = document){
+  root.querySelectorAll('input[type="date"]').forEach(i => {
+    if (!i.value && i.dataset.defaultToday === "true") i.value = todayISO();
+  });
+}
+
+function renderMultiEntries(count) {
+  let html = `
+    <div class="multi-row-header">
+      <div>Date</div>
+      <div>Amount</div>
+      <div>Remarks</div>
+    </div>
+  `;
+  for(let i=0; i<count; i++){
+    html += `
+      <div class="multi-row">
+        <input class="input" name="action_date_${i}" type="date" required data-default-today="true" aria-label="Date ${i+1}" />
+        <input class="input" name="action_amount_${i}" type="number" min="0" step="0.01" required placeholder="0.00" aria-label="Amount ${i+1}" />
+        <input class="input" name="notes_${i}" placeholder="Notes" aria-label="Remarks ${i+1}" />
+      </div>
+    `;
+  }
+  els.multiEntryContainer.innerHTML = html;
+  defaultDateInputs(els.multiEntryContainer);
+}
+
+function parseEntriesPayload(payload){
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.entries)) return payload.entries;
+  return [];
+}
+
+function csvEscape(value){
+  const str = String(value ?? "");
+  if (!/[",\n\r]/.test(str)) return str;
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
+function toCsv(entries){
+  const headers = [
+    "id","group_id","direction","entry_kind","person_name","currency",
+    "principal_amount","action_amount","loan_date","action_date","notes","created_at"
+  ];
+  const lines = [headers.join(",")];
+  for (const entry of entries){
+    lines.push(headers.map(h => csvEscape(entry[h])).join(","));
+  }
+  return lines.join("\n");
+}
+
+function parseCsvLine(line){
+  const out = [];
+  let value = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++){
+    const ch = line[i];
+    if (ch === '"'){
+      if (inQuotes && line[i + 1] === '"'){
+        value += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes){
+      out.push(value);
+      value = "";
+    } else {
+      value += ch;
+    }
+  }
+  out.push(value);
+  return out;
+}
+
+function parseCsvRows(text){
+  const rows = [];
+  let row = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (ch === '"'){
+      if (inQuotes && text[i + 1] === '"'){
+        row += '""';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+        row += ch;
+      }
+      continue;
+    }
+    if ((ch === "\n" || ch === "\r") && !inQuotes){
+      if (ch === "\r" && text[i + 1] === "\n") i += 1;
+      if (row.trim()) rows.push(parseCsvLine(row));
+      row = "";
+      continue;
+    }
+    row += ch;
+  }
+  if (row.trim()) rows.push(parseCsvLine(row));
+  return rows;
+}
+
+function parseEntriesCsv(csvText){
+  const rows = parseCsvRows(csvText);
+  if (!rows.length) return [];
+  const header = rows[0].map(v => String(v || "").trim());
+  const idx = key => header.indexOf(key);
+  const required = ["group_id","direction","entry_kind","person_name","currency","loan_date"];
+  if (required.some(k => idx(k) === -1)){
+    throw new Error("Invalid CSV format. Missing required columns.");
+  }
+  return rows.slice(1).map(cols => {
+    const get = key => {
+      const i = idx(key);
+      return i >= 0 ? (cols[i] ?? "").trim() : "";
+    };
+    const valOrNull = key => {
+      const v = get(key);
+      return v === "" ? null : v;
+    };
+    const numOrNull = key => {
+      const v = get(key);
+      if (v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    return {
+      id: valOrNull("id") || crypto.randomUUID(),
+      group_id: get("group_id"),
+      direction: get("direction"),
+      entry_kind: get("entry_kind"),
+      person_name: get("person_name"),
+      currency: get("currency"),
+      principal_amount: numOrNull("principal_amount"),
+      action_amount: numOrNull("action_amount"),
+      loan_date: get("loan_date"),
+      action_date: valOrNull("action_date"),
+      notes: valOrNull("notes"),
+      created_at: valOrNull("created_at") || new Date().toISOString()
+    };
+  }).filter(entry => entry.group_id && entry.direction && entry.entry_kind && entry.person_name);
+}
+
+function saveBackupEntries(entries){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    entries: Array.isArray(entries) ? entries : []
+  };
+  localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(payload));
+}
+
+function loadBackupEntriesFromStorage(){
+  const raw = localStorage.getItem(BACKUP_STORAGE_KEY);
+  if (!raw) return [];
+  try{
+    return parseEntriesPayload(JSON.parse(raw));
+  }catch{
+    return [];
+  }
+}
+
+function updateUploadButtonVisibility(){
+  const shouldShow = state.hasImportedFile && state.dataSource === "backup";
+  els.uploadBackupBtn.classList.toggle("hide", !shouldShow);
+}
+
+function updateConnectButtonVisibility(){
+  const showConnect = state.hasImportedFile && !state.unlocked;
+  els.connectSupabaseBtn.classList.toggle("hide", !showConnect);
+}
+
+function applyEntries(entries, source = "backup", options = {}){
+  state.entries = Array.isArray(entries) ? entries : [];
+  state.dataSource = source;
+  if (typeof options.hasImportedFile === "boolean"){
+    state.hasImportedFile = options.hasImportedFile;
+    if (state.hasImportedFile){
+      sessionStorage.setItem(IMPORT_SESSION_KEY, "1");
+    } else {
+      sessionStorage.removeItem(IMPORT_SESSION_KEY);
+    }
+  }
+  saveBackupEntries(state.entries);
+  updateUploadButtonVisibility();
+  updateConnectButtonVisibility();
+  renderAll();
+}
+
+async function loadEntries(){
+  if (state.dataSource === "backup"){
+    applyEntries(loadBackupEntriesFromStorage(), "backup");
+    return;
+  }
+  await loadEntriesFromSupabase();
+}
+
+async function loadEntriesFromSupabase(){
+  const rows = await supabase(`${CONFIG.table}?select=*&order=created_at.desc`);
+  updateDbSnapshot(Array.isArray(rows) ? rows : []);
+  applyEntries(Array.isArray(rows) ? rows : [], "supabase", { hasImportedFile: false });
+}
+function renderExpenseOverviewWallets(){
+  const container = document.getElementById("expenseOverviewWallets");
+  if (!container) return;
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  if (!accounts.length){
+    container.innerHTML = `<div class="empty" style="grid-column:1/-1">No expense accounts yet.</div>`;
+    return;
+  }
+  const expenseCurrencies = [...new Set(accounts.map(account => account.currency).filter(Boolean))];
+  const expenseSummaryCard = expenseCurrencies.length ? `
+      <div class="summary currency-summary expense-overview">
+        ${overviewWatermarkFloatingWalletLogos(accounts)}
+        <div class="currency-head">💸</div>
+        ${expenseCurrencies.map(currency => {
+          const s = summarizeExpenseByCurrency(currency);
+          return `
+            ${overviewExpenseLine(currency, "Total Amount:", money(s.totalAmount, currency))}
+            ${overviewExpenseLine(currency, "Total Expenses:", money(s.totalExpenses, currency))}
+            <div class="summary-line summary-line-one available-label">
+              <span class="summary-line-one-label summary-line-one-label--with-symbol strong-success">
+                <span class="summary-currency-mark">${currencySymbolHtml(currency)}</span>
+                <span class="summary-label-suffix strong-success">Available Balance:</span>
+              </span>
+              <span class="summary-line-one-value available-amount strong-success">${money(s.availableBalance, currency)}</span>
+            </div>
+          `;
+        }).join("")}
+        <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="tiny ghost" onclick="window.location.href='#expensesPanel'">View Expenses</button>
+          <button class="tiny ghost" onclick="openExpenseModal('account')">Add Account</button>
+          <button class="tiny ghost" onclick="downloadExpensesPDF()">Download PDF</button>
+        </div>
+      </div>
+  ` : "";
+
+  container.innerHTML = expenseSummaryCard + accounts.map(a => {
+    const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
+    const balClass = a.balance > 0 ? "" : "style=\"opacity:.6\"";
+    return `
+      <div class="summary currency-summary" ${balClass}>
+        ${overviewWatermarkWallet(a.person_name || "Wallet", a.currency)}
+        <div class="currency-head" style="font-size:1.1rem;gap:6px;justify-content:flex-start;">
+          ${currencySymbolHtml(a.currency)}
+          <span style="font-size:.8rem;font-weight:750;line-height:1.2;">${escapeHtml(a.person_name || "Wallet")}</span>
+        </div>
+        ${overviewOneLine("Top-up:", money(totalTopup, a.currency))}
+        ${overviewOneLine("Spent:", money(a.spentMoney, a.currency))}
+        ${overviewAvailableLine(money(a.balance, a.currency))}
+        <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="tiny ghost" onclick="openExpenseModal('topup', '${escapeHtml(a.group_id)}')">Add Money</button>
+          <button class="tiny ghost" onclick="openExpenseModal('expense', '${escapeHtml(a.group_id)}')">Add Expense</button>
+          <button class="tiny ghost" onclick="openTransferModal('${escapeHtml(a.group_id)}', '${escapeHtml(a.person_name || 'Wallet')}', '${escapeHtml(a.currency)}')">Transfer</button>
+          <button class="tiny ghost" onclick="downloadExpenseAccountPDF('${escapeHtml(a.group_id)}')">Download PDF</button>
+          <button class="tiny ghost" onclick="openEditModal('${escapeHtml(a.principal?.id || '')}')">Edit</button>
+          <button class="tiny danger" onclick="deleteExpenseWallet('${escapeHtml(a.group_id)}', '${escapeHtml(a.person_name || 'Wallet')}')">Delete Wallet</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderAll(){
+  renderOverviewCards();
+  renderLoanSelectors();
+  renderGoodsSelectors();
+  renderLoanCards(els.givenList, "given", "given");
+  renderLoanCards(els.receivedList, "given", "received");
+  renderLoanCards(els.takenList, "taken", "taken", {
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note))
+  });
+  renderLoanCards(els.returnedList, "taken", "returned", {
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note))
+  });
+  renderLoanCards(els.installmentsList, "taken", "installments", {
+    groupFilter: group => group.rows.some(row => hasInstallmentTag(row.note)) && !group.rows.some(row => hasGoodsTag(row.note)) && !group.rows.some(row => hasExpenseAccountTag(row.note)),
+    hideMoveToInstallments: true
+  });
+  renderGoodsList();
+  renderExpensesList();
+  renderExpenseOverviewWallets();
+
+  els.openGivenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "given" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
+  els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
+  els.receivedCount.textContent = state.entries.filter(e => e.direction === "given" && e.entry_kind !== "principal").length;
+  els.returnedCount.textContent = state.entries.filter(e => e.direction === "taken" && e.entry_kind !== "principal" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes)).length;
+
+}
+
+function activate(tab){
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById(`${tab}Panel`).classList.add("active");
+  const mainOverview = document.getElementById("mainOverview");
+  const walletsOverview = document.getElementById("walletsOverviewSection");
+  
+  if (mainOverview) {
+    if (tab === "expenses") {
+      mainOverview.style.display = "none";
+    } else {
+      mainOverview.style.display = "block";
+      // Keep main overview in collapsed state (don't auto-expand)
+    }
+  }
+  
+  if (walletsOverview) {
+    if (tab === "expenses") {
+      walletsOverview.style.display = "block";
+    } else {
+      walletsOverview.style.display = "none";
+    }
+  }
+}
+
+function setCurrencyChoice(form, currency){
+  const hidden = form.querySelector('input[name="currency"]');
+  if (hidden) hidden.value = currency;
+  form.querySelectorAll(".currency-chip").forEach(btn => btn.classList.toggle("active", btn.dataset.currency === currency));
+  state.lastCurrency = currency;
+}
+
+function openEntryModal(mode, direction){
+  state.modalDirection = direction;
+
+  els.entryModal.classList.remove("hide");
+  els.entryModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  if (mode === "principal"){
+    els.modalTitle.textContent = direction === "given" ? "New loan given" : "New loan taken";
+    els.modalDesc.textContent = direction === "given" ? "Add a loan you gave to someone." : "Add money you received from someone.";
+    els.principalModalForm.classList.remove("hide");
+    els.paymentModalForm.classList.add("hide");
+    els.principalModalForm.reset();
+    els.principalModalForm.querySelector('input[name="direction"]').value = direction;
+    els.principalModalForm.querySelector('input[name="person_name"]').placeholder = direction === "given" ? "Full name" : "Lender name";
+    els.principalSubmitBtn.textContent = direction === "given" ? "Save given loan" : "Save taken loan";
+    setCurrencyChoice(els.principalModalForm, state.lastCurrency || "AED");
+    defaultDateInputs(els.principalModalForm);
+  } else {
+    els.modalTitle.textContent = direction === "given" ? "New received back entry" : "New returned back entry";
+    els.modalDesc.textContent = direction === "given" ? "Record money received against a given loan." : "Record repayment against a taken loan.";
+    els.paymentModalForm.classList.remove("hide");
+    els.principalModalForm.classList.add("hide");
+    els.paymentModalForm.reset();
+    els.paymentModalForm.querySelector('input[name="direction"]').value = direction;
+    els.paymentSubmitBtn.textContent = direction === "given" ? "Save received back" : "Save returned back";
+    els.multiEntryCount.value = 1;
+    renderMultiEntries(1);
+    renderLoanSelectors();
+  }
+}
+
+function openGoodsModal(mode){
+  els.goodsModal.classList.remove("hide");
+  els.goodsModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  els.goodsBoughtForm.classList.toggle("hide", mode !== "bought");
+  els.goodsSoldForm.classList.toggle("hide", mode !== "sold");
+  els.goodsNewItemFields.classList.add("hide");
+  els.goodsNewItemToggleBtn.textContent = "+ Add New";
+
+  if (mode === "bought"){
+    els.goodsModalTitle.textContent = "Bought Item";
+    els.goodsModalDesc.textContent = "Add a newly bought item.";
+    els.goodsBoughtForm.reset();
+    setCurrencyChoice(els.goodsBoughtForm, state.lastCurrency || "AED");
+    defaultDateInputs(els.goodsBoughtForm);
+  } else {
+    els.goodsModalTitle.textContent = "Sale Item";
+    els.goodsModalDesc.textContent = "Sell from bought list or add and sell new item.";
+    els.goodsSoldForm.reset();
+    setCurrencyChoice(els.goodsSoldForm, state.lastCurrency || "AED");
+    renderGoodsSelectors();
+    defaultDateInputs(els.goodsSoldForm);
+  }
+}
+
+async function saveGoodsBought(form){
+  const fd = new FormData(form);
+  const unitActualPrice = Number(fd.get("actual_price") || 0);
+  const boughtQty = Math.max(1, parseInt(fd.get("bought_qty"), 10) || 1);
+  const totalActualPrice = unitActualPrice * boughtQty;
+  const payload = {
+    group_id: crypto.randomUUID(),
+    direction: "taken",
+    entry_kind: "principal",
+    person_name: String(fd.get("item_name") || "").trim(),
+    currency: String(fd.get("currency") || "AED").trim(),
+    principal_amount: totalActualPrice,
+    action_amount: null,
+    loan_date: String(fd.get("bought_date") || ""),
+    action_date: null,
+    notes: upsertGoodsMetaInNote(
+      normalizeGoodsNote(String(fd.get("notes") || "").trim() || null, true),
+      { boughtQty, unitActualPrice }
+    )
+  };
+  if (!payload.person_name || !payload.currency || !unitActualPrice || !boughtQty || !payload.loan_date){
+    throw new Error("Complete all required fields.");
+  }
+
+  if (isBackupMode()){
+    state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("goodsModal");
+}
+
+async function saveGoodsSold(form){
+  const fd = new FormData(form);
+  let groupId = String(fd.get("group_id") || "").trim();
+  let principalEntry = state.entries.find(e =>
+    e.group_id === groupId &&
+    e.entry_kind === "principal" &&
+    (e.direction === "goods" || (e.direction === "taken" && hasGoodsTag(e.notes)))
+  );
+  const soldPrice = Number(fd.get("sold_price") || 0);
+  const soldQty = Math.max(1, parseInt(fd.get("sold_qty"), 10) || 1);
+  const soldDate = String(fd.get("sold_date") || "");
+  const soldNotes = String(fd.get("notes") || "").trim() || null;
+
+  const newItemName = String(fd.get("new_item_name") || "").trim();
+  if (!groupId && newItemName){
+    groupId = crypto.randomUUID();
+    principalEntry = {
+      group_id: groupId,
+      direction: "taken",
+      entry_kind: "principal",
+      person_name: newItemName,
+      currency: String(fd.get("new_currency") || "AED").trim(),
+      principal_amount: Number(fd.get("new_actual_price") || 0) * (Math.max(1, parseInt(fd.get("new_bought_qty"), 10) || 1)),
+      action_amount: null,
+      loan_date: String(fd.get("new_bought_date") || "") || todayISO(),
+      action_date: null,
+      notes: upsertGoodsMetaInNote(normalizeGoodsNote(null, true), {
+        boughtQty: Math.max(1, parseInt(fd.get("new_bought_qty"), 10) || 1),
+        unitActualPrice: Number(fd.get("new_actual_price") || 0)
+      })
+    };
+    if (!principalEntry.principal_amount){
+      throw new Error("Actual price is required for new item.");
+    }
+  }
+
+  if (!principalEntry) throw new Error("Choose bought item or add a new one.");
+  if (!soldPrice || !soldQty || !soldDate) throw new Error("Sold price, sold quantity and sold date are required.");
+
+  const principalMeta = goodsMetaFromNotes(principalEntry.notes);
+  const totalBoughtQty = Math.max(1, Number(principalMeta.boughtQty || 1));
+  const soldQtyAlready = state.entries
+    .filter(e => e.group_id === groupId && e.entry_kind !== "principal" && hasGoodsTag(e.notes))
+    .reduce((sum, e) => sum + Math.max(1, Number(goodsMetaFromNotes(e.notes).soldQty || 1)), 0);
+  const remainingQty = Math.max(totalBoughtQty - soldQtyAlready, 0);
+  if (soldQty > remainingQty){
+    throw new Error(`Only ${remainingQty} item(s) left to sell for this entry.`);
+  }
+
+  const soldPayload = {
+    group_id: groupId,
+    direction: "taken",
+    entry_kind: "full",
+    person_name: principalEntry.person_name,
+    currency: principalEntry.currency,
+    principal_amount: null,
+    action_amount: soldPrice * soldQty,
+    loan_date: principalEntry.loan_date,
+    action_date: soldDate,
+    notes: upsertGoodsMetaInNote(normalizeGoodsNote(soldNotes, true), {
+      soldQty,
+      unitSoldPrice: soldPrice
+    })
+  };
+
+  if (isBackupMode()){
+    if (!state.entries.some(e => e.group_id === groupId && e.entry_kind === "principal" && (e.direction === "goods" || (e.direction === "taken" && hasGoodsTag(e.notes))))){
+      state.entries.unshift({ ...principalEntry, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    }
+    state.entries.unshift({ ...soldPayload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
+    refreshBackupView();
+  } else {
+    if (!state.entries.some(e => e.group_id === groupId && e.entry_kind === "principal" && (e.direction === "goods" || (e.direction === "taken" && hasGoodsTag(e.notes))))){
+      await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(principalEntry) });
+    }
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(soldPayload) });
+    await loadEntriesFromSupabase();
+  }
+  closeModal("goodsModal");
+}
+
+function openEditModal(id) {
+  const entry = state.entries.find(e => e.id === id);
+  if (!entry) return;
+  state.editId = id;
+  state.editKind = entry.entry_kind;
+
+  if (entry.entry_kind === "principal") {
+    document.getElementById('editPersonGroup').classList.remove('hide');
+    document.getElementById('editCurrencyGroup').classList.remove('hide');
+    document.getElementById('editName').value = entry.person_name || "";
+    document.getElementById('editName').required = true;
+    setCurrencyChoice(els.editForm, entry.currency || "AED");
+    document.getElementById('editAmountLabel').textContent = "Principal Amount";
+    document.getElementById('editAmount').value = entry.principal_amount || "";
+    document.getElementById('editDateLabel').textContent = "Loan Date";
+    document.getElementById('editDate').value = entry.loan_date || "";
+  } else {
+    document.getElementById('editPersonGroup').classList.add('hide');
+    document.getElementById('editCurrencyGroup').classList.add('hide');
+    document.getElementById('editName').required = false;
+    document.getElementById('editAmountLabel').textContent = "Payment Amount";
+    document.getElementById('editAmount').value = entry.action_amount || "";
+    document.getElementById('editDateLabel').textContent = "Payment Date";
+    document.getElementById('editDate').value = entry.action_date || "";
+  }
+  document.getElementById('editNotes').value = entry.notes || "";
+
+  els.editModal.classList.remove("hide");
+  els.editModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal(modalId){
+  document.getElementById(modalId).classList.add("hide");
+  document.getElementById(modalId).setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function isBackupMode(){
+  return state.dataSource === "backup";
+}
+
+function refreshBackupView(){
+  applyEntries(state.entries, "backup");
+}
+
+async function createPrincipal(form){
+  const fd = new FormData(form);
+  const direction = String(fd.get("direction") || "");
+  const groupId = crypto.randomUUID();
+  const payload = {
+    group_id: groupId,
+    direction,
+    entry_kind: "principal",
+    person_name: String(fd.get("person_name") || "").trim(),
+    currency: String(fd.get("currency") || "").trim(),
+    principal_amount: Number(fd.get("principal_amount") || 0),
+    action_amount: null,
+    loan_date: fd.get("loan_date"),
+    action_date: null,
+    notes: String(fd.get("notes") || "").trim() || null
+  };
+
+  if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date) throw new Error("Complete all required fields.");
+
+  if (isBackupMode()){
+    state.entries.unshift({
+      ...payload,
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString()
+    });
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+  }
+  form.reset();
+  setCurrencyChoice(form, "AED");
+  defaultDateInputs(form);
+  closeModal("entryModal");
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
+}
+
+async function createPayment(form){
+  const fd = new FormData(form);
+  const direction = String(fd.get("direction") || "");
+  const groupId = String(fd.get("group_id") || "");
+  const count = parseInt(els.multiEntryCount.value) || 1;
+
+  if (!groupId) throw new Error("Please choose a loan.");
+
+  const principalEntry = state.entries.find(e => e.group_id === groupId && e.entry_kind === "principal");
+  if (!principalEntry) throw new Error("Selected loan could not be found.");
+
+  const group = groupByLoan(state.entries.filter(e => e.group_id === groupId))[0];
+  let currentRemaining = calculateLoan(group).remaining;
+
+  let totalAmount = 0;
+  for(let i=0; i<count; i++){
+     totalAmount += Number(fd.get(`action_amount_${i}`) || 0);
+  }
+
+  if (totalAmount > currentRemaining){
+    throw new Error(`Total amount (${totalAmount}) exceeds remaining balance (${currentRemaining}).`);
+  }
+
+  const payloads = [];
+  for(let i=0; i<count; i++){
+    const amt = Number(fd.get(`action_amount_${i}`) || 0);
+    const dt = fd.get(`action_date_${i}`);
+    const nt = String(fd.get(`notes_${i}`) || "").trim() || null;
+
+    if(!amt || !dt) continue;
+
+    currentRemaining -= amt;
+    payloads.push({
+      group_id: groupId,
+      direction,
+      entry_kind: currentRemaining <= 0 ? "full" : "partial",
+      person_name: principalEntry.person_name,
+      currency: principalEntry.currency,
+      principal_amount: null,
+      action_amount: amt,
+      loan_date: principalEntry.loan_date,
+      action_date: dt,
+      notes: nt
+    });
+  }
+
+  if(payloads.length === 0) throw new Error("Please fill out amount and date.");
+
+  if (isBackupMode()){
+    const now = new Date().toISOString();
+    payloads.forEach(p => {
+      state.entries.unshift({ ...p, id: crypto.randomUUID(), created_at: now });
+    });
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payloads) });
+  }
+
+  form.reset();
+  els.multiEntryCount.value = 1;
+  renderMultiEntries(1);
+  closeModal("entryModal");
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
+}
+
+async function submitEdit(){
+  const id = state.editId;
+  if (!id) return;
+  const currentEntry = state.entries.find(e => e.id === id);
+  if (!currentEntry) return;
+
+  const amt = Number(document.getElementById('editAmount').value || 0);
+  const dt = document.getElementById('editDate').value;
+  const nt = document.getElementById('editNotes').value.trim() || null;
+
+  if(state.editKind === "principal"){
+    const nm = document.getElementById('editName').value.trim();
+    const curr = document.getElementById('editCurrency').value;
+    if (!nm || !curr || !amt || !dt) throw new Error("Complete required fields.");
+    
+    let updatedNotes = nt;
+    
+    // Handle goods entries - update metadata when price/amount changes
+    if (hasGoodsTag(currentEntry.notes)) {
+      const currentMeta = goodsMetaFromNotes(currentEntry.notes);
+      const currentBoughtQty = Math.max(1, Number(currentMeta.boughtQty || 1));
+      const newUnitActualPrice = amt / currentBoughtQty;
+      
+      updatedNotes = upsertGoodsMetaInNote(nt, {
+        boughtQty: currentBoughtQty,
+        unitActualPrice: newUnitActualPrice
+      });
+    } else if (hasExpenseAccountTag(currentEntry.notes)) {
+      updatedNotes = upsertExpenseMetaInNote(nt, { ...expenseMetaFromNotes(currentEntry.notes), rowType: "ACCOUNT" });
+    }
+    
+    if (isBackupMode()){
+      state.entries = state.entries.map(entry => entry.id === id
+        ? { ...entry, person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: updatedNotes }
+        : entry
+      );
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ person_name: nm, currency: curr, principal_amount: amt, loan_date: dt, notes: updatedNotes })
+      });
+    }
+  } else {
+    if (!amt || !dt) throw new Error("Complete required fields.");
+    let editedNotes = nt;
+    
+    // Handle goods sold entries - update metadata when sold amount changes
+    if (hasGoodsTag(currentEntry.notes)) {
+      const currentMeta = goodsMetaFromNotes(currentEntry.notes);
+      const currentSoldQty = Math.max(1, Number(currentMeta.soldQty || 1));
+      const newUnitSoldPrice = amt / currentSoldQty;
+      
+      editedNotes = upsertGoodsMetaInNote(nt, {
+        soldQty: currentSoldQty,
+        unitSoldPrice: newUnitSoldPrice
+      });
+    } else if (hasExpenseAccountTag(currentEntry.notes)) {
+      const expenseMeta = expenseMetaFromNotes(currentEntry.notes);
+      editedNotes = upsertExpenseMetaInNote(nt, expenseMeta);
+    }
+    
+    if (isBackupMode()){
+      state.entries = state.entries.map(entry => entry.id === id
+        ? { ...entry, action_amount: amt, action_date: dt, notes: editedNotes }
+        : entry
+      );
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ action_amount: amt, action_date: dt, notes: editedNotes })
+      });
+    }
+  }
+
+  closeModal("editModal");
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
+}
+
+async function renamePersonRecords(personNameEncoded, direction){
+  const currentName = decodeURIComponent(personNameEncoded || "").trim();
+  if (!currentName || !direction) return;
+  const nextName = prompt("Enter new person name:", currentName);
+  if (nextName === null) return;
+  const cleanedName = nextName.trim();
+  if (!cleanedName) {
+    alert("Name cannot be empty.");
+    return;
+  }
+  if (cleanedName === currentName) return;
+
+  const matchingIds = state.entries
+    .filter(e => e.direction === direction && String(e.person_name || "").trim() === currentName)
+    .map(e => e.id)
+    .filter(Boolean);
+
+  if (!matchingIds.length) return;
+
+  if (isBackupMode()){
+    state.entries = state.entries.map(entry => (
+      entry.direction === direction && String(entry.person_name || "").trim() === currentName
+        ? { ...entry, person_name: cleanedName }
+        : entry
+    ));
+    refreshBackupView();
+    return;
+  }
+
+  for (const id of matchingIds){
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ person_name: cleanedName })
+    });
+  }
+  await loadEntriesFromSupabase();
+}
+
+async function deleteEntry(id){
+  if (!id) return;
+  const entry = state.entries.find(e => e.id === id);
+  if (!entry) return;
+
+  // Check if this is a transfer record
+  const isTransfer = hasExpenseAccountTag(entry.notes) && 
+                     expenseMetaFromNotes(entry.notes).expenseType === "Transfer";
+
+  if(entry.entry_kind === "principal"){
+    if (!confirm(`Delete the entire loan for ${entry.person_name}? This will also remove ALL linked repayments.`)) return;
+    if (isBackupMode()){
+      state.entries = state.entries.filter(e => e.group_id !== entry.group_id);
+    } else {
+      await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(entry.group_id)}`, { method: "DELETE" });
+    }
+  } else if (isTransfer) {
+    // Handle transfer deletion - delete both expense and top-up parts
+    await deleteTransfer(entry);
+  } else {
+    if (!confirm(`Delete this specific entry?`)) return;
+    if (isBackupMode()){
+      state.entries = state.entries.filter(e => e.id !== id);
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    }
+  }
+  if (isBackupMode()) refreshBackupView();
+  else await loadEntriesFromSupabase();
+}
+
+async function deleteTransfer(entry) {
+  const meta = expenseMetaFromNotes(entry.notes);
+  const isExpenseTransfer = meta.rowType === "EXPENSE";
+  const isTopupTransfer = meta.rowType === "TOPUP";
+  
+  // Find the matching transfer partner
+  let transferPartner = null;
+  let transferType = "";
+  
+  if (isExpenseTransfer) {
+    // This is the expense (money out) part, find the top-up (money in) part
+    const transferMatch = entry.notes.match(/Transfer to ([^:]+):/);
+    if (transferMatch) {
+      const toWalletName = transferMatch[1];
+      transferPartner = state.entries.find(e => 
+        e.id !== entry.id &&
+        hasExpenseAccountTag(e.notes) &&
+        expenseMetaFromNotes(e.notes).rowType === "TOPUP" &&
+        e.notes.includes(`Transfer from ${entry.person_name}`)
+      );
+      transferType = "expense";
+    }
+  } else if (isTopupTransfer) {
+    // This is the top-up (money in) part, find the expense (money out) part
+    const transferMatch = entry.notes.match(/Transfer from ([^:]+):/);
+    if (transferMatch) {
+      const fromWalletName = transferMatch[1];
+      transferPartner = state.entries.find(e => 
+        e.id !== entry.id &&
+        hasExpenseAccountTag(e.notes) &&
+        expenseMetaFromNotes(e.notes).rowType === "EXPENSE" &&
+        e.notes.includes(`Transfer to ${entry.person_name}`)
+      );
+      transferType = "topup";
+    }
+  }
+  
+  if (!transferPartner) {
+    // No partner found, just delete this entry
+    if (!confirm(`Delete this transfer record? No matching transfer partner found.`)) return;
+    if (isBackupMode()) {
+      state.entries = state.entries.filter(e => e.id !== entry.id);
+    } else {
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { method: "DELETE" });
+    }
+    return;
+  }
+  
+  // Found transfer partner, ask to delete both
+  const confirmMessage = transferType === "expense" 
+    ? `Delete this transfer from ${entry.person_name} to ${transferPartner.person_name}?\n\nThis will remove BOTH:\n- The expense record (money out) from ${entry.person_name}\n- The top-up record (money in) to ${transferPartner.person_name}\n\nThis action cannot be undone!`
+    : `Delete this transfer from ${transferPartner.person_name} to ${entry.person_name}?\n\nThis will remove BOTH:\n- The expense record (money out) from ${transferPartner.person_name}\n- The top-up record (money in) to ${entry.person_name}\n\nThis action cannot be undone!`;
+  
+  if (!confirm(confirmMessage)) return;
+  
+  // Delete both transfer records
+  if (isBackupMode()) {
+    state.entries = state.entries.filter(e => e.id !== entry.id && e.id !== transferPartner.id);
+  } else {
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { method: "DELETE" });
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(transferPartner.id)}`, { method: "DELETE" });
+  }
+}
+
+async function deletePersonRecords(personNameEncoded, direction){
+  const personName = decodeURIComponent(personNameEncoded || "").trim();
+  if (!personName || !direction) return;
+
+  const recordsCount = state.entries.filter(e =>
+    e.direction === direction && String(e.person_name || "").trim() === personName
+  ).length;
+
+  if (!recordsCount) {
+    alert("No records found for this person.");
+    return;
+  }
+
+  const directionLabel = direction === "given" ? "given" : "taken";
+  if (!confirm(`Delete full record for ${personName}? This will remove ${recordsCount} entr${recordsCount === 1 ? "y" : "ies"} from ${directionLabel}.`)) return;
+
+  if (isBackupMode()){
+    state.entries = state.entries.filter(e => !(e.direction === direction && String(e.person_name || "").trim() === personName));
+    refreshBackupView();
+    return;
+  }
+
+  const matchingIds = state.entries
+    .filter(e => e.direction === direction && String(e.person_name || "").trim() === personName)
+    .map(e => e.id)
+    .filter(Boolean);
+
+  for (const id of matchingIds){
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+  }
+
+  await loadEntriesFromSupabase();
+}
+
+async function movePersonToInstallments(personNameEncoded, direction){
+  const personName = decodeURIComponent(personNameEncoded || "").trim();
+  if (!personName || direction !== "taken") return;
+
+  const matchedEntries = state.entries.filter(e =>
+    e.direction === "taken" && String(e.person_name || "").trim() === personName
+  );
+
+  if (!matchedEntries.length){
+    alert("No records found for this person.");
+    return;
+  }
+
+  if (!confirm(`Move ${personName} to Installment Plans?`)) return;
+
+  if (isBackupMode()){
+    state.entries = state.entries.map(entry => (
+      entry.direction === "taken" && String(entry.person_name || "").trim() === personName
+        ? { ...entry, notes: normalizeInstallmentNote(entry.notes, true) }
+        : entry
+    ));
+    refreshBackupView();
+  } else {
+    for (const entry of matchedEntries){
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ notes: normalizeInstallmentNote(entry.notes, true) })
+      });
+    }
+    await loadEntriesFromSupabase();
+  }
+  activate("installments");
+}
+
+async function getBase64ImageFromUrl(imageUrl) {
+  try {
+    const res = await fetch(imageUrl);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+const PDF_BRAND = {
+  owner: "Nadeem Shahzad Fida",
+  email: "nadeemshahzadfida@outlook.com",
+  mobile: "+971 55 921 6280",
+  whatsapp: "+92 333 900 4564",
+  facebook: "facebook.com/nadeemshahzadfida",
+  systemName: "MMM by NSF"
+};
+
+let cachedPdfLogo = null;
+async function getPdfLogo(){
+  if (cachedPdfLogo !== null) return cachedPdfLogo;
+  cachedPdfLogo = await getBase64ImageFromUrl("Assets/logo/logo.png");
+  return cachedPdfLogo;
+}
+
+function drawPdfHeader(doc, logoData, title, subtitle){
+  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(10, 8, pageWidth - 20, 34, 2, 2, "F");
+
+  if (logoData){
+    try { doc.addImage(logoData, "PNG", 15.5, 13.5, 17, 17); } catch {}
+  }
+
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(14);
+  doc.text(PDF_BRAND.systemName, 38, 18);
+  doc.setFontSize(10);
+  doc.setTextColor(102, 112, 133);
+  doc.text(title, 38, 24);
+  if (subtitle) doc.text(subtitle, 38, 30);
+}
+
+function drawPdfOwnerBlock(doc, y = 48){
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Prepared by: ${PDF_BRAND.owner}`, 14, y);
+  doc.text(`Email: ${PDF_BRAND.email}`, 14, y + 5);
+  doc.text(`Mobile: ${PDF_BRAND.mobile}`, 14, y + 10);
+  doc.text(`WhatsApp: ${PDF_BRAND.whatsapp}`, 14, y + 15);
+}
+
+function drawPdfFooter(doc){
+  const pageHeight = doc.internal.pageSize.getHeight();
+  doc.setDrawColor(208, 213, 221);
+  doc.line(12, pageHeight - 14, doc.internal.pageSize.getWidth() - 12, pageHeight - 14);
+  doc.setTextColor(102, 112, 133);
+  doc.setFontSize(8.5);
+  doc.text(`Powered by ${PDF_BRAND.owner} | ${PDF_BRAND.facebook}`, 14, pageHeight - 8);
+}
+
+function buildPersonPdfData(personName, direction){
+  const normalizedName = String(personName || "").trim();
+  const personEntries = state.entries.filter(e =>
+    e.direction === direction && String(e.person_name || "").trim() === normalizedName
+  );
+  if (!personEntries.length) return null;
+
+  const principalRows = personEntries.filter(e => e.entry_kind === "principal");
+  const actionRows = personEntries.filter(e => e.entry_kind !== "principal");
+
+  const currency = principalRows[0]?.currency || actionRows[0]?.currency || "";
+  const principalTotal = principalRows.reduce((sum, e) => sum + Number(e.principal_amount || 0), 0);
+  const paidTotal = actionRows.reduce((sum, e) => sum + Number(e.action_amount || 0), 0);
+  const remaining = Math.max(principalTotal - paidTotal, 0);
+  const status = remaining <= 0 ? "Closed" : paidTotal > 0 ? "Partial" : "Open";
+  const loanCount = new Set(personEntries.map(e => e.group_id).filter(Boolean)).size;
+
+  const timeline = personEntries
+    .slice()
+    .sort((a, b) => {
+      const aStamp = dateStamp(a.entry_kind === "principal" ? a.loan_date : a.action_date);
+      const bStamp = dateStamp(b.entry_kind === "principal" ? b.loan_date : b.action_date);
+      if (aStamp !== bStamp) return aStamp - bStamp;
+      return (a.entry_kind === "principal" ? -1 : 1) - (b.entry_kind === "principal" ? -1 : 1);
+    });
+
+  let runningRemaining = 0;
+  const rows = timeline.map(entry => {
+    const isPrincipal = entry.entry_kind === "principal";
+    const amount = Number(isPrincipal ? entry.principal_amount : entry.action_amount || 0);
+    runningRemaining = isPrincipal
+      ? runningRemaining + amount
+      : Math.max(runningRemaining - amount, 0);
+
+    return {
+      date: isPrincipal ? (entry.loan_date || "—") : (entry.action_date || "—"),
+      type: isPrincipal ? "Principal" : (entry.entry_kind === "partial" ? "Partial" : "Full"),
+      amount,
+      remainingAfter: runningRemaining,
+      note: entry.notes || "—"
+    };
+  });
+
+  return { personName: normalizedName, direction, currency, principalTotal, paidTotal, remaining, status, loanCount, rows };
+}
+
+async function downloadPersonPDF(personNameEncoded, direction) {
+  if (!window.jspdf) {
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const personName = decodeURIComponent(personNameEncoded || "");
+  const data = buildPersonPdfData(personName, direction);
+  if (!data) {
+    alert("No entries found for this person.");
+    return;
+  }
+
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "Statement / Receipt", `Client: ${data.personName}`);
+  drawPdfOwnerBlock(doc, 48);
+
+  doc.setTextColor(0);
+  doc.setFontSize(11);
+  doc.text(`Status: ${data.status}`, 132, 48);
+  doc.text(`Currency: ${data.currency}`, 132, 54);
+  doc.text(`Loan Entries: ${data.loanCount}`, 132, 60);
+
+  const formatMon = (amt) => {
+     const n = Number(amt || 0);
+     const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+     return `${data.currency ? data.currency + " " : ""}${formatted}`;
+  };
+
+  doc.text(`Principal: ${formatMon(data.principalTotal)}`, 132, 66);
+  doc.text(`Paid/Returned: ${formatMon(data.paidTotal)}`, 132, 72);
+  doc.text(`Remaining: ${formatMon(data.remaining)}`, 132, 78);
+
+  const tableData = data.rows.map((r) => [
+    displayDate(r.date),
+    r.type,
+    formatMon(r.amount),
+    formatMon(r.remainingAfter),
+    r.note || '—'
+  ]);
+
+  doc.autoTable({
+    startY: 88,
+    head: [['Date', 'Type', 'Amount', 'Remaining', 'Notes']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: 'helvetica' },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.save(`Statement_${data.personName.replace(/\s+/g, '_')}.pdf`);
+}
+
+function sectionLabel(searchKey){
+  return searchKey === "given"
+    ? "Loan Given"
+    : searchKey === "received"
+    ? "Received Back"
+    : searchKey === "taken"
+    ? "Loan Taken"
+    : searchKey === "expenses"
+    ? "Expenses"
+    : "Returned Back";
+}
+
+function formatReportAmount(amount, currency){
+  const n = Number(amount || 0);
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${currency || ""} ${formatted}`.trim();
+}
+
+function buildSectionReportRows(direction, searchKey){
+  if (searchKey === "expenses"){
+    const accounts = getExpenseAccounts();
+    const spendRows = collectExpenseSpendRows(accounts);
+    const rows = spendRows
+      .slice()
+      .sort((a, b) => dateStamp(a.row.action_date) - dateStamp(b.row.action_date))
+      .map(({ row, account }) => {
+        const meta = expenseMetaFromNotes(row.notes);
+        return [
+          meta.itemName || "—",
+          displayDate(row.action_date || "—"),
+          `${account.person_name || "Wallet"} · ${meta.expenseType || "Other"}`,
+          formatReportAmount(Number(row.action_amount || 0), account.currency),
+          "—",
+          cleanExpenseNote(row.notes)
+        ];
+      });
+    return { groups: accounts, rows };
+  }
+
+  const groups = getFilteredGroups(direction, searchKey);
+  const rows = [];
+
+  for (const group of groups){
+    for (const row of group.rows){
+      rows.push([
+        group.person_name || "Unnamed",
+        displayDate(row.date),
+        row.kind === "principal" ? "Principal" : row.kind === "partial" ? "Partial" : "Full",
+        formatReportAmount(row.amount, group.currency),
+        formatReportAmount(row.remainingAfter, group.currency),
+        row.note || "—"
+      ]);
+    }
+  }
+
+  return { groups, rows };
+}
+
+async function exportSectionPDF(searchKey){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const direction = (searchKey === "given" || searchKey === "received") ? "given" : "taken";
+  const label = sectionLabel(searchKey);
+  const report = buildSectionReportRows(direction, searchKey);
+  if (!report.rows.length){
+    alert("No entries found for this section.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, `${label} - Full Report`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  const expensePdf = searchKey === "expenses";
+  doc.text(`${expensePdf ? "Wallets in view" : "Members"}: ${report.groups.length}`, 132, 48);
+  doc.text(`Rows: ${report.rows.length}`, 132, 54);
+
+  const tableHead = expensePdf
+    ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
+    : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
+
+  doc.autoTable({
+    startY: 72,
+    head: tableHead,
+    body: report.rows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+    columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
+}
+
+async function downloadCurrencyPDF(currency){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  
+  // Get currency-specific data
+  const givenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "given" &&
+    !hasGoodsTag(e.notes)
+  ));
+  const takenGroups = groupByLoan(state.entries.filter(e =>
+    e.currency === currency &&
+    e.direction === "taken" &&
+    !hasGoodsTag(e.notes) &&
+    !hasExpenseAccountTag(e.notes)
+  ));
+
+  drawPdfHeader(doc, logoData, `Currency Report - ${currency}`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Given Loans: ${givenGroups.length}`, 132, 48);
+  doc.text(`Taken Loans: ${takenGroups.length}`, 132, 54);
+
+  // Build given loans data
+  const givenRows = givenGroups.map(group => {
+    const calc = calculateLoan(group);
+    return [
+      group.person_name || "Unnamed",
+      displayDate(group.loan_date || "—"),
+      "Principal",
+      formatReportAmount(group.principal?.principal_amount || 0, currency),
+      formatReportAmount(calc.remaining, currency),
+      group.notes || "—"
+    ];
+  });
+
+  // Build taken loans data
+  const takenRows = takenGroups.map(group => {
+    const calc = calculateLoan(group);
+    return [
+      group.person_name || "Unnamed",
+      displayDate(group.loan_date || "—"),
+      "Principal",
+      formatReportAmount(group.principal?.principal_amount || 0, currency),
+      formatReportAmount(calc.remaining, currency),
+      group.notes || "—"
+    ];
+  });
+
+  // Add given loans section
+  if (givenRows.length > 0) {
+    doc.autoTable({
+      startY: 72,
+      head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+      body: givenRows,
+      theme: "grid",
+      headStyles: { fillColor: [36, 87, 214] },
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+      didDrawPage: () => drawPdfFooter(doc)
+    });
+  }
+
+  // Add taken loans section if there's space or on new page
+  if (takenRows.length > 0) {
+    if (givenRows.length > 0) doc.addPage();
+    drawPdfHeader(doc, logoData, `Currency Report - ${currency} (Taken Loans)`, `Generated: ${new Date().toLocaleString()}`);
+    drawPdfOwnerBlock(doc, 48);
+    doc.autoTable({
+      startY: 72,
+      head: [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]],
+      body: takenRows,
+      theme: "grid",
+      headStyles: { fillColor: [36, 87, 214] },
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+      didDrawPage: () => drawPdfFooter(doc)
+    });
+  }
+
+  doc.save(`Currency_${currency}_Report.pdf`);
+}
+
+async function downloadGoodsPDF(){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const goodsAll = getGoodsGroups({ applyUiFilters: false });
+  if (!goodsAll.length){
+    alert("No goods entries found.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  
+  drawPdfHeader(doc, logoData, "Goods Report - Full Summary", `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Total Items: ${goodsAll.length}`, 132, 48);
+
+  const goodsRows = goodsAll.map(group => {
+    const meta = goodsMetaFromNotes(group.principal?.notes);
+    return [
+      group.person_name || "Unnamed",
+      String(meta.boughtQty || 1),
+      String(meta.soldQty || 0),
+      String(group.remainingQty || 0),
+      formatReportAmount(group.profitLoss || 0, group.currency),
+      group.currency || ""
+    ];
+  });
+
+  doc.autoTable({
+    startY: 72,
+    head: [["Item", "Bought Qty", "Sold Qty", "In Stock", "P/L", "Currency"]],
+    body: goodsRows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.save("Goods_Report.pdf");
+}
+
+async function downloadAllTopupsPDF(currencyFilter = null){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const allTopups = collectTopupTransactionsFlat(getExpenseAccounts({ applyUiFilters: false }));
+  const filtered = currencyFilter
+    ? allTopups.filter(t => String(t.currency || "").toUpperCase() === String(currencyFilter).toUpperCase())
+    : allTopups;
+  filtered.sort((a, b) => dateStamp(a.action_date || a.loan_date) - dateStamp(b.action_date || b.loan_date));
+
+  if (!filtered.length){
+    alert("No top-up records found for this selection.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  const subtitle = currencyFilter
+    ? `Currency: ${currencyFilter}`
+    : "All currencies (separate totals per currency)";
+  drawPdfHeader(
+    doc,
+    logoData,
+    currencyFilter ? `Top-Up Records — ${currencyFilter}` : "Top-Up Records — all currencies",
+    subtitle
+  );
+  drawPdfOwnerBlock(doc, 48);
+
+  let tableStartY = 72;
+  if (currencyFilter){
+    const sum = filtered.reduce((s, t) => s + Number(t.action_amount || 0), 0);
+    doc.setFontSize(10);
+    doc.setTextColor(23, 33, 43);
+    doc.text(`Transactions: ${filtered.length}`, 14, 58);
+    doc.text(`Total: ${formatReportAmount(sum, currencyFilter)}`, 14, 64);
+    tableStartY = 72;
+  }else{
+    const totals = {};
+    for (const t of filtered){
+      const c = t.currency || "—";
+      totals[c] = (totals[c] || 0) + Number(t.action_amount || 0);
+    }
+    let y = 58;
+    doc.setFontSize(10);
+    doc.setTextColor(23, 33, 43);
+    doc.text(`Transactions: ${filtered.length}`, 14, y);
+    y += 6;
+    sortCurrenciesList(Object.keys(totals)).forEach(c => {
+      doc.text(`Total (${c}): ${formatReportAmount(totals[c], c)}`, 14, y);
+      y += 6;
+    });
+    tableStartY = y + 8;
+  }
+
+  const bodyRows = filtered.map(tx => {
+    const d = displayDate(tx.action_date || tx.loan_date || "—");
+    const w = `${tx.person_name || "—"} (${tx.accountType || ""})`;
+    const ty = tx.isOpeningBalance ? "Opening Balance" : "Top-up";
+    const amt = formatReportAmount(Number(tx.action_amount || 0), tx.currency);
+    const note = cleanExpenseNote(tx.notes);
+    if (currencyFilter) return [d, w, ty, amt, note];
+    return [d, w, ty, amt, tx.currency || "—", note];
+  });
+
+  doc.autoTable({
+    startY: tableStartY,
+    head: currencyFilter ? [["Date", "Wallet", "Type", "Amount", "Notes"]] : [["Date", "Wallet", "Type", "Amount", "Cur", "Notes"]],
+    body: bodyRows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 8.5 },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.save(currencyFilter
+    ? `Topups_${currencyFilter}_${todayISO()}.pdf`
+    : `All_Topup_Records_${todayISO()}.pdf`);
+}
+
+async function downloadAllTransfersPDF(currencyFilter = null){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const events = buildTransferEvents();
+  const currencies = currencyFilter ? [currencyFilter] : sortCurrenciesList([...new Set(events.flatMap(e => [e.curOut, e.curIn]))]);
+
+  let tableRows = [];
+  for (const cur of currencies){
+    const rows = getTransferRowsForCurrency(cur, events);
+    for (const r of rows){
+      tableRows.push({
+        currency: cur,
+        dateRaw: r.date,
+        date: displayDate(r.date || "—"),
+        type: r.kind,
+        wallet: r.walletLabel,
+        withParty: r.counterparty || "—",
+        amount: formatReportAmount(r.amount, cur),
+        rate: r.rateDisplay,
+        convertedLeg: r.otherLegDisplay,
+        notes: r.notes
+      });
+    }
+  }
+
+  tableRows.sort((a, b) => dateStamp(b.dateRaw) - dateStamp(a.dateRaw));
+
+  if (!tableRows.length){
+    alert("No transfer rows found for this selection.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(
+    doc,
+    logoData,
+    currencyFilter ? `Transfer Records — ${currencyFilter}` : "Transfer Records — all currencies",
+    "Sent and received legs per currency; rate matches the booking on each transfer."
+  );
+  drawPdfOwnerBlock(doc, 48);
+  doc.setFontSize(10);
+  doc.setTextColor(23, 33, 43);
+
+  let ySummary = 58;
+  for (const cur of currencies){
+    const { sent, received } = transferCurrencyTotals(cur, events);
+    doc.text(`${cur} — Sent: ${formatReportAmount(sent, cur)}   Received: ${formatReportAmount(received, cur)}`, 14, ySummary);
+    ySummary += 5;
+  }
+
+  const body = tableRows.map(r => currencyFilter
+    ? [r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, r.notes]
+    : [r.currency, r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, r.notes]
+  );
+
+  doc.autoTable({
+    startY: ySummary + 6,
+    head: currencyFilter
+      ? [["Date", "Type", "Wallet", "With", "Amount", "Rate", "Converted leg", "Notes"]]
+      : [["Cur", "Date", "Type", "Wallet", "With", "Amount", "Rate", "Converted leg", "Notes"]],
+    body,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2 },
+    columnStyles: currencyFilter
+      ? { 7: { cellWidth: 62 } } // Notes
+      : { 8: { cellWidth: 56 } }, // Notes
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  doc.save(currencyFilter
+    ? `Transfers_${currencyFilter}_${todayISO()}.pdf`
+    : `All_Transfer_Records_${todayISO()}.pdf`);
+}
+
+async function downloadExpenseItemPDF(itemKey){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  // Parse the item key to get currency and item name
+  const [currency, itemName] = itemKey.split('||');
+  
+  // Get all expense accounts
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  
+  // Collect all expense transactions
+  const spendAttached = collectExpenseSpendRows(accounts);
+  const items = groupExpenseItems(spendAttached);
+  
+  // Find the specific item
+  const targetItem = items.find(item => item.key === itemKey);
+  if (!targetItem) {
+    alert("Expense item not found.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  
+  drawPdfHeader(doc, logoData, `Expense Report - ${targetItem.displayName}`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Item: ${targetItem.displayName}`, 132, 48);
+  doc.text(`Type: ${targetItem.expenseType || 'Other'}`, 132, 54);
+  doc.text(`Transactions: ${targetItem.txs.length}`, 132, 60);
+
+  const rows = targetItem.txs.map(tx => [
+    displayDate(tx.date || "—"),
+    tx.wallet || "—",
+    tx.expenseType || "—",
+    formatReportAmount(tx.amount, targetItem.currency),
+    cleanExpenseNote(tx.notes)
+  ]);
+
+  doc.autoTable({
+    startY: 72,
+    head: [["Date", "Wallet", "Type", "Amount", "Notes"]],
+    body: rows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+    columnStyles: { 3: { cellWidth: 30 }, 4: { cellWidth: 60 } },
+    didDrawPage: () => drawPdfFooter(doc)
+  });
+
+  // Add summary at the bottom
+  const finalY = doc.lastAutoTable.finalY || 72;
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Total Amount: ${formatReportAmount(targetItem.total, targetItem.currency)}`, 14, finalY + 10);
+
+  const fileName = `Expense_${targetItem.displayName.replace(/\s+/g, "_")}_${targetItem.currency}.pdf`;
+  doc.save(fileName);
+}
+
+async function deleteExpenseWallet(groupId, walletName) {
+  if (!groupId) return;
+  
+  // Get all entries related to this wallet
+  const walletEntries = state.entries.filter(e => e.group_id === groupId);
+  
+  if (!walletEntries.length) {
+    alert("No records found for this wallet.");
+    return;
+  }
+
+  const confirmMessage = `Are you sure you want to delete the wallet "${walletName}"?\n\nThis will permanently delete ALL records related to this wallet:\n- ${walletEntries.length} total transactions\n- Including opening balance, top-ups, and expenses\n\nThis action cannot be undone!`;
+  
+  if (!confirm(confirmMessage)) return;
+
+  if (isBackupMode()) {
+    // In backup mode, remove from local state
+    state.entries = state.entries.filter(e => e.group_id !== groupId);
+    refreshBackupView();
+  } else {
+    // In database mode, delete all entries with this group_id
+    try {
+      await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(groupId)}`, { method: "DELETE" });
+      await loadEntriesFromSupabase();
+    } catch (error) {
+      alert("Error deleting wallet: " + error.message);
+      return;
+    }
+  }
+}
+
+function openTransferModal(fromGroupId, fromWalletName, currency) {
+  els.transferModal.classList.remove("hide");
+  els.transferModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  
+  els.transferModalTitle.textContent = "Transfer Money";
+  els.transferModalDesc.textContent = `Move money from ${fromWalletName} to another wallet.`;
+  els.transferForm.reset();
+  defaultDateInputs(els.transferForm);
+  
+  // Populate wallet options
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  
+  // Set from wallet (all wallets)
+  els.transferFromWallet.innerHTML = accounts.map(a => 
+    `<option value="${escapeHtml(a.group_id)}" ${a.group_id === fromGroupId ? 'selected' : ''}>${escapeHtml(a.person_name)} (${escapeHtml(formatReportAmount(a.balance, a.currency))}) - ${escapeHtml(a.currency)}</option>`
+  ).join("");
+  
+  // Set to wallet (exclude from wallet)
+  els.transferToWallet.innerHTML = accounts.filter(a => a.group_id !== fromGroupId).map(a => 
+    `<option value="${escapeHtml(a.group_id)}">${escapeHtml(a.person_name)} (${escapeHtml(formatReportAmount(a.balance, a.currency))}) - ${escapeHtml(a.currency)}</option>`
+  ).join("");
+  
+  if (els.transferToWallet.options.length === 0) {
+    els.transferToWallet.innerHTML = '<option value="">No other wallets available</option>';
+  }
+  
+  // Set currency indicators
+  updateTransferCurrencyIndicators();
+  
+  // Add event listeners for currency changes
+  els.transferFromWallet.addEventListener("change", updateTransferCurrencyIndicators);
+  els.transferToWallet.addEventListener("change", updateTransferCurrencyIndicators);
+  els.transferForm.querySelector('input[name="amount"]').addEventListener("input", calculateReceivedAmount);
+  els.conversionRateInput.addEventListener("input", calculateReceivedAmount);
+}
+
+function updateTransferCurrencyIndicators() {
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const fromGroupId = els.transferFromWallet.value;
+  const toGroupId = els.transferToWallet.value;
+  
+  const fromAccount = accounts.find(a => a.group_id === fromGroupId);
+  const toAccount = accounts.find(a => a.group_id === toGroupId);
+  
+  if (fromAccount) {
+    els.fromCurrencyIndicator.textContent = fromAccount.currency;
+  }
+  
+  if (toAccount) {
+    els.toCurrencyIndicator.textContent = toAccount.currency;
+  }
+  
+  // Update conversion rate field visibility and help text
+  if (fromAccount && toAccount) {
+    const isSameCurrency = fromAccount.currency === toAccount.currency;
+    els.conversionRateInput.style.display = isSameCurrency ? "none" : "block";
+    els.conversionHelp.style.display = isSameCurrency ? "none" : "inline";
+    
+    if (isSameCurrency) {
+      els.conversionRateInput.value = "1";
+      calculateReceivedAmount();
+    } else {
+      els.conversionRateInput.value = "";
+      els.transferForm.querySelector('input[name="received_amount"]').value = "";
+    }
+    
+    // Update help text
+    if (!isSameCurrency) {
+      els.conversionHelp.textContent = `(1 ${fromAccount.currency} = ? ${toAccount.currency})`;
+    }
+  }
+  
+  calculateReceivedAmount();
+}
+
+function calculateReceivedAmount() {
+  const amount = parseFloat(els.transferForm.querySelector('input[name="amount"]').value) || 0;
+  const conversionRate = parseFloat(els.conversionRateInput.value) || 1;
+  const receivedAmount = amount * conversionRate;
+  
+  els.transferForm.querySelector('input[name="received_amount"]').value = receivedAmount.toFixed(2);
+}
+
+async function saveTransfer(form) {
+  const fd = new FormData(form);
+  const fromGroupId = String(fd.get("from_wallet") || "").trim();
+  const toGroupId = String(fd.get("to_wallet") || "").trim();
+  const amount = Number(fd.get("amount") || 0);
+  const conversionRate = Number(fd.get("conversion_rate") || 1);
+  const receivedAmount = Number(fd.get("received_amount") || 0);
+  const date = String(fd.get("date") || "");
+  const notes = String(fd.get("notes") || "").trim() || null;
+  
+  if (!fromGroupId || !toGroupId) throw new Error("Please select both wallets.");
+  if (fromGroupId === toGroupId) throw new Error("Cannot transfer to the same wallet.");
+  if (!amount || amount <= 0) throw new Error("Please enter a valid amount.");
+  if (!date) throw new Error("Please select a date.");
+  
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  const fromAccount = accounts.find(a => a.group_id === fromGroupId);
+  const toAccount = accounts.find(a => a.group_id === toGroupId);
+  
+  if (!fromAccount || !toAccount) throw new Error("Selected wallet not found.");
+  if (amount > fromAccount.balance) throw new Error(`Insufficient balance. Available: ${formatReportAmount(fromAccount.balance, fromAccount.currency)}`);
+  
+  // Validate conversion rate for cross-currency transfers
+  const isCrossCurrency = fromAccount.currency !== toAccount.currency;
+  if (isCrossCurrency && (!conversionRate || conversionRate <= 0)) {
+    throw new Error("Please enter a valid conversion rate for cross-currency transfer.");
+  }
+  
+  // Create transfer records
+  let transferNote, receiveNote;
+  
+  if (isCrossCurrency) {
+    transferNote = notes 
+      ? `Transfer to ${toAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate}) - ${notes}`
+      : `Transfer to ${toAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate})`;
+    receiveNote = notes 
+      ? `Transfer from ${fromAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate}) - ${notes}`
+      : `Transfer from ${fromAccount.person_name}: ${amount} ${fromAccount.currency} → ${receivedAmount.toFixed(2)} ${toAccount.currency} (Rate: ${conversionRate})`;
+  } else {
+    transferNote = notes ? `Transfer to ${toAccount.person_name}: ${notes}` : `Transfer to ${toAccount.person_name}`;
+    receiveNote = notes ? `Transfer from ${fromAccount.person_name}: ${notes}` : `Transfer from ${fromAccount.person_name}`;
+  }
+  
+  const expensePayload = {
+    group_id: fromGroupId,
+    direction: "taken",
+    entry_kind: "full",
+    person_name: fromAccount.person_name,
+    currency: fromAccount.currency,
+    principal_amount: null,
+    action_amount: amount,
+    loan_date: fromAccount.principal?.loan_date || date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(transferNote, { rowType: "EXPENSE", expenseType: "Transfer" })
+  };
+  
+  const topupPayload = {
+    group_id: toGroupId,
+    direction: "taken",
+    entry_kind: "full",
+    person_name: toAccount.person_name,
+    currency: toAccount.currency,
+    principal_amount: null,
+    action_amount: receivedAmount,
+    loan_date: toAccount.principal?.loan_date || date,
+    action_date: date,
+    notes: upsertExpenseMetaInNote(receiveNote, { rowType: "TOPUP" })
+  };
+  
+  if (isBackupMode()) {
+    const now = new Date().toISOString();
+    state.entries.unshift({ ...expensePayload, id: crypto.randomUUID(), created_at: now });
+    state.entries.unshift({ ...topupPayload, id: crypto.randomUUID(), created_at: now });
+    refreshBackupView();
+  } else {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(expensePayload) });
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(topupPayload) });
+    await loadEntriesFromSupabase();
+  }
+  
+  closeModal("transferModal");
+  form.reset();
+}
+
+async function downloadExpensesPDF(){
+  return exportSectionPDF("expenses");
+}
+
+async function exportAllSectionsPDF(){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const sectionDefs = [
+    { key: "given", direction: "given", label: "Loan Given" },
+    { key: "received", direction: "given", label: "Received Back" },
+    { key: "taken", direction: "taken", label: "Loan Taken" },
+    { key: "returned", direction: "taken", label: "Returned Back" },
+    { key: "expenses", direction: "taken", label: "Expenses" }
+  ];
+
+  const sectionReports = sectionDefs.map(def => ({
+    ...def,
+    ...buildSectionReportRows(def.direction, def.key)
+  }));
+
+  const totalRows = sectionReports.reduce((sum, s) => sum + s.rows.length, 0);
+  if (!totalRows){
+    alert("No entries found to export.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, "All Sections - Detailed Report", `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  doc.text(`Total Rows: ${totalRows}`, 132, 48);
+
+  let printedSections = 0;
+  sectionReports.forEach(section => {
+    if (!section.rows.length) return;
+    if (printedSections > 0) doc.addPage();
+    drawPdfHeader(doc, logoData, section.label, "Section Summary");
+    drawPdfOwnerBlock(doc, 48);
+    doc.setTextColor(23, 33, 43);
+    doc.setFontSize(10);
+    const secExpense = section.key === "expenses";
+    doc.text(`${secExpense ? "Wallets in view" : "Members"}: ${section.groups.length}`, 132, 48);
+    doc.text(`Rows: ${section.rows.length}`, 132, 54);
+
+    const secHead = secExpense
+      ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
+      : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
+
+    doc.autoTable({
+      startY: 72,
+      head: secHead,
+      body: section.rows,
+      theme: "grid",
+      headStyles: { fillColor: [36, 87, 214] },
+      styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.2 },
+      columnStyles: { 0: { cellWidth: 34 }, 5: { cellWidth: 55 } },
+      didDrawPage: () => drawPdfFooter(doc)
+    });
+    printedSections += 1;
+  });
+
+  doc.save("All_Sections_Detailed_Report.pdf");
+}
+
+function downloadJsonBackup(){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    source: state.dataSource,
+    entries: state.entries
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `LoanLedger_Backup_${todayISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadCsvBackup(){
+  const csvText = toCsv(state.entries);
+  const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `LoanLedger_Backup_${todayISO()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importJsonBackup(file){
+  if (!file) return;
+  const text = await file.text();
+  let parsed;
+  try{
+    parsed = JSON.parse(text);
+  }catch{
+    throw new Error("Invalid JSON file.");
+  }
+  const entries = parseEntriesPayload(parsed);
+  if (!Array.isArray(entries)){
+    throw new Error("JSON file must contain an entries array.");
+  }
+  applyEntries(entries, "backup", { hasImportedFile: true });
+  if (state.unlocked) {
+    await refreshDbSnapshot();
+    renderAll();
+  }
+}
+
+async function importCsvBackup(file){
+  if (!file) return;
+  const text = await file.text();
+  const entries = parseEntriesCsv(text);
+  applyEntries(entries, "backup", { hasImportedFile: true });
+  if (state.unlocked) {
+    await refreshDbSnapshot();
+    renderAll();
+  }
+}
+
+function sanitizeEntryForSupabase(entry){
+  const normalizedLoanDate = normalizeDateForDb(entry.loan_date);
+  const normalizedActionDate = normalizeDateForDb(entry.action_date);
+  return {
+    group_id: String(entry.group_id || "").trim(),
+    direction: String(entry.direction || "").trim(),
+    entry_kind: String(entry.entry_kind || "").trim(),
+    person_name: String(entry.person_name || "").trim(),
+    currency: String(entry.currency || "").trim(),
+    principal_amount: entry.principal_amount == null || entry.principal_amount === "" ? null : Number(entry.principal_amount),
+    action_amount: entry.action_amount == null || entry.action_amount === "" ? null : Number(entry.action_amount),
+    loan_date: normalizedLoanDate,
+    action_date: normalizedActionDate,
+    notes: entry.notes == null || String(entry.notes).trim() === "" ? null : String(entry.notes)
+  };
+}
+
+function updateDbSnapshot(rows){
+  const validRows = Array.isArray(rows) ? rows : [];
+  state.dbEntryIds = new Set(validRows.map(r => r.id).filter(Boolean));
+  state.dbSignatures = new Set(validRows.map(entrySignature));
+  state.dbSignaturesById = new Map(validRows.filter(r => r.id).map(r => [r.id, entrySignature(r)]));
+}
+
+function getUnsyncedEntriesForPerson(personName, direction){
+  if (!state.unlocked){
+    return state.hasImportedFile
+      ? state.entries.filter(entry => entry.direction === direction && String(entry.person_name || "").trim() === personName)
+      : [];
+  }
+  return state.entries.filter(entry => {
+    if (entry.direction !== direction) return false;
+    if (String(entry.person_name || "").trim() !== personName) return false;
+    const signature = entrySignature(entry);
+    const byId = entry.id && state.dbEntryIds.has(entry.id);
+    if (byId){
+      const dbSignature = state.dbSignaturesById.get(entry.id);
+      return dbSignature !== signature;
+    }
+    const bySignature = state.dbSignatures.has(signature);
+    return !byId && !bySignature;
+  });
+}
+
+async function refreshDbSnapshot(){
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) return;
+  const rows = await supabase(`${CONFIG.table}?select=*`);
+  updateDbSnapshot(Array.isArray(rows) ? rows : []);
+}
+
+async function uploadBackupToDatabase(){
+  if (!state.hasImportedFile || state.dataSource !== "backup"){
+    alert("Please import a JSON or CSV file first.");
+    return;
+  }
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey){
+    alert("Please connect to the database first using your username and ZIP password.");
+    els.lockScreen.classList.remove("hide");
+    focusUnlockForm();
+    return;
+  }
+
+  const cleanedRows = state.entries
+    .map(sanitizeEntryForSupabase)
+    .filter(row => row.group_id && row.direction && row.entry_kind && row.person_name && row.currency && row.loan_date);
+
+  if (!cleanedRows.length){
+    throw new Error("No valid rows found to upload. Please verify CSV/JSON date format.");
+  }
+
+  if (!confirm(`Upload imported backup to database? This will DELETE existing records and replace with ${cleanedRows.length} row(s).`)) return;
+
+  await supabase(`${CONFIG.table}?id=not.is.null`, { method: "DELETE" });
+  await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(cleanedRows) });
+  await refreshDbSnapshot();
+  renderAll();
+
+  alert("Database updated successfully from imported backup.");
+}
+
+async function savePersonRecordsToDatabase(personNameEncoded, direction){
+  const personName = decodeURIComponent(personNameEncoded || "").trim();
+  if (!personName || !direction) return;
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey){
+    alert("Please connect to the database first using your username and ZIP password.");
+    els.lockScreen.classList.remove("hide");
+    focusUnlockForm();
+    return;
+  }
+
+  await refreshDbSnapshot();
+  const unsyncedEntries = getUnsyncedEntriesForPerson(personName, direction);
+  if (!unsyncedEntries.length){
+    alert("All records for this member are already saved in database.");
+    return;
+  }
+
+  const payload = unsyncedEntries
+    .map(sanitizeEntryForSupabase)
+    .filter(row => row.group_id && row.direction && row.entry_kind && row.person_name && row.currency && row.loan_date);
+
+  if (!payload.length){
+    alert("No valid rows found for database save.");
+    return;
+  }
+
+  await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+  await refreshDbSnapshot();
+  renderAll();
+  alert(`Saved ${payload.length} record(s) to database for ${personName}.`);
+}
+
+function expandWalletsOverview() {
+  els.walletsOverviewSection.classList.remove("collapsed");
+  els.walletsOverviewSection.classList.add("expanded");
+  els.toggleWalletsBtn.textContent = "▼";
+  els.toggleWalletsBtn.title = "Collapse Wallets Overview";
+}
+
+function collapseWalletsOverview() {
+  els.walletsOverviewSection.classList.remove("expanded");
+  els.walletsOverviewSection.classList.add("collapsed");
+  els.toggleWalletsBtn.textContent = "▶";
+  els.toggleWalletsBtn.title = "Expand Wallets Overview";
+}
+
+function toggleWalletsOverview() {
+  const isExpanded = els.walletsOverviewSection.classList.contains("expanded");
+  if (isExpanded) {
+    collapseWalletsOverview();
+  } else {
+    expandWalletsOverview();
+  }
+}
+
+function expandMainOverview() {
+  els.mainOverview.classList.remove("collapsed");
+  els.mainOverview.classList.add("expanded");
+  els.toggleMainOverviewBtn.textContent = "▼";
+  els.toggleMainOverviewBtn.title = "Collapse Overview";
+}
+
+function collapseMainOverview() {
+  els.mainOverview.classList.remove("expanded");
+  els.mainOverview.classList.add("collapsed");
+  els.toggleMainOverviewBtn.textContent = "▶";
+  els.toggleMainOverviewBtn.title = "Expand Overview";
+}
+
+function toggleMainOverview() {
+  const isExpanded = els.mainOverview.classList.contains("expanded");
+  if (isExpanded) {
+    collapseMainOverview();
+  } else {
+    expandMainOverview();
+  }
+}
+
+function attachEvents(){
+  const closeAllMenus = () => {
+    document.querySelectorAll(".menu-dropdown.open").forEach(panel => panel.classList.remove("open"));
+    document.querySelectorAll(".menu-trigger[aria-expanded='true']").forEach(trigger => trigger.setAttribute("aria-expanded", "false"));
+  };
+
+  document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => activate(btn.dataset.tab)));
+
+  document.querySelectorAll("[data-open-modal]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.openModal;
+      const direction = btn.dataset.direction || "given";
+      if (mode === "principal") activate(direction === "given" ? "given" : "taken");
+      if (mode === "payment") activate(direction === "given" ? "given" : "taken");
+      openEntryModal(mode, direction);
+    });
+  });
+  els.openGoodsBoughtBtn.addEventListener("click", () => {
+    activate("goods");
+    openGoodsModal("bought");
+  });
+  els.openGoodsSoldBtn.addEventListener("click", () => {
+    activate("goods");
+    openGoodsModal("sold");
+  });
+  els.openExpenseAccountBtn.addEventListener("click", () => {
+    activate("expenses");
+    openExpenseModal("account");
+  });
+  els.openExpenseTopupBtn.addEventListener("click", () => {
+    activate("expenses");
+    openExpenseModal("topup");
+  });
+  els.openExpenseEntryBtn.addEventListener("click", () => {
+    activate("expenses");
+    openExpenseModal("expense");
+  });
+
+  els.toggleWalletsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleWalletsOverview();
+  });
+  els.walletsBanner.addEventListener("click", toggleWalletsOverview);
+
+  els.toggleMainOverviewBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleMainOverview();
+  });
+  els.mainOverviewBanner.addEventListener("click", toggleMainOverview);
+
+  document.querySelectorAll("[data-entry-menu]").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      const key = btn.dataset.entryMenu;
+      const panel = document.querySelector(`[data-entry-menu-panel="${key}"]`);
+      if (!panel) return;
+      document.querySelectorAll(".menu-dropdown.open").forEach(openPanel => {
+        if (openPanel !== panel) openPanel.classList.remove("open");
+      });
+      document.querySelectorAll(".menu-trigger[aria-expanded='true']").forEach(trigger => {
+        if (trigger !== btn) trigger.setAttribute("aria-expanded", "false");
+      });
+      const nowOpen = panel.classList.toggle("open");
+      btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+    });
+  });
+
+  document.addEventListener("click", e => {
+    const trigger = e.target.closest(".menu-trigger");
+    document.querySelectorAll(".menu-dropdown.open").forEach(panel => {
+      if (trigger && panel.previousElementSibling === trigger) return;
+      panel.classList.remove("open");
+      if (panel.previousElementSibling?.classList.contains("menu-trigger")){
+        panel.previousElementSibling.setAttribute("aria-expanded", "false");
+      }
+    });
+    if (!e.target.closest(".note-wrap")){
+      document.querySelectorAll(".note-popover").forEach(pop => pop.classList.add("hide"));
+      updateNoteBackdropVisibility();
+    }
+  });
+  window.addEventListener("scroll", () => {
+    closeAllMenus();
+    repositionOpenNotePopovers();
+  }, { passive: true });
+  window.addEventListener("resize", repositionOpenNotePopovers);
+
+  document.querySelectorAll("[data-close-modal]").forEach(btn => {
+    btn.addEventListener("click", e => closeModal(e.target.dataset.closeModal));
+  });
+
+  [els.entryModal, els.editModal, els.goodsModal, els.expenseModal].forEach(m => {
+    m.addEventListener("click", e => {
+      if (e.target && e.target.matches(".modal-backdrop")) closeModal(m.id);
+    });
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      if (!els.entryModal.classList.contains("hide")) closeModal("entryModal");
+      if (!els.editModal.classList.contains("hide")) closeModal("editModal");
+      if (!els.goodsModal.classList.contains("hide")) closeModal("goodsModal");
+      if (!els.expenseModal.classList.contains("hide")) closeModal("expenseModal");
+    }
+  });
+
+  document.querySelectorAll(".currency-chip").forEach(btn => {
+    btn.addEventListener("click", () => setCurrencyChoice(btn.closest('form'), btn.dataset.currency));
+  });
+
+  document.querySelectorAll(".filter-radio").forEach(r => {
+    r.addEventListener("change", e => {
+      if (!e.target.dataset.filter) return;
+      const key = e.target.dataset.filter;
+      state.statusFilter[key] = e.target.value;
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll(".currency-radio").forEach(r => {
+    r.addEventListener("change", e => {
+      const key = e.target.dataset.currencyFilter;
+      state.currencyFilter[key] = e.target.value;
+      renderAll();
+    });
+  });
+
+  els.multiEntryCount.addEventListener("input", e => {
+    let cnt = parseInt(e.target.value) || 1;
+    if(cnt < 1) cnt = 1;
+    if(cnt > 10) cnt = 10;
+    renderMultiEntries(cnt);
+  });
+
+  els.principalModalForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await createPrincipal(els.principalModalForm); } catch (err) { alert(err.message); }
+  });
+
+  els.paymentModalForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await createPayment(els.paymentModalForm); } catch (err) { alert(err.message); }
+  });
+
+  els.editForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await submitEdit(); } catch (err) { alert(err.message); }
+  });
+  els.goodsBoughtForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveGoodsBought(els.goodsBoughtForm); } catch (err) { alert(err.message); }
+  });
+  els.goodsSoldForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveGoodsSold(els.goodsSoldForm); } catch (err) { alert(err.message); }
+  });
+  els.expenseAccountForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveExpenseAccount(els.expenseAccountForm); } catch (err) { alert(err.message); }
+  });
+  els.expenseTopupForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveExpenseTopup(els.expenseTopupForm); } catch (err) { alert(err.message); }
+  });
+  els.expenseEntryForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveExpenseEntry(els.expenseEntryForm); } catch (err) { alert(err.message); }
+  });
+
+  els.transferForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    try { await saveTransfer(els.transferForm); } catch (err) { alert(err.message); }
+  });
+  els.expenseCurrencySelect.addEventListener("change", () => {
+    renderExpenseAccountSelectors();
+    refreshExpenseItemIntentUi();
+  });
+  if (els.expenseItemNameInput){
+    els.expenseItemNameInput.addEventListener("input", refreshExpenseItemIntentUi);
+    els.expenseItemNameInput.addEventListener("blur", refreshExpenseItemIntentUi);
+  }
+  els.expenseSpendAccountSelect.addEventListener("change", refreshExpenseItemIntentUi);
+  els.goodsNewItemToggleBtn.addEventListener("click", () => {
+    const open = els.goodsNewItemFields.classList.toggle("hide");
+    els.goodsNewItemToggleBtn.textContent = open ? "+ Add New" : "− Use Existing";
+    if (!open) defaultDateInputs(els.goodsSoldForm);
+  });
+
+  els.downloadGivenPdfBtn.addEventListener("click", () => exportSectionPDF("given").catch(err => alert(err.message)));
+  els.downloadReceivedPdfBtn.addEventListener("click", () => exportSectionPDF("received").catch(err => alert(err.message)));
+  els.downloadTakenPdfBtn.addEventListener("click", () => exportSectionPDF("taken").catch(err => alert(err.message)));
+  els.downloadReturnedPdfBtn.addEventListener("click", () => exportSectionPDF("returned").catch(err => alert(err.message)));
+  els.downloadExpensesPdfBtn.addEventListener("click", () => exportSectionPDF("expenses").catch(err => alert(err.message)));
+  els.downloadAllSectionsPdfBtn.addEventListener("click", () => exportAllSectionsPDF().catch(err => alert(err.message)));
+  els.downloadAllDataJsonBtn.addEventListener("click", downloadJsonBackup);
+  els.downloadAllDataCsvBtn.addEventListener("click", downloadCsvBackup);
+  els.uploadBackupBtn.addEventListener("click", () => uploadBackupToDatabase().catch(err => alert(err.message)));
+  els.importJsonInput.addEventListener("change", async e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try{
+      await importJsonBackup(file);
+    }catch(err){
+      alert(err.message);
+    }finally{
+      e.target.value = "";
+    }
+  });
+  els.importCsvInput.addEventListener("change", async e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try{
+      await importCsvBackup(file);
+    }catch(err){
+      alert(err.message);
+    }finally{
+      e.target.value = "";
+    }
+  });
+  els.connectSupabaseBtn.addEventListener("click", () => {
+    els.lockScreen.classList.remove("hide");
+    focusUnlockForm();
+  });
+
+  if (els.logoutBtn){
+    els.logoutBtn.addEventListener("click", () => doLogout());
+  }
+
+  if (els.zipUsernameInput){
+    els.zipUsernameInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
+  }
+  els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
+  els.unlockBtn.addEventListener("click", attemptUnlock);
+
+  [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"],["searchGoods","goods"],["searchExpenses","expenses"]].forEach(([id,key]) => {
+    document.getElementById(id).addEventListener("input", e => {
+      state.search[key] = e.target.value;
+      renderAll();
+    });
+  });
+}
+
+function focusUnlockForm(){
+  els.lockError.textContent = "";
+  const savedUser = sessionStorage.getItem(ZIP_USERNAME_SESSION_KEY);
+  if (els.zipUsernameInput && savedUser && !els.zipUsernameInput.value.trim()){
+    els.zipUsernameInput.value = savedUser;
+  }
+  const focusEl = els.zipUsernameInput && !els.zipUsernameInput.value.trim()
+    ? els.zipUsernameInput
+    : els.zipPasswordInput;
+  focusEl.focus();
+}
+
+function doLogout(){
+  runtimeConfig = null;
+  state.unlocked = false;
+  sessionStorage.removeItem("loanledger-unlocked");
+  sessionStorage.removeItem(ZIP_USERNAME_SESSION_KEY);
+  if (els.zipPasswordInput) els.zipPasswordInput.value = "";
+  if (els.app) els.app.classList.add("hide");
+  if (els.lockScreen) els.lockScreen.classList.remove("hide");
+  focusUnlockForm();
+}
+
+async function attemptUnlock(){
+  els.lockError.textContent = "";
+  const zipUsernameRaw = els.zipUsernameInput ? els.zipUsernameInput.value.trim() : "";
+  const zipPassword = els.zipPasswordInput.value.trim();
+  if (!zipUsernameRaw){
+    els.lockError.textContent = "Please enter your username.";
+    return;
+  }
+  if (!zipPassword){
+    els.lockError.textContent = "Please enter the ZIP password.";
+    return;
+  }
+  els.unlockBtn.disabled = true;
+  els.unlockBtn.textContent = "Unlocking…";
+  const keepCurrentBackup = state.hasImportedFile && state.dataSource === "backup";
+  try{
+    const safeUser = sanitizeZipUsername(zipUsernameRaw);
+    const zipBlob = await fetchProtectedZipBlob(safeUser);
+    const zipFile = new File([zipBlob], `${safeUser}.zip`, { type: "application/zip" });
+    const configData = await readConfigFromZip(zipFile, zipPassword);
+    if (!configData?.supabaseUrl || !configData?.supabaseKey){
+      throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
+    }
+
+    runtimeConfig = {
+      supabaseUrl: String(configData.supabaseUrl).trim(),
+      supabaseKey: String(configData.supabaseKey).trim()
+    };
+    sessionStorage.setItem("loanledger-unlocked", "true");
+    sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
+    state.unlocked = true;
+    els.lockScreen.classList.add("hide");
+    els.app.classList.remove("hide");
+
+    defaultDateInputs(document);
+    if (keepCurrentBackup){
+      await refreshDbSnapshot();
+      updateUploadButtonVisibility();
+      updateConnectButtonVisibility();
+      renderAll();
+    } else {
+      await loadEntriesFromSupabase();
+    }
+  }catch(err){
+    els.lockError.textContent = err.message;
+  }finally{
+    els.unlockBtn.disabled = false;
+    els.unlockBtn.textContent = "Unlock";
+  }
+}
+
+async function boot(){
+  attachEvents();
+  initFloatingCurrencyBackground();
+  defaultDateInputs(document);
+  const resumedImport = sessionStorage.getItem(IMPORT_SESSION_KEY) === "1";
+  applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: resumedImport });
+}
+
+boot();
