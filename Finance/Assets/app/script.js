@@ -4,6 +4,9 @@ const CONFIG = {
 };
 
 const ZIP_USERNAME_SESSION_KEY = "loanledger-zip-username-v1";
+const REMEMBER_ME_KEY = "loanledger-remember-me-v1";
+const REMEMBER_ME_EXPIRY_KEY = "loanledger-remember-me-expiry-v1";
+const REMEMBER_ME_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
 
 function sanitizeZipUsername(raw){
   const username = String(raw || "").trim();
@@ -50,6 +53,9 @@ const els = {
   unlockBtn: document.getElementById("unlockBtn"),
   lockError: document.getElementById("lockError"),
   app: document.getElementById("app"),
+  loginForm: document.getElementById("loginForm"),
+  rememberMe: document.getElementById("rememberMe"),
+  togglePasswordBtn: document.getElementById("togglePasswordBtn"),
   logoutBtn: document.getElementById("logoutBtn"),
   mainOverview: document.getElementById("mainOverview"),
   statsGrid: document.getElementById("statsGrid"),
@@ -184,6 +190,45 @@ function escapeHtml(str){
 
 function todayISO(){
   return new Date().toISOString().slice(0,10);
+}
+
+function setRememberMe(username, password) {
+  const expiryTime = Date.now() + REMEMBER_ME_DURATION;
+  localStorage.setItem(REMEMBER_ME_KEY, JSON.stringify({
+    username: username,
+    password: password,
+    timestamp: expiryTime
+  }));
+  localStorage.setItem(REMEMBER_ME_EXPIRY_KEY, expiryTime.toString());
+}
+
+function getRememberMe() {
+  const expiryTime = localStorage.getItem(REMEMBER_ME_EXPIRY_KEY);
+  if (!expiryTime || Date.now() > parseInt(expiryTime)) {
+    clearRememberMe();
+    return null;
+  }
+  
+  const data = localStorage.getItem(REMEMBER_ME_KEY);
+  if (!data) return null;
+  
+  try {
+    const parsed = JSON.parse(data);
+    return parsed;
+  } catch {
+    clearRememberMe();
+    return null;
+  }
+}
+
+function clearRememberMe() {
+  localStorage.removeItem(REMEMBER_ME_KEY);
+  localStorage.removeItem(REMEMBER_ME_EXPIRY_KEY);
+}
+
+function isRememberMeActive() {
+  const expiryTime = localStorage.getItem(REMEMBER_ME_EXPIRY_KEY);
+  return expiryTime && Date.now() <= parseInt(expiryTime);
 }
 
 function displayDate(value){
@@ -4710,6 +4755,23 @@ function attachEvents(){
   }
   els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   els.unlockBtn.addEventListener("click", attemptUnlock);
+  
+  // Login form submission
+  if (els.loginForm) {
+    els.loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      attemptUnlock();
+    });
+  }
+  
+  // Password visibility toggle
+  if (els.togglePasswordBtn && els.zipPasswordInput) {
+    els.togglePasswordBtn.addEventListener("click", () => {
+      const type = els.zipPasswordInput.type === "password" ? "text" : "password";
+      els.zipPasswordInput.type = type;
+      els.togglePasswordBtn.textContent = type === "password" ? "👁️" : "👁️‍🗨️";
+    });
+  }
 
   [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"],["searchGoods","goods"],["searchExpenses","expenses"]].forEach(([id,key]) => {
     document.getElementById(id).addEventListener("input", e => {
@@ -4721,10 +4783,32 @@ function attachEvents(){
 
 function focusUnlockForm(){
   els.lockError.textContent = "";
-  const savedUser = sessionStorage.getItem(ZIP_USERNAME_SESSION_KEY);
-  if (els.zipUsernameInput && savedUser && !els.zipUsernameInput.value.trim()){
-    els.zipUsernameInput.value = savedUser;
+  const errorMessage = els.lockError.querySelector('.error-message');
+  if (errorMessage) {
+    errorMessage.textContent = "";
   }
+  
+  // Check for Remember Me data first
+  const rememberMeData = getRememberMe();
+  if (rememberMeData && els.rememberMe) {
+    els.rememberMe.checked = true;
+    if (els.zipUsernameInput && !els.zipUsernameInput.value.trim()) {
+      els.zipUsernameInput.value = rememberMeData.username;
+    }
+    if (els.zipPasswordInput && !els.zipPasswordInput.value.trim()) {
+      els.zipPasswordInput.value = rememberMeData.password;
+    }
+  } else {
+    // Fall back to sessionStorage
+    const savedUser = sessionStorage.getItem(ZIP_USERNAME_SESSION_KEY);
+    if (els.zipUsernameInput && savedUser && !els.zipUsernameInput.value.trim()){
+      els.zipUsernameInput.value = savedUser;
+    }
+    if (els.rememberMe) {
+      els.rememberMe.checked = false;
+    }
+  }
+  
   const focusEl = els.zipUsernameInput && !els.zipUsernameInput.value.trim()
     ? els.zipUsernameInput
     : els.zipPasswordInput;
@@ -4736,6 +4820,7 @@ function doLogout(){
   state.unlocked = false;
   sessionStorage.removeItem("loanledger-unlocked");
   sessionStorage.removeItem(ZIP_USERNAME_SESSION_KEY);
+  clearRememberMe(); // Clear Remember Me data on logout
   if (els.zipPasswordInput) els.zipPasswordInput.value = "";
   if (els.app) els.app.classList.add("hide");
   if (els.lockScreen) els.lockScreen.classList.remove("hide");
@@ -4743,20 +4828,35 @@ function doLogout(){
 }
 
 async function attemptUnlock(){
-  els.lockError.textContent = "";
+  // Clear previous errors
+  const errorMessage = els.lockError.querySelector('.error-message');
+  if (errorMessage) {
+    errorMessage.textContent = "";
+  }
+  els.lockError.style.display = "none";
+  
   const zipUsernameRaw = els.zipUsernameInput ? els.zipUsernameInput.value.trim() : "";
   const zipPassword = els.zipPasswordInput.value.trim();
+  const rememberMeChecked = els.rememberMe ? els.rememberMe.checked : false;
+  
   if (!zipUsernameRaw){
-    els.lockError.textContent = "Please enter your username.";
+    showError("Please enter your username.");
     return;
   }
   if (!zipPassword){
-    els.lockError.textContent = "Please enter the ZIP password.";
+    showError("Please enter the ZIP password.");
     return;
   }
+  
+  // Show loading state
+  const btnText = els.unlockBtn.querySelector('.btn-text');
+  const btnLoader = els.unlockBtn.querySelector('.btn-loader');
+  if (btnText) btnText.style.display = "none";
+  if (btnLoader) btnLoader.style.display = "block";
   els.unlockBtn.disabled = true;
-  els.unlockBtn.textContent = "Unlocking…";
+  
   const keepCurrentBackup = state.hasImportedFile && state.dataSource === "backup";
+  
   try{
     const safeUser = sanitizeZipUsername(zipUsernameRaw);
     const zipBlob = await fetchProtectedZipBlob(safeUser);
@@ -4765,31 +4865,100 @@ async function attemptUnlock(){
     if (!configData?.supabaseUrl || !configData?.supabaseKey){
       throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
     }
-
-    runtimeConfig = {
-      supabaseUrl: String(configData.supabaseUrl).trim(),
-      supabaseKey: String(configData.supabaseKey).trim()
-    };
+    
+    runtimeConfig = configData;
+    state.dataSource = "backup";
+    state.unlocked = true;
+    
+    // Handle Remember Me
+    if (rememberMeChecked) {
+      setRememberMe(safeUser, zipPassword);
+    } else {
+      clearRememberMe();
+    }
+    
     sessionStorage.setItem("loanledger-unlocked", "true");
     sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
-    state.unlocked = true;
+    
     els.lockScreen.classList.add("hide");
     els.app.classList.remove("hide");
 
     defaultDateInputs(document);
-    if (keepCurrentBackup){
-      await refreshDbSnapshot();
-      updateUploadButtonVisibility();
-      updateConnectButtonVisibility();
-      renderAll();
-    } else {
-      await loadEntriesFromSupabase();
-    }
+    renderAll();
   }catch(err){
-    els.lockError.textContent = err.message;
+    showError(err.message);
   }finally{
+    // Reset loading state
+    if (btnText) btnText.style.display = "block";
+    if (btnLoader) btnLoader.style.display = "none";
     els.unlockBtn.disabled = false;
-    els.unlockBtn.textContent = "Unlock";
+  }
+}
+
+function showError(message) {
+  const errorMessage = els.lockError.querySelector('.error-message');
+  if (errorMessage) {
+    errorMessage.textContent = message;
+  }
+  els.lockError.style.display = "flex";
+}
+
+async function attemptAutoLogin() {
+  const rememberMeData = getRememberMe();
+  if (!rememberMeData || !els.zipUsernameInput || !els.zipPasswordInput) {
+    return false;
+  }
+  
+  // Fill in the form
+  els.zipUsernameInput.value = rememberMeData.username;
+  els.zipPasswordInput.value = rememberMeData.password;
+  if (els.rememberMe) {
+    els.rememberMe.checked = true;
+  }
+  
+  try {
+    // Show loading state briefly to indicate auto-login is happening
+    const btnText = els.unlockBtn.querySelector('.btn-text');
+    const btnLoader = els.unlockBtn.querySelector('.btn-loader');
+    if (btnText) btnText.style.display = "none";
+    if (btnLoader) btnLoader.style.display = "block";
+    els.unlockBtn.disabled = true;
+    
+    const safeUser = sanitizeZipUsername(rememberMeData.username);
+    const zipBlob = await fetchProtectedZipBlob(safeUser);
+    const zipFile = new File([zipBlob], `${safeUser}.zip`, { type: "application/zip" });
+    const configData = await readConfigFromZip(zipFile, rememberMeData.password);
+    
+    if (!configData?.supabaseUrl || !configData?.supabaseKey){
+      throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
+    }
+    
+    runtimeConfig = configData;
+    state.dataSource = "backup";
+    state.unlocked = true;
+    
+    sessionStorage.setItem("loanledger-unlocked", "true");
+    sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
+    
+    els.lockScreen.classList.add("hide");
+    els.app.classList.remove("hide");
+
+    defaultDateInputs(document);
+    renderAll();
+    
+    return true;
+  } catch (err) {
+    // Clear Remember Me data if auto-login fails
+    clearRememberMe();
+    focusUnlockForm();
+    return false;
+  } finally {
+    // Reset loading state
+    const btnText = els.unlockBtn.querySelector('.btn-text');
+    const btnLoader = els.unlockBtn.querySelector('.btn-loader');
+    if (btnText) btnText.style.display = "block";
+    if (btnLoader) btnLoader.style.display = "none";
+    els.unlockBtn.disabled = false;
   }
 }
 
@@ -4891,6 +5060,22 @@ async function boot(){
   defaultDateInputs(document);
   const resumedImport = sessionStorage.getItem(IMPORT_SESSION_KEY) === "1";
   applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: resumedImport });
+  
+  // Check if user is already logged in via sessionStorage
+  const isLoggedIn = sessionStorage.getItem("loanledger-unlocked") === "true";
+  
+  if (!isLoggedIn) {
+    // Try auto-login with Remember Me data
+    const autoLoginSuccess = await attemptAutoLogin();
+    if (!autoLoginSuccess) {
+      focusUnlockForm();
+    }
+  } else {
+    // User is already logged in, hide lock screen
+    if (els.lockScreen) els.lockScreen.classList.add("hide");
+    if (els.app) els.app.classList.remove("hide");
+  }
+  
   activate("expenses");
 }
 
