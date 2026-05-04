@@ -4699,11 +4699,11 @@ async function attemptUnlock(){
     els.welcomeName.textContent = displayName;
     els.lockScreen.classList.add("hide");
     els.welcomeScreen.classList.remove("hide");
-    
+
     // Start welcome screen animation and transition to main app
     setTimeout(() => {
       showWelcomeAndTransitionToApp(keepCurrentBackup);
-    }, 2500); // Show welcome for 2.5 seconds
+    }, 1200); // Show welcome for 1.2 seconds
   }catch(err){
     els.lockError.textContent = err.message;
   }finally{
