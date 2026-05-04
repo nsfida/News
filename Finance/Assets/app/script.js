@@ -744,8 +744,27 @@ function cleanExpenseNote(noteValue){
   return String(noteValue || "")
     .replace(EXPENSE_ACCOUNT_TAG, "")
     .replace(/\[(ATYPE|ETYPE|ITEM|XTYPE):[^\]]+\]/gi, "")
+    .replace(/→/g, "->")
     .replace(/\s{2,}/g, " ")
     .trim() || "—";
+}
+
+function wrapTextForPdf(text, maxLength = 50){
+  const str = String(text || "");
+  if (str.length <= maxLength) return str;
+  const words = str.split(' ');
+  const lines = [];
+  let currentLine = '';
+  for (const word of words) {
+    if ((currentLine + ' ' + word).trim().length <= maxLength) {
+      currentLine = (currentLine + ' ' + word).trim();
+    } else {
+      if (currentLine) lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines.join('\n');
 }
 
 function sortCurrenciesList(values){
@@ -3647,8 +3666,9 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     const ty = tx.isOpeningBalance ? "Opening Balance" : "Top-up";
     const amt = formatReportAmount(Number(tx.action_amount || 0), tx.currency);
     const note = cleanExpenseNote(tx.notes);
-    if (currencyFilter) return [d, w, ty, amt, note];
-    return [d, w, ty, amt, tx.currency || "—", note];
+    const wrappedNote = wrapTextForPdf(note, 45).split('\n');
+    if (currencyFilter) return [d, w, ty, amt, wrappedNote];
+    return [d, w, ty, amt, tx.currency || "—", wrappedNote];
   });
 
   doc.autoTable({
@@ -3657,24 +3677,24 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     body: bodyRows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 8.5, overflow: "linebreak", cellPadding: 2.5, halign: "left" },
+    styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.5, halign: "left" },
     margin: { left: 14, right: 14 },
-    tableWidth: 182,
+    tableWidth: 180,
     columnStyles: currencyFilter
       ? {
-          0: { cellWidth: 20, overflow: "linebreak" },
-          1: { cellWidth: 45, overflow: "linebreak" },
-          2: { cellWidth: 28, overflow: "linebreak" },
-          3: { cellWidth: 28, overflow: "linebreak" },
-          4: { cellWidth: 61, overflow: "linebreak" }
+          0: { cellWidth: 22 },
+          1: { cellWidth: 36 },
+          2: { cellWidth: 24 },
+          3: { cellWidth: 26 },
+          4: { cellWidth: 72 }
         }
       : {
-          0: { cellWidth: 18, overflow: "linebreak" },
-          1: { cellWidth: 40, overflow: "linebreak" },
-          2: { cellWidth: 22, overflow: "linebreak" },
-          3: { cellWidth: 25, overflow: "linebreak" },
-          4: { cellWidth: 12, overflow: "linebreak" },
-          5: { cellWidth: 65, overflow: "linebreak" }
+          0: { cellWidth: 17 },
+          1: { cellWidth: 31 },
+          2: { cellWidth: 19 },
+          3: { cellWidth: 22 },
+          4: { cellWidth: 12 },
+          5: { cellWidth: 79 }
         },
     didDrawPage: () => drawPdfFooter(doc)
   });
@@ -3739,10 +3759,12 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     ySummary += 5;
   }
 
-  const body = tableRows.map(r => currencyFilter
-    ? [r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, r.notes]
-    : [r.currency, r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, r.notes]
-  );
+  const body = tableRows.map(r => {
+    const wrappedNote = wrapTextForPdf(r.notes, 40).split('\n');
+    return currencyFilter
+      ? [r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, wrappedNote]
+      : [r.currency, r.date, r.type, r.wallet, r.withParty, r.amount, r.rate, r.convertedLeg, wrappedNote];
+  });
 
   doc.autoTable({
     startY: ySummary + 6,
@@ -3752,30 +3774,30 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     body,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2, minCellHeight: 12 },
+    styles: { font: "helvetica", fontSize: 7.5, cellPadding: 2, minCellHeight: 12 },
     margin: { left: 14, right: 14 },
-    tableWidth: 182,
+    tableWidth: 180,
     columnStyles: currencyFilter
       ? {
-          0: { cellWidth: 18, overflow: "linebreak" }, // Date
-          1: { cellWidth: 14, overflow: "linebreak" }, // Type
-          2: { cellWidth: 28, overflow: "linebreak" }, // Wallet
-          3: { cellWidth: 25, overflow: "linebreak" }, // With
-          4: { cellWidth: 20, overflow: "linebreak" }, // Amount
-          5: { cellWidth: 14, overflow: "linebreak" }, // Rate
-          6: { cellWidth: 22, overflow: "linebreak" }, // Converted leg
-          7: { cellWidth: 41, overflow: "linebreak" }  // Notes
+          0: { cellWidth: 17 }, // Date
+          1: { cellWidth: 12 }, // Type
+          2: { cellWidth: 22 }, // Wallet
+          3: { cellWidth: 20 }, // With
+          4: { cellWidth: 20 }, // Amount
+          5: { cellWidth: 12 }, // Rate
+          6: { cellWidth: 17 }, // Converted leg
+          7: { cellWidth: 60 }  // Notes
         }
       : {
-          0: { cellWidth: 10, overflow: "linebreak" }, // Cur
-          1: { cellWidth: 16, overflow: "linebreak" }, // Date
-          2: { cellWidth: 14, overflow: "linebreak" }, // Type
-          3: { cellWidth: 25, overflow: "linebreak" }, // Wallet
-          4: { cellWidth: 22, overflow: "linebreak" }, // With
-          5: { cellWidth: 20, overflow: "linebreak" }, // Amount
-          6: { cellWidth: 12, overflow: "linebreak" }, // Rate
-          7: { cellWidth: 20, overflow: "linebreak" }, // Converted leg
-          8: { cellWidth: 43, overflow: "linebreak" }  // Notes
+          0: { cellWidth: 9 }, // Cur
+          1: { cellWidth: 15 }, // Date
+          2: { cellWidth: 12 }, // Type
+          3: { cellWidth: 20 }, // Wallet
+          4: { cellWidth: 17 }, // With
+          5: { cellWidth: 20 }, // Amount
+          6: { cellWidth: 11 }, // Rate
+          7: { cellWidth: 15 }, // Converted leg
+          8: { cellWidth: 61 }  // Notes
         },
     didDrawPage: () => drawPdfFooter(doc)
   });
