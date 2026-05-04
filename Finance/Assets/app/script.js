@@ -4,6 +4,8 @@ const CONFIG = {
 };
 
 const ZIP_USERNAME_SESSION_KEY = "loanledger-zip-username-v1";
+const ZIP_PASSWORD_STORAGE_KEY = "loanledger-zip-password-v1";
+const ZIP_USERNAME_STORAGE_KEY = "loanledger-zip-username-persist-v1";
 
 function sanitizeZipUsername(raw){
   const username = String(raw || "").trim();
@@ -4639,10 +4641,23 @@ function doLogout(){
   state.unlocked = false;
   sessionStorage.removeItem("loanledger-unlocked");
   sessionStorage.removeItem(ZIP_USERNAME_SESSION_KEY);
+  localStorage.removeItem(ZIP_USERNAME_STORAGE_KEY);
+  localStorage.removeItem(ZIP_PASSWORD_STORAGE_KEY);
   if (els.zipPasswordInput) els.zipPasswordInput.value = "";
   if (els.app) els.app.classList.add("hide");
   if (els.lockScreen) els.lockScreen.classList.remove("hide");
   focusUnlockForm();
+}
+
+async function autoLogin(){
+  const storedUsername = localStorage.getItem(ZIP_USERNAME_STORAGE_KEY);
+  const storedPassword = localStorage.getItem(ZIP_PASSWORD_STORAGE_KEY);
+  
+  if (storedUsername && storedPassword && els.zipUsernameInput && els.zipPasswordInput){
+    els.zipUsernameInput.value = storedUsername;
+    els.zipPasswordInput.value = storedPassword;
+    await attemptUnlock();
+  }
 }
 
 async function attemptUnlock(){
@@ -4675,6 +4690,8 @@ async function attemptUnlock(){
     };
     sessionStorage.setItem("loanledger-unlocked", "true");
     sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
+    localStorage.setItem(ZIP_USERNAME_STORAGE_KEY, safeUser);
+    localStorage.setItem(ZIP_PASSWORD_STORAGE_KEY, zipPassword);
     state.unlocked = true;
     
     // Show welcome screen with name from JSON config
@@ -4824,6 +4841,7 @@ async function boot(){
   const resumedImport = sessionStorage.getItem(IMPORT_SESSION_KEY) === "1";
   applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: resumedImport });
   activate("expenses");
+  await autoLogin();
 }
 
 boot();
