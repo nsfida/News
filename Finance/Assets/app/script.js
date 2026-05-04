@@ -2085,7 +2085,7 @@ function renderExpensesList(){
                       <td style="${amountStyle}">${money(r.amount, cur)}</td>
                       <td>${escapeHtml(r.rateDisplay)}</td>
                       <td>${escapeHtml(r.otherLegDisplay)}</td>
-                      <td class="expense-item-detail-note">${escapeHtml(r.notes)}</td>
+                      <td class="expense-item-detail-note" style="white-space: normal; word-wrap: break-word; max-width: 250px;">${escapeHtml(r.notes)}</td>
                       <td>
                         <div style="display:flex;gap:4px;">
                           <button class="tiny ghost editRowBtn" data-id="${escapeHtml(r.editId)}">✎</button>
