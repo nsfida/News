@@ -3617,8 +3617,8 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     const sum = filtered.reduce((s, t) => s + Number(t.action_amount || 0), 0);
     doc.setFontSize(10);
     doc.setTextColor(23, 33, 43);
-    doc.text(`Transactions: ${filtered.length}`, 14, 58);
-    doc.text(`Total: ${formatReportAmount(sum, currencyFilter)}`, 14, 64);
+    doc.text(`Transactions: ${filtered.length}`, 120, 58);
+    doc.text(`Total: ${formatReportAmount(sum, currencyFilter)}`, 120, 64);
     tableStartY = 72;
   }else{
     const totals = {};
@@ -3629,10 +3629,10 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     let y = 58;
     doc.setFontSize(10);
     doc.setTextColor(23, 33, 43);
-    doc.text(`Transactions: ${filtered.length}`, 14, y);
+    doc.text(`Transactions: ${filtered.length}`, 120, y);
     y += 6;
     sortCurrenciesList(Object.keys(totals)).forEach(c => {
-      doc.text(`Total (${c}): ${formatReportAmount(totals[c], c)}`, 14, y);
+      doc.text(`Total (${c}): ${formatReportAmount(totals[c], c)}`, 120, y);
       y += 6;
     });
     tableStartY = y + 8;
@@ -3714,7 +3714,7 @@ async function downloadAllTransfersPDF(currencyFilter = null){
   let ySummary = 58;
   for (const cur of currencies){
     const { sent, received } = transferCurrencyTotals(cur, events);
-    doc.text(`${cur} — Sent: ${formatReportAmount(sent, cur)}   Received: ${formatReportAmount(received, cur)}`, 14, ySummary);
+    doc.text(`${cur} — Sent: ${formatReportAmount(sent, cur)}   Received: ${formatReportAmount(received, cur)}`, 120, ySummary);
     ySummary += 5;
   }
 
@@ -3731,10 +3731,10 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     body,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2 },
+    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2, cellWidth: "auto", minCellWidth: 30, maxCellHeight: 20 },
     columnStyles: currencyFilter
-      ? { 7: { cellWidth: 62 } } // Notes
-      : { 8: { cellWidth: 56 } }, // Notes
+      ? { 7: { cellWidth: 80, minCellWidth: 60, maxCellWidth: 100 } } // Notes
+      : { 8: { cellWidth: 75, minCellWidth: 55, maxCellWidth: 95 } }, // Notes
     didDrawPage: () => drawPdfFooter(doc)
   });
 
