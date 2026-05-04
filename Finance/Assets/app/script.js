@@ -3215,14 +3215,14 @@ function drawPdfHeader(doc, logoData, title, subtitle){
   doc.roundedRect(10, 8, pageWidth - 20, 34, 2, 2, "F");
 
   if (logoData){
-    try { doc.addImage(logoData, "PNG", 15.5, 13.5, 17, 17); } catch {}
+    try { doc.addImage(logoData, "PNG", 15.5, 13.5, 60, 20); } catch {}
   }
 
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
   doc.setTextColor(102, 112, 133);
-  doc.text(title, 38, 18);
-  if (subtitle) doc.text(subtitle, 38, 30);
+  doc.text(title, 80, 18);
+  if (subtitle) doc.text(subtitle, 80, 30);
 }
 
 function drawPdfOwnerBlock(doc, y = 48){
