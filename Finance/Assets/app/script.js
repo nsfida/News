@@ -3657,7 +3657,12 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     body: bodyRows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 8.5 },
+    styles: { font: "helvetica", fontSize: 8.5, overflow: "linebreak", cellPadding: 2.5 },
+    margin: { left: 14, right: 14 },
+    tableWidth: "auto",
+    columnStyles: currencyFilter
+      ? { 0: { cellWidth: 20 }, 1: { cellWidth: 45 }, 2: { cellWidth: 28 }, 3: { cellWidth: 28 }, 4: { cellWidth: 61 } }
+      : { 0: { cellWidth: 18 }, 1: { cellWidth: 40 }, 2: { cellWidth: 22 }, 3: { cellWidth: 25 }, 4: { cellWidth: 12 }, 5: { cellWidth: 65 } },
     didDrawPage: () => drawPdfFooter(doc)
   });
 
@@ -3734,28 +3739,30 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     body,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2, cellWidth: "wrap", minCellHeight: 15 },
+    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2, minCellHeight: 12 },
+    margin: { left: 14, right: 14 },
+    tableWidth: "auto",
     columnStyles: currencyFilter
       ? { 
-          0: { cellWidth: 15 }, // Date
-          1: { cellWidth: 16 }, // Type
-          2: { cellWidth: 22 }, // Wallet
-          3: { cellWidth: 22 }, // With
+          0: { cellWidth: 18 }, // Date
+          1: { cellWidth: 14 }, // Type
+          2: { cellWidth: 28 }, // Wallet
+          3: { cellWidth: 25 }, // With
           4: { cellWidth: 20 }, // Amount
-          5: { cellWidth: 16 }, // Rate
+          5: { cellWidth: 14 }, // Rate
           6: { cellWidth: 22 }, // Converted leg
-          7: { cellWidth: 45, minCellWidth: 40, maxCellWidth: 55 } // Notes - optimized for better display
+          7: { cellWidth: 41 }  // Notes
         }
       : { 
-          0: { cellWidth: 8 }, // Cur
-          1: { cellWidth: 13 }, // Date
-          2: { cellWidth: 13 }, // Type
-          3: { cellWidth: 20 }, // Wallet
-          4: { cellWidth: 20 }, // With
-          5: { cellWidth: 16 }, // Amount
-          6: { cellWidth: 13 }, // Rate
+          0: { cellWidth: 10 }, // Cur
+          1: { cellWidth: 16 }, // Date
+          2: { cellWidth: 14 }, // Type
+          3: { cellWidth: 25 }, // Wallet
+          4: { cellWidth: 22 }, // With
+          5: { cellWidth: 20 }, // Amount
+          6: { cellWidth: 12 }, // Rate
           7: { cellWidth: 20 }, // Converted leg
-          8: { cellWidth: 42, minCellWidth: 38, maxCellWidth: 50 } // Notes - optimized for better display
+          8: { cellWidth: 43 }  // Notes
         },
     didDrawPage: () => drawPdfFooter(doc)
   });
