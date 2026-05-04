@@ -3199,7 +3199,7 @@ const PDF_BRAND = {
   mobile: "+971 55 921 6280",
   whatsapp: "+92 333 900 4564",
   facebook: "facebook.com/nadeemshahzadfida",
-  systemName: "TRIPLE — M by NSF"
+  systemName: "TRIPLE M by NSF"
 };
 
 let cachedPdfLogo = null;
