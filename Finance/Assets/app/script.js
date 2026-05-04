@@ -3659,6 +3659,7 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 8.5, overflow: "linebreak", cellPadding: 2.5, halign: "left" },
     margin: { left: 14, right: 14 },
+    tableWidth: 182,
     columnStyles: currencyFilter
       ? {
           0: { cellWidth: 20, overflow: "linebreak" },
@@ -3753,28 +3754,28 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2, minCellHeight: 12 },
     margin: { left: 14, right: 14 },
-    tableWidth: "auto",
+    tableWidth: 182,
     columnStyles: currencyFilter
-      ? { 
-          0: { cellWidth: 18 }, // Date
-          1: { cellWidth: 14 }, // Type
-          2: { cellWidth: 28 }, // Wallet
-          3: { cellWidth: 25 }, // With
-          4: { cellWidth: 20 }, // Amount
-          5: { cellWidth: 14 }, // Rate
-          6: { cellWidth: 22 }, // Converted leg
-          7: { cellWidth: 41 }  // Notes
+      ? {
+          0: { cellWidth: 18, overflow: "linebreak" }, // Date
+          1: { cellWidth: 14, overflow: "linebreak" }, // Type
+          2: { cellWidth: 28, overflow: "linebreak" }, // Wallet
+          3: { cellWidth: 25, overflow: "linebreak" }, // With
+          4: { cellWidth: 20, overflow: "linebreak" }, // Amount
+          5: { cellWidth: 14, overflow: "linebreak" }, // Rate
+          6: { cellWidth: 22, overflow: "linebreak" }, // Converted leg
+          7: { cellWidth: 41, overflow: "linebreak" }  // Notes
         }
-      : { 
-          0: { cellWidth: 10 }, // Cur
-          1: { cellWidth: 16 }, // Date
-          2: { cellWidth: 14 }, // Type
-          3: { cellWidth: 25 }, // Wallet
-          4: { cellWidth: 22 }, // With
-          5: { cellWidth: 20 }, // Amount
-          6: { cellWidth: 12 }, // Rate
-          7: { cellWidth: 20 }, // Converted leg
-          8: { cellWidth: 43 }  // Notes
+      : {
+          0: { cellWidth: 10, overflow: "linebreak" }, // Cur
+          1: { cellWidth: 16, overflow: "linebreak" }, // Date
+          2: { cellWidth: 14, overflow: "linebreak" }, // Type
+          3: { cellWidth: 25, overflow: "linebreak" }, // Wallet
+          4: { cellWidth: 22, overflow: "linebreak" }, // With
+          5: { cellWidth: 20, overflow: "linebreak" }, // Amount
+          6: { cellWidth: 12, overflow: "linebreak" }, // Rate
+          7: { cellWidth: 20, overflow: "linebreak" }, // Converted leg
+          8: { cellWidth: 43, overflow: "linebreak" }  // Notes
         },
     didDrawPage: () => drawPdfFooter(doc)
   });
