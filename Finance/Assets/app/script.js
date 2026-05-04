@@ -3205,7 +3205,7 @@ const PDF_BRAND = {
 let cachedPdfLogo = null;
 async function getPdfLogo(){
   if (cachedPdfLogo !== null) return cachedPdfLogo;
-  cachedPdfLogo = await getBase64ImageFromUrl("Assets/logo/logo.png");
+  cachedPdfLogo = await getBase64ImageFromUrl("Assets/logo/logo2.png");
   return cachedPdfLogo;
 }
 
@@ -3219,11 +3219,9 @@ function drawPdfHeader(doc, logoData, title, subtitle){
   }
 
   doc.setTextColor(23, 33, 43);
-  doc.setFontSize(14);
-  doc.text(PDF_BRAND.systemName, 38, 18);
   doc.setFontSize(10);
   doc.setTextColor(102, 112, 133);
-  doc.text(title, 38, 24);
+  doc.text(title, 38, 18);
   if (subtitle) doc.text(subtitle, 38, 30);
 }
 
