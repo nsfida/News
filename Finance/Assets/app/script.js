@@ -3212,7 +3212,7 @@ async function getPdfLogo(){
 function drawPdfHeader(doc, logoData, title, subtitle){
   const pageWidth = doc.internal.pageSize.getWidth();
   doc.setFillColor(248, 250, 252);
-  doc.roundedRect(10, 8, pageWidth - 20, 34, 2, 2, "F");
+  doc.roundedRect(10, 8, pageWidth - 20, 40, 2, 2, "F");
 
   if (logoData){
     try { doc.addImage(logoData, "PNG", 15.5, 13.5, 60, 20); } catch {}
@@ -3222,7 +3222,10 @@ function drawPdfHeader(doc, logoData, title, subtitle){
   doc.setFontSize(10);
   doc.setTextColor(102, 112, 133);
   doc.text(title, 80, 18);
-  if (subtitle) doc.text(subtitle, 80, 30);
+  if (subtitle) {
+    doc.setFontSize(8);
+    doc.text(subtitle, 80, 28);
+  }
 }
 
 function drawPdfOwnerBlock(doc, y = 48){
@@ -3610,9 +3613,9 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     currencyFilter ? `Top-Up Records — ${currencyFilter}` : "Top-Up Records — all currencies",
     subtitle
   );
-  drawPdfOwnerBlock(doc, 48);
+  drawPdfOwnerBlock(doc, 52);
 
-  let tableStartY = 72;
+  let tableStartY = 76;
   if (currencyFilter){
     const sum = filtered.reduce((s, t) => s + Number(t.action_amount || 0), 0);
     doc.setFontSize(10);
@@ -3707,11 +3710,11 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     currencyFilter ? `Transfer Records — ${currencyFilter}` : "Transfer Records — all currencies",
     "Sent and received legs per currency; rate matches the booking on each transfer."
   );
-  drawPdfOwnerBlock(doc, 48);
+  drawPdfOwnerBlock(doc, 52);
   doc.setFontSize(10);
   doc.setTextColor(23, 33, 43);
 
-  let ySummary = 58;
+  let ySummary = 62;
   for (const cur of currencies){
     const { sent, received } = transferCurrencyTotals(cur, events);
     doc.text(`${cur} — Sent: ${formatReportAmount(sent, cur)}   Received: ${formatReportAmount(received, cur)}`, 120, ySummary);
@@ -3731,10 +3734,29 @@ async function downloadAllTransfersPDF(currencyFilter = null){
     body,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2, cellWidth: "auto", minCellWidth: 30, maxCellHeight: 20 },
+    styles: { font: "helvetica", fontSize: 7.5, overflow: "linebreak", cellPadding: 2, cellWidth: "wrap", minCellHeight: 15 },
     columnStyles: currencyFilter
-      ? { 7: { cellWidth: 80, minCellWidth: 60, maxCellWidth: 100 } } // Notes
-      : { 8: { cellWidth: 75, minCellWidth: 55, maxCellWidth: 95 } }, // Notes
+      ? { 
+          0: { cellWidth: 15 }, // Date
+          1: { cellWidth: 16 }, // Type
+          2: { cellWidth: 22 }, // Wallet
+          3: { cellWidth: 22 }, // With
+          4: { cellWidth: 20 }, // Amount
+          5: { cellWidth: 16 }, // Rate
+          6: { cellWidth: 22 }, // Converted leg
+          7: { cellWidth: 45, minCellWidth: 40, maxCellWidth: 55 } // Notes - optimized for better display
+        }
+      : { 
+          0: { cellWidth: 8 }, // Cur
+          1: { cellWidth: 13 }, // Date
+          2: { cellWidth: 13 }, // Type
+          3: { cellWidth: 20 }, // Wallet
+          4: { cellWidth: 20 }, // With
+          5: { cellWidth: 16 }, // Amount
+          6: { cellWidth: 13 }, // Rate
+          7: { cellWidth: 20 }, // Converted leg
+          8: { cellWidth: 42, minCellWidth: 38, maxCellWidth: 50 } // Notes - optimized for better display
+        },
     didDrawPage: () => drawPdfFooter(doc)
   });
 
