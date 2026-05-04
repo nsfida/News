@@ -2399,7 +2399,7 @@ function renderExpenseOverviewWallets(){
   const expenseSummaryCard = expenseCurrencies.length ? `
       <div class="summary currency-summary expense-overview">
         ${overviewWatermarkFloatingWalletLogos(accounts)}
-        <div class="currency-head">💸</div>
+        <div class="currency-head">Summary ${expenseCurrencies.map(currency => currencySymbolHtml(currency)).join(' ')}</div>
         ${expenseCurrencies.map(currency => {
           const s = summarizeExpenseByCurrency(currency);
           return `
