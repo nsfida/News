@@ -49,6 +49,8 @@ const els = {
   zipPasswordInput: document.getElementById("zipPasswordInput"),
   unlockBtn: document.getElementById("unlockBtn"),
   lockError: document.getElementById("lockError"),
+  welcomeScreen: document.getElementById("welcomeScreen"),
+  welcomeName: document.getElementById("welcomeName"),
   app: document.getElementById("app"),
   logoutBtn: document.getElementById("logoutBtn"),
   mainOverview: document.getElementById("mainOverview"),
@@ -4612,9 +4614,43 @@ async function attemptUnlock(){
     sessionStorage.setItem("loanledger-unlocked", "true");
     sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
     state.unlocked = true;
+    
+    // Show welcome screen with name from JSON config
+    const displayName = configData.Name && configData.Name.trim() ? configData.Name.trim() : "User";
+    els.welcomeName.textContent = displayName;
     els.lockScreen.classList.add("hide");
-    els.app.classList.remove("hide");
+    els.welcomeScreen.classList.remove("hide");
+    
+    // Start welcome screen animation and transition to main app
+    setTimeout(() => {
+      showWelcomeAndTransitionToApp(keepCurrentBackup);
+    }, 2500); // Show welcome for 2.5 seconds
+  }catch(err){
+    els.lockError.textContent = err.message;
+  }finally{
+    els.unlockBtn.disabled = false;
+    els.unlockBtn.textContent = "Unlock";
+  }
+}
 
+async function showWelcomeAndTransitionToApp(keepCurrentBackup) {
+  // Add exit animation to welcome screen
+  els.welcomeScreen.classList.add("exit-animation");
+  
+  // Prepare app for entrance
+  els.app.classList.remove("hide");
+  els.app.classList.add("app-enter-animation");
+  
+  // Wait for animations to complete
+  setTimeout(async () => {
+    // Hide welcome screen completely
+    els.welcomeScreen.classList.add("hide");
+    els.welcomeScreen.classList.remove("exit-animation");
+    
+    // Remove app animation class
+    els.app.classList.remove("app-enter-animation");
+    
+    // Initialize the app
     defaultDateInputs(document);
     if (keepCurrentBackup){
       await refreshDbSnapshot();
@@ -4624,12 +4660,7 @@ async function attemptUnlock(){
     } else {
       await loadEntriesFromSupabase();
     }
-  }catch(err){
-    els.lockError.textContent = err.message;
-  }finally{
-    els.unlockBtn.disabled = false;
-    els.unlockBtn.textContent = "Unlock";
-  }
+  }, 1200); // Match the animation duration
 }
 
 function populateLoanWalletSelector(currency, selectEl) {
