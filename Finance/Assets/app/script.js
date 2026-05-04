@@ -3657,12 +3657,24 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     body: bodyRows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 8.5, overflow: "linebreak", cellPadding: 2.5 },
+    styles: { font: "helvetica", fontSize: 8.5, overflow: "linebreak", cellPadding: 2.5, halign: "left" },
     margin: { left: 14, right: 14 },
-    tableWidth: "auto",
     columnStyles: currencyFilter
-      ? { 0: { cellWidth: 20 }, 1: { cellWidth: 45 }, 2: { cellWidth: 28 }, 3: { cellWidth: 28 }, 4: { cellWidth: 61 } }
-      : { 0: { cellWidth: 18 }, 1: { cellWidth: 40 }, 2: { cellWidth: 22 }, 3: { cellWidth: 25 }, 4: { cellWidth: 12 }, 5: { cellWidth: 65 } },
+      ? {
+          0: { cellWidth: 20, overflow: "linebreak" },
+          1: { cellWidth: 45, overflow: "linebreak" },
+          2: { cellWidth: 28, overflow: "linebreak" },
+          3: { cellWidth: 28, overflow: "linebreak" },
+          4: { cellWidth: 61, overflow: "linebreak" }
+        }
+      : {
+          0: { cellWidth: 18, overflow: "linebreak" },
+          1: { cellWidth: 40, overflow: "linebreak" },
+          2: { cellWidth: 22, overflow: "linebreak" },
+          3: { cellWidth: 25, overflow: "linebreak" },
+          4: { cellWidth: 12, overflow: "linebreak" },
+          5: { cellWidth: 65, overflow: "linebreak" }
+        },
     didDrawPage: () => drawPdfFooter(doc)
   });
 
