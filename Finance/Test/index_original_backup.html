@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Triple M by NSF</title>
+  <meta name="description" content="Simple loan tracking for money given, received back, loan taken, and returned back." />
+  <link rel="icon" type="image/png" href="Assets/logo/logo.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.57/dist/zip.min.js"></script>
+  <link rel="stylesheet" href="Assets/style/styles.css" />
+</head>
+<body>
+  <div class="page-currency-bg" id="pageCurrencyBg" aria-hidden="true"></div>
+  <div id="lockScreen" class="lock">
+    <div class="lock-card">
+      <div class="brand">
+        <img class="mark" src="Assets/logo/logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+        <div>
+          <h1>TRIPLE M by NSF</h1>
+          <p>Money Management Module (Powered by Nadeem Shahzad Fida)</p>
+        </div>
+      </div>
+      
+      <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p class="login-subtitle">Sign in to access your financial dashboard</p>
+      </div>
+      
+      <form class="login-form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="zipUsernameInput" class="form-label">Username</label>
+          <div class="input-wrapper">
+            <input id="zipUsernameInput" class="input lock-input-full" type="text" placeholder="Enter your username" autocomplete="username" autocapitalize="off" spellcheck="false" />
+            <span class="input-icon">👤</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="zipPasswordInput" class="form-label">Password</label>
+          <div class="input-wrapper">
+            <input id="zipPasswordInput" class="input" type="password" placeholder="Enter your password" autocomplete="current-password" />
+            <span class="input-icon">🔒</span>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button id="unlockBtn" class="btn primary" type="button">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-loader" style="display: none;">⟳</span>
+          </button>
+        </div>
+      </form>
+      
+      <div class="login-help">
+        <p>Don't have an account? Contact on WhatsApp <a href="https://wa.me/923339004564" target="_blank" class="whatsapp-link">+923339004564</a></p>
+      </div>
+      
+      <div id="lockError" class="lock-error"></div>
+    </div>
+  </div>
+
+  <div id="welcomeScreen" class="welcome-screen hide">
+    <div class="welcome-content">
+      <div class="welcome-logo">
+        <img class="mark" src="Assets/logo/logo2.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+      </div>
+      <div class="welcome-text">
+        <h1 class="welcome-title">Welcome Back</h1>
+        <p class="welcome-name" id="welcomeName">User</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="app" class="shell hide">
+    <header class="header">
+      <div class="brand">
+        <img class="mark" src="Assets/logo/logo2.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+        <div>
+          <p>Money Management Module (Powered by Nadeem Shahzad Fida)</p>
+        </div>
+      </div>
+      <div class="chips">
+        <div class="chip icon-chip finance-chip db-chip" title="Database sync">
+          <span class="db-core"></span>
+          <span class="db-ring"></span>
+        </div>
+        <div class="chip icon-chip finance-chip cash-chip" title="Cash flow">
+          <span class="cash-note"></span>
+          <span class="cash-dot"></span>
+        </div>
+        <div class="chip icon-chip finance-chip coin-chip" title="Coin balance">
+          <span class="coin coin-a"></span>
+          <span class="coin coin-b"></span>
+        </div>
+        <button class="btn ghost" id="logoutBtn" type="button" title="Log out">Log out</button>
+      </div>
+    </header>
+
+    <section class="tabs">
+      <button class="tab active" data-tab="expenses" type="button">Expenses</button>
+      <button class="tab" data-tab="given" type="button">Loan Given / Received Back</button>
+      <button class="tab" data-tab="taken" type="button">Loan Taken / Returned Back</button>
+      <button class="tab" data-tab="installments" type="button">Installment Plans</button>
+      <button class="tab" data-tab="goods" type="button">Goods Bought / Sold</button>
+    </section>
+
+<section class="overview main-overview-section collapsed" id="mainOverview">
+      <div class="overview-top" id="mainOverviewBanner">
+        <div>
+          <h2>Overview</h2>
+          <p>Separate balances shown by currency.</p>
+        </div>
+        <div class="tools">
+          <div class="menu-wrap">
+            <button class="btn soft menu-trigger" id="downloadReportMenuBtn" type="button" data-entry-menu="report" aria-haspopup="menu" aria-expanded="false">📄 Download Full Report ▾</button>
+            <div class="menu-dropdown" data-entry-menu-panel="report">
+              <button type="button" class="menu-item" id="downloadAllSectionsPdfBtn">Download Full Report</button>
+              <button type="button" class="menu-item" id="downloadAllDataJsonBtn">Download JSON</button>
+              <button type="button" class="menu-item" id="downloadAllDataCsvBtn">Download CSV</button>
+            </div>
+          </div>
+          <label class="btn ghost file-import-btn" for="importJsonInput">Import JSON</label>
+          <input id="importJsonInput" type="file" accept=".json,application/json" class="file-import-input" />
+          <label class="btn ghost file-import-btn" for="importCsvInput">Import CSV</label>
+          <input id="importCsvInput" type="file" accept=".csv,text/csv" class="file-import-input" />
+          <button class="btn primary hide" id="uploadBackupBtn" type="button">Upload to Database</button>
+          <button class="btn ghost hide" id="connectSupabaseBtn" type="button">Connect Supabase</button>
+          <button class="icon-btn ghost" id="toggleMainOverviewBtn" type="button" title="Expand Overview">▶</button>
+        </div>
+      </div>
+      <div class="main-overview-content" id="mainOverviewContent">
+        <div class="overview-grid" id="statsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Wallets Overview Section -->
+    <section class="overview wallets-overview-section collapsed" id="walletsOverviewSection">
+      <div class="overview-top" id="walletsBanner">
+        <div>
+          <h2>Wallets Overview</h2>
+          <p>Account balances and expense tracking by wallet.</p>
+        </div>
+        <div class="tools">
+          <button class="icon-btn ghost" id="toggleWalletsBtn" type="button" title="Expand Wallets Overview">▶</button>
+        </div>
+      </div>
+      <div class="wallets-content" id="walletsContent">
+        <div id="expenseOverviewWallets"></div>
+      </div>
+    </section>
+
+    <main class="center-wrap">
+      <section id="givenPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Loan Given / Received Back</h3>
+                  <div class="menu-wrap">
+                    <button class="btn ghost menu-trigger" type="button" data-entry-menu="given" aria-haspopup="menu" aria-expanded="false">New Entry ▾</button>
+                    <div class="menu-dropdown" data-entry-menu-panel="given">
+                      <button type="button" class="menu-item" data-open-modal="principal" data-direction="given">Loan Given</button>
+                      <button type="button" class="menu-item" data-open-modal="payment" data-direction="given">Received Back</button>
+                    </div>
+                  </div>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchGiven" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadGivenPdfBtn" type="button">📄 Download</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_given_all" name="f_given" value="All" class="filter-radio" data-filter="given" checked>
+              <label for="f_given_all" class="filter-label">All</label>
+              <input type="radio" id="f_given_active" name="f_given" value="Active" class="filter-radio" data-filter="given">
+              <label for="f_given_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_given_closed" name="f_given" value="Closed" class="filter-radio" data-filter="given">
+              <label for="f_given_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_given_cur_all" name="f_given_cur" value="All" class="currency-radio filter-radio" data-currency-filter="given" checked>
+              <label for="f_given_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_given_cur_aed" name="f_given_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_given_cur_sar" name="f_given_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_given_cur_pkr" name="f_given_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="given">
+              <label for="f_given_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="givenList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="receivedPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Received Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="given" aria-label="Add received back entry">＋</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchReceived" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadReceivedPdfBtn" type="button">📄 Download</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_rec_all" name="f_rec" value="All" class="filter-radio" data-filter="received" checked>
+              <label for="f_rec_all" class="filter-label">All</label>
+              <input type="radio" id="f_rec_active" name="f_rec" value="Active" class="filter-radio" data-filter="received">
+              <label for="f_rec_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_rec_closed" name="f_rec" value="Closed" class="filter-radio" data-filter="received">
+              <label for="f_rec_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_rec_cur_all" name="f_rec_cur" value="All" class="currency-radio filter-radio" data-currency-filter="received" checked>
+              <label for="f_rec_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_rec_cur_aed" name="f_rec_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_rec_cur_sar" name="f_rec_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_rec_cur_pkr" name="f_rec_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="received">
+              <label for="f_rec_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="receivedList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="takenPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Loan Taken / Returned Back</h3>
+                  <div class="menu-wrap">
+                    <button class="btn ghost menu-trigger" type="button" data-entry-menu="taken" aria-haspopup="menu" aria-expanded="false">New Entry ▾</button>
+                    <div class="menu-dropdown" data-entry-menu-panel="taken">
+                      <button type="button" class="menu-item" data-open-modal="principal" data-direction="taken">Loan Taken</button>
+                      <button type="button" class="menu-item" data-open-modal="payment" data-direction="taken">Returned Back</button>
+                    </div>
+                  </div>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchTaken" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadTakenPdfBtn" type="button">📄 Download</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_taken_all" name="f_taken" value="All" class="filter-radio" data-filter="taken" checked>
+              <label for="f_taken_all" class="filter-label">All</label>
+              <input type="radio" id="f_taken_active" name="f_taken" value="Active" class="filter-radio" data-filter="taken">
+              <label for="f_taken_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_taken_closed" name="f_taken" value="Closed" class="filter-radio" data-filter="taken">
+              <label for="f_taken_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_taken_cur_all" name="f_taken_cur" value="All" class="currency-radio filter-radio" data-currency-filter="taken" checked>
+              <label for="f_taken_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_taken_cur_aed" name="f_taken_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_taken_cur_sar" name="f_taken_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_taken_cur_pkr" name="f_taken_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="taken">
+              <label for="f_taken_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="takenList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="returnedPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Returned Back</h3>
+                  <button class="icon-btn" type="button" data-open-modal="payment" data-direction="taken" aria-label="Add returned back entry">＋</button>
+                </div>
+                <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
+              </div>
+              <div class="tools">
+                <input id="searchReturned" class="input" style="min-width:180px" placeholder="Search name or note" />
+                <button class="btn soft" id="downloadReturnedPdfBtn" type="button">📄 Download</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_ret_all" name="f_ret" value="All" class="filter-radio" data-filter="returned" checked>
+              <label for="f_ret_all" class="filter-label">All</label>
+              <input type="radio" id="f_ret_active" name="f_ret" value="Active" class="filter-radio" data-filter="returned">
+              <label for="f_ret_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_ret_closed" name="f_ret" value="Closed" class="filter-radio" data-filter="returned">
+              <label for="f_ret_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_ret_cur_all" name="f_ret_cur" value="All" class="currency-radio filter-radio" data-currency-filter="returned" checked>
+              <label for="f_ret_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_ret_cur_aed" name="f_ret_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_ret_cur_sar" name="f_ret_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_ret_cur_pkr" name="f_ret_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="returned">
+              <label for="f_ret_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="returnedList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="installmentsPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Installment Plans</h3>
+                </div>
+                <p>People moved here from taken loans are tracked as installment plans.</p>
+              </div>
+              <div class="tools">
+                <input id="searchInstallments" class="input" style="min-width:180px" placeholder="Search name or note" />
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_inst_all" name="f_inst" value="All" class="filter-radio" data-filter="installments" checked>
+              <label for="f_inst_all" class="filter-label">All</label>
+              <input type="radio" id="f_inst_active" name="f_inst" value="Active" class="filter-radio" data-filter="installments">
+              <label for="f_inst_active" class="filter-label">Open/Partial</label>
+              <input type="radio" id="f_inst_closed" name="f_inst" value="Closed" class="filter-radio" data-filter="installments">
+              <label for="f_inst_closed" class="filter-label">Closed</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_inst_cur_all" name="f_inst_cur" value="All" class="currency-radio filter-radio" data-currency-filter="installments" checked>
+              <label for="f_inst_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_inst_cur_aed" name="f_inst_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="installments">
+              <label for="f_inst_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_inst_cur_sar" name="f_inst_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="installments">
+              <label for="f_inst_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_inst_cur_pkr" name="f_inst_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="installments">
+              <label for="f_inst_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+          </div>
+          <div id="installmentsList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="goodsPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Goods Bought / Sold</h3>
+                  <div class="menu-wrap">
+                    <button class="btn ghost menu-trigger" type="button" data-entry-menu="goods" aria-haspopup="menu" aria-expanded="false">New Entry ▾</button>
+                    <div class="menu-dropdown" data-entry-menu-panel="goods">
+                      <button type="button" class="menu-item" id="openGoodsBoughtBtn">Bought Item</button>
+                      <button type="button" class="menu-item" id="openGoodsSoldBtn">Sale Item</button>
+                    </div>
+                  </div>
+                </div>
+                <p>Track bought items and sold receipts with item-wise status.</p>
+              </div>
+              <div class="tools">
+                <input id="searchGoods" class="input" style="min-width:180px" placeholder="Search item or note" />
+              </div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_goods_all" name="f_goods" value="All" class="filter-radio" data-filter="goods" checked>
+              <label for="f_goods_all" class="filter-label">All</label>
+              <input type="radio" id="f_goods_open" name="f_goods" value="Open" class="filter-radio" data-filter="goods">
+              <label for="f_goods_open" class="filter-label">In Stock</label>
+              <input type="radio" id="f_goods_sold" name="f_goods" value="Closed" class="filter-radio" data-filter="goods">
+              <label for="f_goods_sold" class="filter-label">Sold</label>
+            </div>
+          </div>
+          <div id="goodsList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="expensesPanel" class="panel active">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Expenses</h3>
+                  <div class="menu-wrap">
+                    <button class="btn ghost menu-trigger" type="button" data-entry-menu="expenses" aria-haspopup="menu" aria-expanded="false">New Entry ▾</button>
+                    <div class="menu-dropdown" data-entry-menu-panel="expenses">
+                      <button type="button" class="menu-item" id="openExpenseAccountBtn">Add Account</button>
+                      <button type="button" class="menu-item" id="openExpenseTopupBtn">Add Money</button>
+                      <button type="button" class="menu-item" id="openExpenseEntryBtn">Add Expense</button>
+                    </div>
+                  </div>
+                </div>
+                <p>Wallets show top-up, spent, and balance. The list is an expense statement by item; open an item for wallet-level transactions.</p>
+              </div>
+              <div class="tools">
+                <input id="searchExpenses" class="input" style="min-width:180px" placeholder="Search item, wallet or note" />
+                <button class="btn soft" id="downloadExpensesPdfBtn" type="button">📄 Download</button>
+              </div>
+            </div>
+            <div class="expense-wallet-block">
+              <div class="filter-block-label">Wallets</div>
+              <div id="expenseWalletFilters" class="expense-wallet-scroll" aria-label="Filter by wallet"></div>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_exp_all" name="f_exp" value="All" class="filter-radio" data-filter="expenses" checked>
+              <label for="f_exp_all" class="filter-label">All</label>
+              <input type="radio" id="f_exp_active" name="f_exp" value="Active" class="filter-radio" data-filter="expenses">
+              <label for="f_exp_active" class="filter-label">Active Balance</label>
+              <input type="radio" id="f_exp_empty" name="f_exp" value="Closed" class="filter-radio" data-filter="expenses">
+              <label for="f_exp_empty" class="filter-label">Zero Balance</label>
+            </div>
+            <div class="filter-group">
+              <input type="radio" id="f_exp_cur_all" name="f_exp_cur" value="All" class="currency-radio filter-radio" data-currency-filter="expenses" checked>
+              <label for="f_exp_cur_all" class="filter-label">All</label>
+              <input type="radio" id="f_exp_cur_aed" name="f_exp_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="expenses">
+              <label for="f_exp_cur_aed" class="filter-label">~</label>
+              <input type="radio" id="f_exp_cur_sar" name="f_exp_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="expenses">
+              <label for="f_exp_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+              <input type="radio" id="f_exp_cur_pkr" name="f_exp_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="expenses">
+              <label for="f_exp_cur_pkr" class="filter-label">Rs.</label>
+            </div>
+            <div class="filter-group" style="align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:.78rem;color:var(--muted);font-weight:600;white-space:nowrap;">Date Range:</span>
+              <input type="date" id="expenseDateFrom" class="input" style="width:auto;min-width:130px;" />
+              <span style="color:var(--muted);font-size:.82rem;">to</span>
+              <input type="date" id="expenseDateTo" class="input" style="width:auto;min-width:130px;" />
+              <button type="button" class="btn ghost" id="clearExpenseDateBtn">Clear</button>
+            </div>
+          </div>
+          <div id="expensesList" class="list"></div>
+        </div>
+      </section>
+    </main>
+
+    <section class="overview" style="margin-top:14px">
+      <div class="overview-top">
+        <div>
+          <h2>Quick counters</h2>
+          <p>Active loans and repayment records.</p>
+        </div>
+      </div>
+      <div class="overview-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        <div class="summary"><span>Open given</span><strong id="openGivenCount">0</strong></div>
+        <div class="summary"><span>Open taken</span><strong id="openTakenCount">0</strong></div>
+        <div class="summary"><span>Received rows</span><strong id="receivedCount">0</strong></div>
+        <div class="summary"><span>Returned rows</span><strong id="returnedCount">0</strong></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="goodsModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="goodsModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 id="goodsModalTitle">Goods entry</h3>
+          <p id="goodsModalDesc">Add bought or sold item details.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="goodsModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="goodsBoughtForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Item name</label>
+              <input class="input" name="item_name" required placeholder="Item name" />
+            </div>
+            <div class="field w6">
+              <label>Currency</label>
+              <div class="currency-picker">
+                <button type="button" class="currency-chip active" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" name="currency" value="AED" />
+            </div>
+            <div class="field w6">
+              <label>Actual price</label>
+              <input class="input" name="actual_price" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Quantity bought</label>
+              <input class="input" name="bought_qty" type="number" min="1" step="1" required value="1" />
+            </div>
+            <div class="field w6">
+              <label>Bought date</label>
+              <input class="input" name="bought_date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="goodsModal">Cancel</button>
+              <button class="btn primary" type="submit">Save Bought Item</button>
+            </div>
+          </div>
+        </form>
+
+        <form id="goodsSoldForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w8">
+              <label>Select bought item</label>
+              <select class="select" id="goodsItemSelect" name="group_id"></select>
+            </div>
+            <div class="field w4">
+              <label>Add new item</label>
+              <button class="btn ghost" type="button" id="goodsNewItemToggleBtn">+ Add New</button>
+            </div>
+            <div id="goodsNewItemFields" class="field w12 hide">
+              <div class="modal-grid">
+                <div class="field w6">
+                  <label>New item name</label>
+                  <input class="input" name="new_item_name" placeholder="Item name" />
+                </div>
+                <div class="field w6">
+                  <label>Currency</label>
+                  <div class="currency-picker">
+                    <button type="button" class="currency-chip active" data-currency="AED">
+                      <span class="symbol symbol-dirham">~</span><span>AED</span>
+                    </button>
+                    <button type="button" class="currency-chip" data-currency="SAR">
+                      <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                    </button>
+                    <button type="button" class="currency-chip" data-currency="PKR">
+                      <span>Rs.</span><span>PKR</span>
+                    </button>
+                  </div>
+                  <input type="hidden" name="new_currency" value="AED" />
+                </div>
+                <div class="field w6">
+                  <label>Actual price</label>
+                  <input class="input" name="new_actual_price" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="field w6">
+                  <label>Quantity bought</label>
+                  <input class="input" name="new_bought_qty" type="number" min="1" step="1" value="1" />
+                </div>
+                <div class="field w6">
+                  <label>Bought date</label>
+                  <input class="input" name="new_bought_date" type="date" data-default-today="true" />
+                </div>
+              </div>
+            </div>
+            <div class="field w6">
+              <label>Sold price</label>
+              <input class="input" name="sold_price" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Quantity sold</label>
+              <input class="input" name="sold_qty" type="number" min="1" step="1" required value="1" />
+            </div>
+            <div class="field w6">
+              <label>Sold date</label>
+              <input class="input" name="sold_date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="goodsModal">Cancel</button>
+              <button class="btn primary" type="submit">Save Sale Item</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="expenseModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="expenseModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 id="expenseModalTitle">Expenses</h3>
+          <p id="expenseModalDesc">Track accounts and expenses.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="expenseModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="expenseAccountForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Account name</label>
+              <input class="input" name="account_name" required placeholder="e.g. Main Wallet" />
+            </div>
+            <div class="field w6">
+              <label>Account type</label>
+              <select class="select" name="account_type" required>
+                <option value="Bank Account">Bank Account</option>
+                <option value="Cash Account">Cash Account</option>
+              </select>
+            </div>
+            <div class="field w6">
+              <label>Currency</label>
+              <div class="currency-picker">
+                <button type="button" class="currency-chip active" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" name="currency" value="AED" />
+            </div>
+            <div class="field w6">
+              <label>Available balance</label>
+              <input class="input" name="opening_balance" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Account date</label>
+              <input class="input" name="account_date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="expenseModal">Cancel</button>
+              <button class="btn primary" type="submit">Save Account</button>
+            </div>
+          </div>
+        </form>
+
+        <form id="expenseTopupForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Account</label>
+              <select class="select" name="group_id" id="expenseTopupAccountSelect" required></select>
+            </div>
+            <div class="field w6">
+              <label>Amount to add</label>
+              <input class="input" name="amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Date</label>
+              <input class="input" name="date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="expenseModal">Cancel</button>
+              <button class="btn primary" type="submit">Add Money</button>
+            </div>
+          </div>
+        </form>
+
+        <form id="expenseEntryForm" class="hide">
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Item name</label>
+              <input class="input" name="item_name" id="expenseItemNameInput" required placeholder="What did you buy/pay?" autocomplete="off" />
+            </div>
+            <div class="field w6">
+              <label>Amount spent</label>
+              <input class="input" name="amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Currency</label>
+              <select class="select" name="currency" id="expenseCurrencySelect" required>
+                <option value="AED">AED</option>
+                <option value="SAR">SAR</option>
+                <option value="PKR">PKR</option>
+              </select>
+            </div>
+            <div class="field w6">
+              <label>From account</label>
+              <select class="select" name="group_id" id="expenseSpendAccountSelect" required></select>
+            </div>
+            <div class="field w6">
+              <label>Expense type</label>
+              <select class="select" name="expense_type" id="expenseTypeSelect">
+                <option value="">Select type</option>
+                <option value="Food">Food</option>
+                <option value="Transport">Transport</option>
+                <option value="Bills">Bills</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Health">Health</option>
+                <option value="Education">Education</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field w6">
+              <label>Or add new expense type</label>
+              <input class="input" name="custom_expense_type" placeholder="Custom type" />
+            </div>
+            <div class="field w6">
+              <label>Expense date</label>
+              <input class="input" name="date" type="date" required data-default-today="true" />
+            </div>
+            <div id="expenseItemIntentWrap" class="field w12 hide">
+              <p class="expense-intent-hint">This item name already exists for this currency. Choose how to record it.</p>
+              <div class="expense-intent-radios">
+                <label class="expense-intent-label">
+                  <input type="radio" name="expense_item_intent" value="additional" checked />
+                  <span>More spending on the same item</span>
+                </label>
+                <label class="expense-intent-label">
+                  <input type="radio" name="expense_item_intent" value="new_distinct" />
+                  <span>New item — I will use a different name</span>
+                </label>
+              </div>
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="expenseModal">Cancel</button>
+              <button class="btn primary" type="submit">Save Expense</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transfer Modal -->
+<div id="transferModal" class="modal hide" aria-hidden="true">
+  <div class="modal-backdrop" data-close-modal="transferModal"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 id="transferModalTitle">Transfer Money</h3>
+        <p id="transferModalDesc">Move money from one wallet to another.</p>
+      </div>
+      <button class="icon-btn ghost" type="button" data-close-modal="transferModal" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="transferForm">
+        <div class="modal-grid">
+          <div class="field w6">
+            <label>From Wallet</label>
+            <select class="select" name="from_wallet" id="transferFromWallet" required></select>
+          </div>
+          <div class="field w6">
+            <label>To Wallet</label>
+            <select class="select" name="to_wallet" id="transferToWallet" required></select>
+          </div>
+          <div class="field w6">
+            <label>Amount</label>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <input class="input" name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" style="flex: 1;" />
+              <span id="fromCurrencyIndicator" style="font-size: 0.8rem; color: var(--muted); min-width: 30px;">AED</span>
+            </div>
+          </div>
+          <div class="field w6">
+            <label>Conversion Rate <span id="conversionHelp" style="font-size: 0.7rem; color: var(--muted);">(1 From = ? To)</span></label>
+            <input class="input" name="conversion_rate" type="number" min="0.000001" step="0.000001" placeholder="1.000000" id="conversionRateInput" />
+          </div>
+          <div class="field w6">
+            <label>Received Amount</label>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <input class="input" name="received_amount" type="number" min="0.01" step="0.01" readonly placeholder="0.00" style="flex: 1; background: var(--panel-bg);" />
+              <span id="toCurrencyIndicator" style="font-size: 0.8rem; color: var(--muted); min-width: 30px;">AED</span>
+            </div>
+          </div>
+          <div class="field w6">
+            <label>Date</label>
+            <input class="input" name="date" type="date" required data-default-today="true" />
+          </div>
+          <div class="field w12">
+            <label>Notes</label>
+            <input class="input" name="notes" placeholder="Optional transfer note" />
+          </div>
+          <div class="field w12 modal-footer">
+            <button class="btn ghost" type="button" data-close-modal="transferModal">Cancel</button>
+            <button class="btn primary" type="submit">Transfer Money</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <div class="site-footer" style="max-width:1240px;margin:8px auto 18px;padding:0 16px;text-align:center;color:#667085;font-size:.86rem;">
+    Powered by
+    <a href="https://facebook.com/nadeemshahzadfida" target="_blank" rel="noopener noreferrer" style="color:#2457d6;text-decoration:none;font-weight:700;">
+      Nadeem Shahzad Fida
+    </a>
+  </div>
+
+  <div id="entryModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="entryModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 id="modalTitle">New entry</h3>
+          <p id="modalDesc">Fill the form and save the entry.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="entryModal" aria-label="Close">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="principalModalForm" class="hide" data-form-type="principal">
+          <input type="hidden" name="direction" value="given" />
+          <div class="modal-grid">
+            <div class="field w6">
+              <label>Person name</label>
+              <input class="input" name="person_name" required placeholder="Full name" />
+            </div>
+            <div class="field w6">
+              <label>Currency</label>
+              <div class="currency-picker" id="principalCurrencyPicker">
+                <button type="button" class="currency-chip active" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" name="currency" value="AED" />
+            </div>
+            <div class="field w6">
+              <label>Amount</label>
+              <input class="input" name="principal_amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label>Date</label>
+              <input class="input" name="loan_date" type="date" required data-default-today="true" />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" name="notes" placeholder="Optional note" />
+            </div>
+            <div class="field w12" id="principalWalletGroup">
+              <label id="principalWalletLabel" style="display:flex;align-items:center;gap:6px;">
+                Wallet
+                <span class="badge blue" id="principalWalletBadge" style="font-size:.68rem;padding:3px 7px;">Loan Given → Deduct from wallet</span>
+              </label>
+              <select class="select" name="loan_wallet_id" id="modalLoanWalletSelect">
+                <option value="">Skip wallet entry</option>
+              </select>
+              <small style="color:var(--muted);font-size:.74rem;margin-top:3px;display:block;">Select a wallet to automatically record this loan as an expense/top-up in your expense tracker.</small>
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
+              <button class="btn primary" type="submit" id="principalSubmitBtn">Save</button>
+            </div>
+          </div>
+        </form>
+
+        <form id="paymentModalForm" class="hide" data-form-type="payment">
+          <input type="hidden" name="direction" value="given" />
+          <div class="modal-grid">
+            <div class="field w8">
+              <label>Related loan</label>
+              <select class="select" name="group_id" id="modalLoanSelect" required></select>
+            </div>
+            <div class="field w4">
+              <label>Entries Count</label>
+              <input class="input" id="multiEntryCount" type="number" min="1" max="10" value="1" required />
+            </div>
+            <div id="multiEntryContainer" style="grid-column: span 12; margin-top: 5px;">
+              </div>
+            <div class="field w12" id="paymentWalletGroup">
+              <label id="paymentWalletLabel" style="display:flex;align-items:center;gap:6px;">
+                Wallet
+                <span class="badge blue" id="paymentWalletBadge" style="font-size:.68rem;padding:3px 7px;">Received Back → Add to wallet</span>
+              </label>
+              <select class="select" name="payment_wallet_id" id="modalPaymentWalletSelect">
+                <option value="">Skip wallet entry</option>
+              </select>
+              <small style="color:var(--muted);font-size:.74rem;margin-top:3px;display:block;">Select a wallet to automatically record this payment as a top-up/deduction in your expense tracker.</small>
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="entryModal">Cancel</button>
+              <button class="btn primary" type="submit" id="paymentSubmitBtn">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="editModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3>Edit entry</h3>
+          <p>Update the record details below.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="editModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="modal-grid">
+            <div id="editPersonGroup" class="field w6 hide">
+              <label>Person name</label>
+              <input class="input" id="editName" name="person_name" placeholder="Full name" />
+            </div>
+            <div id="editCurrencyGroup" class="field w6 hide">
+              <label>Currency</label>
+              <div class="currency-picker">
+                <button type="button" class="currency-chip" data-currency="AED">
+                  <span class="symbol symbol-dirham">~</span><span>AED</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="SAR">
+                  <span class="symbol symbol-riyal">$</span><span>SAR</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="PKR">
+                  <span>Rs.</span><span>PKR</span>
+                </button>
+              </div>
+              <input type="hidden" id="editCurrency" name="currency" />
+            </div>
+            <div class="field w6">
+              <label id="editAmountLabel">Amount</label>
+              <input class="input" id="editAmount" type="number" min="0" step="0.01" required placeholder="0.00" />
+            </div>
+            <div class="field w6">
+              <label id="editDateLabel">Date</label>
+              <input class="input" id="editDate" type="date" required />
+            </div>
+            <div class="field w12">
+              <label>Notes</label>
+              <input class="input" id="editNotes" placeholder="Optional note" />
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="editModal">Cancel</button>
+              <button class="btn primary" type="submit">Update</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="Assets/app/script.js"></script>
+</body>
+</html>
