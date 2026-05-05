@@ -890,7 +890,7 @@ function getTransferRowsForCurrency(cur, events){
         counterparty: ev.toWallet,
         amount: ev.amtOut,
         rateDisplay: ev.sameCurrency ? "1" : String(ev.rate),
-        otherLegDisplay: ev.sameCurrency ? "—" : `${formatReportAmount(ev.amtIn, ev.curIn)}`,
+        otherLegDisplay: ev.sameCurrency ? "—" : `${moneyText(ev.amtIn, ev.curIn)}`,
         notes: cleanExpenseNote(ev.notesExpense),
         editId: ev.expenseId
       });
@@ -904,7 +904,7 @@ function getTransferRowsForCurrency(cur, events){
         counterparty: ev.fromWallet,
         amount: ev.amtIn,
         rateDisplay: ev.sameCurrency ? "1" : String(ev.rate),
-        otherLegDisplay: ev.sameCurrency ? "—" : `${formatReportAmount(ev.amtOut, ev.curOut)}`,
+        otherLegDisplay: ev.sameCurrency ? "—" : `${moneyText(ev.amtOut, ev.curOut)}`,
         notes: cleanExpenseNote(ev.notesTopup || ev.notesExpense),
         editId: ev.topupId || ev.expenseId
       });
@@ -1965,11 +1965,11 @@ async function downloadExpenseAccountPDF(groupId){
   doc.setTextColor(23, 33, 43);
   doc.text(`Type: ${account.accountType}`, 132, 48);
   doc.text(`Currency: ${account.currency}`, 132, 54);
-  doc.text(`Balance: ${formatReportAmount(account.balance, account.currency)}`, 132, 60);
+  doc.text(`Balance: ${formatPdfAmount(account.balance, account.currency)}`, 132, 60);
 
   let runningBalance = Number(account.openingBalance || 0);
   const rows = [
-    ["Opening", displayDate(account.principal?.loan_date || "—"), "—", formatReportAmount(account.openingBalance, account.currency), formatReportAmount(runningBalance, account.currency), cleanExpenseNote(account.principal?.notes)]
+    ["Opening", displayDate(account.principal?.loan_date || "—"), "—", formatPdfAmount(account.openingBalance, account.currency), formatPdfAmount(runningBalance, account.currency), cleanExpenseNote(account.principal?.notes)]
   ];
   const timeline = account.actions.slice().sort((a, b) => dateStamp(a.action_date) - dateStamp(b.action_date));
   timeline.forEach(row => {
@@ -1981,8 +1981,8 @@ async function downloadExpenseAccountPDF(groupId){
       isExpense ? `Expense (${meta.expenseType || "Other"})` : "Topup",
       displayDate(row.action_date || "—"),
       isExpense ? (meta.itemName || "—") : "—",
-      formatReportAmount(amt, account.currency),
-      formatReportAmount(runningBalance, account.currency),
+      formatPdfAmount(amt, account.currency),
+      formatPdfAmount(runningBalance, account.currency),
       cleanExpenseNote(row.notes)
     ]);
   });
@@ -2045,7 +2045,7 @@ function renderExpensesList(){
             </div>
             <div class="cell expense-item-total">
               <small>Total (${currencySymbolHtml(cur)})</small>
-              <strong>${escapeHtml(formatReportAmount(totalCur, cur))}</strong>
+              <strong>${escapeHtml(moneyText(totalCur, cur))}</strong>
             </div>
             <div class="lt-action">
               <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="topups-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
@@ -2110,8 +2110,8 @@ function renderExpensesList(){
               </div>
             </div>
             <div class="cell expense-item-total expense-transfer-totals">
-              <div><small>Sent (${currencySymbolHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(sent, cur))}</strong></div>
-              <div><small>Received (${currencySymbolHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(received, cur))}</strong></div>
+              <div><small>Sent (${currencySymbolHtml(cur)})</small><strong>${escapeHtml(moneyText(sent, cur))}</strong></div>
+              <div><small>Received (${currencySymbolHtml(cur)})</small><strong>${escapeHtml(moneyText(received, cur))}</strong></div>
             </div>
             <div class="lt-action">
               <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="transfers-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
@@ -3414,7 +3414,15 @@ function sectionLabel(searchKey){
 function formatReportAmount(amount, currency){
   const n = Number(amount || 0);
   const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const symbol = currency === "AED" ? "~" : currency === "SAR" ? "$" : currency === "PKR" ? "Rs." : currency || "";
+  const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency || "";
+  return `${symbol} ${formatted}`.trim();
+}
+
+// New function for PDF-specific currency formatting
+function formatPdfAmount(amount, currency){
+  const n = Number(amount || 0);
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency || "";
   return `${symbol} ${formatted}`.trim();
 }
 
@@ -3432,7 +3440,7 @@ function buildSectionReportRows(direction, searchKey){
           displayDate(row.action_date || "—"),
           `${account.person_name || "Wallet"} · ${meta.expenseType || "Other"}`,
           account.person_name || "Wallet",
-          formatReportAmount(Number(row.action_amount || 0), account.currency),
+          formatPdfAmount(Number(row.action_amount || 0), account.currency),
           "—",
           cleanExpenseNote(row.notes)
         ];
@@ -3449,8 +3457,8 @@ function buildSectionReportRows(direction, searchKey){
         group.person_name || "Unnamed",
         displayDate(row.date),
         row.kind === "principal" ? "Principal" : row.kind === "partial" ? "Partial" : "Full",
-        formatReportAmount(row.amount, group.currency),
-        formatReportAmount(row.remainingAfter, group.currency),
+        formatPdfAmount(row.amount, group.currency),
+        formatPdfAmount(row.remainingAfter, group.currency),
         row.note || "—"
       ]);
     }
@@ -3488,22 +3496,6 @@ async function exportSectionPDF(searchKey){
   doc.text(`${expensePdf ? "Wallets in view" : "Members"}: ${report.groups.length}`, 132, 48);
   doc.text(`Rows: ${report.rows.length}`, 132, 54);
 
-  // Load wallet icons as base64 for PDF
-  const walletIconMap = new Map();
-  if (expensePdf) {
-    const uniqueWallets = [...new Set(report.rows.map(row => row[3]))];
-    for (const walletName of uniqueWallets) {
-      try {
-        const iconData = await loadWalletIconAsBase64(walletName);
-        if (iconData) {
-          walletIconMap.set(walletName, iconData);
-        }
-      } catch (e) {
-        // Silently fail if icon not found
-      }
-    }
-  }
-
   const tableHead = expensePdf
     ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
     : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
@@ -3517,19 +3509,6 @@ async function exportSectionPDF(searchKey){
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
     columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
     didDrawPage: (data) => {
-      // Draw wallet icons in PDF cells for expenses
-      if (expensePdf) {
-        data.table.body.forEach((row, rowIndex) => {
-          const walletName = report.rows[rowIndex][3];
-          const iconData = walletIconMap.get(walletName);
-          if (iconData && row.cells[2]) {
-            const cell = row.cells[2];
-            const x = cell.x + 2;
-            const y = cell.y + 2;
-            doc.addImage(iconData, 'PNG', x, y, 10, 10);
-          }
-        });
-      }
       drawPdfFooter(doc);
     }
   });
@@ -3537,42 +3516,6 @@ async function exportSectionPDF(searchKey){
   doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
 }
 
-async function loadWalletIconAsBase64(walletName){
-  // Try exact match first
-  let logoPath = `Assets/logo/wallet_logos/${walletName}.png`;
-  try {
-    const response = await fetch(logoPath);
-    if (response.ok) {
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-  } catch (e) {
-    console.log('Failed to load wallet icon with exact match:', walletName, e);
-  }
-
-  // Try case-insensitive match
-  try {
-    const response = await fetch(logoPath.toLowerCase());
-    if (response.ok) {
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-  } catch (e) {
-    console.log('Failed to load wallet icon with lowercase:', walletName, e);
-  }
-
-  return null;
-}
 
 async function loadCustomFontsForPdf(doc){
   try {
@@ -3637,37 +3580,15 @@ async function exportSectionPDF(searchKey){
   doc.text(`${expensePdf ? "Wallets in view" : "Members"}: ${report.groups.length}`, 132, 48);
   doc.text(`Rows: ${report.rows.length}`, 132, 54);
 
-  // Load wallet icons as base64 for PDF
-  const walletIconMap = new Map();
-  if (expensePdf) {
-    const uniqueWallets = [...new Set(report.rows.map(row => row[3]))];
-    for (const walletName of uniqueWallets) {
-      try {
-        const iconData = await loadWalletIconAsBase64(walletName);
-        if (iconData) {
-          walletIconMap.set(walletName, iconData);
-        }
-      } catch (e) {
-        // Silently fail if icon not found
-      }
-    }
-  }
-
   // Process rows to replace currency text with symbols for expenses
   const processedRows = expensePdf
     ? report.rows.map(row => {
         const walletName = row[3];
         const walletCell = row[2];
         const amountCell = row[4];
-        // Replace AED/SAR/PKR with symbols in all cells
-        const updatedWalletCell = walletCell
-          .replace(/\bAED\b/g, '~')
-          .replace(/\bSAR\b/g, '$')
-          .replace(/\bPKR\b/g, 'Rs.');
-        const updatedAmountCell = amountCell
-          .replace(/\bAED\b/g, '~')
-          .replace(/\bSAR\b/g, '$')
-          .replace(/\bPKR\b/g, 'Rs.');
+        // Keep currency text format (AED, SAR, PKR) for PDF
+        const updatedWalletCell = walletCell;
+        const updatedAmountCell = amountCell;
         return [
           row[0],
           row[1],
@@ -3678,22 +3599,14 @@ async function exportSectionPDF(searchKey){
         ];
       })
     : report.rows.map(row => {
-        // Also replace currency in non-expense reports
+        // Keep currency text format for non-expense reports
         return row.map(cell => {
           if (typeof cell === 'string') {
-            return cell
-              .replace(/\bAED\b/g, '~')
-              .replace(/\bSAR\b/g, '$')
-              .replace(/\bPKR\b/g, 'Rs.');
+            return cell;
           }
           return cell;
         });
       });
-
-  // Store wallet names separately for icon drawing
-  const walletNames = expensePdf
-    ? report.rows.map(row => row[3])
-    : [];
 
   const tableHead = expensePdf
     ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
@@ -3708,24 +3621,13 @@ async function exportSectionPDF(searchKey){
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
     columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
     didDrawCell: (data) => {
-      // Draw wallet icons in PDF cells for expenses
-      if (expensePdf && data.section === 'body' && data.column.index === 2) {
-        const walletName = walletNames[data.row.index];
-        const iconData = walletIconMap.get(walletName);
-        if (iconData) {
-          const x = data.cell.x + 2;
-          const y = data.cell.y + 2;
-          doc.addImage(iconData, 'PNG', x, y, 10, 10);
-        }
-      }
-
       // Apply custom fonts to currency symbols in body cells
       if (data.section === 'body' && typeof data.cell.raw === 'string') {
         const cellText = data.cell.raw;
-        if (cellText.includes('~')) {
+        if (cellText.includes('AED')) {
           doc.setFont('AED');
           doc.setFontSize(9);
-        } else if (cellText.includes('$')) {
+        } else if (cellText.includes('SAR')) {
           doc.setFont('SAR');
           doc.setFontSize(9);
         } else {
@@ -3783,8 +3685,8 @@ async function downloadCurrencyPDF(currency){
       group.person_name || "Unnamed",
       displayDate(group.loan_date || "—"),
       "Principal",
-      formatReportAmount(group.principal?.principal_amount || 0, currency),
-      formatReportAmount(calc.remaining, currency),
+      formatPdfAmount(group.principal?.principal_amount || 0, currency),
+      formatPdfAmount(calc.remaining, currency),
       group.notes || "—"
     ];
   });
@@ -3796,8 +3698,8 @@ async function downloadCurrencyPDF(currency){
       group.person_name || "Unnamed",
       displayDate(group.loan_date || "—"),
       "Principal",
-      formatReportAmount(group.principal?.principal_amount || 0, currency),
-      formatReportAmount(calc.remaining, currency),
+      formatPdfAmount(group.principal?.principal_amount || 0, currency),
+      formatPdfAmount(calc.remaining, currency),
       group.notes || "—"
     ];
   });
@@ -3867,7 +3769,7 @@ async function downloadGoodsPDF(){
       String(meta.boughtQty || 1),
       String(meta.soldQty || 0),
       String(group.remainingQty || 0),
-      formatReportAmount(group.profitLoss || 0, group.currency),
+      formatPdfAmount(group.profitLoss || 0, group.currency),
       group.currency || ""
     ];
   });
@@ -3926,7 +3828,7 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     doc.setFontSize(10);
     doc.setTextColor(23, 33, 43);
     doc.text(`Transactions: ${filtered.length}`, 120, 58);
-    doc.text(`Total: ${formatReportAmount(sum, currencyFilter)}`, 120, 64);
+    doc.text(`Total: ${formatPdfAmount(sum, currencyFilter)}`, 120, 64);
     tableStartY = 72;
   }else{
     const totals = {};
@@ -3940,7 +3842,7 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     doc.text(`Transactions: ${filtered.length}`, 120, y);
     y += 6;
     sortCurrenciesList(Object.keys(totals)).forEach(c => {
-      doc.text(`Total (${c}): ${formatReportAmount(totals[c], c)}`, 120, y);
+      doc.text(`Total (${c}): ${formatPdfAmount(totals[c], c)}`, 120, y);
       y += 6;
     });
     tableStartY = y + 8;
@@ -3950,7 +3852,7 @@ async function downloadAllTopupsPDF(currencyFilter = null){
     const d = displayDate(tx.action_date || tx.loan_date || "—");
     const w = `${tx.person_name || "—"} (${tx.accountType || ""})`;
     const ty = tx.isOpeningBalance ? "Opening Balance" : "Top-up";
-    const amt = formatReportAmount(Number(tx.action_amount || 0), tx.currency);
+    const amt = formatPdfAmount(Number(tx.action_amount || 0), tx.currency);
     const note = cleanExpenseNote(tx.notes);
     const wrappedNote = wrapTextForPdf(note, 45).split('\n');
     if (currencyFilter) return [d, w, ty, amt, wrappedNote];
@@ -4010,7 +3912,7 @@ async function downloadAllTransfersPDF(currencyFilter = null){
         type: r.kind,
         wallet: r.walletLabel,
         withParty: r.counterparty || "—",
-        amount: formatReportAmount(r.amount, cur),
+        amount: formatPdfAmount(r.amount, cur),
         rate: r.rateDisplay,
         convertedLeg: r.otherLegDisplay,
         notes: r.notes
@@ -4045,7 +3947,7 @@ async function downloadAllTransfersPDF(currencyFilter = null){
   let ySummary = 62;
   for (const cur of currencies){
     const { sent, received } = transferCurrencyTotals(cur, events);
-    doc.text(`${cur} — Sent: ${formatReportAmount(sent, cur)}   Received: ${formatReportAmount(received, cur)}`, 120, ySummary);
+    doc.text(`${cur} — Sent: ${formatPdfAmount(sent, cur)}   Received: ${formatPdfAmount(received, cur)}`, 120, ySummary);
     ySummary += 5;
   }
 
@@ -4140,7 +4042,7 @@ async function downloadExpenseItemPDF(itemKey){
     displayDate(tx.date || "—"),
     tx.wallet || "—",
     tx.expenseType || "—",
-    formatReportAmount(tx.amount, targetItem.currency),
+    formatPdfAmount(tx.amount, targetItem.currency),
     cleanExpenseNote(tx.notes)
   ]);
 
@@ -4159,7 +4061,7 @@ async function downloadExpenseItemPDF(itemKey){
   const finalY = doc.lastAutoTable.finalY || 72;
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
-  doc.text(`Total Amount: ${formatReportAmount(targetItem.total, targetItem.currency)}`, 14, finalY + 10);
+  doc.text(`Total Amount: ${formatPdfAmount(targetItem.total, targetItem.currency)}`, 14, finalY + 10);
 
   const fileName = `Expense_${targetItem.displayName.replace(/\s+/g, "_")}_${targetItem.currency}.pdf`;
   doc.save(fileName);
@@ -4418,37 +4320,14 @@ async function exportAllSectionsPDF(){
     doc.text(`${secExpense ? "Wallets in view" : "Members"}: ${section.groups.length}`, 132, 48);
     doc.text(`Rows: ${section.rows.length}`, 132, 54);
 
-    // Load wallet icons for expenses section
-    const walletIconMap = new Map();
-    const walletNames = [];
-    if (secExpense) {
-      const uniqueWallets = [...new Set(section.rows.map(row => row[3]))];
-      for (const walletName of uniqueWallets) {
-        try {
-          const iconData = await loadWalletIconAsBase64(walletName);
-          if (iconData) {
-            walletIconMap.set(walletName, iconData);
-          }
-        } catch (e) {
-          // Silently fail if icon not found
-        }
-      }
-      walletNames.push(...section.rows.map(row => row[3]));
-    }
-
-    // Process rows to replace currency text with symbols
+    // Process rows to keep currency text format
     const processedRows = section.rows.map(row => {
       if (secExpense) {
         const walletCell = row[2];
         const amountCell = row[4];
-        const updatedWalletCell = walletCell
-          .replace(/\bAED\b/g, '~')
-          .replace(/\bSAR\b/g, '$')
-          .replace(/\bPKR\b/g, 'Rs.');
-        const updatedAmountCell = amountCell
-          .replace(/\bAED\b/g, '~')
-          .replace(/\bSAR\b/g, '$')
-          .replace(/\bPKR\b/g, 'Rs.');
+        // Keep currency text format (AED, SAR, PKR) for PDF
+        const updatedWalletCell = walletCell;
+        const updatedAmountCell = amountCell;
         return [
           row[0],
           row[1],
@@ -4460,10 +4339,7 @@ async function exportAllSectionsPDF(){
       } else {
         return row.map(cell => {
           if (typeof cell === 'string') {
-            return cell
-              .replace(/\bAED\b/g, '~')
-              .replace(/\bSAR\b/g, '$')
-              .replace(/\bPKR\b/g, 'Rs.');
+            return cell; // Keep currency text format
           }
           return cell;
         });
@@ -4483,24 +4359,13 @@ async function exportAllSectionsPDF(){
       styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.2 },
       columnStyles: { 0: { cellWidth: 34 }, 5: { cellWidth: 55 } },
       didDrawCell: (data) => {
-        // Draw wallet icons in PDF cells for expenses
-        if (secExpense && data.section === 'body' && data.column.index === 2) {
-          const walletName = walletNames[data.row.index];
-          const iconData = walletIconMap.get(walletName);
-          if (iconData) {
-            const x = data.cell.x + 2;
-            const y = data.cell.y + 2;
-            doc.addImage(iconData, 'PNG', x, y, 10, 10);
-          }
-        }
-
         // Apply custom fonts to currency symbols in body cells
         if (data.section === 'body' && typeof data.cell.raw === 'string') {
           const cellText = data.cell.raw;
-          if (cellText.includes('~')) {
+          if (cellText.includes('AED')) {
             doc.setFont('AED');
             doc.setFontSize(8.5);
-          } else if (cellText.includes('$')) {
+          } else if (cellText.includes('SAR')) {
             doc.setFont('SAR');
             doc.setFontSize(8.5);
           } else {
