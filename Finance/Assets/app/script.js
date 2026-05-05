@@ -535,12 +535,27 @@ function overviewWatermarkWallet(walletName, currency){
   const uniqueId = `wallet-logo-${escapeHtml(walletName).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
   return `
     <div class="summary-watermark" aria-hidden="true">
-      <img id="${uniqueId}" src="${logoPath}" alt="${escapeHtml(walletName)} logo" 
+      <img id="${uniqueId}" src="${logoPath}" alt="${escapeHtml(walletName)} logo"
            style="width: 100%; height: 100%; object-fit: contain; opacity: 0.45;"
            onload="this.style.display='block'; document.getElementById('${uniqueId}-fallback').style.display='none';"
            onerror="this.style.display='none'; document.getElementById('${uniqueId}-fallback').style.display='block';">
       <div id="${uniqueId}-fallback" style="display:block; font-size:clamp(4.5rem, 28vw, 7.5rem); line-height:1; color:var(--text); opacity:.07; animation:summary-watermark-pulse 3.8s ease-in-out infinite;">${currencySymbolHtml(currency)}</div>
     </div>
+  `;
+}
+
+function getWalletIconHtml(walletName, size = 20){
+  // Returns wallet icon HTML for inline use (small size)
+  const logoPath = `Assets/logo/wallet_logos/${escapeHtml(walletName)}.png`;
+  const uniqueId = `wallet-icon-${escapeHtml(walletName).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}-${Math.random().toString(36).substr(2, 9)}`;
+  return `
+    <span class="wallet-icon-inline" style="display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;">
+      <img id="${uniqueId}" src="${logoPath}" alt="${escapeHtml(walletName)}" 
+           style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;"
+           onload="this.style.display='inline-block'; document.getElementById('${uniqueId}-fallback').style.display='none';"
+           onerror="this.style.display='none'; document.getElementById('${uniqueId}-fallback').style.display='inline-block';">
+      <span id="${uniqueId}-fallback" style="display:none;vertical-align:middle;font-size:${size * 0.8}px;">💼</span>
+    </span>
   `;
 }
 
@@ -870,6 +885,7 @@ function getTransferRowsForCurrency(cur, events){
       rows.push({
         kind: "Sent",
         date: ev.date,
+        walletName: ev.fromWallet,
         walletLabel: `${ev.fromWallet}${ev.fromAccountType ? ` (${ev.fromAccountType})` : ""}`,
         counterparty: ev.toWallet,
         amount: ev.amtOut,
@@ -883,6 +899,7 @@ function getTransferRowsForCurrency(cur, events){
       rows.push({
         kind: "Received",
         date: ev.date,
+        walletName: ev.toWallet,
         walletLabel: `${ev.toWallet}${ev.toAccountType ? ` (${ev.toAccountType})` : ""}`,
         counterparty: ev.fromWallet,
         amount: ev.amtIn,
@@ -1705,7 +1722,7 @@ function renderExpenseWalletBar(accounts){
       <div class="expense-wallet-card-wrap">
         <input type="radio" id="${rid}" name="f_exp_wallet" value="${gid}" class="filter-radio expense-wallet-radio" ${ck}>
         <label for="${rid}" class="expense-wallet-card">
-          <span class="expense-wallet-title">${escapeHtml(a.person_name || "Wallet")} (${escapeHtml(formatReportAmount(totalTopup, a.currency))})</span>
+          <span class="expense-wallet-title">${getWalletIconHtml(a.person_name || "Wallet", 18)} ${escapeHtml(a.person_name || "Wallet")} (${escapeHtml(formatReportAmount(totalTopup, a.currency))})</span>
           <span class="expense-wallet-sub">${escapeHtml(a.accountType || "")} · ${currencySymbolHtml(a.currency)}</span>
           <div class="expense-wallet-stats">
             <span><em>Top-up</em> <strong>${escapeHtml(formatReportAmount(totalTopup, a.currency))}</strong></span>
@@ -2031,7 +2048,7 @@ function renderExpensesList(){
                 ${txs.map(tx => `
                   <tr>
                     <td>${escapeHtml(displayDate(tx.action_date || tx.loan_date || "—"))}</td>
-                    <td>${escapeHtml(tx.person_name || "—")} (${escapeHtml(tx.accountType || "")})</td>
+                    <td>${getWalletIconHtml(tx.person_name || "Wallet", 16)} ${escapeHtml(tx.person_name || "—")} (${escapeHtml(tx.accountType || "")})</td>
                     <td><span class="badge green">${tx.isOpeningBalance ? "Opening Balance" : "Top-up"}</span></td>
                     <td style="color: var(--success);">${money(tx.action_amount, cur)}</td>
                     <td class="expense-item-detail-note">${escapeHtml(cleanExpenseNote(tx.notes))}</td>
@@ -2101,7 +2118,7 @@ function renderExpensesList(){
                     <tr>
                       <td>${escapeHtml(displayDate(r.date || "—"))}</td>
                       <td><span class="badge ${badgeCls}">${escapeHtml(r.kind)}</span></td>
-                      <td>${escapeHtml(r.walletLabel)}</td>
+                      <td>${getWalletIconHtml(r.walletName || "Wallet", 16)} ${escapeHtml(r.walletLabel)}</td>
                       <td>${escapeHtml(r.counterparty || "—")}</td>
                       <td style="${amountStyle}">${money(r.amount, cur)}</td>
                       <td>${escapeHtml(r.rateDisplay)}</td>
@@ -2157,7 +2174,7 @@ function renderExpensesList(){
                 ${item.txs.map(tx => `
                   <tr>
                     <td>${escapeHtml(displayDate(tx.date || "—"))}</td>
-                    <td>${escapeHtml(tx.wallet || "—")}</td>
+                    <td>${getWalletIconHtml(tx.wallet || "Wallet", 16)} ${escapeHtml(tx.wallet || "—")}</td>
                     <td>${escapeHtml(tx.expenseType || "—")}</td>
                     <td>${money(tx.amount, item.currency)}</td>
                     <td class="expense-item-detail-note">${escapeHtml(tx.notes)}</td>
@@ -2451,6 +2468,7 @@ function renderExpenseOverviewWallets(){
         ${overviewWatermarkWallet(a.person_name || "Wallet", a.currency)}
         <div class="currency-head" style="font-size:1.1rem;gap:6px;justify-content:flex-start;">
           ${currencySymbolHtml(a.currency)}
+          ${getWalletIconHtml(a.person_name || "Wallet", 24)}
           <span style="font-size:.8rem;font-weight:750;line-height:1.2;">${escapeHtml(a.person_name || "Wallet")}</span>
         </div>
         ${overviewOneLine("Top-up:", money(totalTopup, a.currency))}
@@ -3400,6 +3418,7 @@ function buildSectionReportRows(direction, searchKey){
           meta.itemName || "—",
           displayDate(row.action_date || "—"),
           `${account.person_name || "Wallet"} · ${meta.expenseType || "Other"}`,
+          account.person_name || "Wallet",
           formatReportAmount(Number(row.action_amount || 0), account.currency),
           "—",
           cleanExpenseNote(row.notes)
@@ -3452,22 +3471,83 @@ async function exportSectionPDF(searchKey){
   doc.text(`${expensePdf ? "Wallets in view" : "Members"}: ${report.groups.length}`, 132, 48);
   doc.text(`Rows: ${report.rows.length}`, 132, 54);
 
+  // Load wallet icons as base64 for PDF
+  const walletIconMap = new Map();
+  if (expensePdf) {
+    const uniqueWallets = [...new Set(report.rows.map(row => row[3]))];
+    for (const walletName of uniqueWallets) {
+      try {
+        const iconData = await loadWalletIconAsBase64(walletName);
+        if (iconData) {
+          walletIconMap.set(walletName, iconData);
+        }
+      } catch (e) {
+        // Silently fail if icon not found
+      }
+    }
+  }
+
   const tableHead = expensePdf
     ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
     : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
 
+  // Process rows to add wallet icons for expenses
+  const processedRows = expensePdf
+    ? report.rows.map(row => {
+        const walletName = row[3];
+        const iconData = walletIconMap.get(walletName);
+        if (iconData) {
+          // Replace wallet name with icon + name
+          row[2] = row[2]; // Keep original format
+        }
+        return row;
+      })
+    : report.rows;
+
   doc.autoTable({
     startY: 72,
     head: tableHead,
-    body: report.rows,
+    body: processedRows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
     columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
-    didDrawPage: () => drawPdfFooter(doc)
+    didDrawPage: (data) => {
+      // Draw wallet icons in PDF cells for expenses
+      if (expensePdf) {
+        data.table.body.forEach((row, rowIndex) => {
+          const walletName = report.rows[rowIndex][3];
+          const iconData = walletIconMap.get(walletName);
+          if (iconData && row.cells[2]) {
+            const cell = row.cells[2];
+            const x = cell.x + 2;
+            const y = cell.y + 3;
+            doc.addImage(iconData, 'PNG', x, y, 10, 10);
+          }
+        });
+      }
+      drawPdfFooter(doc);
+    }
   });
 
   doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
+}
+
+async function loadWalletIconAsBase64(walletName){
+  const logoPath = `Assets/logo/wallet_logos/${walletName}.png`;
+  try {
+    const response = await fetch(logoPath);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    return null;
+  }
 }
 
 async function downloadCurrencyPDF(currency){
