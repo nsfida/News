@@ -1379,6 +1379,10 @@ async function downloadGoodsItemPDF(groupId){
   }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   drawPdfHeader(doc, logoData, "Goods Invoice / Receipt", `Item: ${group.person_name || "Unnamed"}`);
   drawPdfOwnerBlock(doc, 48);
@@ -1428,6 +1432,10 @@ async function downloadGoodsSoldReceiptPDF(entryId){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   drawPdfHeader(doc, logoData, "Goods Sold Receipt", `Receipt ID: ${shortId(saleEntry.id) || "N/A"}`);
   drawPdfOwnerBlock(doc, 48);
@@ -1946,6 +1954,10 @@ async function downloadExpenseAccountPDF(groupId){
   }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   drawPdfHeader(doc, logoData, "Expense Account Report", `Account: ${account.person_name}`);
   drawPdfOwnerBlock(doc, 48);
@@ -2024,7 +2036,7 @@ function renderExpensesList(){
         <summary>
           <div class="loan-top">
             <div class="lt-main">
-              <div class="loan-name">Top-Up — ${escapeHtml(cur)}</div>
+              <div class="loan-name">Top-Up — ${currencySymbolHtml(cur)}</div>
               <div class="loan-sub">
                 <span class="badge green">Money In</span>
                 <span>${txs.length} transaction(s)</span>
@@ -2032,7 +2044,7 @@ function renderExpensesList(){
               </div>
             </div>
             <div class="cell expense-item-total">
-              <small>Total (${escapeHtml(cur)})</small>
+              <small>Total (${currencySymbolHtml(cur)})</small>
               <strong>${escapeHtml(formatReportAmount(totalCur, cur))}</strong>
             </div>
             <div class="lt-action">
@@ -2090,7 +2102,7 @@ function renderExpensesList(){
         <summary>
           <div class="loan-top">
             <div class="lt-main">
-              <div class="loan-name">Transfers — ${escapeHtml(cur)}</div>
+              <div class="loan-name">Transfers — ${currencySymbolHtml(cur)}</div>
               <div class="loan-sub">
                 <span class="badge orange">Money moved</span>
                 <span>${rows.length} row(s)</span>
@@ -2098,8 +2110,8 @@ function renderExpensesList(){
               </div>
             </div>
             <div class="cell expense-item-total expense-transfer-totals">
-              <div><small>Sent (${escapeHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(sent, cur))}</strong></div>
-              <div><small>Received (${escapeHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(received, cur))}</strong></div>
+              <div><small>Sent (${currencySymbolHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(sent, cur))}</strong></div>
+              <div><small>Received (${currencySymbolHtml(cur)})</small><strong>${escapeHtml(formatReportAmount(received, cur))}</strong></div>
             </div>
             <div class="lt-action">
               <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="transfers-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
@@ -3402,7 +3414,8 @@ function sectionLabel(searchKey){
 function formatReportAmount(amount, currency){
   const n = Number(amount || 0);
   const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return `${currency || ""} ${formatted}`.trim();
+  const symbol = currency === "AED" ? "~" : currency === "SAR" ? "$" : currency === "PKR" ? "Rs." : currency || "";
+  return `${symbol} ${formatted}`.trim();
 }
 
 function buildSectionReportRows(direction, searchKey){
@@ -3462,6 +3475,10 @@ async function exportSectionPDF(searchKey){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   drawPdfHeader(doc, logoData, `${label} - Full Report`, `Generated: ${new Date().toLocaleString()}`);
   drawPdfOwnerBlock(doc, 48);
@@ -3491,23 +3508,10 @@ async function exportSectionPDF(searchKey){
     ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
     : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
 
-  // Process rows to add wallet icons for expenses
-  const processedRows = expensePdf
-    ? report.rows.map(row => {
-        const walletName = row[3];
-        const iconData = walletIconMap.get(walletName);
-        if (iconData) {
-          // Replace wallet name with icon + name
-          row[2] = row[2]; // Keep original format
-        }
-        return row;
-      })
-    : report.rows;
-
   doc.autoTable({
     startY: 72,
     head: tableHead,
-    body: processedRows,
+    body: report.rows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
@@ -3521,7 +3525,7 @@ async function exportSectionPDF(searchKey){
           if (iconData && row.cells[2]) {
             const cell = row.cells[2];
             const x = cell.x + 2;
-            const y = cell.y + 3;
+            const y = cell.y + 2;
             doc.addImage(iconData, 'PNG', x, y, 10, 10);
           }
         });
@@ -3534,20 +3538,208 @@ async function exportSectionPDF(searchKey){
 }
 
 async function loadWalletIconAsBase64(walletName){
-  const logoPath = `Assets/logo/wallet_logos/${walletName}.png`;
+  // Try exact match first
+  let logoPath = `Assets/logo/wallet_logos/${walletName}.png`;
   try {
     const response = await fetch(logoPath);
-    if (!response.ok) return null;
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    if (response.ok) {
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
   } catch (e) {
-    return null;
+    console.log('Failed to load wallet icon with exact match:', walletName, e);
   }
+
+  // Try case-insensitive match
+  try {
+    const response = await fetch(logoPath.toLowerCase());
+    if (response.ok) {
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+  } catch (e) {
+    console.log('Failed to load wallet icon with lowercase:', walletName, e);
+  }
+
+  return null;
+}
+
+async function loadCustomFontsForPdf(doc){
+  try {
+    // Load Dirham symbol font
+    const aedFontResponse = await fetch('Assets/style/fonts/AED.ttf');
+    if (aedFontResponse.ok) {
+      const aedFontBlob = await aedFontResponse.blob();
+      const aedFontBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(aedFontBlob);
+      });
+      const aedFontData = atob(aedFontBase64.split(',')[1]);
+      doc.addFileToVFS('AED.ttf', aedFontData);
+      doc.addFont('AED.ttf', 'AED', 'normal');
+    }
+
+    // Load Riyal symbol font
+    const sarFontResponse = await fetch('Assets/style/fonts/SAR.otf');
+    if (sarFontResponse.ok) {
+      const sarFontBlob = await sarFontResponse.blob();
+      const sarFontBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(sarFontBlob);
+      });
+      const sarFontData = atob(sarFontBase64.split(',')[1]);
+      doc.addFileToVFS('SAR.otf', sarFontData);
+      doc.addFont('SAR.otf', 'SAR', 'normal');
+    }
+  } catch (e) {
+    console.log('Failed to load custom fonts:', e);
+  }
+}
+
+async function exportSectionPDF(searchKey){
+  if (!window.jspdf){
+    alert("PDF library loading. Please try again in a moment.");
+    return;
+  }
+
+  const direction = (searchKey === "given" || searchKey === "received") ? "given" : "taken";
+  const label = sectionLabel(searchKey);
+  const report = buildSectionReportRows(direction, searchKey);
+  if (!report.rows.length){
+    alert("No entries found for this section.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
+  const logoData = await getPdfLogo();
+  drawPdfHeader(doc, logoData, `${label} - Full Report`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfOwnerBlock(doc, 48);
+  doc.setTextColor(23, 33, 43);
+  doc.setFontSize(10);
+  const expensePdf = searchKey === "expenses";
+  doc.text(`${expensePdf ? "Wallets in view" : "Members"}: ${report.groups.length}`, 132, 48);
+  doc.text(`Rows: ${report.rows.length}`, 132, 54);
+
+  // Load wallet icons as base64 for PDF
+  const walletIconMap = new Map();
+  if (expensePdf) {
+    const uniqueWallets = [...new Set(report.rows.map(row => row[3]))];
+    for (const walletName of uniqueWallets) {
+      try {
+        const iconData = await loadWalletIconAsBase64(walletName);
+        if (iconData) {
+          walletIconMap.set(walletName, iconData);
+        }
+      } catch (e) {
+        // Silently fail if icon not found
+      }
+    }
+  }
+
+  // Process rows to replace currency text with symbols for expenses
+  const processedRows = expensePdf
+    ? report.rows.map(row => {
+        const walletName = row[3];
+        const walletCell = row[2];
+        const amountCell = row[4];
+        // Replace AED/SAR/PKR with symbols in all cells
+        const updatedWalletCell = walletCell
+          .replace(/\bAED\b/g, '~')
+          .replace(/\bSAR\b/g, '$')
+          .replace(/\bPKR\b/g, 'Rs.');
+        const updatedAmountCell = amountCell
+          .replace(/\bAED\b/g, '~')
+          .replace(/\bSAR\b/g, '$')
+          .replace(/\bPKR\b/g, 'Rs.');
+        return [
+          row[0],
+          row[1],
+          updatedWalletCell,
+          updatedAmountCell,
+          row[5],
+          row[6]
+        ];
+      })
+    : report.rows.map(row => {
+        // Also replace currency in non-expense reports
+        return row.map(cell => {
+          if (typeof cell === 'string') {
+            return cell
+              .replace(/\bAED\b/g, '~')
+              .replace(/\bSAR\b/g, '$')
+              .replace(/\bPKR\b/g, 'Rs.');
+          }
+          return cell;
+        });
+      });
+
+  // Store wallet names separately for icon drawing
+  const walletNames = expensePdf
+    ? report.rows.map(row => row[3])
+    : [];
+
+  const tableHead = expensePdf
+    ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
+    : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
+
+  doc.autoTable({
+    startY: 72,
+    head: tableHead,
+    body: report.rows,
+    theme: "grid",
+    headStyles: { fillColor: [36, 87, 214] },
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
+    columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
+    didDrawCell: (data) => {
+      // Draw wallet icons in PDF cells for expenses
+      if (expensePdf && data.section === 'body' && data.column.index === 2) {
+        const walletName = walletNames[data.row.index];
+        const iconData = walletIconMap.get(walletName);
+        if (iconData) {
+          const x = data.cell.x + 2;
+          const y = data.cell.y + 2;
+          doc.addImage(iconData, 'PNG', x, y, 10, 10);
+        }
+      }
+
+      // Apply custom fonts to currency symbols in body cells
+      if (data.section === 'body' && typeof data.cell.raw === 'string') {
+        const cellText = data.cell.raw;
+        if (cellText.includes('~')) {
+          doc.setFont('AED');
+          doc.setFontSize(9);
+        } else if (cellText.includes('$')) {
+          doc.setFont('SAR');
+          doc.setFontSize(9);
+        } else {
+          doc.setFont('helvetica');
+          doc.setFontSize(9);
+        }
+      }
+    },
+    didDrawPage: (data) => {
+      drawPdfFooter(doc);
+    }
+  });
+
+  doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
 }
 
 async function downloadCurrencyPDF(currency){
@@ -3558,6 +3750,10 @@ async function downloadCurrencyPDF(currency){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   
   // Get currency-specific data
@@ -3652,6 +3848,10 @@ async function downloadGoodsPDF(){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   
   drawPdfHeader(doc, logoData, "Goods Report - Full Summary", `Generated: ${new Date().toLocaleString()}`);
@@ -3704,6 +3904,10 @@ async function downloadAllTopupsPDF(currencyFilter = null){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   const subtitle = currencyFilter
     ? `Currency: ${currencyFilter}`
@@ -3823,6 +4027,10 @@ async function downloadAllTransfersPDF(currencyFilter = null){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   drawPdfHeader(
     doc,
@@ -3914,6 +4122,10 @@ async function downloadExpenseItemPDF(itemKey){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   
   drawPdfHeader(doc, logoData, `Expense Report - ${targetItem.displayName}`, `Generated: ${new Date().toLocaleString()}`);
@@ -4183,6 +4395,10 @@ async function exportAllSectionsPDF(){
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Load custom fonts for currency symbols
+  await loadCustomFontsForPdf(doc);
+
   const logoData = await getPdfLogo();
   drawPdfHeader(doc, logoData, "All Sections - Detailed Report", `Generated: ${new Date().toLocaleString()}`);
   drawPdfOwnerBlock(doc, 48);
@@ -4191,8 +4407,8 @@ async function exportAllSectionsPDF(){
   doc.text(`Total Rows: ${totalRows}`, 132, 48);
 
   let printedSections = 0;
-  sectionReports.forEach(section => {
-    if (!section.rows.length) return;
+  for (const section of sectionReports) {
+    if (!section.rows.length) continue;
     if (printedSections > 0) doc.addPage();
     drawPdfHeader(doc, logoData, section.label, "Section Summary");
     drawPdfOwnerBlock(doc, 48);
@@ -4201,6 +4417,58 @@ async function exportAllSectionsPDF(){
     const secExpense = section.key === "expenses";
     doc.text(`${secExpense ? "Wallets in view" : "Members"}: ${section.groups.length}`, 132, 48);
     doc.text(`Rows: ${section.rows.length}`, 132, 54);
+
+    // Load wallet icons for expenses section
+    const walletIconMap = new Map();
+    const walletNames = [];
+    if (secExpense) {
+      const uniqueWallets = [...new Set(section.rows.map(row => row[3]))];
+      for (const walletName of uniqueWallets) {
+        try {
+          const iconData = await loadWalletIconAsBase64(walletName);
+          if (iconData) {
+            walletIconMap.set(walletName, iconData);
+          }
+        } catch (e) {
+          // Silently fail if icon not found
+        }
+      }
+      walletNames.push(...section.rows.map(row => row[3]));
+    }
+
+    // Process rows to replace currency text with symbols
+    const processedRows = section.rows.map(row => {
+      if (secExpense) {
+        const walletCell = row[2];
+        const amountCell = row[4];
+        const updatedWalletCell = walletCell
+          .replace(/\bAED\b/g, '~')
+          .replace(/\bSAR\b/g, '$')
+          .replace(/\bPKR\b/g, 'Rs.');
+        const updatedAmountCell = amountCell
+          .replace(/\bAED\b/g, '~')
+          .replace(/\bSAR\b/g, '$')
+          .replace(/\bPKR\b/g, 'Rs.');
+        return [
+          row[0],
+          row[1],
+          updatedWalletCell,
+          updatedAmountCell,
+          row[5],
+          row[6]
+        ];
+      } else {
+        return row.map(cell => {
+          if (typeof cell === 'string') {
+            return cell
+              .replace(/\bAED\b/g, '~')
+              .replace(/\bSAR\b/g, '$')
+              .replace(/\bPKR\b/g, 'Rs.');
+          }
+          return cell;
+        });
+      }
+    });
 
     const secHead = secExpense
       ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
@@ -4214,10 +4482,37 @@ async function exportAllSectionsPDF(){
       headStyles: { fillColor: [36, 87, 214] },
       styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.2 },
       columnStyles: { 0: { cellWidth: 34 }, 5: { cellWidth: 55 } },
+      didDrawCell: (data) => {
+        // Draw wallet icons in PDF cells for expenses
+        if (secExpense && data.section === 'body' && data.column.index === 2) {
+          const walletName = walletNames[data.row.index];
+          const iconData = walletIconMap.get(walletName);
+          if (iconData) {
+            const x = data.cell.x + 2;
+            const y = data.cell.y + 2;
+            doc.addImage(iconData, 'PNG', x, y, 10, 10);
+          }
+        }
+
+        // Apply custom fonts to currency symbols in body cells
+        if (data.section === 'body' && typeof data.cell.raw === 'string') {
+          const cellText = data.cell.raw;
+          if (cellText.includes('~')) {
+            doc.setFont('AED');
+            doc.setFontSize(8.5);
+          } else if (cellText.includes('$')) {
+            doc.setFont('SAR');
+            doc.setFontSize(8.5);
+          } else {
+            doc.setFont('helvetica');
+            doc.setFontSize(8.5);
+          }
+        }
+      },
       didDrawPage: () => drawPdfFooter(doc)
     });
     printedSections += 1;
-  });
+  }
 
   doc.save("All_Sections_Detailed_Report.pdf");
 }
