@@ -490,7 +490,23 @@ a{color:inherit}
   overflow:hidden;
 }
 
-.section{padding:14px}
+.section{
+  padding:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08));
+  border:1px solid rgba(183,193,208,.72);
+  border-radius:16px;
+  box-shadow:0 10px 26px rgba(16,24,40,.08);
+  position:relative;
+}
+.section::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,.36), rgba(255,255,255,0));
+  opacity:.55;
+}
 .section-head{
   display:flex;flex-direction:column;align-items:stretch;gap:12px;
   margin-bottom:12px;
@@ -557,7 +573,15 @@ a{color:inherit}
 .filter-block-label{
   font-size:.72rem;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;
 }
-.expense-wallet-block{margin-top:8px;margin-bottom:2px;}
+.expense-wallet-block{
+  margin-top:8px;
+  margin-bottom:2px;
+  padding:10px;
+  border:1px solid rgba(183,193,208,.72);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+  box-shadow:0 8px 20px rgba(16,24,40,.06);
+}
 .expense-wallet-scroll{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;}
 .expense-wallet-card-wrap{display:flex;flex-direction:column;gap:4px;flex:1 1 200px;max-width:300px;min-width:168px;}
 .expense-wallet-card-wrap:has(.expense-wallet-radio:checked){
@@ -627,7 +651,16 @@ a{color:inherit}
 .expense-by-currency{margin-top:4px;}
 
 .expense-intent-hint{margin:0 0 8px;font-size:.82rem;color:var(--muted);line-height:1.45;}
-.expense-intent-radios{display:flex;flex-direction:column;gap:8px;}
+.expense-intent-radios{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:10px;
+  border:1px solid rgba(183,193,208,.72);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+  box-shadow:0 8px 20px rgba(16,24,40,.06);
+}
 .expense-intent-label{
   display:flex;align-items:flex-start;gap:10px;font-size:.84rem;line-height:1.4;cursor:pointer;
   padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08));
@@ -1029,6 +1062,11 @@ tbody tr:hover{background:rgba(255,255,255,.08)}
 }
 .form-group{
   display:flex;flex-direction:column;gap:6px;
+  padding:12px;
+  border:1px solid rgba(183,193,208,.72);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+  box-shadow:0 8px 20px rgba(16,24,40,.06);
 }
 .form-label{
   font-size:.84rem;font-weight:600;color:var(--text);letter-spacing:-.01em;
@@ -1095,27 +1133,64 @@ tbody tr:hover{background:rgba(255,255,255,.08)}
   position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:14px;
 }
 .modal-backdrop{
-  position:absolute;inset:0;background:rgba(15,23,42,.40);backdrop-filter:blur(4px);
+  position:absolute;
+  inset:0;
+  background:rgba(15,23,42,.58);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
 }
 .modal-dialog{
-  position:relative;width:min(760px,100%);max-height:calc(100vh - 28px);overflow:auto;
-  background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.10));
-  border:1px solid var(--line-strong);
-  border-radius:22px;box-shadow:0 25px 50px rgba(16,24,40,.18);
+  position:relative;
+  width:min(760px,100%);
+  max-height:calc(100vh - 28px);
+  overflow:auto;
+  background:#ffffff;
+  border:1px solid rgba(208,213,221,.98);
+  border-radius:22px;
+  box-shadow:0 28px 60px rgba(16,24,40,.20);
 }
-.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 16px 0 16px;}
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:16px 16px 0 16px;
+}
 .modal-head h3{margin:0;font-size:1.02rem;letter-spacing:-.02em}
 .modal-head p{margin:4px 0 0;color:var(--muted);font-size:.84rem;line-height:1.5}
-.modal-body{padding:16px}
+.modal-body{
+  padding:16px;
+  background:#ffffff;
+  border-top:1px solid rgba(208,213,221,.55);
+  border-bottom-left-radius:22px;
+  border-bottom-right-radius:22px;
+}
 .modal-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;}
 
-.field{grid-column:span 12;display:flex;flex-direction:column;gap:6px}
+.field{
+  grid-column:span 12;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:12px;
+  border:1px solid rgba(183,193,208,.72);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+  box-shadow:0 8px 20px rgba(16,24,40,.06);
+}
 .field.w3{grid-column:span 3}
 .field.w4{grid-column:span 4}
 .field.w6{grid-column:span 6}
 .field.w8{grid-column:span 8}
 .field.w12{grid-column:span 12}
-.modal-footer{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px;}
+.modal-footer{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:4px;
+  padding-top:12px;
+}
 label{font-size:.78rem;color:var(--muted);font-weight:600}
 
 .multi-row-header{
@@ -1133,8 +1208,14 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   grid-template-columns:1.2fr 1fr 1.5fr;
   gap:8px;
   margin-bottom:8px;
-  padding-left:8px;
+  padding:12px;
+  padding-left:10px;
   border-left:2px solid var(--primary);
+  border:1px solid rgba(183,193,208,.72);
+  border-left:3px solid var(--primary);
+  border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+  box-shadow:0 8px 20px rgba(16,24,40,.06);
   align-items:center;
 }
 .multi-row .input{
@@ -1214,7 +1295,10 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
     font-size:inherit !important;
   }
 
-  .section{padding:10px}
+  .section{
+    padding:10px;
+    border-radius:14px;
+  }
   .section-head{gap:10px}
   .section-head h3{font-size:.92rem}
   .section-head p{font-size:.78rem}
@@ -1336,12 +1420,17 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   .modal-body{padding:12px}
   .modal-grid{gap:8px}
   .modal-grid .field{grid-column:span 12}
+  .field{
+    padding:10px;
+    border-radius:12px;
+  }
 
   .multi-row-header { font-size: .68rem; gap: 4px; padding-left: 6px; }
   .multi-row {
     grid-template-columns: 1.3fr 1fr 1.2fr;
     gap: 4px;
-    padding-left: 4px;
+    padding:10px;
+    padding-left:4px;
     margin-bottom: 6px;
     border-left-width: 1.5px;
   }
