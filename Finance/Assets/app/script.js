@@ -1280,7 +1280,7 @@ function repositionOpenNotePopovers(){
 
 function renderLoanSelectors(){
   const givenGroups = groupByLoan(state.entries.filter(e => e.direction === "given")).filter(g => calculateLoan(g).remaining > 0);
-  const takenGroups = groupByLoan(state.entries.filter(e => e.direction === "taken")).filter(g => calculateLoan(g).remaining > 0);
+  const takenGroups = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0);
 
   const makeOptions = groups => groups.length
     ? `<option value="">Choose one</option>` + groups.map(g => {
