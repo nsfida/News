@@ -55,6 +55,7 @@ const els = {
   welcomeName: document.getElementById("welcomeName"),
   app: document.getElementById("app"),
   logoutBtn: document.getElementById("logoutBtn"),
+  refreshBtn: document.getElementById("refreshBtn"),
   mainOverview: document.getElementById("mainOverview"),
   statsGrid: document.getElementById("statsGrid"),
   givenList: document.getElementById("givenList"),
@@ -4880,6 +4881,9 @@ function attachEvents(){
 
   if (els.logoutBtn){
     els.logoutBtn.addEventListener("click", () => doLogout());
+  }
+  if (els.refreshBtn){
+    els.refreshBtn.addEventListener("click", () => loadEntries());
   }
 
   if (els.zipUsernameInput){
