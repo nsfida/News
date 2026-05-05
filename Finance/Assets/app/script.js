@@ -1998,6 +1998,21 @@ async function downloadExpenseAccountPDF(groupId){
   doc.save(`Expense_Account_${String(account.person_name || "account").replace(/\s+/g, "_")}.pdf`);
 }
 
+function filterExpensesBySearch(expenses, searchTerm){
+  if (!searchTerm || searchTerm.trim() === "") return expenses;
+  
+  const term = searchTerm.toLowerCase().trim();
+  return expenses.filter(expense => {
+    // Search in item name, wallet name, notes, expense type
+    return (expense.displayName && expense.displayName.toLowerCase().includes(term)) ||
+           (expense.wallet && expense.wallet.toLowerCase().includes(term)) ||
+           (expense.notes && expense.notes.toLowerCase().includes(term)) ||
+           (expense.expenseType && expense.expenseType.toLowerCase().includes(term)) ||
+           (expense.person_name && expense.person_name.toLowerCase().includes(term)) ||
+           (expense.accountType && expense.accountType.toLowerCase().includes(term));
+  });
+}
+
 function renderExpensesList(){
   const accounts = getExpenseAccounts();
   const validIds = new Set(accounts.map(a => a.group_id));
@@ -2014,7 +2029,13 @@ function renderExpensesList(){
   let html = "";
 
   const accountsForTopups = getExpenseAccounts({ applyUiFilters: false });
-  const topupTransactions = collectTopupTransactionsFlat(accountsForTopups);
+  let topupTransactions = collectTopupTransactionsFlat(accountsForTopups);
+  
+  // Apply search filtering to top-up transactions
+  if (state.search.expenses && state.search.expenses.trim() !== "") {
+    topupTransactions = filterExpensesBySearch(topupTransactions, state.search.expenses);
+  }
+  
   const topupByCurrency = new Map();
   for (const tx of topupTransactions){
     const c = tx.currency || "AED";
@@ -2080,7 +2101,13 @@ function renderExpensesList(){
     }
   }
 
-  const transferEvents = buildTransferEvents();
+  let transferEvents = buildTransferEvents();
+  
+  // Apply search filtering to transfer events
+  if (state.search.expenses && state.search.expenses.trim() !== "") {
+    transferEvents = filterExpensesBySearch(transferEvents, state.search.expenses);
+  }
+  
   const transferCurrencySet = new Set();
   for (const ev of transferEvents){
     transferCurrencySet.add(ev.curOut);
@@ -2154,7 +2181,12 @@ function renderExpensesList(){
 
   // Expense items (non-transfer spending), grouped by item
   const spendAttached = collectExpenseSpendRows(accounts);
-  const items = groupExpenseItems(spendAttached);
+  let items = groupExpenseItems(spendAttached);
+  
+  // Apply search filtering to expense items
+  if (state.search.expenses && state.search.expenses.trim() !== "") {
+    items = filterExpensesBySearch(items, state.search.expenses);
+  }
   
   if (items.length > 0) {
     html += items.map(item => `
