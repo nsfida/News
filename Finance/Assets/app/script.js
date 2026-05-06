@@ -72,6 +72,7 @@ const els = {
   connectSupabaseBtn: document.getElementById("connectSupabaseBtn"),
   importJsonInput: document.getElementById("importJsonInput"),
   importCsvInput: document.getElementById("importCsvInput"),
+  downloadReportMenuBtn: document.getElementById("downloadReportMenuBtn"),
   downloadAllDataJsonBtn: document.getElementById("downloadAllDataJsonBtn"),
   downloadAllDataCsvBtn: document.getElementById("downloadAllDataCsvBtn"),
   uploadBackupBtn: document.getElementById("uploadBackupBtn"),
@@ -1406,7 +1407,8 @@ async function downloadGoodsItemPDF(groupId){
     body: rows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    didDrawPage: () => drawPdfFooter(doc)
+    margin: { top: 50, bottom: 40 },
+    didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
   });
   doc.save(`Goods_${String(group.person_name || "item").replace(/\s+/g, "_")}.pdf`);
 }
@@ -1459,7 +1461,8 @@ async function downloadGoodsSoldReceiptPDF(entryId){
     ]],
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    didDrawPage: () => drawPdfFooter(doc)
+    margin: { top: 50, bottom: 40 },
+    didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
   });
 
   doc.setFontSize(9.5);
@@ -1994,7 +1997,8 @@ async function downloadExpenseAccountPDF(groupId){
     body: rows,
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
-    didDrawPage: () => drawPdfFooter(doc)
+    margin: { top: 50, bottom: 40 },
+    didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
   });
   doc.save(`Expense_Account_${String(account.person_name || "account").replace(/\s+/g, "_")}.pdf`);
 }
@@ -3362,6 +3366,14 @@ function drawPdfFooter(doc){
   doc.text(`Powered by ${PDF_BRAND.owner} | ${PDF_BRAND.email} | ${PDF_BRAND.mobile}`, pageWidth / 2, pageHeight - 12, { align: "center" });
 }
 
+function drawPdfHeaderAndFooter(doc, logoData, title, subtitle, showOwnerBlock = true){
+  drawPdfHeader(doc, logoData, title, subtitle);
+  if (showOwnerBlock) {
+    drawPdfOwnerBlock(doc, 48);
+  }
+  drawPdfFooter(doc);
+}
+
 function buildPersonPdfData(personName, direction){
   const normalizedName = String(personName || "").trim();
   const personEntries = state.entries.filter(e =>
@@ -3424,7 +3436,10 @@ async function downloadPersonPDF(personNameEncoded, direction) {
   }
 
   const logoData = await getPdfLogo();
-  drawPdfHeader(doc, logoData, "Statement / Receipt", `Client: ${data.personName}`);
+  const title = "Statement / Receipt";
+  const subtitle = `Client: ${data.personName}`;
+
+  drawPdfHeader(doc, logoData, title, subtitle);
   drawPdfOwnerBlock(doc, 48);
 
   doc.setTextColor(0);
@@ -3458,7 +3473,8 @@ async function downloadPersonPDF(personNameEncoded, direction) {
     theme: 'grid',
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: 'helvetica' },
-    didDrawPage: () => drawPdfFooter(doc)
+    margin: { top: 50, bottom: 40 },
+    didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
   });
 
   doc.save(`Statement_${data.personName.replace(/\s+/g, '_')}.pdf`);
@@ -3553,7 +3569,10 @@ async function exportSectionPDF(searchKey){
   await loadCustomFontsForPdf(doc);
 
   const logoData = await getPdfLogo();
-  drawPdfHeader(doc, logoData, `${label} - Full Report`, `Generated: ${new Date().toLocaleString()}`);
+  const title = `${label} - Full Report`;
+  const subtitle = `Generated: ${new Date().toLocaleString()}`;
+
+  drawPdfHeader(doc, logoData, title, subtitle);
   drawPdfOwnerBlock(doc, 48);
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
@@ -3573,8 +3592,9 @@ async function exportSectionPDF(searchKey){
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
     columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
+    margin: { top: 50, bottom: 40 },
     didDrawPage: (data) => {
-      drawPdfFooter(doc);
+      drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false);
     }
   });
 
@@ -3616,99 +3636,6 @@ async function loadCustomFontsForPdf(doc){
   }
 }
 
-async function exportSectionPDF(searchKey){
-  if (!window.jspdf){
-    alert("PDF library loading. Please try again in a moment.");
-    return;
-  }
-
-  const direction = (searchKey === "given" || searchKey === "received") ? "given" : "taken";
-  const label = sectionLabel(searchKey);
-  const report = buildSectionReportRows(direction, searchKey);
-  if (!report.rows.length){
-    alert("No entries found for this section.");
-    return;
-  }
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  // Load custom fonts for currency symbols
-  await loadCustomFontsForPdf(doc);
-
-  const logoData = await getPdfLogo();
-  drawPdfHeader(doc, logoData, `${label} - Full Report`, `Generated: ${new Date().toLocaleString()}`);
-  drawPdfOwnerBlock(doc, 48);
-  doc.setTextColor(23, 33, 43);
-  doc.setFontSize(10);
-  const expensePdf = searchKey === "expenses";
-  doc.text(`${expensePdf ? "Wallets in view" : "Members"}: ${report.groups.length}`, 132, 48);
-  doc.text(`Rows: ${report.rows.length}`, 132, 54);
-
-  // Process rows to replace currency text with symbols for expenses
-  const processedRows = expensePdf
-    ? report.rows.map(row => {
-        const walletName = row[3];
-        const walletCell = row[2];
-        const amountCell = row[4];
-        // Keep currency text format (AED, SAR, PKR) for PDF
-        const updatedWalletCell = walletCell;
-        const updatedAmountCell = amountCell;
-        return [
-          row[0],
-          row[1],
-          updatedWalletCell,
-          updatedAmountCell,
-          row[5],
-          row[6]
-        ];
-      })
-    : report.rows.map(row => {
-        // Keep currency text format for non-expense reports
-        return row.map(cell => {
-          if (typeof cell === 'string') {
-            return cell;
-          }
-          return cell;
-        });
-      });
-
-  const tableHead = expensePdf
-    ? [["Item", "Date", "Wallet · Type", "Amount", "—", "Notes"]]
-    : [["Member", "Date", "Type", "Amount", "Remaining", "Remarks"]];
-
-  doc.autoTable({
-    startY: 72,
-    head: tableHead,
-    body: report.rows,
-    theme: "grid",
-    headStyles: { fillColor: [36, 87, 214] },
-    styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
-    columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
-    didDrawCell: (data) => {
-      // Apply custom fonts to currency symbols in body cells
-      if (data.section === 'body' && typeof data.cell.raw === 'string') {
-        const cellText = data.cell.raw;
-        if (cellText.includes('AED')) {
-          doc.setFont('AED');
-          doc.setFontSize(9);
-        } else if (cellText.includes('SAR')) {
-          doc.setFont('SAR');
-          doc.setFontSize(9);
-        } else {
-          doc.setFont('helvetica');
-          doc.setFontSize(9);
-        }
-      }
-    },
-    didDrawPage: (data) => {
-      drawPdfFooter(doc);
-    }
-  });
-
-  doc.save(`${label.replace(/\s+/g, "_")}_Report.pdf`);
-}
-
 async function downloadCurrencyPDF(currency){
   if (!window.jspdf){
     alert("PDF library loading. Please try again in a moment.");
@@ -3722,7 +3649,9 @@ async function downloadCurrencyPDF(currency){
   await loadCustomFontsForPdf(doc);
 
   const logoData = await getPdfLogo();
-  
+  const title = `Currency Report - ${currency}`;
+  const subtitle = `Generated: ${new Date().toLocaleString()}`;
+
   // Get currency-specific data
   const givenGroups = groupByLoan(state.entries.filter(e =>
     e.currency === currency &&
@@ -3736,7 +3665,7 @@ async function downloadCurrencyPDF(currency){
     !hasExpenseAccountTag(e.notes)
   ));
 
-  drawPdfHeader(doc, logoData, `Currency Report - ${currency}`, `Generated: ${new Date().toLocaleString()}`);
+  drawPdfHeader(doc, logoData, title, subtitle);
   drawPdfOwnerBlock(doc, 48);
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
@@ -3778,14 +3707,16 @@ async function downloadCurrencyPDF(currency){
       theme: "grid",
       headStyles: { fillColor: [36, 87, 214] },
       styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
-      didDrawPage: () => drawPdfFooter(doc)
+      margin: { top: 50, bottom: 40 },
+      didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
     });
   }
 
   // Add taken loans section if there's space or on new page
   if (takenRows.length > 0) {
     if (givenRows.length > 0) doc.addPage();
-    drawPdfHeader(doc, logoData, `Currency Report - ${currency} (Taken Loans)`, `Generated: ${new Date().toLocaleString()}`);
+    const takenTitle = `Currency Report - ${currency} (Taken Loans)`;
+    drawPdfHeader(doc, logoData, takenTitle, subtitle);
     drawPdfOwnerBlock(doc, 48);
     doc.autoTable({
       startY: 72,
@@ -3794,7 +3725,8 @@ async function downloadCurrencyPDF(currency){
       theme: "grid",
       headStyles: { fillColor: [36, 87, 214] },
       styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
-      didDrawPage: () => drawPdfFooter(doc)
+      margin: { top: 50, bottom: 40 },
+      didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, takenTitle, subtitle, false)
     });
   }
 
@@ -3820,8 +3752,10 @@ async function downloadGoodsPDF(){
   await loadCustomFontsForPdf(doc);
 
   const logoData = await getPdfLogo();
-  
-  drawPdfHeader(doc, logoData, "Goods Report - Full Summary", `Generated: ${new Date().toLocaleString()}`);
+  const title = "Goods Report - Full Summary";
+  const subtitle = `Generated: ${new Date().toLocaleString()}`;
+
+  drawPdfHeader(doc, logoData, title, subtitle);
   drawPdfOwnerBlock(doc, 48);
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
@@ -3846,7 +3780,8 @@ async function downloadGoodsPDF(){
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
-    didDrawPage: () => drawPdfFooter(doc)
+    margin: { top: 50, bottom: 40 },
+    didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
   });
 
   doc.save("Goods_Report.pdf");
@@ -3879,10 +3814,11 @@ async function downloadAllTopupsPDF(currencyFilter = null){
   const subtitle = currencyFilter
     ? `Currency: ${currencyFilter}`
     : "All currencies (separate totals per currency)";
+  const title = currencyFilter ? `Top-Up Records — ${currencyFilter}` : "Top-Up Records — all currencies";
   drawPdfHeader(
     doc,
     logoData,
-    currencyFilter ? `Top-Up Records — ${currencyFilter}` : "Top-Up Records — all currencies",
+    title,
     subtitle
   );
   drawPdfOwnerBlock(doc, 52);
@@ -3949,7 +3885,8 @@ async function downloadAllTopupsPDF(currencyFilter = null){
           4: { cellWidth: 12 },
           5: { cellWidth: 79 }
         },
-    didDrawPage: () => drawPdfFooter(doc)
+    margin: { left: 14, right: 14, top: 50, bottom: 40 },
+    didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
   });
 
   doc.save(currencyFilter
@@ -3999,11 +3936,13 @@ async function downloadAllTransfersPDF(currencyFilter = null){
   await loadCustomFontsForPdf(doc);
 
   const logoData = await getPdfLogo();
+  const title = currencyFilter ? `Transfer Records — ${currencyFilter}` : "Transfer Records — all currencies";
+  const subtitle = "Sent and received legs per currency; rate matches the booking on each transfer.";
   drawPdfHeader(
     doc,
     logoData,
-    currencyFilter ? `Transfer Records — ${currencyFilter}` : "Transfer Records — all currencies",
-    "Sent and received legs per currency; rate matches the booking on each transfer."
+    title,
+    subtitle
   );
   drawPdfOwnerBlock(doc, 52);
   doc.setFontSize(10);
@@ -4119,7 +4058,8 @@ async function downloadExpenseItemPDF(itemKey){
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
     columnStyles: { 3: { cellWidth: 30 }, 4: { cellWidth: 60 } },
-    didDrawPage: () => drawPdfFooter(doc)
+    margin: { top: 50, bottom: 40 },
+    didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false)
   });
 
   // Add summary at the bottom
@@ -4439,7 +4379,8 @@ async function exportAllSectionsPDF(){
           }
         }
       },
-      didDrawPage: () => drawPdfFooter(doc)
+      margin: { top: 50, bottom: 40 },
+      didDrawPage: () => drawPdfHeaderAndFooter(doc, logoData, sectionTitle, sectionSubtitle, false)
     });
     printedSections += 1;
   }
