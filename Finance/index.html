@@ -9,6 +9,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.57/dist/zip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bitcoinjs-lib-browser@5.1.7/bitcoinjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <link rel="stylesheet" href="Assets/style/styles.css" />
 </head>
 <body>
@@ -117,6 +119,7 @@
       <button class="tab" data-tab="taken" type="button">Loan Taken / Returned Back</button>
       <button class="tab" data-tab="installments" type="button">Installment Plans</button>
       <button class="tab" data-tab="goods" type="button">Goods Bought / Sold</button>
+      <button class="tab" data-tab="bitcoin" type="button">Bitcoin</button>
     </section>
 
 <section class="overview main-overview-section collapsed" id="mainOverview">
@@ -458,6 +461,106 @@
             </div>
           </div>
           <div id="expensesList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="bitcoinPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Bitcoin Wallet</h3>
+                  <div class="menu-wrap">
+                    <label class="btn ghost" style="margin:0">Explorer / key network</label>
+                    <select id="btcNetworkSelect" class="select" style="width:auto;min-width:170px;margin-left:8px;">
+                      <option value="mainnet">Mainnet</option>
+                      <option value="testnet">Testnet</option>
+                      <option value="signet">Signet</option>
+                    </select>
+                  </div>
+                </div>
+                <p>Import a WIF or create a new one. All operations are client-side only.</p>
+              </div>
+              <div class="tools">
+                <div id="btcNetworkBadge" class="badge blue">Mainnet</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallet Login Section -->
+          <div id="btcLoginSection" class="card" style="margin-bottom:14px;">
+            <div style="padding:14px;">
+              <div style="margin-bottom:12px;">
+                <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Bitcoin WIF</label>
+                <textarea id="btcWifInput" class="input" placeholder="Paste WIF here to login" style="min-height:80px;"></textarea>
+                <div style="margin-top:6px;font-size:.76rem;color:var(--muted);">The page never sends your private key to a server. Login and signing stay inside your browser.</div>
+              </div>
+              <div class="tools">
+                <button id="btcImportBtn" class="btn primary">Import WIF</button>
+                <button id="btcGenerateBtn" class="btn ghost">Create new wallet</button>
+              </div>
+              <div id="btcWalletStatus" class="empty" style="margin-top:12px;">No wallet loaded yet.</div>
+            </div>
+          </div>
+
+          <!-- Wallet Info Section (hidden until logged in) -->
+          <div id="btcWalletInfoSection" class="hide" style="margin-bottom:14px;">
+            <div class="card">
+              <div style="padding:14px;">
+                <div style="margin-bottom:12px;">
+                  <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Wallet WIF</label>
+                  <div style="display:flex;gap:10px;align-items:center;">
+                    <div id="btcMaskedWif" class="input" style="background:var(--panel-2);flex:1;">WIF masked after login</div>
+                    <button id="btcCopyWifBtn" class="btn ghost">Copy</button>
+                  </div>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Wallet Address</label>
+                  <div style="display:flex;gap:10px;align-items:center;">
+                    <div id="btcWalletAddress" class="input" style="background:var(--panel-2);flex:1;">Address after login</div>
+                    <button id="btcCopyAddressInfoBtn" class="btn ghost">Copy</button>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+                  <div class="summary">
+                    <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Spendable balance</div>
+                    <div id="btcBalanceValue" style="font-size:1rem;font-weight:700;">—</div>
+                  </div>
+                  <div class="summary">
+                    <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Total received</div>
+                    <div id="btcReceivedValue" style="font-size:1rem;font-weight:700;">—</div>
+                  </div>
+                  <div class="summary">
+                    <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Total sent</div>
+                    <div id="btcSentValue" style="font-size:1rem;font-weight:700;">—</div>
+                  </div>
+                  <div class="summary">
+                    <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Transaction count</div>
+                    <div id="btcTxCountValue" style="font-size:1rem;font-weight:700;">—</div>
+                  </div>
+                </div>
+                <div class="tools">
+                  <button id="btcSendBtn" class="btn primary">Send Bitcoin</button>
+                  <button id="btcReceiveBtn" class="btn primary">Receive Bitcoin</button>
+                  <button id="btcRefreshBtn" class="btn ghost">Refresh live data</button>
+                  <button id="btcClearBtn" class="btn ghost">Clear session</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction History -->
+          <div id="btcHistorySection" class="hide">
+            <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <h4 style="margin:0 0 4px;font-size:.98rem;">Transaction History</h4>
+                <p style="margin:0;color:var(--muted);font-size:.84rem;">Newest transactions first.</p>
+              </div>
+              <button id="btcDownloadPdfBtn" class="btn ghost">📄 Download PDF</button>
+            </div>
+            <div id="btcHistoryList" class="list"></div>
+          </div>
         </div>
       </section>
     </main>
@@ -970,6 +1073,75 @@
             </div>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bitcoin Send Modal -->
+  <div id="btcSendModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="btcSendModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3>Send Bitcoin</h3>
+          <p>Build and broadcast a Bitcoin transaction.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="btcSendModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="btcSendForm">
+          <div class="modal-grid">
+            <div class="field w12">
+              <label>Recipient address</label>
+              <input id="btcToAddress" class="input" type="text" placeholder="bc1... or 1..." required />
+            </div>
+            <div class="field w6">
+              <label>Amount (BTC)</label>
+              <input id="btcSendAmount" class="input" type="number" inputmode="decimal" min="0" step="0.00000001" placeholder="0.0001" required />
+            </div>
+            <div class="field w6">
+              <label>Fee rate (sat/vB)</label>
+              <input id="btcFeeRate" class="input" type="number" inputmode="decimal" min="1" step="0.1" placeholder="8" required />
+            </div>
+            <div class="field w6">
+              <label>Max</label>
+              <button id="btcMaxBtn" class="btn ghost" type="button" style="width:100%">Use balance</button>
+            </div>
+            <div class="field w12">
+              <div id="btcSendStatus" class="empty">Enter recipient address and amount.</div>
+            </div>
+            <div class="field w12 modal-footer">
+              <button class="btn ghost" type="button" data-close-modal="btcSendModal">Cancel</button>
+              <button id="btcBroadcastBtn" class="btn primary" type="button">Build and broadcast</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bitcoin Receive Modal -->
+  <div id="btcReceiveModal" class="modal hide" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="btcReceiveModal"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3>Receive Bitcoin</h3>
+          <p>Scan the QR code to send Bitcoin to this address.</p>
+        </div>
+        <button class="icon-btn ghost" type="button" data-close-modal="btcReceiveModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+          <div id="btcQrBox" style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;background:white;border-radius:18px;padding:12px;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Receive address</div>
+            <div id="btcReceiveAddress" class="input" style="background:var(--panel-2);text-align:center;font-size:.88rem;word-break:break-all;"></div>
+            <div style="margin-top:12px;">
+              <button id="btcCopyAddressBtn" class="btn ghost">Copy address</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
