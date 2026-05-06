@@ -1580,7 +1580,7 @@ function getExpenseAccounts(options = {}){
       const openingBalance = Number(principal?.principal_amount || 0);
       const addedMoney = topups.reduce((sum, row) => sum + Number(row.action_amount || 0), 0);
       const spentMoney = spends.reduce((sum, row) => sum + Number(row.action_amount || 0), 0);
-      const balance = Math.max(openingBalance + addedMoney - spentMoney, 0);
+      const balance = openingBalance + addedMoney - spentMoney;
       const status = balance > 0 ? "Open" : "Closed";
       return {
         ...group,
@@ -1847,7 +1847,7 @@ async function saveExpenseAccount(form){
       rowType: "ACCOUNT"
     })
   };
-  if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date){
+  if (!payload.person_name || !payload.currency || payload.principal_amount === "" || payload.principal_amount === null || payload.principal_amount === undefined || !payload.loan_date){
     throw new Error("Complete all required fields.");
   }
   if (isBackupMode()){
@@ -1904,7 +1904,7 @@ async function saveExpenseEntry(form){
   const expenseType = String(fd.get("custom_expense_type") || "").trim() || String(fd.get("expense_type") || "").trim() || "Other";
   const notes = String(fd.get("notes") || "").trim() || null;
   const itemIntent = String(fd.get("expense_item_intent") || "additional");
-  if (!groupId || !amount || !date || !itemName) throw new Error("Complete all required fields.");
+  if (!groupId || amount === "" || amount === null || amount === undefined || !date || !itemName) throw new Error("Complete all required fields.");
   const account = getExpenseAccounts({ applyUiFilters: false }).find(a => a.group_id === groupId);
   if (!account) throw new Error("Account not found.");
   if (selectedCurrency && account.currency !== selectedCurrency){
@@ -1977,7 +1977,7 @@ async function downloadExpenseAccountPDF(groupId){
     const meta = expenseMetaFromNotes(row.notes);
     const isExpense = meta.rowType === "EXPENSE";
     const amt = Number(row.action_amount || 0);
-    runningBalance = isExpense ? Math.max(runningBalance - amt, 0) : runningBalance + amt;
+    runningBalance = isExpense ? runningBalance - amt : runningBalance + amt;
     rows.push([
       isExpense ? `Expense (${meta.expenseType || "Other"})` : "Topup",
       displayDate(row.action_date || "—"),
@@ -3295,20 +3295,30 @@ async function getPdfLogo(){
 
 function drawPdfHeader(doc, logoData, title, subtitle){
   const pageWidth = doc.internal.pageSize.getWidth();
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(10, 8, pageWidth - 20, 40, 2, 2, "F");
+
+  // Premium gradient-like header background
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(10, 8, pageWidth - 20, 35, 3, 3, "F");
+
+  // Accent border at top
+  doc.setFillColor(36, 87, 214);
+  doc.roundedRect(10, 8, pageWidth - 20, 3, 3, 3, "F");
 
   if (logoData){
-    try { doc.addImage(logoData, "PNG", 15.5, 13.5, 60, 20); } catch {}
+    try { doc.addImage(logoData, "PNG", 15.5, 14, 50, 18); } catch {}
   }
 
-  doc.setTextColor(23, 33, 43);
-  doc.setFontSize(10);
-  doc.setTextColor(102, 112, 133);
-  doc.text(title, 80, 18);
+  // Title with premium styling
+  doc.setTextColor(15, 23, 42);
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 72, 20);
+
   if (subtitle) {
+    doc.setTextColor(71, 85, 105);
     doc.setFontSize(8);
-    doc.text(subtitle, 80, 28);
+    doc.setFont("helvetica", "normal");
+    doc.text(subtitle, 72, 28);
   }
 }
 
@@ -3323,11 +3333,33 @@ function drawPdfOwnerBlock(doc, y = 48){
 
 function drawPdfFooter(doc){
   const pageHeight = doc.internal.pageSize.getHeight();
-  doc.setDrawColor(208, 213, 221);
-  doc.line(12, pageHeight - 14, doc.internal.pageSize.getWidth() - 12, pageHeight - 14);
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Premium footer background
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(12, pageHeight - 28, pageWidth - 24, 20, 2, 2, "F");
+
+  // Top border line
+  doc.setDrawColor(36, 87, 214);
+  doc.setLineWidth(0.3);
+  doc.line(12, pageHeight - 28, pageWidth - 12, pageHeight - 28);
+
+  // System name with premium styling
+  doc.setTextColor(36, 87, 214);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(PDF_BRAND.systemName, pageWidth / 2, pageHeight - 22, { align: "center" });
+
+  // Disclaimer text
   doc.setTextColor(102, 112, 133);
-  doc.setFontSize(8.5);
-  doc.text(`Powered by ${PDF_BRAND.owner} | ${PDF_BRAND.facebook}`, 14, pageHeight - 8);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("This is a system-generated document and does not require any signature", pageWidth / 2, pageHeight - 17, { align: "center" });
+
+  // Contact information
+  doc.setTextColor(71, 85, 105);
+  doc.setFontSize(6.5);
+  doc.text(`Powered by ${PDF_BRAND.owner} | ${PDF_BRAND.email} | ${PDF_BRAND.mobile}`, pageWidth / 2, pageHeight - 12, { align: "center" });
 }
 
 function buildPersonPdfData(personName, direction){
