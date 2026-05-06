@@ -303,10 +303,8 @@ a{color:inherit}
   will-change:transform, opacity;
   transform:translate3d(0,0,0) scale(var(--s, 1));
   animation:
-    wallet-fade-in 0.5s ease-out forwards,
-    wallet-drift var(--d, 22s) ease-in-out calc(var(--delay, 0s) + 0.5s) infinite alternate,
-    wallet-zoom var(--z, 9s) ease-in-out calc(var(--delay, 0s) * .5 + 0.5s) infinite alternate,
-    wallet-rotate var(--r, 15s) ease-in-out calc(var(--delay, 0s) * .3 + 0.5s) infinite alternate;
+    wallet-fade-in 0.8s ease-out forwards,
+    wallet-drift var(--d, 22s) ease-in-out calc(var(--delay, 0s) + 0.8s) infinite alternate;
 }
 @keyframes wallet-fade-in{
   from { opacity: 0; }
