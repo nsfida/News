@@ -2101,10 +2101,15 @@ function renderExpensesList(){
   const topupCurrencies = sortCurrenciesList([...topupByCurrency.keys()]);
 
   if (topupTransactions.length > 0){
-    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Top-Up Records</h4>`;
-    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">PDF per currency row below. Combined report covers every currency.</span>
-      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
-    </div></div>`;
+    html += `<details class="expense-collapsible-section" id="topupRecordsSection">
+      <summary class="expense-collapsible-header">
+        <h4 class="expense-section-title">Top-Up Records</h4>
+        <span class="expand-icon">▶</span>
+      </summary>
+      <div class="expense-collapsible-content">
+        <div class="expense-section-toolbar"><span class="expense-toolbar-hint">PDF per currency row below. Combined report covers every currency.</span>
+          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
+        </div>`;
     for (const cur of topupCurrencies){
       const txs = topupByCurrency.get(cur).slice().sort((a, b) => dateStamp(b.action_date || b.loan_date) - dateStamp(a.action_date || a.loan_date));
       const totalCur = txs.reduce((sum, tx) => sum + Number(tx.action_amount || 0), 0);
@@ -2155,6 +2160,7 @@ function renderExpensesList(){
         </div>
       </details>`;
     }
+    html += `</div></details>`;
   }
 
   let transferEvents = buildTransferEvents();
@@ -2172,10 +2178,15 @@ function renderExpensesList(){
   const transferCurrencies = sortCurrenciesList([...transferCurrencySet]);
 
   if (transferEvents.length > 0 && transferCurrencies.length > 0){
-    html += `<div class="expense-section-anchor"><h4 class="expense-section-title">Transfer Records</h4>`;
-    html += `<div class="expense-section-toolbar"><span class="expense-toolbar-hint">Sent and received are shown per currency using the conversion rate recorded on transfer.</span>
-      <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
-    </div></div>`;
+    html += `<details class="expense-collapsible-section" id="transferRecordsSection">
+      <summary class="expense-collapsible-header">
+        <h4 class="expense-section-title">Transfer Records</h4>
+        <span class="expand-icon">▶</span>
+      </summary>
+      <div class="expense-collapsible-content">
+        <div class="expense-section-toolbar"><span class="expense-toolbar-hint">Sent and received are shown per currency using the conversion rate recorded on transfer.</span>
+          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
+        </div>`;
     for (const cur of transferCurrencies){
       const rows = getTransferRowsForCurrency(cur, transferEvents);
       if (!rows.length) continue;
@@ -2233,6 +2244,7 @@ function renderExpensesList(){
         </div>
       </details>`;
     }
+    html += `</div></details>`;
   }
 
   // Expense items (non-transfer spending), grouped by item
@@ -2245,6 +2257,12 @@ function renderExpensesList(){
   }
   
   if (items.length > 0) {
+    html += `<details class="expense-collapsible-section" id="transactionsHistorySection">
+      <summary class="expense-collapsible-header">
+        <h4 class="expense-section-title">Transactions History</h4>
+        <span class="expand-icon">▶</span>
+      </summary>
+      <div class="expense-collapsible-content">`;
     html += items.map(item => `
       <details class="loan expense-item-row">
         <summary>
@@ -2292,6 +2310,7 @@ function renderExpensesList(){
         </div>
       </details>
     `).join("");
+    html += `</div></details>`;
   }
 
   if (!html) {
@@ -4980,9 +4999,23 @@ async function attemptUnlock(){
   const keepCurrentBackup = state.hasImportedFile && state.dataSource === "backup";
   try{
     const safeUser = sanitizeZipUsername(zipUsernameRaw);
-    const zipBlob = await fetchProtectedZipBlob(safeUser);
+    let zipBlob;
+    try{
+      zipBlob = await fetchProtectedZipBlob(safeUser);
+    }catch(fetchErr){
+      els.lockError.textContent = "Username is incorrect. Please check your username and try again.";
+      els.lockError.classList.add("show");
+      return;
+    }
     const zipFile = new File([zipBlob], `${safeUser}.zip`, { type: "application/zip" });
-    const configData = await readConfigFromZip(zipFile, zipPassword);
+    let configData;
+    try{
+      configData = await readConfigFromZip(zipFile, zipPassword);
+    }catch(decryptErr){
+      els.lockError.textContent = "Password is incorrect. Please check your password and try again.";
+      els.lockError.classList.add("show");
+      return;
+    }
     if (!configData?.supabaseUrl || !configData?.supabaseKey){
       throw new Error("Config JSON must contain supabaseUrl and supabaseKey.");
     }
@@ -5011,7 +5044,7 @@ async function attemptUnlock(){
     els.lockError.textContent = err.message;
   }finally{
     els.unlockBtn.disabled = false;
-    els.unlockBtn.textContent = "Unlock";
+    els.unlockBtn.textContent = "Sign In";
   }
 }
 
