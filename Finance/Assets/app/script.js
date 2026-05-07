@@ -632,33 +632,41 @@ function hash01(str){
 function overviewWatermarkFloatingWalletLogos(accounts){
   const list = Array.isArray(accounts) ? accounts : [];
   if (!list.length) return "";
-  const logos = list.map(a => {
-    const name = String(a.person_name || "Wallet").trim() || "Wallet";
-    const r1 = hash01(`${name}::1`);
-    const r2 = hash01(`${name}::2`);
-    const r3 = hash01(`${name}::3`);
-    const r4 = hash01(`${name}::4`);
-    const r5 = hash01(`${name}::5`);
-    const dur = (14 + Math.floor(r1 * 18)); // 14..31s
-    const zoom = (6 + Math.floor(r2 * 7));  // 6..12s
-    const delay = (Math.floor(r3 * 10) * -1); // negative delay
-    const scale = (0.75 + r4 * 0.55).toFixed(2);
-const left = (4 + r1 * 88).toFixed(2);
-    const top  = (4 + r2 * 88).toFixed(2);
+  
+  // Ensure at least 7 logos by duplicating wallets if needed
+  const logoCount = Math.max(list.length, 7);
+  const logos = [];
+  
+  for (let i = 0; i < logoCount; i++) {
+    const account = list[i % list.length];
+    const name = String(account.person_name || "Wallet").trim() || "Wallet";
+    
+    // Use Math.random() for truly random movement (not deterministic)
+    const dur = (12 + Math.random() * 24).toFixed(1); // 12..36s
+    const delay = (Math.random() * -15).toFixed(1); // random negative delay
+    const scale = (0.7 + Math.random() * 0.6).toFixed(2); // 0.7..1.3
+    const left = (3 + Math.random() * 90).toFixed(2); // 3..93%
+    const top = (3 + Math.random() * 90).toFixed(2); // 3..93%
+    
+    // Random animation variant for each logo
+    const animVariant = Math.floor(Math.random() * 4); // 0..3
+    const animName = `wallet-drift-${animVariant}`;
+    
     const cssVars = [
       `--d:${dur}s`,
-      `--z:${zoom}s`,
       `--delay:${delay}s`,
       `--s:${scale}`
     ].join(";");
+    
     const logoPath = `Assets/logo/wallet_logos/${escapeHtml(name)}.png`;
-    return `
-      <span class="wallet-float-logo" style="${cssVars}; left:${left}%; top:${top}%;">
+    logos.push(`
+      <span class="wallet-float-logo" style="${cssVars}; left:${left}%; top:${top}%; animation-name: wallet-fade-in, ${animName};">
         <img src="${logoPath}" alt="" aria-hidden="true" loading="lazy" onerror="this.parentElement.style.display='none'"/>
       </span>
-    `;
-  }).join("");
-  return `<div class="wallet-float-watermark" aria-hidden="true">${logos}</div>`;
+    `);
+  }
+  
+  return `<div class="wallet-float-watermark" aria-hidden="true">${logos.join("")}</div>`;
 }
 
 function renderOverviewCards(){
