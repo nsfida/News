@@ -691,7 +691,7 @@ function renderOverviewCards(){
         <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
           <button class="tiny ghost" onclick="window.location.href='#givenPanel'">View Given</button>
           <button class="tiny ghost" onclick="window.location.href='#takenPanel'">View Taken</button>
-          <button class="tiny ghost" onclick="downloadCurrencyPDF('${currency}')">Download PDF</button>
+          <button class="tiny ghost" onclick="downloadCurrencyPDF('${currency}')"><i class="fa-solid fa-download"></i></button>
         </div>
       </div>
     `;
@@ -708,7 +708,7 @@ function renderOverviewCards(){
       <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
         <button class="tiny ghost" onclick="window.location.href='#goodsPanel'">View Goods</button>
         <button class="tiny ghost" onclick="openGoodsModal('bought')">Add Item</button>
-        <button class="tiny ghost" onclick="downloadGoodsPDF()">Download PDF</button>
+        <button class="tiny ghost" onclick="downloadGoodsPDF()"><i class="fa-solid fa-download"></i></button>
       </div>
     </div>
   `;
@@ -1163,7 +1163,7 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
               <div class="menu-wrap">
                 <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" aria-label="More actions" data-person-menu="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">☰</button>
                 <div class="menu-dropdown" data-person-menu-panel="${escapeHtml(group.primaryGroupId || group.person_name || "menu")}">
-                  <button class="menu-item personActionBtn" type="button" data-action="pdf" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Download PDF</button>
+                  <button class="menu-item personActionBtn" type="button" data-action="pdf" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}"><i class="fa-solid fa-download"></i> Download PDF</button>
                   ${hasUnsynced ? `<button class="menu-item personActionBtn" type="button" data-action="save-db" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Save to Database</button>` : ""}
                   <button class="menu-item personActionBtn" type="button" data-action="edit-name" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Edit Name</button>
                   ${showInstallmentMove ? `<button class="menu-item personActionBtn" type="button" data-action="move-installment" data-person="${encodeURIComponent(group.person_name || "")}" data-direction="${escapeHtml(direction)}">Move to Installments</button>` : ""}
@@ -1567,7 +1567,7 @@ function renderGoodsList(){
               <div class="menu-wrap">
                 <button class="icon-btn ghost menu-trigger person-menu-btn" type="button" data-goods-menu="${escapeHtml(group.group_id)}">☰</button>
                 <div class="menu-dropdown" data-goods-menu-panel="${escapeHtml(group.group_id)}">
-                  <button class="menu-item goodsActionBtn" type="button" data-action="pdf" data-group-id="${escapeHtml(group.group_id)}">Download PDF</button>
+                  <button class="menu-item goodsActionBtn" type="button" data-action="pdf" data-group-id="${escapeHtml(group.group_id)}"><i class="fa-solid fa-download"></i> Download PDF</button>
                   <button class="menu-item goodsActionBtn" type="button" data-action="edit-bought" data-entry-id="${escapeHtml(group.principal?.id || "")}">Edit Bought</button>
                   <button class="menu-item danger goodsActionBtn" type="button" data-action="delete-item" data-entry-id="${escapeHtml(group.principal?.id || "")}">Delete Item</button>
                 </div>
@@ -2170,7 +2170,7 @@ function renderExpensesList(){
       </summary>
       <div class="expense-collapsible-content">
         <div class="expense-section-toolbar"><span class="expense-toolbar-hint">PDF per currency row below. Combined report covers every currency.</span>
-          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)">📄 All currencies</button>
+          <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="all-topups" title="Download PDF (all currencies)"><i class="fa-solid fa-download"></i></button>
         </div>`;
     for (const cur of topupCurrencies){
       const txs = topupByCurrency.get(cur).slice().sort((a, b) => dateStamp(b.action_date || b.loan_date) - dateStamp(a.action_date || a.loan_date));
@@ -2192,7 +2192,7 @@ function renderExpensesList(){
               <strong>${escapeHtml(moneyText(totalCur, cur))}</strong>
             </div>
             <div class="lt-action">
-              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="topups-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
+              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="topups-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;"><i class="fa-solid fa-download"></i></button>
             </div>
           </div>
         </summary>
@@ -2247,7 +2247,7 @@ function renderExpensesList(){
       </summary>
       <div class="expense-collapsible-content">
         <div class="expense-section-toolbar"><span class="expense-toolbar-hint">Sent and received are shown per currency using the conversion rate recorded on transfer.</span>
-          <button type="button" class="btn soft expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)">📄 All currencies</button>
+          <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="all-transfers" title="Download PDF (all currencies)"><i class="fa-solid fa-download"></i></button>
         </div>`;
     for (const cur of transferCurrencies){
       const rows = getTransferRowsForCurrency(cur, transferEvents);
@@ -2270,7 +2270,7 @@ function renderExpensesList(){
               <div><small>Received (${currencySymbolHtml(cur)})</small><strong>${escapeHtml(moneyText(received, cur))}</strong></div>
             </div>
             <div class="lt-action">
-              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="transfers-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;">📄</button>
+              <button type="button" class="icon-btn ghost expenseActionBtn" data-action="pdf" data-type="transfers-by-currency" data-currency="${escapeHtml(cur)}" title="Download PDF (${escapeHtml(cur)})" style="font-size: 0.9rem;"><i class="fa-solid fa-download"></i></button>
             </div>
           </div>
         </summary>
@@ -2342,7 +2342,7 @@ function renderExpensesList(){
               <strong>${money(item.total, item.currency)}</strong>
             </div>
             <div class="lt-action">
-              <button class="icon-btn ghost" onclick="downloadExpenseItemPDF('${escapeHtml(item.key)}')" title="Download PDF" style="font-size: 0.9rem;">📄</button>
+              <button class="icon-btn ghost" onclick="downloadExpenseItemPDF('${escapeHtml(item.key)}')" title="Download PDF" style="font-size: 0.9rem;"><i class="fa-solid fa-download"></i></button>
             </div>
           </div>
         </summary>
@@ -2636,7 +2636,7 @@ function renderExpenseOverviewWallets(){
         <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
           <button class="tiny ghost" onclick="window.location.href='#expensesPanel'">View Expenses</button>
           <button class="tiny ghost" onclick="openExpenseModal('account')">Add Account</button>
-          <button class="tiny ghost" onclick="downloadExpensesPDF()">Download PDF</button>
+          <button class="tiny ghost" onclick="downloadExpensesPDF()"><i class="fa-solid fa-download"></i></button>
         </div>
       </div>
   ` : "";
@@ -2659,7 +2659,7 @@ function renderExpenseOverviewWallets(){
           <button class="tiny ghost" onclick="openExpenseModal('topup', '${escapeHtml(a.group_id)}')">Add Money</button>
           <button class="tiny ghost" onclick="openExpenseModal('expense', '${escapeHtml(a.group_id)}')">Add Expense</button>
           <button class="tiny ghost" onclick="openTransferModal('${escapeHtml(a.group_id)}', '${escapeHtml(a.person_name || 'Wallet')}', '${escapeHtml(a.currency)}')">Transfer</button>
-          <button class="tiny ghost" onclick="downloadExpenseAccountPDF('${escapeHtml(a.group_id)}')">Download PDF</button>
+          <button class="tiny ghost" onclick="downloadExpenseAccountPDF('${escapeHtml(a.group_id)}')"><i class="fa-solid fa-download"></i></button>
           <button class="tiny ghost" onclick="openEditModal('${escapeHtml(a.principal?.id || '')}')">Edit</button>
           <button class="tiny danger" onclick="deleteExpenseWallet('${escapeHtml(a.group_id)}', '${escapeHtml(a.person_name || 'Wallet')}')">Delete Wallet</button>
         </div>
