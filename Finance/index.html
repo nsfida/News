@@ -186,27 +186,40 @@
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
               <div class="tools">
-                <input id="searchGiven" class="input" style="min-width:180px" placeholder="Search name or note" />
                 <button class="btn soft" id="downloadGivenPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
-            <div class="filter-group">
-              <input type="radio" id="f_given_all" name="f_given" value="All" class="filter-radio" data-filter="given" checked>
-              <label for="f_given_all" class="filter-label">All</label>
-              <input type="radio" id="f_given_active" name="f_given" value="Active" class="filter-radio" data-filter="given">
-              <label for="f_given_active" class="filter-label">Open/Partial</label>
-              <input type="radio" id="f_given_closed" name="f_given" value="Closed" class="filter-radio" data-filter="given">
-              <label for="f_given_closed" class="filter-label">Closed</label>
-            </div>
-            <div class="filter-group">
-              <input type="radio" id="f_given_cur_all" name="f_given_cur" value="All" class="currency-radio filter-radio" data-currency-filter="given" checked>
-              <label for="f_given_cur_all" class="filter-label">All</label>
-              <input type="radio" id="f_given_cur_aed" name="f_given_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="given">
-              <label for="f_given_cur_aed" class="filter-label">~</label>
-              <input type="radio" id="f_given_cur_sar" name="f_given_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="given">
-              <label for="f_given_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
-              <input type="radio" id="f_given_cur_pkr" name="f_given_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="given">
-              <label for="f_given_cur_pkr" class="filter-label">Rs.</label>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchGiven" class="input filter-inline-input" placeholder="Search name or note" />
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Status:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_given_all" name="f_given" value="All" class="filter-radio" data-filter="given" checked>
+                  <label for="f_given_all" class="filter-label">All</label>
+                  <input type="radio" id="f_given_active" name="f_given" value="Active" class="filter-radio" data-filter="given">
+                  <label for="f_given_active" class="filter-label">Open/Partial</label>
+                  <input type="radio" id="f_given_closed" name="f_given" value="Closed" class="filter-radio" data-filter="given">
+                  <label for="f_given_closed" class="filter-label">Closed</label>
+                </div>
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Currency:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_given_cur_all" name="f_given_cur" value="All" class="currency-radio filter-radio" data-currency-filter="given" checked>
+                  <label for="f_given_cur_all" class="filter-label">All</label>
+                  <input type="radio" id="f_given_cur_aed" name="f_given_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="given">
+                  <label for="f_given_cur_aed" class="filter-label">~</label>
+                  <input type="radio" id="f_given_cur_sar" name="f_given_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="given">
+                  <label for="f_given_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+                  <input type="radio" id="f_given_cur_pkr" name="f_given_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="given">
+                  <label for="f_given_cur_pkr" class="filter-label">Rs.</label>
+                </div>
+              </div>
             </div>
           </div>
           <div id="givenList" class="list"></div>
@@ -225,27 +238,40 @@
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
               <div class="tools">
-                <input id="searchReceived" class="input" style="min-width:180px" placeholder="Search name or note" />
                 <button class="btn soft" id="downloadReceivedPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
-            <div class="filter-group">
-              <input type="radio" id="f_rec_all" name="f_rec" value="All" class="filter-radio" data-filter="received" checked>
-              <label for="f_rec_all" class="filter-label">All</label>
-              <input type="radio" id="f_rec_active" name="f_rec" value="Active" class="filter-radio" data-filter="received">
-              <label for="f_rec_active" class="filter-label">Open/Partial</label>
-              <input type="radio" id="f_rec_closed" name="f_rec" value="Closed" class="filter-radio" data-filter="received">
-              <label for="f_rec_closed" class="filter-label">Closed</label>
-            </div>
-            <div class="filter-group">
-              <input type="radio" id="f_rec_cur_all" name="f_rec_cur" value="All" class="currency-radio filter-radio" data-currency-filter="received" checked>
-              <label for="f_rec_cur_all" class="filter-label">All</label>
-              <input type="radio" id="f_rec_cur_aed" name="f_rec_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="received">
-              <label for="f_rec_cur_aed" class="filter-label">~</label>
-              <input type="radio" id="f_rec_cur_sar" name="f_rec_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="received">
-              <label for="f_rec_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
-              <input type="radio" id="f_rec_cur_pkr" name="f_rec_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="received">
-              <label for="f_rec_cur_pkr" class="filter-label">Rs.</label>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchReceived" class="input filter-inline-input" placeholder="Search name or note" />
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Status:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_rec_all" name="f_rec" value="All" class="filter-radio" data-filter="received" checked>
+                  <label for="f_rec_all" class="filter-label">All</label>
+                  <input type="radio" id="f_rec_active" name="f_rec" value="Active" class="filter-radio" data-filter="received">
+                  <label for="f_rec_active" class="filter-label">Open/Partial</label>
+                  <input type="radio" id="f_rec_closed" name="f_rec" value="Closed" class="filter-radio" data-filter="received">
+                  <label for="f_rec_closed" class="filter-label">Closed</label>
+                </div>
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Currency:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_rec_cur_all" name="f_rec_cur" value="All" class="currency-radio filter-radio" data-currency-filter="received" checked>
+                  <label for="f_rec_cur_all" class="filter-label">All</label>
+                  <input type="radio" id="f_rec_cur_aed" name="f_rec_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="received">
+                  <label for="f_rec_cur_aed" class="filter-label">~</label>
+                  <input type="radio" id="f_rec_cur_sar" name="f_rec_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="received">
+                  <label for="f_rec_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+                  <input type="radio" id="f_rec_cur_pkr" name="f_rec_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="received">
+                  <label for="f_rec_cur_pkr" class="filter-label">Rs.</label>
+                </div>
+              </div>
             </div>
           </div>
           <div id="receivedList" class="list"></div>
@@ -270,27 +296,40 @@
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
               <div class="tools">
-                <input id="searchTaken" class="input" style="min-width:180px" placeholder="Search name or note" />
                 <button class="btn soft" id="downloadTakenPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
-            <div class="filter-group">
-              <input type="radio" id="f_taken_all" name="f_taken" value="All" class="filter-radio" data-filter="taken" checked>
-              <label for="f_taken_all" class="filter-label">All</label>
-              <input type="radio" id="f_taken_active" name="f_taken" value="Active" class="filter-radio" data-filter="taken">
-              <label for="f_taken_active" class="filter-label">Open/Partial</label>
-              <input type="radio" id="f_taken_closed" name="f_taken" value="Closed" class="filter-radio" data-filter="taken">
-              <label for="f_taken_closed" class="filter-label">Closed</label>
-            </div>
-            <div class="filter-group">
-              <input type="radio" id="f_taken_cur_all" name="f_taken_cur" value="All" class="currency-radio filter-radio" data-currency-filter="taken" checked>
-              <label for="f_taken_cur_all" class="filter-label">All</label>
-              <input type="radio" id="f_taken_cur_aed" name="f_taken_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="taken">
-              <label for="f_taken_cur_aed" class="filter-label">~</label>
-              <input type="radio" id="f_taken_cur_sar" name="f_taken_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="taken">
-              <label for="f_taken_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
-              <input type="radio" id="f_taken_cur_pkr" name="f_taken_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="taken">
-              <label for="f_taken_cur_pkr" class="filter-label">Rs.</label>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchTaken" class="input filter-inline-input" placeholder="Search name or note" />
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Status:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_taken_all" name="f_taken" value="All" class="filter-radio" data-filter="taken" checked>
+                  <label for="f_taken_all" class="filter-label">All</label>
+                  <input type="radio" id="f_taken_active" name="f_taken" value="Active" class="filter-radio" data-filter="taken">
+                  <label for="f_taken_active" class="filter-label">Open/Partial</label>
+                  <input type="radio" id="f_taken_closed" name="f_taken" value="Closed" class="filter-radio" data-filter="taken">
+                  <label for="f_taken_closed" class="filter-label">Closed</label>
+                </div>
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Currency:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_taken_cur_all" name="f_taken_cur" value="All" class="currency-radio filter-radio" data-currency-filter="taken" checked>
+                  <label for="f_taken_cur_all" class="filter-label">All</label>
+                  <input type="radio" id="f_taken_cur_aed" name="f_taken_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="taken">
+                  <label for="f_taken_cur_aed" class="filter-label">~</label>
+                  <input type="radio" id="f_taken_cur_sar" name="f_taken_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="taken">
+                  <label for="f_taken_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+                  <input type="radio" id="f_taken_cur_pkr" name="f_taken_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="taken">
+                  <label for="f_taken_cur_pkr" class="filter-label">Rs.</label>
+                </div>
+              </div>
             </div>
           </div>
           <div id="takenList" class="list"></div>
@@ -309,27 +348,40 @@
                 <p>Loans are sorted by the latest user-entered payment date, newest first.</p>
               </div>
               <div class="tools">
-                <input id="searchReturned" class="input" style="min-width:180px" placeholder="Search name or note" />
                 <button class="btn soft" id="downloadReturnedPdfBtn" type="button">📄 Download</button>
               </div>
             </div>
-            <div class="filter-group">
-              <input type="radio" id="f_ret_all" name="f_ret" value="All" class="filter-radio" data-filter="returned" checked>
-              <label for="f_ret_all" class="filter-label">All</label>
-              <input type="radio" id="f_ret_active" name="f_ret" value="Active" class="filter-radio" data-filter="returned">
-              <label for="f_ret_active" class="filter-label">Open/Partial</label>
-              <input type="radio" id="f_ret_closed" name="f_ret" value="Closed" class="filter-radio" data-filter="returned">
-              <label for="f_ret_closed" class="filter-label">Closed</label>
-            </div>
-            <div class="filter-group">
-              <input type="radio" id="f_ret_cur_all" name="f_ret_cur" value="All" class="currency-radio filter-radio" data-currency-filter="returned" checked>
-              <label for="f_ret_cur_all" class="filter-label">All</label>
-              <input type="radio" id="f_ret_cur_aed" name="f_ret_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="returned">
-              <label for="f_ret_cur_aed" class="filter-label">~</label>
-              <input type="radio" id="f_ret_cur_sar" name="f_ret_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="returned">
-              <label for="f_ret_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
-              <input type="radio" id="f_ret_cur_pkr" name="f_ret_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="returned">
-              <label for="f_ret_cur_pkr" class="filter-label">Rs.</label>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchReturned" class="input filter-inline-input" placeholder="Search name or note" />
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Status:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_ret_all" name="f_ret" value="All" class="filter-radio" data-filter="returned" checked>
+                  <label for="f_ret_all" class="filter-label">All</label>
+                  <input type="radio" id="f_ret_active" name="f_ret" value="Active" class="filter-radio" data-filter="returned">
+                  <label for="f_ret_active" class="filter-label">Open/Partial</label>
+                  <input type="radio" id="f_ret_closed" name="f_ret" value="Closed" class="filter-radio" data-filter="returned">
+                  <label for="f_ret_closed" class="filter-label">Closed</label>
+                </div>
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Currency:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_ret_cur_all" name="f_ret_cur" value="All" class="currency-radio filter-radio" data-currency-filter="returned" checked>
+                  <label for="f_ret_cur_all" class="filter-label">All</label>
+                  <input type="radio" id="f_ret_cur_aed" name="f_ret_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="returned">
+                  <label for="f_ret_cur_aed" class="filter-label">~</label>
+                  <input type="radio" id="f_ret_cur_sar" name="f_ret_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="returned">
+                  <label for="f_ret_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+                  <input type="radio" id="f_ret_cur_pkr" name="f_ret_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="returned">
+                  <label for="f_ret_cur_pkr" class="filter-label">Rs.</label>
+                </div>
+              </div>
             </div>
           </div>
           <div id="returnedList" class="list"></div>
@@ -347,26 +399,39 @@
                 <p>People moved here from taken loans are tracked as installment plans.</p>
               </div>
               <div class="tools">
-                <input id="searchInstallments" class="input" style="min-width:180px" placeholder="Search name or note" />
               </div>
             </div>
-            <div class="filter-group">
-              <input type="radio" id="f_inst_all" name="f_inst" value="All" class="filter-radio" data-filter="installments" checked>
-              <label for="f_inst_all" class="filter-label">All</label>
-              <input type="radio" id="f_inst_active" name="f_inst" value="Active" class="filter-radio" data-filter="installments">
-              <label for="f_inst_active" class="filter-label">Open/Partial</label>
-              <input type="radio" id="f_inst_closed" name="f_inst" value="Closed" class="filter-radio" data-filter="installments">
-              <label for="f_inst_closed" class="filter-label">Closed</label>
-            </div>
-            <div class="filter-group">
-              <input type="radio" id="f_inst_cur_all" name="f_inst_cur" value="All" class="currency-radio filter-radio" data-currency-filter="installments" checked>
-              <label for="f_inst_cur_all" class="filter-label">All</label>
-              <input type="radio" id="f_inst_cur_aed" name="f_inst_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="installments">
-              <label for="f_inst_cur_aed" class="filter-label">~</label>
-              <input type="radio" id="f_inst_cur_sar" name="f_inst_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="installments">
-              <label for="f_inst_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
-              <input type="radio" id="f_inst_cur_pkr" name="f_inst_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="installments">
-              <label for="f_inst_cur_pkr" class="filter-label">Rs.</label>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchInstallments" class="input filter-inline-input" placeholder="Search name or note" />
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Status:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_inst_all" name="f_inst" value="All" class="filter-radio" data-filter="installments" checked>
+                  <label for="f_inst_all" class="filter-label">All</label>
+                  <input type="radio" id="f_inst_active" name="f_inst" value="Active" class="filter-radio" data-filter="installments">
+                  <label for="f_inst_active" class="filter-label">Open/Partial</label>
+                  <input type="radio" id="f_inst_closed" name="f_inst" value="Closed" class="filter-radio" data-filter="installments">
+                  <label for="f_inst_closed" class="filter-label">Closed</label>
+                </div>
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Currency:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_inst_cur_all" name="f_inst_cur" value="All" class="currency-radio filter-radio" data-currency-filter="installments" checked>
+                  <label for="f_inst_cur_all" class="filter-label">All</label>
+                  <input type="radio" id="f_inst_cur_aed" name="f_inst_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="installments">
+                  <label for="f_inst_cur_aed" class="filter-label">~</label>
+                  <input type="radio" id="f_inst_cur_sar" name="f_inst_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="installments">
+                  <label for="f_inst_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+                  <input type="radio" id="f_inst_cur_pkr" name="f_inst_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="installments">
+                  <label for="f_inst_cur_pkr" class="filter-label">Rs.</label>
+                </div>
+              </div>
             </div>
           </div>
           <div id="installmentsList" class="list"></div>
@@ -391,16 +456,25 @@
                 <p>Track bought items and sold receipts with item-wise status.</p>
               </div>
               <div class="tools">
-                <input id="searchGoods" class="input" style="min-width:180px" placeholder="Search item or note" />
               </div>
             </div>
-            <div class="filter-group">
-              <input type="radio" id="f_goods_all" name="f_goods" value="All" class="filter-radio" data-filter="goods" checked>
-              <label for="f_goods_all" class="filter-label">All</label>
-              <input type="radio" id="f_goods_open" name="f_goods" value="Open" class="filter-radio" data-filter="goods">
-              <label for="f_goods_open" class="filter-label">In Stock</label>
-              <input type="radio" id="f_goods_sold" name="f_goods" value="Closed" class="filter-radio" data-filter="goods">
-              <label for="f_goods_sold" class="filter-label">Sold</label>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchGoods" class="input filter-inline-input" placeholder="Search item or note" />
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Status:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_goods_all" name="f_goods" value="All" class="filter-radio" data-filter="goods" checked>
+                  <label for="f_goods_all" class="filter-label">All</label>
+                  <input type="radio" id="f_goods_open" name="f_goods" value="Open" class="filter-radio" data-filter="goods">
+                  <label for="f_goods_open" class="filter-label">In Stock</label>
+                  <input type="radio" id="f_goods_sold" name="f_goods" value="Closed" class="filter-radio" data-filter="goods">
+                  <label for="f_goods_sold" class="filter-label">Sold</label>
+                </div>
+              </div>
             </div>
           </div>
           <div id="goodsList" class="list"></div>
@@ -426,38 +500,52 @@
                 <p>Wallets show top-up, spent, and balance. The list is an expense statement by item; open an item for wallet-level transactions.</p>
               </div>
               <div class="tools">
-                <input id="searchExpenses" class="input" style="min-width:180px" placeholder="Search item, wallet or note" />
                 <button class="btn soft" id="downloadExpensesPdfBtn" type="button">📄 Download</button>
+              </div>
+            </div>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchExpenses" class="input filter-inline-input" placeholder="Search item, wallet or note" />
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Balance:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_exp_all" name="f_exp" value="All" class="filter-radio" data-filter="expenses" checked>
+                  <label for="f_exp_all" class="filter-label">All</label>
+                  <input type="radio" id="f_exp_active" name="f_exp" value="Active" class="filter-radio" data-filter="expenses">
+                  <label for="f_exp_active" class="filter-label">Active Balance</label>
+                  <input type="radio" id="f_exp_empty" name="f_exp" value="Closed" class="filter-radio" data-filter="expenses">
+                  <label for="f_exp_empty" class="filter-label">Zero Balance</label>
+                </div>
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Currency:</span>
+                <div class="filter-inline-radios">
+                  <input type="radio" id="f_exp_cur_all" name="f_exp_cur" value="All" class="currency-radio filter-radio" data-currency-filter="expenses" checked>
+                  <label for="f_exp_cur_all" class="filter-label">All</label>
+                  <input type="radio" id="f_exp_cur_aed" name="f_exp_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="expenses">
+                  <label for="f_exp_cur_aed" class="filter-label">~</label>
+                  <input type="radio" id="f_exp_cur_sar" name="f_exp_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="expenses">
+                  <label for="f_exp_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
+                  <input type="radio" id="f_exp_cur_pkr" name="f_exp_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="expenses">
+                  <label for="f_exp_cur_pkr" class="filter-label">Rs.</label>
+                </div>
+              </div>
+              <span class="filter-divider">|</span>
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Date Range:</span>
+                <input type="date" id="expenseDateFrom" class="input filter-inline-date" />
+                <span style="color:var(--muted);font-size:.82rem;">to</span>
+                <input type="date" id="expenseDateTo" class="input filter-inline-date" />
+                <button type="button" class="btn ghost filter-inline-btn" id="clearExpenseDateBtn">Clear</button>
               </div>
             </div>
             <div class="expense-wallet-block">
               <div class="filter-block-label">Wallets</div>
               <div id="expenseWalletFilters" class="expense-wallet-scroll" aria-label="Filter by wallet"></div>
-            </div>
-            <div class="filter-group">
-              <input type="radio" id="f_exp_all" name="f_exp" value="All" class="filter-radio" data-filter="expenses" checked>
-              <label for="f_exp_all" class="filter-label">All</label>
-              <input type="radio" id="f_exp_active" name="f_exp" value="Active" class="filter-radio" data-filter="expenses">
-              <label for="f_exp_active" class="filter-label">Active Balance</label>
-              <input type="radio" id="f_exp_empty" name="f_exp" value="Closed" class="filter-radio" data-filter="expenses">
-              <label for="f_exp_empty" class="filter-label">Zero Balance</label>
-            </div>
-            <div class="filter-group">
-              <input type="radio" id="f_exp_cur_all" name="f_exp_cur" value="All" class="currency-radio filter-radio" data-currency-filter="expenses" checked>
-              <label for="f_exp_cur_all" class="filter-label">All</label>
-              <input type="radio" id="f_exp_cur_aed" name="f_exp_cur" value="AED" class="currency-radio filter-radio" data-currency-filter="expenses">
-              <label for="f_exp_cur_aed" class="filter-label">~</label>
-              <input type="radio" id="f_exp_cur_sar" name="f_exp_cur" value="SAR" class="currency-radio filter-radio" data-currency-filter="expenses">
-              <label for="f_exp_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
-              <input type="radio" id="f_exp_cur_pkr" name="f_exp_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="expenses">
-              <label for="f_exp_cur_pkr" class="filter-label">Rs.</label>
-            </div>
-            <div class="filter-group" style="align-items:center;gap:8px;flex-wrap:wrap;">
-              <span style="font-size:.78rem;color:var(--muted);font-weight:600;white-space:nowrap;">Date Range:</span>
-              <input type="date" id="expenseDateFrom" class="input" style="width:auto;min-width:130px;" />
-              <span style="color:var(--muted);font-size:.82rem;">to</span>
-              <input type="date" id="expenseDateTo" class="input" style="width:auto;min-width:130px;" />
-              <button type="button" class="btn ghost" id="clearExpenseDateBtn">Clear</button>
             </div>
           </div>
           <div id="expensesList" class="list"></div>
