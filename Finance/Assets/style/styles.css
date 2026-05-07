@@ -233,15 +233,15 @@ a{color:inherit}
 
 .overview{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:14px;margin-bottom:14px;
+  padding:6px;margin-bottom:8px;
 }
-.overview-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.overview-top h2{margin:0;font-size:1.02rem;letter-spacing:-.03em}
-.overview-top p{margin:4px 0 0;color:var(--muted);font-size:.86rem;line-height:1.5}
+.overview-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:6px;padding:6px 10px 2px;}
+.overview-top h2{margin:0;font-size:0.84rem;letter-spacing:-.03em}
+.overview-top p{margin:2px 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
 .summary{
-  background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:82px;
-  display:flex;flex-direction:column;justify-content:space-between;gap:8px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:72px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:6px;
 }
 .summary.currency-summary{
   position:relative;
@@ -536,6 +536,161 @@ a{color:inherit}
 .expense-toolbar-hint{font-size:.8rem;color:var(--muted);flex:1;min-width:200px;line-height:1.45;}
 .expense-by-currency{margin-top:4px;}
 
+/* Collapsible expense sections */
+.expense-collapsible-section {
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.expense-collapsible-section:not([open]) {
+  margin-bottom: 12px;
+}
+.expense-collapsible-section[open] {
+  margin-bottom: 12px;
+}
+.expense-collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: #fcfdff;
+  transition: background 0.15s ease;
+}
+.expense-collapsible-header:hover {
+  background: #f8fafc;
+}
+.expense-collapsible-header .expense-section-title {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.expense-collapsible-header .expand-icon {
+  transition: transform 0.2s ease;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+.expense-collapsible-section[open] .expand-icon {
+  transform: rotate(90deg);
+}
+.expense-collapsible-content {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* Inline filter row layout */
+.filter-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+}
+.filter-inline-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-inline-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.filter-inline-input {
+  width: auto;
+  min-width: 180px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+.filter-inline-radios {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-divider {
+  color: var(--line-strong);
+  font-weight: 300;
+  font-size: 1.1rem;
+  padding: 0 4px;
+}
+.filter-inline-date {
+  width: auto;
+  min-width: 85px;
+  padding: 3px 5px;
+  font-size: 0.72rem;
+  height: 28px;
+}
+#clearExpenseDateBtn {
+  padding: 3px 18px !important;
+  font-size: 0.72rem !important;
+  height: 28px !important;
+  white-space: nowrap;
+  width: auto !important;
+  min-width: 80px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+@media (min-width: 769px) {
+  #clearExpenseDateBtn {
+    padding: 4px 20px !important;
+    font-size: 0.74rem !important;
+    min-width: 85px !important;
+  }
+}
+.expense-wallet-scroll-inline {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Mobile responsive styles for filter sections */
+@media (max-width: 768px) {
+  .filter-inline-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 0;
+  }
+  .filter-inline-section {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter-inline-label {
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+  .filter-inline-input {
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+  }
+  .filter-inline-date {
+    width: auto;
+    min-width: 90px;
+    flex: 1;
+  }
+  .filter-inline-radios {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter-divider {
+    display: none;
+  }
+  .filter-label {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+  }
+}
+
 .expense-intent-hint{margin:0 0 8px;font-size:.82rem;color:var(--muted);line-height:1.45;}
 .expense-intent-radios{display:flex;flex-direction:column;gap:8px;}
 .expense-intent-label{
@@ -587,6 +742,35 @@ a{color:inherit}
 .icon-btn:hover{transform:translateY(-1px)}
 .icon-btn.danger{background:#fff1f0;color:var(--danger)}
 .icon-btn.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+
+/* Overview banner specific button styles */
+.overview-top .btn {
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.overview-top .icon-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+
+.wallets-overview-section .overview-top .btn {
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.wallets-overview-section .overview-top .icon-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
 
 .list{display:grid;gap:10px}
 .loan{
@@ -682,7 +866,7 @@ tbody tr:hover{background:#fbfdff}
 .currency-chip .symbol{display:inline-block;font-size:1.05rem;line-height:1;}
 
 .lock{
-  position:fixed;inset:0;background:linear-gradient(135deg, rgba(246,247,249,0.98) 0%, rgba(236,240,249,0.96) 100%);backdrop-filter:blur(10px);display:grid;place-items:center;z-index:100;padding:16px;
+  position:fixed;inset:0;background:linear-gradient(135deg, rgba(246,247,249,0.80) 0%, rgba(236,240,249,0.76) 100%);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:100;padding:16px;
 }
 .lock-card{
   width:min(480px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:0 20px 40px rgba(16,24,40,.12), 0 8px 16px rgba(16,24,40,.08);padding:32px;position:relative;overflow:hidden;}
@@ -957,9 +1141,9 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   .expense-overview{
     grid-column: 1 / -1;
   }
-  .overview{padding:10px;margin-bottom:10px}
-  .overview-top h2{font-size:.92rem}
-  .overview-top p{font-size:.78rem}
+  .overview{padding:5px;margin-bottom:6px}
+  .overview-top h2{font-size:.82rem}
+  .overview-top p{font-size:.70rem}
 
   .summary{
     padding: 6px;
@@ -1009,6 +1193,35 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
 
   .input,.select{font-size:.8rem;padding:8px 9px}
   .btn{font-size:.8rem;padding:8px 10px}
+  
+  /* Mobile overview banner buttons */
+  .overview-top .btn {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 6px;
+  }
+  
+  .overview-top .icon-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+  
+  .wallets-overview-section .overview-top .btn {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 6px;
+  }
+  
+  .wallets-overview-section .overview-top .icon-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
   .filter-label{font-size:.72rem;padding:5px 10px}
 
   /* Row wise list mobile (compact but full summary visible) */
