@@ -296,8 +296,8 @@ a{color:inherit}
 }
 .wallet-float-watermark .wallet-float-logo{
   position:absolute;
-  width:clamp(36px, 8vw, 58px);
-  height:clamp(36px, 8vw, 58px);
+  width:clamp(45px, 10vw, 70px);
+  height:clamp(45px, 10vw, 70px);
   opacity:0;
   filter:grayscale(.12) brightness(1.08);
   will-change:transform, opacity;
@@ -318,31 +318,31 @@ a{color:inherit}
 }
 @keyframes wallet-drift-0{
   0%   { transform: translate(0px,    0px)    rotate(-8deg) scale(var(--s,1)); }
-  25%  { transform: translate(40px,  -30px)   rotate(5deg)  scale(var(--s,1)); }
-  50%  { transform: translate(-25px,  35px)   rotate(-4deg) scale(var(--s,1)); }
-  75%  { transform: translate(35px,   -15px)  rotate(7deg)  scale(var(--s,1)); }
-  100% { transform: translate(-20px, 25px)    rotate(-3deg) scale(var(--s,1)); }
+  25%  { transform: translate(80px,  -60px)   rotate(5deg)  scale(var(--s,1)); }
+  50%  { transform: translate(-50px,  70px)   rotate(-4deg) scale(var(--s,1)); }
+  75%  { transform: translate(70px,   -30px)  rotate(7deg)  scale(var(--s,1)); }
+  100% { transform: translate(-40px, 50px)    rotate(-3deg) scale(var(--s,1)); }
 }
 @keyframes wallet-drift-1{
   0%   { transform: translate(0px,    0px)    rotate(10deg) scale(var(--s,1)); }
-  25%  { transform: translate(-35px, 25px)   rotate(-6deg)  scale(var(--s,1)); }
-  50%  { transform: translate(30px,  -20px)   rotate(8deg) scale(var(--s,1)); }
-  75%  { transform: translate(-25px,  -35px)   rotate(-5deg) scale(var(--s,1)); }
-  100% { transform: translate(40px,  15px)    rotate(9deg) scale(var(--s,1)); }
+  25%  { transform: translate(-70px, 50px)   rotate(-6deg)  scale(var(--s,1)); }
+  50%  { transform: translate(60px,  -40px)   rotate(8deg)  scale(var(--s,1)); }
+  75%  { transform: translate(-50px,  -70px)   rotate(-5deg) scale(var(--s,1)); }
+  100% { transform: translate(80px,  30px)    rotate(9deg)  scale(var(--s,1)); }
 }
 @keyframes wallet-drift-2{
   0%   { transform: translate(0px,    0px)    rotate(-12deg) scale(var(--s,1)); }
-  25%  { transform: translate(25px,  40px)   rotate(6deg)  scale(var(--s,1)); }
-  50%  { transform: translate(-30px, -25px)   rotate(-8deg) scale(var(--s,1)); }
-  75%  { transform: translate(20px,   30px)   rotate(5deg)  scale(var(--s,1)); }
-  100% { transform: translate(-35px, -20px)   rotate(-7deg) scale(var(--s,1)); }
+  25%  { transform: translate(50px,  80px)   rotate(6deg)  scale(var(--s,1)); }
+  50%  { transform: translate(-60px, -50px)   rotate(-8deg) scale(var(--s,1)); }
+  75%  { transform: translate(40px,   60px)   rotate(5deg)  scale(var(--s,1)); }
+  100% { transform: translate(-70px, -40px)   rotate(-7deg) scale(var(--s,1)); }
 }
 @keyframes wallet-drift-3{
   0%   { transform: translate(0px,    0px)    rotate(5deg) scale(var(--s,1)); }
-  25%  { transform: translate(-40px, -25px)  rotate(-9deg)  scale(var(--s,1)); }
-  50%  { transform: translate(35px,  30px)   rotate(7deg)  scale(var(--s,1)); }
-  75%  { transform: translate(-20px, -40px)   rotate(-6deg) scale(var(--s,1)); }
-  100% { transform: translate(25px,  35px)    rotate(8deg) scale(var(--s,1)); }
+  25%  { transform: translate(-80px, -50px)  rotate(-9deg)  scale(var(--s,1)); }
+  50%  { transform: translate(70px,  60px)   rotate(7deg)  scale(var(--s,1)); }
+  75%  { transform: translate(-40px, -80px)   rotate(-6deg) scale(var(--s,1)); }
+  100% { transform: translate(50px,  70px)    rotate(8deg)  scale(var(--s,1)); }
 }
 @keyframes wallet-zoom{
   0% { filter:grayscale(.12) brightness(1.0); opacity:.12; }
@@ -529,6 +529,15 @@ a{color:inherit}
 .available-amount .money{color:var(--success);}
 .available-amount .money .symbol{color:var(--success);}
 .available-amount .money .amount{color:var(--success);}
+
+/* Danger amount styling for negative/zero balances */
+.summary-line-one-value.available-amount.danger-amount{color:var(--danger) !important;}
+.summary-line-one-value.available-amount.danger-amount .money{color:var(--danger) !important;}
+.summary-line-one-value.available-amount.danger-amount .money .symbol{color:var(--danger) !important;}
+.summary-line-one-value.available-amount.danger-amount .money .amount{color:var(--danger) !important;}
+.summary-line-one-value.available-amount.danger-amount .symbol{color:var(--danger) !important;}
+.summary-line-one-value.available-amount.danger-amount .symbol-dirham{color:var(--danger) !important;}
+.summary-line-one-value.available-amount.danger-amount .symbol-riyal{color:var(--danger) !important;}
 
 /* Make strong-success always green + bold */
 .strong-success{color:var(--success) !important;font-weight:900;}
