@@ -1144,7 +1144,7 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
         <summary>
           <div class="loan-top">
             <div class="lt-main">
-              <div class="loan-name">${escapeHtml(group.person_name || "Unnamed")}</div>
+              <div class="loan-name"><i class="fa-solid fa-user"></i> ${escapeHtml(group.person_name || "Unnamed")}</div>
               <div class="loan-sub">
                 <span>${escapeHtml(directionLabel)}</span>
                 <span>Opened ${escapeHtml(displayDate(group.loan_date || "—"))}</span>
@@ -1541,7 +1541,7 @@ function renderGoodsList(){
         <summary>
           <div class="loan-top">
             <div class="lt-main">
-              <div class="loan-name">${escapeHtml(group.person_name || "Unnamed item")}</div>
+              <div class="loan-name"><i class="fa-solid fa-box"></i> ${escapeHtml(group.person_name || "Unnamed item")}</div>
               <div class="loan-sub">
                 <span>Bought ${escapeHtml(displayDate(group.principal?.loan_date || "—"))}</span>
                 <span>${currencySymbolHtml(group.currency || "")}</span>
@@ -2103,7 +2103,7 @@ function renderExpensesList(){
   if (topupTransactions.length > 0){
     html += `<details class="expense-collapsible-section" id="topupRecordsSection">
       <summary class="expense-collapsible-header">
-        <h4 class="expense-section-title">Top-Up Records</h4>
+        <h4 class="expense-section-title"><i class="fa-solid fa-money-bill-wave"></i> Top-Up Records</h4>
         <span class="expand-icon">▶</span>
       </summary>
       <div class="expense-collapsible-content">
@@ -2180,7 +2180,7 @@ function renderExpensesList(){
   if (transferEvents.length > 0 && transferCurrencies.length > 0){
     html += `<details class="expense-collapsible-section" id="transferRecordsSection">
       <summary class="expense-collapsible-header">
-        <h4 class="expense-section-title">Transfer Records</h4>
+        <h4 class="expense-section-title"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer Records</h4>
         <span class="expand-icon">▶</span>
       </summary>
       <div class="expense-collapsible-content">
@@ -2259,7 +2259,7 @@ function renderExpensesList(){
   if (items.length > 0) {
     html += `<details class="expense-collapsible-section" id="transactionsHistorySection">
       <summary class="expense-collapsible-header">
-        <h4 class="expense-section-title">Transactions History</h4>
+        <h4 class="expense-section-title"><i class="fa-solid fa-list-ul"></i> Transactions History</h4>
         <span class="expand-icon">▶</span>
       </summary>
       <div class="expense-collapsible-content">`;
