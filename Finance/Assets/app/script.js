@@ -4995,7 +4995,7 @@ async function attemptUnlock(){
     return;
   }
   els.unlockBtn.disabled = true;
-  els.unlockBtn.textContent = "Unlocking…";
+  els.unlockBtn.textContent = "Signing In…";
   const keepCurrentBackup = state.hasImportedFile && state.dataSource === "backup";
   try{
     const safeUser = sanitizeZipUsername(zipUsernameRaw);
