@@ -1404,6 +1404,19 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
   margin-bottom: 10px;
 }
 
+/* Summary card spans full width */
+.wallets-overview-section #expenseOverviewWallets .summary.currency-summary.expense-overview {
+  grid-column: 1 / -1;
+}
+
+/* Force 2 columns on mobile for wallet cards */
+@media (max-width: 768px) {
+  .wallets-overview-section #expenseOverviewWallets {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
 .wallets-overview-section .icon-btn {
   transition: transform 0.3s ease-in-out;
   background: transparent !important;
