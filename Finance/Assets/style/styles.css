@@ -544,6 +544,12 @@ a{color:inherit}
   background: #fff;
   overflow: hidden;
 }
+.expense-item-row {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
 .expense-collapsible-section:not([open]) {
   margin-bottom: 12px;
 }
@@ -774,14 +780,14 @@ a{color:inherit}
 
 .list{display:grid;gap:10px}
 .loan{
-  border:1px solid var(--line);border-radius:14px;overflow:visible;background:#fff;
+  border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;
 }
 .loan summary{list-style:none;cursor:pointer}
 .loan summary::-webkit-details-marker{display:none}
 
 .loan-top{
   display:grid;grid-template-columns:minmax(0,1.8fr) repeat(4,minmax(80px,1fr)) 40px;gap:10px;align-items:center;
-  padding:12px 13px;background:#fff;
+  padding:8px 12px;background:#fff;
 }
 .loan-top:hover{background:#fcfdff}
 .lt-main{min-width:0;display:flex;flex-direction:column;}
