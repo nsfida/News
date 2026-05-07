@@ -551,11 +551,14 @@ function overviewOneLine(label, amountHtml){
   `;
 }
 
-function overviewAvailableLine(amountHtml){
+function overviewAvailableLine(amountHtml, balance = 0){
+  const isNegativeOrZero = Number(balance) <= 0;
+  const colorStyle = isNegativeOrZero ? "color: var(--danger) !important;" : "color: var(--success) !important;";
+  const moneyClass = isNegativeOrZero ? "danger-amount" : "success-amount";
   return `
     <div class="summary-line summary-line-one">
-      <span class="summary-line-one-label available-label" style="color: var(--success) !important;">Available:</span>
-      <span class="summary-line-one-value available-amount">${amountHtml}</span>
+      <span class="summary-line-one-label available-label" style="${colorStyle}">Available:</span>
+      <span class="summary-line-one-value available-amount ${moneyClass}" style="${colorStyle}">${amountHtml}</span>
     </div>
   `;
 }
@@ -645,8 +648,8 @@ function overviewWatermarkFloatingWalletLogos(accounts){
     const dur = (12 + Math.random() * 24).toFixed(1); // 12..36s
     const delay = (Math.random() * -15).toFixed(1); // random negative delay
     const scale = (0.7 + Math.random() * 0.6).toFixed(2); // 0.7..1.3
-    const left = (3 + Math.random() * 90).toFixed(2); // 3..93%
-    const top = (3 + Math.random() * 90).toFixed(2); // 3..93%
+    const left = (Math.random() * 95).toFixed(2); // 0..95%
+    const top = (Math.random() * 95).toFixed(2); // 0..95%
     
     // Random animation variant for each logo
     const animVariant = Math.floor(Math.random() * 4); // 0..3
@@ -2651,9 +2654,8 @@ function renderExpenseOverviewWallets(){
 
   container.innerHTML = expenseSummaryCard + accounts.map(a => {
     const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
-    const balClass = a.balance > 0 ? "" : "style=\"opacity:.6\"";
     return `
-      <div class="summary currency-summary" ${balClass}>
+      <div class="summary currency-summary">
         ${overviewWatermarkWallet(a.person_name || "Wallet", a.currency)}
         <div class="currency-head" style="font-size:1.1rem;gap:6px;justify-content:flex-start;">
           ${currencySymbolHtml(a.currency)}
@@ -2662,7 +2664,7 @@ function renderExpenseOverviewWallets(){
         </div>
         ${overviewOneLine("Top-up:", money(totalTopup, a.currency))}
         ${overviewOneLine("Spent:", money(a.spentMoney, a.currency))}
-        ${overviewAvailableLine(money(a.balance, a.currency))}
+        ${overviewAvailableLine(money(a.balance, a.currency), a.balance)}
         <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
           <button class="tiny ghost" onclick="openExpenseModal('topup', '${escapeHtml(a.group_id)}')">Add Money</button>
           <button class="tiny ghost" onclick="openExpenseModal('expense', '${escapeHtml(a.group_id)}')">Add Expense</button>
