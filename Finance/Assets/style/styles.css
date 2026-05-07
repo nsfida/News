@@ -235,7 +235,7 @@ a{color:inherit}
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
   padding:6px;margin-bottom:8px;
 }
-.overview-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:6px;padding:6px 10px 2px;}
+.overview-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .overview-top h2{margin:0;font-size:0.84rem;letter-spacing:-.03em}
 .overview-top p{margin:2px 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
@@ -866,7 +866,7 @@ tbody tr:hover{background:#fbfdff}
 .currency-chip .symbol{display:inline-block;font-size:1.05rem;line-height:1;}
 
 .lock{
-  position:fixed;inset:0;background:linear-gradient(135deg, rgba(246,247,249,0.80) 0%, rgba(236,240,249,0.76) 100%);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:100;padding:16px;
+  position:fixed;inset:0;background:transparent;display:grid;place-items:center;z-index:100;padding:16px;
 }
 .lock-card{
   width:min(480px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:0 20px 40px rgba(16,24,40,.12), 0 8px 16px rgba(16,24,40,.08);padding:32px;position:relative;overflow:hidden;}
