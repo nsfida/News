@@ -1282,6 +1282,17 @@ function renderLoanCards(container, direction, searchKey = direction, options = 
     });
     const nowOpen = panel.classList.toggle("open");
     btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+
+    // Position the dropdown using fixed positioning
+    if (nowOpen) {
+      const rect = btn.getBoundingClientRect();
+      panel.style.top = `${rect.bottom + 6}px`;
+      panel.style.left = `${rect.right - panel.offsetWidth}px`;
+      // Ensure dropdown doesn't go off-screen to the right
+      if (rect.right - panel.offsetWidth < 10) {
+        panel.style.left = `${Math.max(10, rect.left)}px`;
+      }
+    }
   }));
 }
 
@@ -1618,6 +1629,17 @@ function renderGoodsList(){
     });
     const nowOpen = panel.classList.toggle("open");
     btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+
+    // Position the dropdown using fixed positioning
+    if (nowOpen) {
+      const rect = btn.getBoundingClientRect();
+      panel.style.top = `${rect.bottom + 6}px`;
+      panel.style.left = `${rect.right - panel.offsetWidth}px`;
+      // Ensure dropdown doesn't go off-screen to the right
+      if (rect.right - panel.offsetWidth < 10) {
+        panel.style.left = `${Math.max(10, rect.left)}px`;
+      }
+    }
   }));
 }
 
@@ -2059,10 +2081,40 @@ function filterExpensesBySearch(expenses, searchTerm){
   
   const term = searchTerm.toLowerCase().trim();
   return expenses.filter(expense => {
-    // Search in item name, wallet name, notes, expense type
+    // For expense items (from groupExpenseItems)
+    if (expense.displayName !== undefined) {
+      const itemMatch = (expense.displayName && expense.displayName.toLowerCase().includes(term)) ||
+                        (expense.expenseType && expense.expenseType.toLowerCase().includes(term));
+      // Also search in nested transactions (both raw and cleaned notes)
+      const txMatch = expense.txs && expense.txs.some(tx =>
+        (tx.wallet && tx.wallet.toLowerCase().includes(term)) ||
+        (tx.notes && (tx.notes.toLowerCase().includes(term) || cleanExpenseNote(tx.notes).toLowerCase().includes(term))) ||
+        (tx.expenseType && tx.expenseType.toLowerCase().includes(term))
+      );
+      return itemMatch || txMatch;
+    }
+    
+    // For transfer events (from buildTransferEvents)
+    if (expense.fromWallet !== undefined) {
+      return (expense.fromWallet && expense.fromWallet.toLowerCase().includes(term)) ||
+             (expense.toWallet && expense.toWallet.toLowerCase().includes(term)) ||
+             (expense.fromAccountType && expense.fromAccountType.toLowerCase().includes(term)) ||
+             (expense.toAccountType && expense.toAccountType.toLowerCase().includes(term)) ||
+             (expense.notesExpense && (expense.notesExpense.toLowerCase().includes(term) || cleanExpenseNote(expense.notesExpense).toLowerCase().includes(term))) ||
+             (expense.notesTopup && (expense.notesTopup.toLowerCase().includes(term) || cleanExpenseNote(expense.notesTopup).toLowerCase().includes(term)));
+    }
+    
+    // For topup transactions (from collectTopupTransactionsFlat)
+    if (expense.person_name !== undefined) {
+      return (expense.person_name && expense.person_name.toLowerCase().includes(term)) ||
+             (expense.notes && (expense.notes.toLowerCase().includes(term) || cleanExpenseNote(expense.notes).toLowerCase().includes(term))) ||
+             (expense.accountType && expense.accountType.toLowerCase().includes(term));
+    }
+    
+    // Fallback: search in common fields (both raw and cleaned notes)
     return (expense.displayName && expense.displayName.toLowerCase().includes(term)) ||
            (expense.wallet && expense.wallet.toLowerCase().includes(term)) ||
-           (expense.notes && expense.notes.toLowerCase().includes(term)) ||
+           (expense.notes && (expense.notes.toLowerCase().includes(term) || cleanExpenseNote(expense.notes).toLowerCase().includes(term))) ||
            (expense.expenseType && expense.expenseType.toLowerCase().includes(term)) ||
            (expense.person_name && expense.person_name.toLowerCase().includes(term)) ||
            (expense.accountType && expense.accountType.toLowerCase().includes(term));
@@ -2081,6 +2133,16 @@ function renderExpensesList(){
     els.expensesList.innerHTML = `<div class="empty">No expense accounts found.</div>`;
     return;
   }
+
+  // Check if any expense filters are active
+  const isExpenseFilterActive = (
+    (state.search.expenses && state.search.expenses.trim() !== "") ||
+    (state.expenseDateFrom && state.expenseDateFrom.trim() !== "") ||
+    (state.expenseDateTo && state.expenseDateTo.trim() !== "") ||
+    (state.currencyFilter.expenses && state.currencyFilter.expenses !== "All") ||
+    (state.expenseWalletFilter && state.expenseWalletFilter !== "all") ||
+    (state.statusFilter.expenses && state.statusFilter.expenses !== "All")
+  );
 
   let html = "";
 
@@ -2101,7 +2163,7 @@ function renderExpensesList(){
   const topupCurrencies = sortCurrenciesList([...topupByCurrency.keys()]);
 
   if (topupTransactions.length > 0){
-    html += `<details class="expense-collapsible-section" id="topupRecordsSection">
+    html += `<details class="expense-collapsible-section" id="topupRecordsSection" ${isExpenseFilterActive ? 'open' : ''}>
       <summary class="expense-collapsible-header">
         <h4 class="expense-section-title"><i class="fa-solid fa-money-bill-wave"></i> Top-Up Records</h4>
         <span class="expand-icon">▶</span>
@@ -2178,7 +2240,7 @@ function renderExpensesList(){
   const transferCurrencies = sortCurrenciesList([...transferCurrencySet]);
 
   if (transferEvents.length > 0 && transferCurrencies.length > 0){
-    html += `<details class="expense-collapsible-section" id="transferRecordsSection">
+    html += `<details class="expense-collapsible-section" id="transferRecordsSection" ${isExpenseFilterActive ? 'open' : ''}>
       <summary class="expense-collapsible-header">
         <h4 class="expense-section-title"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer Records</h4>
         <span class="expand-icon">▶</span>
@@ -2257,7 +2319,7 @@ function renderExpensesList(){
   }
   
   if (items.length > 0) {
-    html += `<details class="expense-collapsible-section" id="transactionsHistorySection">
+    html += `<details class="expense-collapsible-section" id="transactionsHistorySection" ${isExpenseFilterActive ? 'open' : ''}>
       <summary class="expense-collapsible-header">
         <h4 class="expense-section-title"><i class="fa-solid fa-list-ul"></i> Transactions History</h4>
         <span class="expand-icon">▶</span>
@@ -4744,6 +4806,17 @@ function attachEvents(){
       });
       const nowOpen = panel.classList.toggle("open");
       btn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+
+      // Position the dropdown using fixed positioning
+      if (nowOpen) {
+        const rect = btn.getBoundingClientRect();
+        panel.style.top = `${rect.bottom + 6}px`;
+        panel.style.left = `${rect.right - panel.offsetWidth}px`;
+        // Ensure dropdown doesn't go off-screen to the right
+        if (rect.right - panel.offsetWidth < 10) {
+          panel.style.left = `${Math.max(10, rect.left)}px`;
+        }
+      }
     });
   });
 
