@@ -291,7 +291,7 @@ a{color:inherit}
   position:absolute;
   inset:0;
   pointer-events:none;
-  z-index:0;
+  z-index:-1;
   overflow:hidden;
 }
 .wallet-float-watermark .wallet-float-logo{
