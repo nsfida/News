@@ -5776,6 +5776,89 @@ function btcGenerateQRCodeDataURL(text) {
   });
 }
 
+// Generate Bitcoin Paper Wallet Background (smaller size for single section)
+function generatePaperWalletBackground() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 600;
+  canvas.height = 140;
+  const ctx = canvas.getContext('2d');
+  
+  // Dark grey background
+  ctx.fillStyle = '#2d2d2d';
+  ctx.fillRect(0, 0, 600, 140);
+  
+  // Subtle binary code pattern
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.font = '8px monospace';
+  for (let i = 0; i < 200; i++) {
+    const x = Math.random() * 600;
+    const y = Math.random() * 140;
+    const binary = Math.random() > 0.5 ? '1' : '0';
+    ctx.fillText(binary, x, y);
+  }
+  
+  // Wavy texture overlay
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+  ctx.lineWidth = 1;
+  for (let y = 0; y < 140; y += 15) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    for (let x = 0; x < 600; x += 10) {
+      const waveY = y + Math.sin(x * 0.02) * 3;
+      ctx.lineTo(x, waveY);
+    }
+    ctx.stroke();
+  }
+  
+  // Yellow triangular shape in top-left corner
+  ctx.fillStyle = '#f7931a';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(80, 0);
+  ctx.lineTo(0, 60);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Lighter grey triangular shape below extending right
+  ctx.fillStyle = '#4a4a4a';
+  ctx.beginPath();
+  ctx.moveTo(0, 60);
+  ctx.lineTo(140, 60);
+  ctx.lineTo(0, 110);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Bitcoin logo on the right side (light grey)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+  ctx.font = 'bold 80px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('₿', 520, 70);
+  
+  // Decorative white pattern along bottom edge
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+  for (let i = 0; i < 30; i++) {
+    const x = 10 + i * 20;
+    const height = 3 + Math.sin(i * 0.5) * 2;
+    ctx.fillRect(x, 135, 10, height);
+  }
+  
+  // Moon icon and number in bottom-left
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.font = '12px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText('🌙', 12, 128);
+  ctx.font = 'bold 10px Arial';
+  ctx.fillText('49', 30, 128);
+  
+  // Border frame
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(3, 3, 594, 134);
+  
+  return canvas.toDataURL('image/png');
+}
+
 async function btcDownloadWalletPdf() {
   try {
     if (!state.bitcoin.wallet) {
@@ -5803,74 +5886,70 @@ async function btcDownloadWalletPdf() {
     drawPdfHeader(pdf, logoData, title, subtitle);
     drawPdfOwnerBlock(pdf, 48);
     
-    // Set up colors and fonts
-    const primaryColor = [36, 87, 214]; // Blue color matching the app theme
-    const textColor = [51, 51, 51];
-    const mutedColor = [128, 128, 128];
-    
     // Security warning box
     pdf.setFillColor(255, 248, 235);
     pdf.setDrawColor(239, 68, 68);
     pdf.setLineWidth(0.5);
-    pdf.roundedRect(14, 72, 182, 25, 3, 3);
+    pdf.roundedRect(14, 72, 182, 20, 3, 3);
     
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setTextColor(220, 38, 38);
     pdf.setFont(undefined, 'bold');
-    pdf.text('WARNING: SECURITY ALERT', 19, 82);
+    pdf.text('WARNING: SECURITY ALERT', 19, 80);
     pdf.setTextColor(139, 69, 19);
     pdf.setFont(undefined, 'normal');
-    pdf.text('Keep this PDF secure. Anyone with access to the WIF can control your Bitcoin.', 19, 90);
+    pdf.text('Keep this PDF secure. Anyone with access to the WIF can control your Bitcoin.', 19, 87);
     
-    // Private Key (WIF) Section
-    pdf.setFontSize(16);
-    pdf.setTextColor(...primaryColor);
-    pdf.setFont(undefined, 'bold');
-    pdf.text('Private Key (WIF)', 14, 110);
+    // Set up colors
+    const textColor = [255, 255, 255];
+    const mutedColor = [200, 200, 200];
+    const accentColor = [247, 147, 26]; // Bitcoin orange
+    
+    // Receiving Address Section (Above)
+    const addressBackground = generatePaperWalletBackground();
+    pdf.addImage(addressBackground, 'PNG', 30, 100, 150, 50);
     
     pdf.setFontSize(10);
-    pdf.setTextColor(...mutedColor);
-    pdf.text('This is your private key. NEVER share it with anyone.', 14, 118);
-    
-    // WIF QR Code
-    pdf.addImage(wifQrDataUrl, 'PNG', 14, 125, 50, 50);
-    
-    // WIF Text (showing full WIF as requested)
-    pdf.setFontSize(9);
-    pdf.setTextColor(...textColor);
+    pdf.setTextColor(...accentColor);
     pdf.setFont(undefined, 'bold');
-    const fullWifLines = pdf.splitTextToSize(wallet.inputWif, 120);
-    let yPosition = 135;
-    fullWifLines.forEach(line => {
-      pdf.text(`WIF: ${line}`, 70, yPosition);
-      yPosition += 7;
-    });
+    pdf.text('RECEIVING ADDRESS', 105, 108, { align: 'center' });
+    
+    pdf.setFontSize(7);
+    pdf.setTextColor(...mutedColor);
     pdf.setFont(undefined, 'normal');
-    pdf.text('Full WIF displayed above and encoded in QR code', 70, yPosition + 3);
+    pdf.text('Scan to receive Bitcoin', 105, 114, { align: 'center' });
     
-    // Receiving Address Section
-    pdf.setFontSize(16);
-    pdf.setTextColor(...primaryColor);
-    pdf.setFont(undefined, 'bold');
-    pdf.text('Receiving Address', 14, 200);
+    // Address QR Code (centered, moved up)
+    pdf.addImage(addressQrDataUrl, 'PNG', 92, 118, 25, 25);
     
-    pdf.setFontSize(10);
-    pdf.setTextColor(...mutedColor);
-    pdf.text('Share this address to receive Bitcoin payments.', 14, 208);
-    
-    // Address QR Code
-    pdf.addImage(addressQrDataUrl, 'PNG', 14, 213, 50, 50);
-    
-    // Address Text
-    pdf.setFontSize(9);
+    // Address Text (below QR code, centered)
+    pdf.setFontSize(7);
     pdf.setTextColor(...textColor);
     pdf.setFont(undefined, 'bold');
-    const addressLines = pdf.splitTextToSize(wallet.address, 120);
-    yPosition = 223;
-    addressLines.forEach(line => {
-      pdf.text(line, 70, yPosition);
-      yPosition += 7;
-    });
+    pdf.text(wallet.address, 105, 148, { align: 'center', maxWidth: 130 });
+    
+    // Private Key (WIF) Section (Below)
+    const wifBackground = generatePaperWalletBackground();
+    pdf.addImage(wifBackground, 'PNG', 30, 155, 150, 50);
+    
+    pdf.setFontSize(10);
+    pdf.setTextColor(...accentColor);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('PRIVATE KEY (WIF)', 105, 163, { align: 'center' });
+    
+    pdf.setFontSize(7);
+    pdf.setTextColor(...mutedColor);
+    pdf.setFont(undefined, 'normal');
+    pdf.text('Scan to spend Bitcoin', 105, 169, { align: 'center' });
+    
+    // WIF QR Code (centered, moved up)
+    pdf.addImage(wifQrDataUrl, 'PNG', 92, 173, 25, 25);
+    
+    // WIF Text (below QR code, centered)
+    pdf.setFontSize(7);
+    pdf.setTextColor(...textColor);
+    pdf.setFont(undefined, 'bold');
+    pdf.text(wallet.inputWif, 105, 203, { align: 'center', maxWidth: 130 });
     
     // Draw standard footer
     drawPdfFooter(pdf);
