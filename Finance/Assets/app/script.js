@@ -3492,7 +3492,7 @@ function drawPdfHeader(doc, logoData, title, subtitle){
 function drawPdfOwnerBlock(doc, y = 48){
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
-  doc.text(`Prepared by: ${PDF_BRAND.owner}`, 14, y);
+  doc.text(`${PDF_BRAND.owner}`, 14, y);
   doc.text(`Email: ${PDF_BRAND.email}`, 14, y + 5);
   doc.text(`Mobile: ${PDF_BRAND.mobile}`, 14, y + 10);
   doc.text(`WhatsApp: ${PDF_BRAND.whatsapp}`, 14, y + 15);
@@ -5787,99 +5787,93 @@ async function btcDownloadWalletPdf() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF();
     
+    // Load custom fonts for currency symbols
+    await loadCustomFontsForPdf(pdf);
+    
     // Generate QR codes
     const [wifQrDataUrl, addressQrDataUrl] = await Promise.all([
       btcGenerateQRCodeDataURL(wallet.inputWif),
       btcGenerateQRCodeDataURL(wallet.address)
     ]);
 
+    // Get logo data and draw standard header
+    const logoData = await getPdfLogo();
+    const title = "Bitcoin Wallet Backup";
+    const subtitle = `Network: ${wallet.label} | Generated: ${new Date().toLocaleString()}`;
+    drawPdfHeader(pdf, logoData, title, subtitle);
+    drawPdfOwnerBlock(pdf, 48);
+    
     // Set up colors and fonts
     const primaryColor = [36, 87, 214]; // Blue color matching the app theme
     const textColor = [51, 51, 51];
     const mutedColor = [128, 128, 128];
     
-    // Header
-    pdf.setFontSize(24);
-    pdf.setTextColor(...primaryColor);
-    pdf.setFont(undefined, 'bold');
-    pdf.text('Bitcoin Wallet Backup', 105, 30, { align: 'center' });
-    
-    // Network info
-    pdf.setFontSize(14);
-    pdf.setTextColor(...mutedColor);
-    pdf.setFont(undefined, 'normal');
-    pdf.text(`Network: ${wallet.label}`, 105, 40, { align: 'center' });
-    
-    // Date generated
-    pdf.setFontSize(10);
-    pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, 48, { align: 'center' });
-    
     // Security warning box
     pdf.setFillColor(255, 248, 235);
     pdf.setDrawColor(239, 68, 68);
     pdf.setLineWidth(0.5);
-    pdf.roundedRect(20, 58, 170, 25, 3, 3);
+    pdf.roundedRect(14, 72, 182, 25, 3, 3);
     
     pdf.setFontSize(10);
     pdf.setTextColor(220, 38, 38);
     pdf.setFont(undefined, 'bold');
-    pdf.text('⚠️ SECURITY WARNING', 25, 68);
+    pdf.text('WARNING: SECURITY ALERT', 19, 82);
     pdf.setTextColor(139, 69, 19);
     pdf.setFont(undefined, 'normal');
-    pdf.text('Keep this PDF secure. Anyone with access to the WIF can control your Bitcoin.', 25, 76);
+    pdf.text('Keep this PDF secure. Anyone with access to the WIF can control your Bitcoin.', 19, 90);
     
     // Private Key (WIF) Section
     pdf.setFontSize(16);
     pdf.setTextColor(...primaryColor);
     pdf.setFont(undefined, 'bold');
-    pdf.text('Private Key (WIF)', 20, 100);
+    pdf.text('Private Key (WIF)', 14, 110);
     
     pdf.setFontSize(10);
     pdf.setTextColor(...mutedColor);
-    pdf.text('This is your private key. NEVER share it with anyone.', 20, 108);
+    pdf.text('This is your private key. NEVER share it with anyone.', 14, 118);
     
     // WIF QR Code
-    pdf.addImage(wifQrDataUrl, 'PNG', 20, 115, 50, 50);
+    pdf.addImage(wifQrDataUrl, 'PNG', 14, 125, 50, 50);
     
-    // WIF Text (masked for security)
+    // WIF Text (showing full WIF as requested)
     pdf.setFontSize(9);
     pdf.setTextColor(...textColor);
     pdf.setFont(undefined, 'bold');
-    const maskedWif = wallet.inputWif.substring(0, 8) + '...' + wallet.inputWif.substring(wallet.inputWif.length - 4);
-    pdf.text(`WIF: ${maskedWif}`, 80, 125);
+    const fullWifLines = pdf.splitTextToSize(wallet.inputWif, 120);
+    let yPosition = 135;
+    fullWifLines.forEach(line => {
+      pdf.text(`WIF: ${line}`, 70, yPosition);
+      yPosition += 7;
+    });
     pdf.setFont(undefined, 'normal');
-    pdf.text('Full WIF is encoded in QR code above', 80, 132);
+    pdf.text('Full WIF displayed above and encoded in QR code', 70, yPosition + 3);
     
     // Receiving Address Section
     pdf.setFontSize(16);
     pdf.setTextColor(...primaryColor);
     pdf.setFont(undefined, 'bold');
-    pdf.text('Receiving Address', 20, 185);
+    pdf.text('Receiving Address', 14, 200);
     
     pdf.setFontSize(10);
     pdf.setTextColor(...mutedColor);
-    pdf.text('Share this address to receive Bitcoin payments.', 20, 193);
+    pdf.text('Share this address to receive Bitcoin payments.', 14, 208);
     
     // Address QR Code
-    pdf.addImage(addressQrDataUrl, 'PNG', 20, 198, 50, 50);
+    pdf.addImage(addressQrDataUrl, 'PNG', 14, 213, 50, 50);
     
     // Address Text
     pdf.setFontSize(9);
     pdf.setTextColor(...textColor);
     pdf.setFont(undefined, 'bold');
-    const addressLines = pdf.splitTextToSize(wallet.address, 85);
-    let yPosition = 208;
+    const addressLines = pdf.splitTextToSize(wallet.address, 120);
+    yPosition = 223;
     addressLines.forEach(line => {
-      pdf.text(line, 80, yPosition);
+      pdf.text(line, 70, yPosition);
       yPosition += 7;
     });
     
-    // Footer
-    pdf.setFontSize(8);
-    pdf.setTextColor(...mutedColor);
-    pdf.setFont(undefined, 'italic');
-    pdf.text('Generated by Triple M by NSF - Money Management Module', 105, 270, { align: 'center' });
-    pdf.text('Store this PDF in a secure, offline location.', 105, 275, { align: 'center' });
+    // Draw standard footer
+    drawPdfFooter(pdf);
     
     // Save the PDF
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
