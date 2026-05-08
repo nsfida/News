@@ -53,7 +53,8 @@ const state = {
     historyTotal: 0,
     qrInstance: null,
     feeRate: 8
-  }
+  },
+  notes: []
 };
 
 const els = {
@@ -186,7 +187,12 @@ const els = {
   btcBroadcastBtn: document.getElementById("btcBroadcastBtn"),
   btcQrBox: document.getElementById("btcQrBox"),
   btcReceiveAddress: document.getElementById("btcReceiveAddress"),
-  btcCopyAddressBtn: document.getElementById("btcCopyAddressBtn")
+  btcCopyAddressBtn: document.getElementById("btcCopyAddressBtn"),
+  notesPanel: document.getElementById("notesPanel"),
+  noteInput: document.getElementById("noteInput"),
+  saveNoteBtn: document.getElementById("saveNoteBtn"),
+  searchNotes: document.getElementById("searchNotes"),
+  notesList: document.getElementById("notesList")
 };
 
 const INSTALLMENT_TAG = "[INSTALLMENT]";
@@ -2715,7 +2721,7 @@ function activate(tab){
   if (!state.unlocked && window.location.hash !== "#about") {
     return;
   }
-  
+
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById(`${tab}Panel`).classList.add("active");
@@ -2723,7 +2729,7 @@ function activate(tab){
   const walletsOverview = document.getElementById("walletsOverviewSection");
 
   if (mainOverview) {
-    if (tab === "expenses" || tab === "bitcoin") {
+    if (tab === "expenses" || tab === "bitcoin" || tab === "notes") {
       mainOverview.style.display = "none";
     } else {
       mainOverview.style.display = "block";
@@ -2731,7 +2737,7 @@ function activate(tab){
   }
 
   if (walletsOverview) {
-    if (tab === "bitcoin") {
+    if (tab === "bitcoin" || tab === "notes") {
       walletsOverview.style.display = "none";
     } else if (tab === "expenses") {
       walletsOverview.style.display = "block";
@@ -5980,6 +5986,92 @@ function btcClearSession() {
   btcClearView();
 }
 
+// Notes Functions
+function saveNote() {
+  const noteText = els.noteInput.value.trim();
+  if (!noteText) {
+    alert('Please enter a note.');
+    return;
+  }
+
+  const note = {
+    id: crypto.randomUUID(),
+    content: noteText,
+    createdAt: new Date().toISOString()
+  };
+
+  state.notes.unshift(note);
+  els.noteInput.value = '';
+  renderNotes();
+  saveNotesToStorage();
+}
+
+function renderNotes(searchTerm = '') {
+  const filteredNotes = searchTerm
+    ? state.notes.filter(note =>
+        note.content.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : state.notes;
+
+  els.notesList.innerHTML = '';
+
+  if (filteredNotes.length === 0) {
+    els.notesList.innerHTML = '<div class="empty">No notes found.</div>';
+    return;
+  }
+
+  filteredNotes.forEach(note => {
+    const noteDate = new Date(note.createdAt);
+    const formattedDate = noteDate.toLocaleDateString() + ' ' + noteDate.toLocaleTimeString();
+
+    const noteEl = document.createElement('div');
+    noteEl.className = 'card';
+    noteEl.style.marginBottom = '12px';
+    noteEl.style.padding = '14px';
+    noteEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div style="flex:1;">
+          <div style="font-size:.9rem;color:var(--text);line-height:1.5;white-space:pre-wrap;">${escapeHtml(note.content)}</div>
+        </div>
+        <button class="btn ghost" onclick="deleteNote('${note.id}')" style="margin-left:10px;padding:4px 8px;font-size:.8rem;">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+      <div style="font-size:.76rem;color:var(--muted);">${formattedDate}</div>
+    `;
+    els.notesList.appendChild(noteEl);
+  });
+}
+
+window.deleteNote = function(noteId) {
+  if (!confirm('Are you sure you want to delete this note?')) return;
+  state.notes = state.notes.filter(note => note.id !== noteId);
+  renderNotes(els.searchNotes.value);
+  saveNotesToStorage();
+};
+
+function saveNotesToStorage() {
+  localStorage.setItem('triple-m-notes', JSON.stringify(state.notes));
+}
+
+function loadNotesFromStorage() {
+  const stored = localStorage.getItem('triple-m-notes');
+  if (stored) {
+    try {
+      state.notes = JSON.parse(stored);
+    } catch (err) {
+      console.error('Failed to load notes from storage:', err);
+      state.notes = [];
+    }
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 function btcUseMaxAmount() {
   if (!state.bitcoin.wallet) return;
   const balance = btcSummarizeUtxoBalance();
@@ -6238,37 +6330,35 @@ function btcBindUI() {
   });
   els.btcReceiveBtn.addEventListener('click', () => {
     if (state.bitcoin.wallet) {
+      els.btcReceiveModal.classList.remove('hide');
       els.btcReceiveAddress.textContent = state.bitcoin.wallet.address;
       btcRenderQR(`bitcoin:${state.bitcoin.wallet.address}`);
-      els.btcReceiveModal.classList.remove('hide');
     }
   });
-  els.btcCopyAddressBtn.addEventListener('click', async () => {
-    if (!state.bitcoin.wallet) return;
-    try {
-      await btcCopyText(state.bitcoin.wallet.address);
-      const oldText = els.btcCopyAddressBtn.textContent;
-      els.btcCopyAddressBtn.textContent = 'Copied';
-      els.btcCopyAddressBtn.disabled = true;
-      setTimeout(() => {
-        els.btcCopyAddressBtn.textContent = oldText;
-        els.btcCopyAddressBtn.disabled = false;
-      }, 1000);
-    } catch (err) {
-      console.error('Could not copy address');
-    }
+}
+
+// Notes UI Binding
+function notesBindUI() {
+  els.saveNoteBtn.addEventListener('click', saveNote);
+  els.searchNotes.addEventListener('input', (e) => {
+    renderNotes(e.target.value);
   });
-  els.btcMaxBtn.addEventListener('click', btcUseMaxAmount);
-  if (els.btcDownloadPdfBtn) {
-    els.btcDownloadPdfBtn.addEventListener('click', btcDownloadPDF);
-  }
-  if (els.btcBroadcastBtn) {
-    els.btcBroadcastBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      btcBuildAndBroadcast();
-    });
-  }
+}
+
+function btcClearSession() {
+  state.bitcoin.wallet = null;
+  state.bitcoin.utxos = [];
+  state.bitcoin.history = [];
+  state.bitcoin.historyCursor = null;
+  state.bitcoin.historyDone = false;
+  state.bitcoin.historyTotal = 0;
+  els.btcWifInput.value = '';
+  els.btcToAddress.value = '';
+  els.btcSendAmount.value = '';
+  els.btcFeeRate.value = '';
+  els.btcNetworkBadge.textContent = btcGetNetworkInfo(els.btcNetworkSelect.value).label;
+  btcSetWalletStatus('No wallet loaded yet.', '');
+  btcClearView();
 }
 
 async function boot(){
@@ -6280,6 +6370,9 @@ async function boot(){
   activate("expenses");
   setInitialOverviewForExpenses();
   btcBindUI();
+  notesBindUI();
+  loadNotesFromStorage();
+  renderNotes();
   await autoLogin();
   handleUrlHash();
 }
