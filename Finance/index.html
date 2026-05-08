@@ -68,11 +68,127 @@
         </div>
       </form>
       
+      <div class="login-actions">
+        <button id="learnMoreBtn" class="btn ghost" type="button" style="width: 100%; margin-top: 12px;">
+          <i class="fa-solid fa-info-circle"></i> Learn More
+        </button>
+      </div>
+      
       <div class="login-help">
         <p>Don't have an account? Contact on WhatsApp <a href="https://wa.me/923339004564" target="_blank" class="whatsapp-link">+923339004564</a></p>
       </div>
       
       <div id="lockError" class="lock-error"></div>
+    </div>
+  </div>
+
+  <!-- Standalone About Section (accessible without login) -->
+  <div id="standaloneAboutSection" class="standalone-about-section hide">
+    <div class="standalone-about-container">
+      <div class="standalone-about-header">
+        <div class="brand">
+          <img class="mark" src="Assets/logo/logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+          <div>
+            <h1>TRIPLE M by NSF</h1>
+            <p>Money Management Module (Powered by Nadeem Shahzad Fida)</p>
+          </div>
+        </div>
+        <button id="closeStandaloneAboutBtn" class="btn ghost" type="button" style="font-size: 1.5rem; padding: 8px 12px;">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+
+      <div class="standalone-about-content">
+        <div class="about-content" style="display: grid; gap: 20px;">
+          <!-- Overview Section -->
+          <div class="about-section">
+            <h4 style="margin: 0 0 12px; font-size: 1.1rem; font-weight: 700; color: var(--text);"><i class="fa-solid fa-list-check"></i> Overview</h4>
+            <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px;">
+              <p style="margin: 0 0 12px; line-height: 1.6; color: var(--text);">
+                <strong>Triple M by NSF</strong> (Money Management Module) is a comprehensive financial tracking application designed and developed by Nadeem Shahzad Fida. This powerful tool helps individuals and businesses manage their finances with precision and ease.
+              </p>
+              <p style="margin: 0; line-height: 1.6; color: var(--text);">
+                The application provides a secure cloud-based solution with server storage for expenses, loans, and goods transactions, ensuring data safety and accessibility. Additionally, it offers cryptocurrency management through Bitcoin wallet integration with local backup options.
+              </p>
+            </div>
+          </div>
+
+          <!-- Key Features Section -->
+          <div class="about-section">
+            <h4 style="margin: 0 0 12px; font-size: 1.1rem; font-weight: 700; color: var(--text);"><i class="fa-solid fa-star"></i> Key Features</h4>
+            <div style="display: grid; gap: 12px;">
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px;">
+                <h5 style="margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; color: var(--primary);"><i class="fa-solid fa-coins"></i> Expense Management</h5>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">
+                  Track daily expenses across multiple wallets with detailed categorization and balance monitoring. Supports multiple currencies (AED, SAR, PKR) with real-time conversion and comprehensive reporting.
+                </p>
+              </div>
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px;">
+                <h5 style="margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; color: var(--primary);"><i class="fa-solid fa-hand-holding-dollar"></i> Loan Tracking</h5>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">
+                  Manage loans given and received with detailed payment tracking, proper calculations, and repayment schedules. Monitor active loans and closed transactions with comprehensive filtering options.
+                </p>
+              </div>
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px;">
+                <h5 style="margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; color: var(--primary);"><i class="fa-solid fa-calendar-days"></i> Installment Plans</h5>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">
+                  Create and manage installment plans with flexible payment schedules. Track partial payments and remaining balances with automatic status updates.
+                </p>
+              </div>
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px;">
+                <h5 style="margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; color: var(--primary);"><i class="fa-solid fa-cart-shopping"></i> Goods Management</h5>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">
+                  Track bought and sold items with inventory management. Monitor stock levels, sales records, and profit margins with detailed transaction history.
+                </p>
+              </div>
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px;">
+                <h5 style="margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; color: var(--primary);"><i class="fa-brands fa-bitcoin"></i> Bitcoin Integration</h5>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">
+                  Secure Bitcoin wallet functionality with client-side key management. Create, import, and manage Bitcoin wallets with transaction history and balance tracking. All operations remain private and secure in your browser.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Section -->
+          <div class="about-section">
+            <h4 style="margin: 0 0 12px; font-size: 1.1rem; font-weight: 700; color: var(--text);"><i class="fa-solid fa-phone"></i> Contact & Support</h4>
+            <div style="background: linear-gradient(135deg, rgba(6, 118, 71, 0.05) 0%, rgba(6, 118, 71, 0.02) 100%); border: 1px solid rgba(6, 118, 71, 0.2); border-radius: 12px; padding: 16px;">
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 40px; height: 40px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-user-tie"></i></div>
+                  <div>
+                    <h5 style="margin: 0 0 4px; font-size: 0.95rem; font-weight: 600; color: var(--text);">Developer</h5>
+                    <p style="margin: 0; color: var(--text); font-size: 0.9rem;">Nadeem Shahzad Fida</p>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-brands fa-whatsapp"></i></div>
+                  <div>
+                    <h5 style="margin: 0 0 4px; font-size: 0.95rem; font-weight: 600; color: var(--text);">WhatsApp Support</h5>
+                    <p style="margin: 0; color: var(--text); font-size: 0.9rem;">
+                      <a href="https://wa.me/923339004564" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">+923339004564</a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);">
+                <p style="margin: 0; text-align: center; color: var(--muted); font-size: 0.85rem; line-height: 1.5;">
+                  <strong>Need help?</strong> Feel free to reach out for support, feature requests, or custom development solutions. 
+                  We're committed to providing excellent financial management tools for individuals and businesses.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Back to Login Button -->
+          <div style="text-align: center; margin-top: 20px;">
+            <button id="backToLoginBtn" class="btn primary" type="button">
+              <i class="fa-solid fa-arrow-left"></i> Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
