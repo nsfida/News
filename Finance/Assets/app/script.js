@@ -65,6 +65,10 @@ const els = {
   welcomeScreen: document.getElementById("welcomeScreen"),
   welcomeName: document.getElementById("welcomeName"),
   app: document.getElementById("app"),
+  learnMoreBtn: document.getElementById("learnMoreBtn"),
+  standaloneAboutSection: document.getElementById("standaloneAboutSection"),
+  closeStandaloneAboutBtn: document.getElementById("closeStandaloneAboutBtn"),
+  backToLoginBtn: document.getElementById("backToLoginBtn"),
   logoutBtn: document.getElementById("logoutBtn"),
   refreshBtn: document.getElementById("refreshBtn"),
   mainOverview: document.getElementById("mainOverview"),
@@ -2706,6 +2710,11 @@ function renderAll(){
 }
 
 function activate(tab){
+  // Prevent access to tabs when not logged in (except when showing standalone about)
+  if (!state.unlocked && window.location.hash !== "#about") {
+    return;
+  }
+  
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById(`${tab}Panel`).classList.add("active");
@@ -2729,6 +2738,15 @@ function activate(tab){
       walletsOverview.style.display = "none";
     }
   }
+}
+
+// Function to set initial overview visibility for Expenses tab
+function setInitialOverviewForExpenses() {
+  const mainOverview = document.getElementById("mainOverview");
+  const walletsOverview = document.getElementById("walletsOverviewSection");
+  
+  if (mainOverview) mainOverview.style.display = "none";
+  if (walletsOverview) walletsOverview.style.display = "block";
 }
 
 function setCurrencyChoice(form, currency){
@@ -5020,6 +5038,17 @@ function attachEvents(){
   }
   els.zipPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptUnlock(); });
   els.unlockBtn.addEventListener("click", attemptUnlock);
+  
+  // Learn More and standalone about section event listeners
+  if (els.learnMoreBtn) {
+    els.learnMoreBtn.addEventListener("click", showStandaloneAbout);
+  }
+  if (els.closeStandaloneAboutBtn) {
+    els.closeStandaloneAboutBtn.addEventListener("click", hideStandaloneAbout);
+  }
+  if (els.backToLoginBtn) {
+    els.backToLoginBtn.addEventListener("click", hideStandaloneAbout);
+  }
 
   [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"],["searchGoods","goods"],["searchExpenses","expenses"]].forEach(([id,key]) => {
     document.getElementById(id).addEventListener("input", e => {
@@ -5039,6 +5068,34 @@ function focusUnlockForm(){
     ? els.zipUsernameInput
     : els.zipPasswordInput;
   focusEl.focus();
+}
+
+function showStandaloneAbout() {
+  if (els.lockScreen) els.lockScreen.classList.add("hide");
+  if (els.standaloneAboutSection) els.standaloneAboutSection.classList.remove("hide");
+  // Hide tabs when showing standalone about
+  const tabsSection = document.querySelector(".tabs");
+  if (tabsSection) tabsSection.classList.add("hidden-tabs");
+  window.location.hash = "#about";
+}
+
+function hideStandaloneAbout() {
+  if (els.standaloneAboutSection) els.standaloneAboutSection.classList.add("hide");
+  if (els.lockScreen) els.lockScreen.classList.remove("hide");
+  // Show tabs when returning to login (but they won't work without login)
+  const tabsSection = document.querySelector(".tabs");
+  if (tabsSection) tabsSection.classList.remove("hidden-tabs");
+  if (window.location.hash === "#about") {
+    history.replaceState(null, null, window.location.pathname);
+  }
+  focusUnlockForm();
+}
+
+// Handle URL hash for direct About section access
+function handleUrlHash() {
+  if (window.location.hash === "#about") {
+    showStandaloneAbout();
+  }
 }
 
 function doLogout(){
@@ -5995,8 +6052,10 @@ async function boot(){
   const resumedImport = sessionStorage.getItem(IMPORT_SESSION_KEY) === "1";
   applyEntries(loadBackupEntriesFromStorage(), "backup", { hasImportedFile: resumedImport });
   activate("expenses");
+  setInitialOverviewForExpenses();
   btcBindUI();
   await autoLogin();
+  handleUrlHash();
 }
 
 boot();
