@@ -5987,23 +5987,44 @@ function btcClearSession() {
 }
 
 // Notes Functions
-function saveNote() {
+async function saveNote() {
   const noteText = els.noteInput.value.trim();
   if (!noteText) {
     alert('Please enter a note.');
     return;
   }
 
-  const note = {
-    id: crypto.randomUUID(),
-    content: noteText,
-    createdAt: new Date().toISOString()
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) {
+    alert("Please connect to the database first using your username and ZIP password.");
+    els.lockScreen.classList.remove("hide");
+    return;
+  }
+
+  const noteId = crypto.randomUUID();
+  const payload = {
+    id: noteId,
+    group_id: noteId,
+    person_name: "SYSTEM",
+    direction: "taken",
+    entry_kind: "principal",
+    currency: "AED",
+    principal_amount: 0,
+    loan_date: new Date().toISOString().split('T')[0],
+    action_date: new Date().toISOString().split('T')[0],
+    notes: JSON.stringify({
+      content: noteText,
+      rowType: "NOTE"
+    }),
+    created_at: new Date().toISOString()
   };
 
-  state.notes.unshift(note);
-  els.noteInput.value = '';
-  renderNotes();
-  saveNotesToStorage();
+  try {
+    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    els.noteInput.value = '';
+    await loadNotesFromDatabase();
+  } catch (err) {
+    alert("Failed to save note to database: " + err.message);
+  }
 }
 
 function renderNotes(searchTerm = '') {
@@ -6033,9 +6054,14 @@ function renderNotes(searchTerm = '') {
         <div style="flex:1;">
           <div style="font-size:.9rem;color:var(--text);line-height:1.5;white-space:pre-wrap;">${escapeHtml(note.content)}</div>
         </div>
-        <button class="btn ghost" onclick="deleteNote('${note.id}')" style="margin-left:10px;padding:4px 8px;font-size:.8rem;">
-          <i class="fa-solid fa-trash"></i>
-        </button>
+        <div style="display:flex;gap:8px;margin-left:10px;">
+          <button class="btn ghost" onclick="editNote('${note.id}')" style="padding:4px 8px;font-size:.8rem;">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn ghost" onclick="deleteNote('${note.id}')" style="padding:4px 8px;font-size:.8rem;">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
       </div>
       <div style="font-size:.76rem;color:var(--muted);">${formattedDate}</div>
     `;
@@ -6043,26 +6069,88 @@ function renderNotes(searchTerm = '') {
   });
 }
 
-window.deleteNote = function(noteId) {
+window.deleteNote = async function(noteId) {
   if (!confirm('Are you sure you want to delete this note?')) return;
-  state.notes = state.notes.filter(note => note.id !== noteId);
-  renderNotes(els.searchNotes.value);
-  saveNotesToStorage();
+  
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) {
+    alert("Please connect to the database first using your username and ZIP password.");
+    els.lockScreen.classList.remove("hide");
+    return;
+  }
+
+  try {
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(noteId)}`, { method: "DELETE" });
+    await loadNotesFromDatabase();
+  } catch (err) {
+    alert("Failed to delete note: " + err.message);
+  }
 };
 
-function saveNotesToStorage() {
-  localStorage.setItem('triple-m-notes', JSON.stringify(state.notes));
-}
+window.editNote = async function(noteId) {
+  const note = state.notes.find(n => n.id === noteId);
+  if (!note) return;
+  
+  const newContent = prompt('Edit your note:', note.content);
+  if (newContent === null || newContent.trim() === '') return;
+  
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) {
+    alert("Please connect to the database first using your username and ZIP password.");
+    els.lockScreen.classList.remove("hide");
+    return;
+  }
 
-function loadNotesFromStorage() {
-  const stored = localStorage.getItem('triple-m-notes');
-  if (stored) {
-    try {
-      state.notes = JSON.parse(stored);
-    } catch (err) {
-      console.error('Failed to load notes from storage:', err);
-      state.notes = [];
-    }
+  try {
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(noteId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        notes: JSON.stringify({
+          content: newContent.trim(),
+          rowType: "NOTE"
+        })
+      })
+    });
+    await loadNotesFromDatabase();
+  } catch (err) {
+    alert("Failed to update note: " + err.message);
+  }
+};
+
+async function loadNotesFromDatabase() {
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) {
+    state.notes = [];
+    renderNotes();
+    return;
+  }
+
+  try {
+    const rows = await supabase(`${CONFIG.table}?select=*&direction=eq.taken&person_name=eq.SYSTEM&order=created_at.desc`);
+    state.notes = (Array.isArray(rows) ? rows : [])
+      .filter(row => {
+        try {
+          const noteData = JSON.parse(row.notes || '{}');
+          return noteData.rowType === "NOTE";
+        } catch {
+          return false;
+        }
+      })
+      .map(row => {
+        try {
+          const noteData = JSON.parse(row.notes || '{}');
+          return {
+            id: row.id,
+            content: noteData.content || '',
+            createdAt: row.created_at
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+    renderNotes();
+  } catch (err) {
+    console.error('Failed to load notes from database:', err);
+    state.notes = [];
+    renderNotes();
   }
 }
 
@@ -6371,8 +6459,7 @@ async function boot(){
   setInitialOverviewForExpenses();
   btcBindUI();
   notesBindUI();
-  loadNotesFromStorage();
-  renderNotes();
+  await loadNotesFromDatabase();
   await autoLogin();
   handleUrlHash();
 }
