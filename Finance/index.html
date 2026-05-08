@@ -236,6 +236,7 @@
       <button class="tab" data-tab="taken" type="button"><i class="fa-solid fa-money-bill-transfer"></i> Loan Taken / Returned Back</button>
       <button class="tab" data-tab="installments" type="button"><i class="fa-solid fa-calendar-days"></i> Installment Plans</button>
       <button class="tab" data-tab="goods" type="button"><i class="fa-solid fa-cart-shopping"></i> Goods Bought / Sold</button>
+      <button class="tab" data-tab="notes" type="button"><i class="fa-solid fa-sticky-note"></i> Notes</button>
       <button class="tab" data-tab="bitcoin" type="button"><i class="fa-brands fa-bitcoin"></i> Bitcoin</button>
       <button class="tab" data-tab="about" type="button"><i class="fa-solid fa-info-circle"></i> About</button>
     </section>
@@ -667,6 +668,40 @@
             </div>
           </div>
           <div id="expensesList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="notesPanel" class="panel">
+        <div class="card section">
+          <div class="section-head">
+            <div class="section-head-top">
+              <div class="title-group">
+                <div class="title-row">
+                  <h3>Notes</h3>
+                </div>
+                <p>Keep track of your notes with date and time stamps.</p>
+              </div>
+              <div class="tools">
+              </div>
+            </div>
+            <div class="filter-inline-row">
+              <div class="filter-inline-section">
+                <span class="filter-inline-label">Search:</span>
+                <input id="searchNotes" class="input filter-inline-input" placeholder="Search notes..." />
+              </div>
+            </div>
+          </div>
+          
+          <!-- Note Input Section -->
+          <div style="padding: 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px;">
+            <div style="margin-bottom: 12px;">
+              <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">New Note</label>
+              <textarea id="noteInput" class="input" placeholder="Write your note here..." style="min-height:80px;resize:vertical;"></textarea>
+            </div>
+            <button id="saveNoteBtn" class="btn primary" type="button">Save Note</button>
+          </div>
+          
+          <div id="notesList" class="list"></div>
         </div>
       </section>
 
