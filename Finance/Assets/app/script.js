@@ -2745,6 +2745,11 @@ function activate(tab){
       walletsOverview.style.display = "none";
     }
   }
+
+  // Load notes from database when Notes tab is activated
+  if (tab === "notes") {
+    loadNotesFromDatabase();
+  }
 }
 
 // Function to set initial overview visibility for Expenses tab
@@ -5037,7 +5042,10 @@ function attachEvents(){
     els.logoutBtn.addEventListener("click", () => doLogout());
   }
   if (els.refreshBtn){
-    els.refreshBtn.addEventListener("click", () => loadEntries());
+    els.refreshBtn.addEventListener("click", () => {
+      loadEntries();
+      loadNotesFromDatabase();
+    });
   }
 
   if (els.zipUsernameInput){
@@ -6018,11 +6026,14 @@ async function saveNote() {
     created_at: new Date().toISOString()
   };
 
+  console.log('Saving note to database:', payload);
   try {
-    await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    const result = await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    console.log('Note saved successfully:', result);
     els.noteInput.value = '';
     await loadNotesFromDatabase();
   } catch (err) {
+    console.error('Failed to save note:', err);
     alert("Failed to save note to database: " + err.message);
   }
 }
@@ -6117,13 +6128,16 @@ window.editNote = async function(noteId) {
 
 async function loadNotesFromDatabase() {
   if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) {
+    console.log('Database not connected, notes will not be loaded');
     state.notes = [];
     renderNotes();
     return;
   }
 
   try {
+    console.log('Loading notes from database...');
     const rows = await supabase(`${CONFIG.table}?select=*&direction=eq.taken&person_name=eq.SYSTEM&order=created_at.desc`);
+    console.log('Database rows:', rows);
     state.notes = (Array.isArray(rows) ? rows : [])
       .filter(row => {
         try {
@@ -6146,6 +6160,7 @@ async function loadNotesFromDatabase() {
         }
       })
       .filter(Boolean);
+    console.log('Loaded notes:', state.notes);
     renderNotes();
   } catch (err) {
     console.error('Failed to load notes from database:', err);
@@ -6459,8 +6474,8 @@ async function boot(){
   setInitialOverviewForExpenses();
   btcBindUI();
   notesBindUI();
-  await loadNotesFromDatabase();
   await autoLogin();
+  await loadNotesFromDatabase();
   handleUrlHash();
 }
 
