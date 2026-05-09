@@ -55,7 +55,8 @@ const state = {
     qrInstance: null,
     feeRate: 8
   },
-  notes: []
+  notes: [],
+  recycleBin: []
 };
 
 const els = {
@@ -202,6 +203,7 @@ const els = {
 const INSTALLMENT_TAG = "[INSTALLMENT]";
 const GOODS_TAG = "[GOODS]";
 const EXPENSE_ACCOUNT_TAG = "[EXPENSE_ACCOUNT]";
+const DELETED_TAG = "[DELETED]";
 const BACKUP_STORAGE_KEY = "loanledger-json-backup-v1";
 const IMPORT_SESSION_KEY = "loanledger-imported-file-v1";
 const FLOAT_CURRENCY_PATHS = ["currency-float-path-1", "currency-float-path-2", "currency-float-path-3", "currency-float-path-4"];
@@ -320,6 +322,163 @@ function entrySignature(entry){
     actionDate,
     notes
   ].join("|");
+}
+
+function isEntryInRecycleBin(entryId) {
+  return state.recycleBin.some(item => item.id === entryId);
+}
+
+function getActiveEntries() {
+  return state.entries.filter(entry => !isEntryInRecycleBin(entry.id) && !hasDeletedTag(entry.notes));
+}
+
+function addToRecycleBin(entry) {
+  const deletedItem = {
+    ...entry,
+    deletedAt: new Date().toISOString(),
+    originalSection: getEntrySection(entry)
+  };
+  state.recycleBin.push(deletedItem);
+  saveRecycleBinToStorage();
+}
+
+function getEntrySection(entry) {
+  if (hasExpenseAccountTag(entry.notes)) return 'expenses';
+  if (hasGoodsTag(entry.notes)) return 'goods';
+  if (entry.direction === 'given') return 'given';
+  if (entry.direction === 'taken') return 'taken';
+  return 'unknown';
+}
+
+function saveRecycleBinToStorage() {
+  try {
+    localStorage.setItem('loanledger-recycle-bin-v1', JSON.stringify(state.recycleBin));
+  } catch (e) {
+    console.error('Failed to save recycle bin to storage:', e);
+  }
+}
+
+function loadRecycleBinFromStorage() {
+  try {
+    const stored = localStorage.getItem('loanledger-recycle-bin-v1');
+    if (stored) {
+      state.recycleBin = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Failed to load recycle bin from storage:', e);
+    state.recycleBin = [];
+  }
+}
+
+async function restoreFromRecycleBin(entryId) {
+  const recycleIndex = state.recycleBin.findIndex(item => item.id === entryId);
+  if (recycleIndex === -1) return;
+
+  const deletedItem = state.recycleBin[recycleIndex];
+  
+  // Remove from recycle bin
+  state.recycleBin.splice(recycleIndex, 1);
+  saveRecycleBinToStorage();
+
+  // Restore to entries
+  if (isBackupMode()) {
+    // For backup mode, just add it back to state.entries
+    const { deletedAt, originalSection, ...restoredEntry } = deletedItem;
+    state.entries.push(restoredEntry);
+    refreshBackupView();
+    renderAll();
+  } else {
+    // For database mode, remove the deleted tag from notes
+    const deletedItem = state.recycleBin.find(item => item.id === entryId);
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entryId)}`, { 
+      method: "PATCH", 
+      body: JSON.stringify({ notes: removeDeletedTag(deletedItem?.notes || "") }) 
+    });
+    // Add a small delay to ensure database operations complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await loadEntriesFromSupabase();
+    renderAll();
+  }
+  
+  renderRecycleBinDropdown();
+}
+
+async function permanentDeleteFromRecycleBin(entryId) {
+  if (!confirm('Permanently delete this item? This action cannot be undone.')) return;
+
+  const recycleIndex = state.recycleBin.findIndex(item => item.id === entryId);
+  if (recycleIndex === -1) return;
+
+  const deletedItem = state.recycleBin[recycleIndex];
+  
+  // Remove from recycle bin
+  state.recycleBin.splice(recycleIndex, 1);
+  saveRecycleBinToStorage();
+
+  // Permanently delete from database if in database mode
+  if (!isBackupMode()) {
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entryId)}`, { method: "DELETE" });
+  }
+  
+  renderRecycleBinDropdown();
+}
+
+function renderRecycleBinDropdown() {
+  // Always update the count badge first, even if dropdown doesn't exist yet
+  const countBadge = document.getElementById('recycleBinCount');
+  if (countBadge) {
+    countBadge.textContent = state.recycleBin.length;
+    countBadge.style.display = state.recycleBin.length > 0 ? 'inline' : 'none';
+  }
+
+  let dropdown = document.getElementById('recycleBinDropdown');
+  if (!dropdown) return;
+
+  const itemsContainer = dropdown.querySelector('.recycle-bin-items');
+  if (!itemsContainer) return;
+
+  const items = state.recycleBin;
+  
+  if (items.length === 0) {
+    itemsContainer.innerHTML = '<div class="recycle-bin-empty">Recycle bin is empty</div>';
+    return;
+  }
+
+  itemsContainer.innerHTML = items.map(item => {
+    const section = item.originalSection || 'unknown';
+    const name = item.person_name || 'Unknown';
+    const amount = item.principal_amount || item.action_amount || 0;
+    const currency = item.currency || '';
+    const date = displayDate(item.loan_date || item.action_date);
+    
+    return `
+      <div class="recycle-bin-item">
+        <div class="recycle-bin-item-info">
+          <span class="recycle-bin-item-section">${escapeHtml(section)}</span>
+          <span class="recycle-bin-item-name">${escapeHtml(name)}</span>
+          <span class="recycle-bin-item-amount">${money(amount, currency)}</span>
+          <span class="recycle-bin-item-date">${escapeHtml(date)}</span>
+        </div>
+        <div class="recycle-bin-item-actions">
+          <button class="recycle-bin-restore-btn" data-id="${escapeHtml(item.id)}" title="Restore">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <button class="recycle-bin-delete-btn" data-id="${escapeHtml(item.id)}" title="Permanently Delete">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Add event listeners
+  itemsContainer.querySelectorAll('.recycle-bin-restore-btn').forEach(btn => {
+    btn.addEventListener('click', () => restoreFromRecycleBin(btn.dataset.id));
+  });
+  
+  itemsContainer.querySelectorAll('.recycle-bin-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => permanentDeleteFromRecycleBin(btn.dataset.id));
+  });
 }
 
 function getSupabaseConfig(){
@@ -529,12 +688,12 @@ function calculateLoan(group){
 }
 
 function summarizeCurrency(currency){
-  const givenGroups = groupByLoan(state.entries.filter(e =>
+  const givenGroups = groupByLoan(getActiveEntries().filter(e =>
     e.currency === currency &&
     e.direction === "given" &&
     !hasGoodsTag(e.notes)
   ));
-  const takenGroups = groupByLoan(state.entries.filter(e =>
+  const takenGroups = groupByLoan(getActiveEntries().filter(e =>
     e.currency === currency &&
     e.direction === "taken" &&
     !hasGoodsTag(e.notes) &&
@@ -798,7 +957,22 @@ function upsertGoodsMetaInNote(noteValue, meta = {}){
 }
 
 function hasExpenseAccountTag(noteValue){
-  return String(noteValue || "").includes(EXPENSE_ACCOUNT_TAG);
+  return noteValue && noteValue.includes(EXPENSE_ACCOUNT_TAG);
+}
+
+function hasDeletedTag(noteValue){
+  return noteValue && noteValue.includes(DELETED_TAG);
+}
+
+function addDeletedTag(noteValue){
+  if (!noteValue) return DELETED_TAG;
+  if (hasDeletedTag(noteValue)) return noteValue;
+  return noteValue + " " + DELETED_TAG;
+}
+
+function removeDeletedTag(noteValue){
+  if (!noteValue || !hasDeletedTag(noteValue)) return noteValue;
+  return noteValue.replace(DELETED_TAG, "").trim();
 }
 
 function expenseMetaFromNotes(noteValue){
@@ -1029,13 +1203,13 @@ function collectTopupTransactionsFlat(accounts){
 }
 
 function filterPrincipal(direction, searchKey = direction){
-  return groupByLoan(state.entries.filter(e => e.direction === direction))
+  return groupByLoan(getActiveEntries().filter(e => e.direction === direction))
     .filter(group => matchesSearch(group.principal || group.actions[0] || {}, state.search[searchKey]));
 }
 
 function groupByPerson(direction, searchKey = direction){
   const personMap = new Map();
-  const directionEntries = state.entries.filter(e => e.direction === direction);
+  const directionEntries = getActiveEntries().filter(e => e.direction === direction);
   const searchTerm = state.search[searchKey];
   const selectedCurrency = state.currencyFilter[searchKey] || "All";
 
@@ -1380,8 +1554,8 @@ function repositionOpenNotePopovers(){
 }
 
 function renderLoanSelectors(){
-  const givenGroups = groupByLoan(state.entries.filter(e => e.direction === "given")).filter(g => calculateLoan(g).remaining > 0);
-  const takenGroups = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0);
+  const givenGroups = groupByLoan(getActiveEntries().filter(e => e.direction === "given")).filter(g => calculateLoan(g).remaining > 0);
+  const takenGroups = groupByLoan(getActiveEntries().filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0);
 
   const makeOptions = groups => groups.length
     ? `<option value="">Choose one</option>` + groups.map(g => {
@@ -1399,7 +1573,7 @@ function renderLoanSelectors(){
 
 function getGoodsGroups(options = {}){
   const applyUiFilters = options.applyUiFilters !== false;
-  const groups = groupByLoan(state.entries.filter(e =>
+  const groups = groupByLoan(getActiveEntries().filter(e =>
     e.direction === "goods" || (e.direction === "taken" && hasGoodsTag(e.notes))
   ))
     .map(group => {
@@ -1671,7 +1845,7 @@ function renderGoodsList(){
 
 function getExpenseAccounts(options = {}){
   const applyUiFilters = options.applyUiFilters !== false;
-  const groups = groupByLoan(state.entries.filter(e => e.direction === "taken" && hasExpenseAccountTag(e.notes)))
+  const groups = groupByLoan(getActiveEntries().filter(e => e.direction === "taken" && hasExpenseAccountTag(e.notes)))
     .map(group => {
       const principal = group.principal;
       const principalMeta = expenseMetaFromNotes(principal?.notes);
@@ -2626,6 +2800,9 @@ function applyEntries(entries, source = "backup", options = {}){
 async function loadEntries(){
   if (state.dataSource === "backup"){
     applyEntries(loadBackupEntriesFromStorage(), "backup");
+    // Load recycle bin from localStorage for backup mode
+    loadRecycleBinFromStorage();
+    renderRecycleBinDropdown();
     return;
   }
   await loadEntriesFromSupabase();
@@ -2633,9 +2810,22 @@ async function loadEntries(){
 
 async function loadEntriesFromSupabase(){
   const rows = await supabase(`${CONFIG.table}?select=*&order=created_at.desc`);
-  updateDbSnapshot(Array.isArray(rows) ? rows : []);
-  applyEntries(Array.isArray(rows) ? rows : [], "supabase", { hasImportedFile: false });
+  // Filter out entries with deleted tag for main display
+  const filteredRows = Array.isArray(rows) ? rows.filter(row => !hasDeletedTag(row.notes)) : [];
+  updateDbSnapshot(filteredRows);
+  applyEntries(filteredRows, "supabase", { hasImportedFile: false });
+  
+  // Load deleted entries into recycle bin
+  const deletedRows = Array.isArray(rows) ? rows.filter(row => hasDeletedTag(row.notes)) : [];
+  state.recycleBin = deletedRows.map(row => ({
+    ...row,
+    deletedAt: row.updated_at, // Use updated_at as deletion time
+    originalSection: getEntrySection(row)
+  }));
+  saveRecycleBinToStorage();
+  renderRecycleBinDropdown();
 }
+
 function renderExpenseOverviewWallets(){
   const container = document.getElementById("expenseOverviewWallets");
   if (!container) return;
@@ -2717,10 +2907,10 @@ function renderAll(){
   renderExpensesList();
   renderExpenseOverviewWallets();
 
-  els.openGivenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "given" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
-  els.openTakenCount.textContent = groupByLoan(state.entries.filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
-  els.receivedCount.textContent = state.entries.filter(e => e.direction === "given" && e.entry_kind !== "principal").length;
-  els.returnedCount.textContent = state.entries.filter(e => e.direction === "taken" && e.entry_kind !== "principal" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes)).length;
+  els.openGivenCount.textContent = groupByLoan(getActiveEntries().filter(e => e.direction === "given" && !hasGoodsTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
+  els.openTakenCount.textContent = groupByLoan(getActiveEntries().filter(e => e.direction === "taken" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes))).filter(g => calculateLoan(g).remaining > 0).length;
+  els.receivedCount.textContent = getActiveEntries().filter(e => e.direction === "given" && e.entry_kind !== "principal").length;
+  els.returnedCount.textContent = getActiveEntries().filter(e => e.direction === "taken" && e.entry_kind !== "principal" && !hasGoodsTag(e.notes) && !hasExpenseAccountTag(e.notes)).length;
 
 }
 
@@ -3097,7 +3287,7 @@ async function createPayment(form){
   const principalEntry = state.entries.find(e => e.group_id === groupId && e.entry_kind === "principal");
   if (!principalEntry) throw new Error("Selected loan could not be found.");
 
-  const group = groupByLoan(state.entries.filter(e => e.group_id === groupId))[0];
+  const group = groupByLoan(getActiveEntries().filter(e => e.group_id === groupId))[0];
   let currentRemaining = calculateLoan(group).remaining;
 
   let totalAmount = 0;
@@ -3294,25 +3484,54 @@ async function deleteEntry(id){
                      expenseMetaFromNotes(entry.notes).expenseType === "Transfer";
 
   if(entry.entry_kind === "principal"){
-    if (!confirm(`Delete the entire loan for ${entry.person_name}? This will also remove ALL linked repayments.`)) return;
+    if (!confirm(`Delete the entire loan for ${entry.person_name}? This will move ALL linked repayments to recycle bin.`)) return;
     if (isBackupMode()){
+      // Move all entries in the group to recycle bin
+      const groupEntries = state.entries.filter(e => e.group_id === entry.group_id);
+      groupEntries.forEach(e => addToRecycleBin(e));
       state.entries = state.entries.filter(e => e.group_id !== entry.group_id);
+      refreshBackupView();
+      renderAll();
     } else {
-      await supabase(`${CONFIG.table}?group_id=eq.${encodeURIComponent(entry.group_id)}`, { method: "DELETE" });
+      // Move to recycle bin and mark as deleted
+      const groupEntries = state.entries.filter(e => e.group_id === entry.group_id);
+      groupEntries.forEach(e => {
+        addToRecycleBin(e);
+        // Update in database to mark as deleted using notes field
+        supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(e.id)}`, { 
+          method: "PATCH", 
+          body: JSON.stringify({ notes: addDeletedTag(e.notes || "") }) 
+        });
+      });
+      await loadEntriesFromSupabase();
+      renderAll();
     }
   } else if (isTransfer) {
-    // Handle transfer deletion - delete both expense and top-up parts
+    // Handle transfer deletion - move both expense and top-up parts to recycle bin
     await deleteTransfer(entry);
   } else {
-    if (!confirm(`Delete this specific entry?`)) return;
+    if (!confirm(`Move this entry to recycle bin?`)) return;
     if (isBackupMode()){
+      addToRecycleBin(entry);
       state.entries = state.entries.filter(e => e.id !== id);
     } else {
-      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+      addToRecycleBin(entry);
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { 
+        method: "PATCH", 
+        body: JSON.stringify({ notes: addDeletedTag(entry.notes || "") }) 
+      });
     }
   }
-  if (isBackupMode()) refreshBackupView();
-  else await loadEntriesFromSupabase();
+  if (isBackupMode()) {
+    refreshBackupView();
+    renderAll();
+  } else {
+    // Add a small delay to ensure database operations complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await loadEntriesFromSupabase();
+    renderAll();
+  }
+  renderRecycleBinDropdown();
 }
 
 async function deleteTransfer(entry) {
@@ -3353,30 +3572,52 @@ async function deleteTransfer(entry) {
   }
   
   if (!transferPartner) {
-    // No partner found, just delete this entry
-    if (!confirm(`Delete this transfer record? No matching transfer partner found.`)) return;
+    // No partner found, just move this entry to recycle bin
+    if (!confirm(`Move this transfer record to recycle bin? No matching transfer partner found.`)) return;
     if (isBackupMode()) {
+      addToRecycleBin(entry);
       state.entries = state.entries.filter(e => e.id !== entry.id);
     } else {
-      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { method: "DELETE" });
+      addToRecycleBin(entry);
+      await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { 
+        method: "PATCH", 
+        body: JSON.stringify({ deleted: true, deleted_at: new Date().toISOString() }) 
+      });
     }
     return;
   }
   
-  // Found transfer partner, ask to delete both
+  // Found transfer partner, ask to move both to recycle bin
   const confirmMessage = transferType === "expense" 
-    ? `Delete this transfer from ${entry.person_name} to ${transferPartner.person_name}?\n\nThis will remove BOTH:\n- The expense record (money out) from ${entry.person_name}\n- The top-up record (money in) to ${transferPartner.person_name}\n\nThis action cannot be undone!`
-    : `Delete this transfer from ${transferPartner.person_name} to ${entry.person_name}?\n\nThis will remove BOTH:\n- The expense record (money out) from ${transferPartner.person_name}\n- The top-up record (money in) to ${entry.person_name}\n\nThis action cannot be undone!`;
+    ? `Move this transfer from ${entry.person_name} to ${transferPartner.person_name} to recycle bin?\n\nThis will move BOTH:\n- The expense record (money out) from ${entry.person_name}\n- The top-up record (money in) to ${transferPartner.person_name}\n\nYou can restore them later from the recycle bin.`
+    : `Move this transfer from ${transferPartner.person_name} to ${entry.person_name} to recycle bin?\n\nThis will move BOTH:\n- The expense record (money out) from ${transferPartner.person_name}\n- The top-up record (money in) to ${entry.person_name}\n\nYou can restore them later from the recycle bin.`;
   
   if (!confirm(confirmMessage)) return;
   
-  // Delete both transfer records
+  // Move both transfer records to recycle bin
   if (isBackupMode()) {
+    addToRecycleBin(entry);
+    addToRecycleBin(transferPartner);
     state.entries = state.entries.filter(e => e.id !== entry.id && e.id !== transferPartner.id);
+    refreshBackupView();
+    renderAll();
   } else {
-    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { method: "DELETE" });
-    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(transferPartner.id)}`, { method: "DELETE" });
+    addToRecycleBin(entry);
+    addToRecycleBin(transferPartner);
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entry.id)}`, { 
+      method: "PATCH", 
+      body: JSON.stringify({ notes: addDeletedTag(entry.notes || "") }) 
+    });
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(transferPartner.id)}`, { 
+      method: "PATCH", 
+      body: JSON.stringify({ notes: addDeletedTag(transferPartner.notes || "") }) 
+    });
+    // Add a small delay to ensure database operations complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await loadEntriesFromSupabase();
+    renderAll();
   }
+  renderRecycleBinDropdown();
 }
 
 async function deletePersonRecords(personNameEncoded, direction){
@@ -3393,11 +3634,15 @@ async function deletePersonRecords(personNameEncoded, direction){
   }
 
   const directionLabel = direction === "given" ? "given" : "taken";
-  if (!confirm(`Delete full record for ${personName}? This will remove ${recordsCount} entr${recordsCount === 1 ? "y" : "ies"} from ${directionLabel}.`)) return;
+  if (!confirm(`Move full record for ${personName} to recycle bin? This will move ${recordsCount} entr${recordsCount === 1 ? "y" : "ies"} from ${directionLabel} to recycle bin.`)) return;
 
   if (isBackupMode()){
+    const matchingEntries = state.entries.filter(e => e.direction === direction && String(e.person_name || "").trim() === personName);
+    matchingEntries.forEach(e => addToRecycleBin(e));
     state.entries = state.entries.filter(e => !(e.direction === direction && String(e.person_name || "").trim() === personName));
     refreshBackupView();
+    renderAll();
+    renderRecycleBinDropdown();
     return;
   }
 
@@ -3406,11 +3651,22 @@ async function deletePersonRecords(personNameEncoded, direction){
     .map(e => e.id)
     .filter(Boolean);
 
+  const matchingEntries = state.entries.filter(e => e.direction === direction && String(e.person_name || "").trim() === personName);
+  matchingEntries.forEach(e => addToRecycleBin(e));
+
   for (const id of matchingIds){
-    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    const entry = state.entries.find(e => e.id === id);
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(id)}`, { 
+      method: "PATCH", 
+      body: JSON.stringify({ notes: addDeletedTag(entry?.notes || "") }) 
+    });
   }
 
+  // Add a small delay to ensure database operations complete
+  await new Promise(resolve => setTimeout(resolve, 100));
   await loadEntriesFromSupabase();
+  renderAll();
+  renderRecycleBinDropdown();
 }
 
 async function movePersonToInstallments(personNameEncoded, direction){
@@ -5035,6 +5291,11 @@ function attachEvents(){
         if (rect.right - panel.offsetWidth < 10) {
           panel.style.left = `${Math.max(10, rect.left)}px`;
         }
+        
+        // Render recycle bin items if this is the recycle bin dropdown
+        if (key === "recyclebin") {
+          renderRecycleBinDropdown();
+        }
       }
     });
   });
@@ -5415,6 +5676,13 @@ async function showWelcomeAndTransitionToApp(keepCurrentBackup) {
     
     // Initialize the app
     defaultDateInputs(document);
+    
+    // Initialize recycle bin (will be loaded from database in loadEntriesFromSupabase)
+    if (state.dataSource === "backup") {
+      loadRecycleBinFromStorage();
+      renderRecycleBinDropdown();
+    }
+    
     if (keepCurrentBackup){
       await refreshDbSnapshot();
       updateUploadButtonVisibility();
