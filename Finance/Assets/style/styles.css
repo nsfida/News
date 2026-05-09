@@ -901,6 +901,184 @@ tbody tr:hover{background:#fbfdff}
 .currency-chip.active{border-color:rgba(36,87,214,.42);background:var(--primary-soft);color:var(--primary);}
 .currency-chip .symbol{display:inline-block;font-size:1.05rem;line-height:1;}
 
+/* Transfer Success Overlay Styles */
+.transfer-success-overlay{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  animation:fadeIn 0.3s ease-out;
+}
+
+.transfer-success-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(8px);
+}
+
+.transfer-success-content{
+  position:relative;
+  background:#fff;
+  border-radius:20px;
+  padding:40px 32px;
+  max-width:420px;
+  width:100%;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  animation:slideUp 0.4s ease-out 0.1s both;
+}
+
+.transfer-success-icon{
+  margin-bottom:24px;
+}
+
+.transfer-gif{
+  width:120px;
+  height:120px;
+  object-fit:contain;
+  animation:scaleIn 0.5s ease-out 0.2s both;
+}
+
+.transfer-success-message h3{
+  margin:0 0 20px;
+  font-size:1.8rem;
+  font-weight:800;
+  color:var(--text);
+  letter-spacing:-0.02em;
+  animation:fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.transfer-details{
+  animation:fadeInUp 0.5s ease-out 0.4s both;
+}
+
+.transfer-amount{
+  font-size:2.2rem;
+  font-weight:900;
+  color:var(--success);
+  margin-bottom:16px;
+  letter-spacing:-0.02em;
+}
+
+.transfer-route{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  font-size:1rem;
+  color:var(--muted);
+  flex-wrap:wrap;
+}
+
+.wallet-from, .wallet-to{
+  font-weight:700;
+  color:var(--text);
+  padding:8px 16px;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  min-width:100px;
+}
+
+.transfer-arrow{
+  color:var(--success);
+  font-size:1.2rem;
+  animation:slideArrow 1s ease-in-out 0.6s infinite alternate;
+}
+
+.transfer-success-actions{
+  margin-top:32px;
+  animation:fadeInUp 0.5s ease-out 0.5s both;
+}
+
+.transfer-success-actions .btn{
+  min-width:120px;
+}
+
+/* Animations */
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes slideUp{
+  from{
+    opacity:0;
+    transform:translateY(30px) scale(0.9);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+
+@keyframes scaleIn{
+  from{
+    opacity:0;
+    transform:scale(0.3);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
+@keyframes fadeInUp{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+
+@keyframes slideArrow{
+  from{
+    transform:translateX(-2px);
+  }
+  to{
+    transform:translateX(2px);
+  }
+}
+
+
+/* Mobile responsive styles for transfer success overlay */
+@media (max-width: 480px) {
+  .transfer-success-content{
+    padding:32px 24px;
+    margin:20px;
+  }
+  
+  .transfer-gif{
+    width:80px;
+    height:80px;
+  }
+  
+  .transfer-success-message h3{
+    font-size:1.5rem;
+  }
+  
+  .transfer-amount{
+    font-size:1.8rem;
+  }
+  
+  .transfer-route{
+    flex-direction:column;
+    gap:8px;
+  }
+  
+  .transfer-arrow{
+    transform:rotate(90deg);
+  }
+}
+
 .lock{
   position:fixed;inset:0;background:linear-gradient(135deg, rgba(246,247,249,0.6) 0%, rgba(236,240,249,0.5) 100%);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:100;padding:16px;
 }
