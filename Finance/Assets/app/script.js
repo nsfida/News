@@ -6022,11 +6022,13 @@ function btcHexToBytes(hex) {
   if (!clean || clean.length % 2 !== 0 || /[^0-9a-f]/i.test(clean)) {
     throw new Error('Invalid hex data.');
   }
+  // Create proper Buffer using Bitcoin.js library's Buffer implementation
   const bytes = new Uint8Array(clean.length / 2);
   for (let i = 0; i < bytes.length; i++) {
     bytes[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
   }
-  return bytes;
+  // Use Bitcoin.js Buffer constructor which works in browser
+  return new bitcoinjs.Buffer(bytes);
 }
 
 function btcBuildSpendPlan(sumIn, inputCount, amountSat, feeRateSatVb) {
@@ -6815,6 +6817,9 @@ function btcBindUI() {
       btcRenderQR(`bitcoin:${state.bitcoin.wallet.address}`);
     }
   });
+  els.btcDownloadPdfBtn.addEventListener('click', btcDownloadPDF);
+  els.btcBroadcastBtn.addEventListener('click', btcBuildAndBroadcast);
+  els.btcMaxBtn.addEventListener('click', btcUseMaxAmount);
 }
 
 // Notes UI Binding
