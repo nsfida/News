@@ -1757,8 +1757,49 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-
-  /* Summary card spans full width on mobile only */
+  
+  /* Bitcoin summary grid responsive adjustments */
+  .btc-summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .btc-summary-grid .summary div[id$="Value"] {
+    font-size: 0.85rem !important;
+    word-break: break-all !important;
+    overflow-wrap: break-word !important;
+    min-width: 0 !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Bitcoin transaction row styling */
+  .btc-transaction-row {
+    transition: background-color 0.2s ease;
+  }
+  
+  .btc-transaction-row:hover {
+    background-color: var(--panel-2);
+  }
+  
+  .btc-transaction-details {
+    border-bottom: 1px solid var(--line);
+  }
+  
+  .btc-transaction-details .loan-details {
+    animation: slideDown 0.2s ease-out;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+/* Summary card spans full width on mobile only */
   .wallets-overview-section #expenseOverviewWallets .summary.currency-summary.expense-overview {
     grid-column: 1 / -1;
   }
