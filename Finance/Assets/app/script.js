@@ -7,35 +7,6 @@ const ZIP_USERNAME_SESSION_KEY = "loanledger-zip-username-v1";
 const ZIP_PASSWORD_STORAGE_KEY = "loanledger-zip-password-v1";
 const ZIP_USERNAME_STORAGE_KEY = "loanledger-zip-username-persist-v1";
 
-// Secure encoding/decoding functions
-const ENCRYPTION_KEY = "TripleM_NSF_2026_Secure_Key_42";
-
-function encodeData(data) {
-  if (!data) return "";
-  try {
-    const encoded = btoa(encodeURIComponent(data).split('').map((char, i) => 
-      String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
-    ).join(''));
-    return encoded;
-  } catch (error) {
-    console.error("Encoding error:", error);
-    return "";
-  }
-}
-
-function decodeData(encodedData) {
-  if (!encodedData) return "";
-  try {
-    const decoded = decodeURIComponent(atob(encodedData).split('').map((char, i) => 
-      String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
-    ).join(''));
-    return decoded;
-  } catch (error) {
-    console.error("Decoding error:", error);
-    return "";
-  }
-}
-
 function sanitizeZipUsername(raw){
   const username = String(raw || "").trim();
   if (!username) throw new Error("Please enter your username.");
@@ -51,6 +22,7 @@ function zipUrlForUsername(raw){
 }
 
 let runtimeConfig = null;
+let fullConfigData = null;
 
 const SUPPORTED_CURRENCIES = ["AED", "SAR", "PKR"];
 
@@ -94,6 +66,9 @@ const els = {
   lockError: document.getElementById("lockError"),
   welcomeScreen: document.getElementById("welcomeScreen"),
   welcomeName: document.getElementById("welcomeName"),
+  lockScreenSubtitle: document.getElementById("lockScreenSubtitle"),
+  standaloneAboutSubtitle: document.getElementById("standaloneAboutSubtitle"),
+  mainAppSubtitle: document.getElementById("mainAppSubtitle"),
   app: document.getElementById("app"),
   learnMoreBtn: document.getElementById("learnMoreBtn"),
   standaloneAboutSection: document.getElementById("standaloneAboutSection"),
@@ -3496,8 +3471,59 @@ const PDF_BRAND = {
 let cachedPdfLogo = null;
 async function getPdfLogo(){
   if (cachedPdfLogo !== null) return cachedPdfLogo;
-  cachedPdfLogo = await getBase64ImageFromUrl("Assets/logo/logo2.png");
+  
+  // Use JSON logo if available, otherwise use default
+  const logoUrl = fullConfigData?.logo || "Assets/logo/logo2.png";
+  
+  try {
+    cachedPdfLogo = await getBase64ImageFromUrl(logoUrl);
+  } catch (error) {
+    // If JSON logo fails, fall back to default logo
+    console.warn('Failed to load logo from JSON config, using default logo:', error);
+    cachedPdfLogo = await getBase64ImageFromUrl("Assets/logo/logo2.png");
+  }
+  
   return cachedPdfLogo;
+}
+
+function updateLogosFromConfig(){
+  if (!fullConfigData?.logo) return;
+  
+  const logoUrl = fullConfigData.logo;
+  const logoImages = document.querySelectorAll('img.mark[src="Assets/logo/logo2.png"]');
+  
+  logoImages.forEach(img => {
+    // Test if the logo URL is accessible
+    const testImg = new Image();
+    testImg.onload = function() {
+      // If logo loads successfully, update the src
+      img.src = logoUrl;
+    };
+    testImg.onerror = function() {
+      // If logo fails to load, keep the default
+      console.warn('Failed to load logo from JSON config, keeping default logo');
+    };
+    testImg.src = logoUrl;
+  });
+}
+
+function updateHeaderTextFromConfig(){
+  const company = fullConfigData?.Company;
+  const trn = fullConfigData?.TRN;
+  
+  let subtitle = "Money Management Module (Powered by Nadeem Shahzad Fida)";
+  
+  if (company && company.trim()) {
+    subtitle = company.trim();
+    if (trn && trn.trim()) {
+      subtitle += `\nTRN: ${trn.trim()}`;
+    }
+  }
+  
+  // Update all header subtitle elements
+  if (els.lockScreenSubtitle) els.lockScreenSubtitle.textContent = subtitle;
+  if (els.standaloneAboutSubtitle) els.standaloneAboutSubtitle.textContent = subtitle;
+  if (els.mainAppSubtitle) els.mainAppSubtitle.textContent = subtitle;
 }
 
 function drawPdfHeader(doc, logoData, title, subtitle){
@@ -3530,12 +3556,18 @@ function drawPdfHeader(doc, logoData, title, subtitle){
 }
 
 function drawPdfOwnerBlock(doc, y = 48){
+  // Use JSON config data if available, otherwise use defaults
+  const owner = fullConfigData?.Name || PDF_BRAND.owner;
+  const email = fullConfigData?.email || PDF_BRAND.email;
+  const mobile = fullConfigData?.Mobile || PDF_BRAND.mobile;
+  const whatsapp = fullConfigData?.WhatsApp || PDF_BRAND.whatsapp;
+  
   doc.setTextColor(23, 33, 43);
   doc.setFontSize(10);
-  doc.text(`${PDF_BRAND.owner}`, 14, y);
-  doc.text(`Email: ${PDF_BRAND.email}`, 14, y + 5);
-  doc.text(`Mobile: ${PDF_BRAND.mobile}`, 14, y + 10);
-  doc.text(`WhatsApp: ${PDF_BRAND.whatsapp}`, 14, y + 15);
+  doc.text(`${owner}`, 14, y);
+  doc.text(`Email: ${email}`, 14, y + 5);
+  doc.text(`Mobile: ${mobile}`, 14, y + 10);
+  doc.text(`WhatsApp: ${whatsapp}`, 14, y + 15);
 }
 
 function drawPdfFooter(doc){
@@ -3551,11 +3583,19 @@ function drawPdfFooter(doc){
   doc.setLineWidth(0.3);
   doc.line(12, pageHeight - 28, pageWidth - 12, pageHeight - 28);
 
-  // System name with premium styling
+  // System name with premium styling - use Company from JSON if available, otherwise default
+  let systemName = PDF_BRAND.systemName;
+  if (fullConfigData?.Company && fullConfigData.Company.trim()) {
+    systemName = fullConfigData.Company.trim();
+    if (fullConfigData?.TRN && fullConfigData.TRN.trim()) {
+      systemName += ` | TRN: ${fullConfigData.TRN.trim()}`;
+    }
+  }
+  
   doc.setTextColor(36, 87, 214);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text(PDF_BRAND.systemName, pageWidth / 2, pageHeight - 22, { align: "center" });
+  doc.text(systemName, pageWidth / 2, pageHeight - 22, { align: "center" });
 
   // Disclaimer text
   doc.setTextColor(102, 112, 133);
@@ -3563,10 +3603,14 @@ function drawPdfFooter(doc){
   doc.setFont("helvetica", "normal");
   doc.text("This is a system-generated document and does not require any signature", pageWidth / 2, pageHeight - 17, { align: "center" });
 
-  // Contact information
+  // Contact information - use JSON fields if available, otherwise defaults
+  const owner = fullConfigData?.Name || PDF_BRAND.owner;
+  const email = fullConfigData?.email || PDF_BRAND.email;
+  const mobile = fullConfigData?.Mobile || PDF_BRAND.mobile;
+  
   doc.setTextColor(71, 85, 105);
   doc.setFontSize(6.5);
-  doc.text(`Powered by ${PDF_BRAND.owner} | ${PDF_BRAND.email} | ${PDF_BRAND.mobile}`, pageWidth / 2, pageHeight - 12, { align: "center" });
+  doc.text(`Powered by ${owner} | ${email} | ${mobile}`, pageWidth / 2, pageHeight - 12, { align: "center" });
 }
 
 function drawPdfHeaderAndFooter(doc, logoData, title, subtitle, showOwnerBlock = true){
@@ -5144,6 +5188,8 @@ function handleUrlHash() {
 
 function doLogout(){
   runtimeConfig = null;
+  fullConfigData = null;
+  cachedPdfLogo = null;
   state.unlocked = false;
   sessionStorage.removeItem("loanledger-unlocked");
   sessionStorage.removeItem(ZIP_USERNAME_SESSION_KEY);
@@ -5160,10 +5206,8 @@ async function autoLogin(){
   const storedPassword = localStorage.getItem(ZIP_PASSWORD_STORAGE_KEY);
   
   if (storedUsername && storedPassword && els.zipUsernameInput && els.zipPasswordInput){
-    const decodedUsername = decodeData(storedUsername);
-    const decodedPassword = decodeData(storedPassword);
-    els.zipUsernameInput.value = decodedUsername;
-    els.zipPasswordInput.value = decodedPassword;
+    els.zipUsernameInput.value = storedUsername;
+    els.zipPasswordInput.value = storedPassword;
     await attemptUnlock();
   }
 }
@@ -5210,10 +5254,22 @@ async function attemptUnlock(){
       supabaseUrl: String(configData.supabaseUrl).trim(),
       supabaseKey: String(configData.supabaseKey).trim()
     };
+    // Store full config data for PDF generation and logo usage
+    fullConfigData = configData;
+    
+    // Invalidate PDF logo cache to ensure new logo is loaded
+    cachedPdfLogo = null;
+    
+    // Update logo images in HTML if JSON logo is available
+    updateLogosFromConfig();
+    
+    // Update header text with Company and TRN from JSON if available
+    updateHeaderTextFromConfig();
+    
     sessionStorage.setItem("loanledger-unlocked", "true");
     sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
-    localStorage.setItem(ZIP_USERNAME_STORAGE_KEY, encodeData(safeUser));
-    localStorage.setItem(ZIP_PASSWORD_STORAGE_KEY, encodeData(zipPassword));
+    localStorage.setItem(ZIP_USERNAME_STORAGE_KEY, safeUser);
+    localStorage.setItem(ZIP_PASSWORD_STORAGE_KEY, zipPassword);
     state.unlocked = true;
     
     // Show welcome screen with name from JSON config
