@@ -3514,16 +3514,17 @@ function updateHeaderTextFromConfig(){
   let subtitle = "Money Management Module (Powered by Nadeem Shahzad Fida)";
   
   if (company && company.trim()) {
-    subtitle = company.trim();
+    // Create HTML with styling for company name (black and bold) and TRN (blue on next line)
+    subtitle = `<span style="color: black; font-weight: bold;">${company.trim()}</span>`;
     if (trn && trn.trim()) {
-      subtitle += `\nTRN: ${trn.trim()}`;
+      subtitle += `<br><span style="color: #2457d6; font-size: 0.9em;">TRN: ${trn.trim()}</span>`;
     }
   }
   
-  // Update all header subtitle elements
-  if (els.lockScreenSubtitle) els.lockScreenSubtitle.textContent = subtitle;
-  if (els.standaloneAboutSubtitle) els.standaloneAboutSubtitle.textContent = subtitle;
-  if (els.mainAppSubtitle) els.mainAppSubtitle.textContent = subtitle;
+  // Update all header subtitle elements with HTML
+  if (els.lockScreenSubtitle) els.lockScreenSubtitle.innerHTML = subtitle;
+  if (els.standaloneAboutSubtitle) els.standaloneAboutSubtitle.innerHTML = subtitle;
+  if (els.mainAppSubtitle) els.mainAppSubtitle.innerHTML = subtitle;
 }
 
 function drawPdfHeader(doc, logoData, title, subtitle){
@@ -3538,7 +3539,18 @@ function drawPdfHeader(doc, logoData, title, subtitle){
   doc.roundedRect(10, 8, pageWidth - 20, 3, 3, 3, "F");
 
   if (logoData){
-    try { doc.addImage(logoData, "PNG", 15.5, 14, 50, 18); } catch {}
+    try {
+      // Check if logo is from JSON (external URL) or default
+      const isJsonLogo = fullConfigData?.logo && fullConfigData.logo.trim();
+      
+      if (isJsonLogo) {
+        // For JSON logos, use smaller size to fit properly without stretching
+        doc.addImage(logoData, "PNG", 15.5, 15, 40, 14);
+      } else {
+        // For default logo, use original size
+        doc.addImage(logoData, "PNG", 15.5, 14, 50, 18);
+      }
+    } catch {}
   }
 
   // Title with premium styling
@@ -3584,33 +3596,64 @@ function drawPdfFooter(doc){
   doc.line(12, pageHeight - 28, pageWidth - 12, pageHeight - 28);
 
   // System name with premium styling - use Company from JSON if available, otherwise default
-  let systemName = PDF_BRAND.systemName;
+  let companyName = PDF_BRAND.systemName;
+  let trnText = null;
+  
   if (fullConfigData?.Company && fullConfigData.Company.trim()) {
-    systemName = fullConfigData.Company.trim();
+    companyName = fullConfigData.Company.trim();
     if (fullConfigData?.TRN && fullConfigData.TRN.trim()) {
-      systemName += ` | TRN: ${fullConfigData.TRN.trim()}`;
+      trnText = `TRN: ${fullConfigData.TRN.trim()}`;
     }
   }
   
-  doc.setTextColor(36, 87, 214);
+  // Company name - black and bold
+  doc.setTextColor(0, 0, 0); // Black color
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text(systemName, pageWidth / 2, pageHeight - 22, { align: "center" });
+  doc.text(companyName, pageWidth / 2, pageHeight - 22, { align: "center" });
+  
+  // TRN - on next line with current color (blue)
+  if (trnText) {
+    doc.setTextColor(36, 87, 214); // Current blue color
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(trnText, pageWidth / 2, pageHeight - 17, { align: "center" });
+  }
 
-  // Disclaimer text
+  // Disclaimer text - adjust position based on whether TRN is present
+  const disclaimerY = trnText ? pageHeight - 14 : pageHeight - 17;
   doc.setTextColor(102, 112, 133);
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("This is a system-generated document and does not require any signature", pageWidth / 2, pageHeight - 17, { align: "center" });
+  doc.text("This is a system-generated document and does not require any signature", pageWidth / 2, disclaimerY, { align: "center" });
 
-  // Contact information - use JSON fields if available, otherwise defaults
-  const owner = fullConfigData?.Name || PDF_BRAND.owner;
-  const email = fullConfigData?.email || PDF_BRAND.email;
-  const mobile = fullConfigData?.Mobile || PDF_BRAND.mobile;
+  // Contact information - use company name from JSON if available, otherwise default behavior
+  let contactName, email, mobile;
   
+  if (fullConfigData?.Company && fullConfigData.Company.trim()) {
+    // Use company name from JSON without "Powered by" prefix
+    contactName = fullConfigData.Company.trim();
+    email = fullConfigData?.email || PDF_BRAND.email;
+    mobile = fullConfigData?.Mobile || PDF_BRAND.mobile;
+  } else {
+    // Fallback to default behavior when no JSON data
+    contactName = PDF_BRAND.owner;
+    email = PDF_BRAND.email;
+    mobile = PDF_BRAND.mobile;
+  }
+  
+  // Adjust contact info position based on whether TRN is present
+  const contactY = trnText ? pageHeight - 10 : pageHeight - 12;
   doc.setTextColor(71, 85, 105);
   doc.setFontSize(6.5);
-  doc.text(`Powered by ${owner} | ${email} | ${mobile}`, pageWidth / 2, pageHeight - 12, { align: "center" });
+  
+  if (fullConfigData?.Company && fullConfigData.Company.trim()) {
+    // When JSON company is available, show: Company Name | email | mobile
+    doc.text(`${contactName} | ${email} | ${mobile}`, pageWidth / 2, contactY, { align: "center" });
+  } else {
+    // When no JSON data, show original: Powered by Nadeem Shahzad Fida | email | mobile
+    doc.text(`Powered by ${contactName} | ${email} | ${mobile}`, pageWidth / 2, contactY, { align: "center" });
+  }
 }
 
 function drawPdfHeaderAndFooter(doc, logoData, title, subtitle, showOwnerBlock = true){
