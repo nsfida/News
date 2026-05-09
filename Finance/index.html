@@ -783,10 +783,10 @@
                     <button id="btcCopyAddressInfoBtn" class="btn ghost">Copy</button>
                   </div>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;" class="btc-summary-grid">
                   <div class="summary">
-                    <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Spendable balance</div>
-                    <div id="btcBalanceValue" style="font-size:1rem;font-weight:700;">—</div>
+                    <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Available balance</div>
+                    <div id="btcBalanceValue" style="font-size:1rem;font-weight:700;word-break:break-all;overflow-wrap:break-word;min-width:0;">—</div>
                   </div>
                   <div class="summary">
                     <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Total received</div>
@@ -1586,7 +1586,7 @@
       <div class="modal-head">
         <div>
           <h3>Send Bitcoin</h3>
-          <p>Build and broadcast a Bitcoin transaction.</p>
+          <p>Send a Bitcoin transaction.</p>
         </div>
         <button class="icon-btn ghost" type="button" data-close-modal="btcSendModal" aria-label="Close">×</button>
       </div>
@@ -1614,7 +1614,7 @@
             </div>
             <div class="field w12 modal-footer">
               <button class="btn ghost" type="button" data-close-modal="btcSendModal">Cancel</button>
-              <button id="btcBroadcastBtn" class="btn primary" type="button">Build and broadcast</button>
+              <button id="btcBroadcastBtn" class="btn primary" type="button">Send</button>
             </div>
           </div>
         </form>
