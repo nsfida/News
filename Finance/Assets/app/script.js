@@ -2696,10 +2696,10 @@ function renderAll(){
   renderLoanCards(els.givenList, "given", "given");
   renderLoanCards(els.receivedList, "given", "received");
   renderLoanCards(els.takenList, "taken", "taken", {
-    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note))
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note)) && group.person_name !== "SYSTEM"
   });
   renderLoanCards(els.returnedList, "taken", "returned", {
-    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note))
+    groupFilter: group => !group.rows.some(row => hasInstallmentTag(row.note) || hasGoodsTag(row.note) || hasExpenseAccountTag(row.note)) && group.person_name !== "SYSTEM"
   });
   renderLoanCards(els.installmentsList, "taken", "installments", {
     groupFilter: group => group.rows.some(row => hasInstallmentTag(row.note)) && !group.rows.some(row => hasGoodsTag(row.note)) && !group.rows.some(row => hasExpenseAccountTag(row.note)),
