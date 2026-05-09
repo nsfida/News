@@ -5837,6 +5837,18 @@ function btcMaskWif(wif) {
   return `${s.slice(0, 6)}…${s.slice(-6)}`;
 }
 
+function btcFormatDate(timestamp) {
+  if (!timestamp) return 'mempool';
+  const date = new Date(timestamp * 1000);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
+
 function btcShortHash(v) {
   const s = String(v || '');
   if (!s) return '—';
@@ -6084,7 +6096,7 @@ function btcRenderHistory() {
   for (const tx of state.bitcoin.history) {
     const dir = btcTxDirection(tx);
     const ts = tx.status && tx.status.confirmed
-      ? new Date((tx.status.block_time || 0) * 1000).toLocaleString()
+      ? btcFormatDate(tx.status.block_time || 0)
       : 'mempool';
     const conf = tx.status && tx.status.confirmed
       ? (tx.status.block_height ? `confirmed @ ${tx.status.block_height}` : 'confirmed')
@@ -6094,10 +6106,13 @@ function btcRenderHistory() {
       : `${dir.netSat > 0 ? '+' : '-'}${btcFormatBtcFromSat(Math.abs(dir.netSat))}`;
     const badgeText = dir.label === 'received' ? 'Received' : dir.label === 'sent' ? 'Sent' : 'Self / change';
 
+    // Get addresses for display
+    const addresses = btcGetTransactionAddresses(tx, wallet.address);
+    
     const row = document.createElement('div');
     row.className = 'loan';
     row.innerHTML = `
-      <div class="loan-top">
+      <div class="loan-top btc-transaction-row" data-tx-id="${escapeHtml(tx.txid)}">
         <div class="lt-main">
           <div class="loan-name">${escapeHtml(badgeText)}</div>
           <div class="loan-sub">${ts}</div>
@@ -6115,9 +6130,92 @@ function btcRenderHistory() {
           <strong class="mono">${escapeHtml(btcShortHash(tx.txid))}</strong>
         </div>
       </div>
+      <div class="btc-transaction-details" style="display: none;">
+        <div class="loan-details" style="padding: 12px; background: var(--panel-2); border-top: 1px solid var(--line);">
+          <div style="margin-bottom: 8px;"><strong>Transaction Hash:</strong></div>
+          <div class="mono" style="word-break: break-all; margin-bottom: 12px; font-size: 0.85rem; color: var(--muted);">${escapeHtml(tx.txid)}</div>
+          
+          ${addresses.from.length > 0 ? `
+          <div style="margin-bottom: 8px;"><strong>From Addresses:</strong></div>
+          <div style="margin-bottom: 12px;">
+            ${addresses.from.map(addr => `<div class="mono" style="word-break: break-all; font-size: 0.85rem; margin-bottom: 4px; color: var(--muted);">${escapeHtml(addr)}</div>`).join('')}
+          </div>
+          ` : ''}
+          
+          ${addresses.to.length > 0 ? `
+          <div style="margin-bottom: 8px;"><strong>To Addresses:</strong></div>
+          <div style="margin-bottom: 12px;">
+            ${addresses.to.map(addr => `<div class="mono" style="word-break: break-all; font-size: 0.85rem; margin-bottom: 4px; color: var(--muted);">${escapeHtml(addr)}</div>`).join('')}
+          </div>
+          ` : ''}
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 12px;">
+            <div>
+              <small style="color: var(--muted);">Size:</small>
+              <div><strong>${tx.size || 0} bytes</strong></div>
+            </div>
+            <div>
+              <small style="color: var(--muted);">Weight:</small>
+              <div><strong>${tx.weight || 0} WU</strong></div>
+            </div>
+            <div>
+              <small style="color: var(--muted);">Fee:</small>
+              <div><strong>${tx.fee ? btcFormatBtcFromSat(tx.fee) : 'N/A'}</strong></div>
+            </div>
+            ${tx.status && tx.status.block_height ? `
+            <div>
+              <small style="color: var(--muted);">Block Height:</small>
+              <div><strong>${tx.status.block_height}</strong></div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
     `;
+    
+    // Add click event to toggle details
+    const topRow = row.querySelector('.btc-transaction-row');
+    const details = row.querySelector('.btc-transaction-details');
+    
+    topRow.style.cursor = 'pointer';
+    topRow.addEventListener('click', () => {
+      if (details.style.display === 'none') {
+        details.style.display = 'block';
+        topRow.style.background = 'var(--panel-2)';
+      } else {
+        details.style.display = 'none';
+        topRow.style.background = '';
+      }
+    });
+    
     els.btcHistoryList.appendChild(row);
   }
+}
+
+function btcGetTransactionAddresses(tx, walletAddress) {
+  const from = [];
+  const to = [];
+  
+  // Get input addresses (from)
+  for (const input of (tx.vin || [])) {
+    const prev = input && input.prevout;
+    if (prev && prev.scriptpubkey_address) {
+      from.push(prev.scriptpubkey_address);
+    }
+  }
+  
+  // Get output addresses (to)
+  for (const output of (tx.vout || [])) {
+    if (output && output.scriptpubkey_address) {
+      to.push(output.scriptpubkey_address);
+    }
+  }
+  
+  // Remove duplicates and wallet address from appropriate lists
+  return {
+    from: [...new Set(from)].filter(addr => addr !== walletAddress),
+    to: [...new Set(to)].filter(addr => addr !== walletAddress)
+  };
 }
 
 async function btcFetchWalletData(withFeeRefresh) {
@@ -6150,7 +6248,7 @@ async function btcFetchWalletData(withFeeRefresh) {
     btcRenderHistory();
 
     btcSetWalletStatus(
-      `Live data loaded.\nAddress: ${wallet.address}\nSpendable balance: ${btcFormatBtcFromSat(btcSummarizeUtxoBalance())}`,
+      `Live data loaded.\nAddress: ${wallet.address}\nAvailable balance: ${btcFormatBtcFromSat(btcSummarizeUtxoBalance())}`,
       ''
     );
 
@@ -6589,10 +6687,30 @@ async function btcDownloadPDF() {
   drawPdfHeader(doc, logoData, title, subtitle);
   drawPdfOwnerBlock(doc, 48);
 
-  const tableData = state.bitcoin.history.map(tx => {
+  // Calculate summary data
+  const balance = btcSummarizeUtxoBalance();
+  const received = Number(state.bitcoin.history.reduce((sum, tx) => sum + (btcTxDirection(tx).receivedSat || 0), 0));
+  const sent = Number(state.bitcoin.history.reduce((sum, tx) => sum + (btcTxDirection(tx).sentSat || 0), 0));
+  const transactionCount = state.bitcoin.history.length;
+
+  // Add summary info to top right
+  doc.setFontSize(10);
+  doc.setTextColor(23, 33, 43);
+  const summaryY = 55;
+  const summaryX = 120;
+  
+  doc.text(`Transaction Count: ${transactionCount}`, summaryX, summaryY);
+  doc.text(`Current Balance: ${btcFormatBtcFromSat(balance)}`, summaryX, summaryY + 7);
+  doc.text(`Total Received: ${btcFormatBtcFromSat(received)}`, summaryX, summaryY + 14);
+  doc.text(`Total Sent: ${btcFormatBtcFromSat(sent)}`, summaryX, summaryY + 21);
+  doc.text(`Network: ${wallet.label}`, summaryX, summaryY + 28);
+
+  // Create detailed transaction data
+  const tableData = [];
+  for (const tx of state.bitcoin.history) {
     const dir = btcTxDirection(tx);
     const ts = tx.status && tx.status.confirmed
-      ? new Date((tx.status.block_time || 0) * 1000).toLocaleString()
+      ? btcFormatDate(tx.status.block_time || 0)
       : 'mempool';
     const conf = tx.status && tx.status.confirmed
       ? (tx.status.block_height ? `confirmed @ ${tx.status.block_height}` : 'confirmed')
@@ -6601,43 +6719,127 @@ async function btcDownloadPDF() {
       ? '0 BTC'
       : `${dir.netSat > 0 ? '+' : '-'}${btcFormatBtcFromSat(Math.abs(dir.netSat))}`;
     const badgeText = dir.label === 'received' ? 'Received' : dir.label === 'sent' ? 'Sent' : 'Self / change';
-
-    return [
+    
+    // Get addresses for this transaction
+    const addresses = btcGetTransactionAddresses(tx, wallet.address);
+    
+    // Main transaction row
+    tableData.push([
       badgeText,
       ts,
       amount,
       conf,
       btcShortHash(tx.txid)
-    ];
-  });
+    ]);
+    
+    // Full transaction hash row
+    tableData.push([
+      '',
+      'Full Hash:',
+      { content: tx.txid, styles: { fontStyle: 'mono', fontSize: 8, cellWidth: 'auto' } },
+      '',
+      ''
+    ]);
+    
+    // From addresses row
+    if (addresses.from.length > 0) {
+      tableData.push([
+        '',
+        'From:',
+        { content: addresses.from.join(', '), styles: { fontStyle: 'mono', fontSize: 8, cellWidth: 'auto' } },
+        '',
+        ''
+      ]);
+    }
+    
+    // To addresses row
+    if (addresses.to.length > 0) {
+      tableData.push([
+        '',
+        'To:',
+        { content: addresses.to.join(', '), styles: { fontStyle: 'mono', fontSize: 8, cellWidth: 'auto' } },
+        '',
+        ''
+      ]);
+    }
+    
+    // Additional details row
+    const details = [];
+    if (tx.size) details.push(`Size: ${tx.size} bytes`);
+    if (tx.weight) details.push(`Weight: ${tx.weight} WU`);
+    if (tx.fee) details.push(`Fee: ${btcFormatBtcFromSat(tx.fee)}`);
+    if (details.length > 0) {
+      tableData.push([
+        '',
+        'Details:',
+        { content: details.join(' | '), styles: { fontSize: 8 } },
+        '',
+        ''
+      ]);
+    }
+    
+    // Add empty row for spacing between transactions
+    tableData.push(['', '', '', '', '']);
+  }
 
   doc.autoTable({
     startY: 72,
     head: [['Type', 'Date', 'Amount', 'Status', 'Txid']],
     body: tableData,
     theme: 'grid',
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [36, 87, 214], textColor: 255, fontStyle: 'bold' },
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [36, 87, 214], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+    tableWidth: 182, // Fixed width to stay within page margins (14px left + 14px right = 28px total margins, 210 - 28 = 182)
+    margin: { left: 14, right: 14 },
+    rowPageBreak: 'auto',
+    pageBreak: 'auto',
+    showFoot: 'everyPage',
+    horizontalPageBreak: false,
     columnStyles: {
-      0: { cellWidth: 25 },
-      1: { cellWidth: 40 },
-      2: { cellWidth: 30 },
-      3: { cellWidth: 35 },
-      4: { cellWidth: 60 }
+      0: { cellWidth: 22, fontSize: 8 },
+      1: { cellWidth: 40, fontSize: 8 },
+      2: { cellWidth: 30, fontSize: 8 },
+      3: { cellWidth: 30, fontSize: 8 },
+      4: { cellWidth: 60, fontSize: 7 }
+    },
+    didParseCell: function(data) {
+      // Style detail rows differently
+      if (data.row.raw && data.row.raw[0] === '' && data.row.raw[1] && 
+          (data.row.raw[1].includes('Full Hash:') || data.row.raw[1].includes('From:') || 
+           data.row.raw[1].includes('To:') || data.row.raw[1].includes('Details:'))) {
+        data.cell.styles.fillColor = [245, 247, 250];
+        data.cell.styles.fontStyle = 'normal';
+        data.cell.styles.fontSize = 7;
+        
+        // Make hash/address columns use full width
+        if (data.column.index === 2 && data.row.raw[1] !== 'Details:') {
+          data.cell.styles.cellWidth = 'auto';
+          data.cell.colSpan = 3;
+        }
+      }
+      
+      // Truncate long text in main txid column
+      if (data.column.index === 4 && typeof data.cell.text === 'string' && data.cell.text.length > 15) {
+        data.cell.text = data.cell.text.substring(0, 12) + '...';
+      }
+    },
+    willDrawCell: function(data) {
+      // For detail rows, ensure proper text wrapping
+      if (data.row.raw && data.row.raw[0] === '' && data.row.raw[1] && 
+          (data.row.raw[1].includes('Full Hash:') || data.row.raw[1].includes('From:') || 
+           data.row.raw[1].includes('To:'))) {
+        if (data.column.index === 2) {
+          const text = data.cell.raw || '';
+          if (typeof text === 'string' && text.length > 60) {
+            const lines = doc.splitTextToSize(text, 140);
+            data.cell.text = lines;
+          }
+        }
+      }
     }
   });
 
-  const balance = btcSummarizeUtxoBalance();
-  const received = Number(state.bitcoin.history.reduce((sum, tx) => sum + (btcTxDirection(tx).receivedSat || 0), 0));
-  const sent = Number(state.bitcoin.history.reduce((sum, tx) => sum + (btcTxDirection(tx).sentSat || 0), 0));
-
-  doc.setFontSize(10);
-  doc.text(`Summary:`, 14, doc.lastAutoTable.finalY + 15);
-  doc.text(`Current Balance: ${btcFormatBtcFromSat(balance)}`, 14, doc.lastAutoTable.finalY + 22);
-  doc.text(`Total Received: ${btcFormatBtcFromSat(received)}`, 14, doc.lastAutoTable.finalY + 29);
-  doc.text(`Total Sent: ${btcFormatBtcFromSat(sent)}`, 14, doc.lastAutoTable.finalY + 36);
-  doc.text(`Transaction Count: ${state.bitcoin.history.length}`, 14, doc.lastAutoTable.finalY + 43);
-  doc.text(`Network: ${wallet.label}`, 14, doc.lastAutoTable.finalY + 50);
+  // Summary already displayed at top right, no need to repeat here
 
   drawPdfFooter(doc);
   doc.save(`bitcoin-transactions-${wallet.address.slice(0, 8)}-${new Date().toISOString().split('T')[0]}.pdf`);
