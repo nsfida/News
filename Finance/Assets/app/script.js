@@ -7,6 +7,35 @@ const ZIP_USERNAME_SESSION_KEY = "loanledger-zip-username-v1";
 const ZIP_PASSWORD_STORAGE_KEY = "loanledger-zip-password-v1";
 const ZIP_USERNAME_STORAGE_KEY = "loanledger-zip-username-persist-v1";
 
+// Secure encoding/decoding functions
+const ENCRYPTION_KEY = "TripleM_NSF_2026_Secure_Key_42";
+
+function encodeData(data) {
+  if (!data) return "";
+  try {
+    const encoded = btoa(encodeURIComponent(data).split('').map((char, i) => 
+      String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
+    ).join(''));
+    return encoded;
+  } catch (error) {
+    console.error("Encoding error:", error);
+    return "";
+  }
+}
+
+function decodeData(encodedData) {
+  if (!encodedData) return "";
+  try {
+    const decoded = decodeURIComponent(atob(encodedData).split('').map((char, i) => 
+      String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
+    ).join(''));
+    return decoded;
+  } catch (error) {
+    console.error("Decoding error:", error);
+    return "";
+  }
+}
+
 function sanitizeZipUsername(raw){
   const username = String(raw || "").trim();
   if (!username) throw new Error("Please enter your username.");
@@ -5131,8 +5160,10 @@ async function autoLogin(){
   const storedPassword = localStorage.getItem(ZIP_PASSWORD_STORAGE_KEY);
   
   if (storedUsername && storedPassword && els.zipUsernameInput && els.zipPasswordInput){
-    els.zipUsernameInput.value = storedUsername;
-    els.zipPasswordInput.value = storedPassword;
+    const decodedUsername = decodeData(storedUsername);
+    const decodedPassword = decodeData(storedPassword);
+    els.zipUsernameInput.value = decodedUsername;
+    els.zipPasswordInput.value = decodedPassword;
     await attemptUnlock();
   }
 }
@@ -5181,8 +5212,8 @@ async function attemptUnlock(){
     };
     sessionStorage.setItem("loanledger-unlocked", "true");
     sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
-    localStorage.setItem(ZIP_USERNAME_STORAGE_KEY, safeUser);
-    localStorage.setItem(ZIP_PASSWORD_STORAGE_KEY, zipPassword);
+    localStorage.setItem(ZIP_USERNAME_STORAGE_KEY, encodeData(safeUser));
+    localStorage.setItem(ZIP_PASSWORD_STORAGE_KEY, encodeData(zipPassword));
     state.unlocked = true;
     
     // Show welcome screen with name from JSON config
