@@ -1361,6 +1361,54 @@
   </div>
 </div>
 
+<!-- Transfer Success Overlay -->
+<div id="transferSuccessOverlay" class="transfer-success-overlay hide" aria-hidden="true">
+  <div class="transfer-success-backdrop"></div>
+  <div class="transfer-success-content">
+    <div class="transfer-success-icon">
+      <img src="Assets/logo/transfer.gif" alt="Transfer Success" class="transfer-gif" />
+    </div>
+    <div class="transfer-success-message">
+      <h3>Transfer Successful!</h3>
+      <div class="transfer-details">
+        <div class="transfer-amount" id="transferSuccessAmount">AED 100</div>
+        <div class="transfer-route">
+          <span class="wallet-from" id="transferSuccessFromWallet">Wallet 1</span>
+          <div class="transfer-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+          <span class="wallet-to" id="transferSuccessToWallet">Wallet 2</span>
+        </div>
+      </div>
+    </div>
+    <div class="transfer-success-actions">
+      <button class="btn primary" onclick="closeTransferSuccessOverlay()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Money Added Success Overlay -->
+<div id="moneyAddedSuccessOverlay" class="transfer-success-overlay hide" aria-hidden="true">
+  <div class="transfer-success-backdrop"></div>
+  <div class="transfer-success-content">
+    <div class="transfer-success-icon">
+      <img src="Assets/logo/transfer.gif" alt="Money Added" class="transfer-gif" />
+    </div>
+    <div class="transfer-success-message">
+      <h3>Money Successfully Added!</h3>
+      <div class="transfer-details">
+        <div class="transfer-amount" id="moneyAddedSuccessAmount">AED 100</div>
+        <div class="transfer-route">
+          <span class="wallet-to" id="moneyAddedSuccessWallet">Wallet Name</span>
+        </div>
+      </div>
+    </div>
+    <div class="transfer-success-actions">
+      <button class="btn primary" onclick="closeMoneyAddedSuccessOverlay()">Done</button>
+    </div>
+  </div>
+</div>
+
   <div class="site-footer" style="max-width:1240px;margin:8px auto 18px;padding:0 16px;text-align:center;color:#667085;font-size:.86rem;">
     Powered by
     <a href="https://facebook.com/nadeemshahzadfida" target="_blank" rel="noopener noreferrer" style="color:#2457d6;text-decoration:none;font-weight:700;">
