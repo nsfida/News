@@ -4575,12 +4575,12 @@ function showTransferSuccessOverlay(fromAccount, toAccount, amount, currency) {
   const fromWalletElement = document.getElementById("transferSuccessFromWallet");
   const toWalletElement = document.getElementById("transferSuccessToWallet");
   
-  // Set the transfer details
+  // Set transfer details with wallet icons
   amountElement.textContent = formatReportAmount(amount, currency);
-  fromWalletElement.textContent = fromAccount.person_name;
-  toWalletElement.textContent = toAccount.person_name;
+  fromWalletElement.innerHTML = `${getWalletIconHtml(fromAccount.person_name, 16)} ${fromAccount.person_name}`;
+  toWalletElement.innerHTML = `${getWalletIconHtml(toAccount.person_name, 16)} ${toAccount.person_name}`;
   
-  // Show the overlay
+  // Show overlay
   overlay.classList.remove("hide");
   overlay.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
@@ -4603,9 +4603,9 @@ function showMoneyAddedSuccessOverlay(walletName, amount, currency) {
   const amountElement = document.getElementById("moneyAddedSuccessAmount");
   const walletElement = document.getElementById("moneyAddedSuccessWallet");
   
-  // Set money added details
+  // Set money added details with wallet icon
   amountElement.textContent = formatReportAmount(amount, currency);
-  walletElement.textContent = walletName;
+  walletElement.innerHTML = `${getWalletIconHtml(walletName, 16)} ${walletName}`;
   
   // Show overlay
   overlay.classList.remove("hide");
