@@ -1991,6 +1991,10 @@ async function saveExpenseTopup(form){
     await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
     await loadEntriesFromSupabase();
   }
+  
+  // Show money added success overlay
+  showMoneyAddedSuccessOverlay(principal.person_name, amount, principal.currency);
+  
   closeModal("expenseModal");
 }
 
@@ -4558,8 +4562,67 @@ async function saveTransfer(form) {
     await loadEntriesFromSupabase();
   }
   
+  // Show transfer success overlay
+  showTransferSuccessOverlay(fromAccount, toAccount, amount, fromAccount.currency);
+  
   closeModal("transferModal");
   form.reset();
+}
+
+function showTransferSuccessOverlay(fromAccount, toAccount, amount, currency) {
+  const overlay = document.getElementById("transferSuccessOverlay");
+  const amountElement = document.getElementById("transferSuccessAmount");
+  const fromWalletElement = document.getElementById("transferSuccessFromWallet");
+  const toWalletElement = document.getElementById("transferSuccessToWallet");
+  
+  // Set the transfer details
+  amountElement.textContent = formatReportAmount(amount, currency);
+  fromWalletElement.textContent = fromAccount.person_name;
+  toWalletElement.textContent = toAccount.person_name;
+  
+  // Show the overlay
+  overlay.classList.remove("hide");
+  overlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  
+  // Auto-hide after 4 seconds
+  setTimeout(() => {
+    closeTransferSuccessOverlay();
+  }, 4000);
+}
+
+function closeTransferSuccessOverlay() {
+  const overlay = document.getElementById("transferSuccessOverlay");
+  overlay.classList.add("hide");
+  overlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function showMoneyAddedSuccessOverlay(walletName, amount, currency) {
+  const overlay = document.getElementById("moneyAddedSuccessOverlay");
+  const amountElement = document.getElementById("moneyAddedSuccessAmount");
+  const walletElement = document.getElementById("moneyAddedSuccessWallet");
+  
+  // Set money added details
+  amountElement.textContent = formatReportAmount(amount, currency);
+  walletElement.textContent = walletName;
+  
+  // Show overlay
+  overlay.classList.remove("hide");
+  overlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  
+  // Auto-hide after 4 seconds
+  setTimeout(() => {
+    closeMoneyAddedSuccessOverlay();
+  }, 4000);
+}
+
+function closeMoneyAddedSuccessOverlay() {
+  const overlay = document.getElementById("moneyAddedSuccessOverlay");
+  overlay.classList.add("hide");
+  overlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
 }
 
 async function downloadExpensesPDF(){
