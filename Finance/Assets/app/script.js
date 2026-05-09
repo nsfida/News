@@ -389,15 +389,17 @@ async function restoreFromRecycleBin(entryId) {
     renderAll();
   } else {
     // For database mode, remove the deleted tag from notes
-    const deletedItem = state.recycleBin.find(item => item.id === entryId);
+    const updatedNotes = removeDeletedTag(deletedItem?.notes || "");
     await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(entryId)}`, { 
       method: "PATCH", 
-      body: JSON.stringify({ notes: removeDeletedTag(deletedItem?.notes || "") }) 
+      body: JSON.stringify({ notes: updatedNotes }) 
     });
     // Add a small delay to ensure database operations complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     await loadEntriesFromSupabase();
     renderAll();
+    // Force refresh of expense accounts specifically
+    renderExpensesList();
   }
   
   renderRecycleBinDropdown();
