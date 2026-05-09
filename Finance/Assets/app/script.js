@@ -6190,6 +6190,9 @@ function btcRenderHistory() {
     
     els.btcHistoryList.appendChild(row);
   }
+  
+  // Update load more button after rendering
+  btcUpdateLoadMoreButton();
 }
 
 function btcGetTransactionAddresses(tx, walletAddress) {
@@ -6218,20 +6221,71 @@ function btcGetTransactionAddresses(tx, walletAddress) {
   };
 }
 
+async function btcLoadMoreTransactions() {
+  if (!state.bitcoin.wallet || state.bitcoin.historyDone) return;
+  
+  const wallet = state.bitcoin.wallet;
+  const url = state.bitcoin.historyCursor 
+    ? `${btcCurrentApi()}/address/${wallet.address}/txs/chain/${state.bitcoin.historyCursor}`
+    : `${btcCurrentApi()}/address/${wallet.address}/txs`;
+    
+  try {
+    const txs = await btcFetchJson(url);
+    
+    if (Array.isArray(txs) && txs.length > 0) {
+      state.bitcoin.history = [...state.bitcoin.history, ...txs];
+      
+      const confirmed = state.bitcoin.history.filter((tx) => tx.status && tx.status.confirmed);
+      state.bitcoin.historyCursor = confirmed.length >= 25 ? confirmed[confirmed.length - 1].txid : null;
+      state.bitcoin.historyDone = txs.length < 25;
+      
+      btcRenderHistory();
+      btcUpdateLoadMoreButton();
+    }
+  } catch (error) {
+    console.error('Error loading more transactions:', error);
+    btcSetWalletStatus('Error loading more transactions.', 'error');
+  }
+}
+
+function btcUpdateLoadMoreButton() {
+  const existingBtn = document.getElementById('btcLoadMoreBtn');
+  if (existingBtn) {
+    existingBtn.remove();
+  }
+  
+  if (!state.bitcoin.historyDone && state.bitcoin.history.length < state.bitcoin.historyTotal) {
+    const loadMoreBtn = document.createElement('button');
+    loadMoreBtn.id = 'btcLoadMoreBtn';
+    loadMoreBtn.className = 'btn ghost';
+    loadMoreBtn.textContent = `Load More (${state.bitcoin.historyTotal - state.bitcoin.history.length} remaining)`;
+    loadMoreBtn.style.marginTop = '12px';
+    loadMoreBtn.style.width = '100%';
+    
+    loadMoreBtn.addEventListener('click', () => {
+      loadMoreBtn.textContent = 'Loading...';
+      loadMoreBtn.disabled = true;
+      btcLoadMoreTransactions().finally(() => {
+        loadMoreBtn.disabled = false;
+      });
+    });
+    
+    els.btcHistoryList.appendChild(loadMoreBtn);
+  }
+}
+
 async function btcFetchWalletData(withFeeRefresh) {
   if (!state.bitcoin.wallet) return;
 
   const wallet = state.bitcoin.wallet;
   btcSetWalletStatus('Loading wallet data from Blockstream Explorer…', '');
   try {
-    const [stats, utxos, txs] = await Promise.all([
+    const [stats, utxos] = await Promise.all([
       btcFetchJson(`${btcCurrentApi()}/address/${wallet.address}`),
-      btcFetchJson(`${btcCurrentApi()}/address/${wallet.address}/utxo`),
-      btcFetchJson(`${btcCurrentApi()}/address/${wallet.address}/txs`)
+      btcFetchJson(`${btcCurrentApi()}/address/${wallet.address}/utxo`)
     ]);
 
     state.bitcoin.utxos = Array.isArray(utxos) ? utxos : [];
-    state.bitcoin.history = Array.isArray(txs) ? txs : [];
     const chainStats = stats.chain_stats || {};
     const mempoolStats = stats.mempool_stats || {};
 
@@ -6241,11 +6295,14 @@ async function btcFetchWalletData(withFeeRefresh) {
     els.btcSentValue.textContent = btcFormatBtcFromSat(Number(chainStats.spent_txo_sum || 0));
     els.btcTxCountValue.textContent = `${txCount} tx`;
 
-    const confirmed = state.bitcoin.history.filter((tx) => tx.status && tx.status.confirmed);
-    state.bitcoin.historyCursor = confirmed.length === 25 ? confirmed[confirmed.length - 1].txid : null;
-    state.bitcoin.historyDone = confirmed.length < 25;
+    // Reset pagination state
+    state.bitcoin.history = [];
+    state.bitcoin.historyCursor = null;
+    state.bitcoin.historyDone = false;
     state.bitcoin.historyTotal = txCount;
-    btcRenderHistory();
+    
+    // Load initial batch of transactions
+    await btcLoadMoreTransactions();
 
     btcSetWalletStatus(
       `Live data loaded.\nAddress: ${wallet.address}\nAvailable balance: ${btcFormatBtcFromSat(btcSummarizeUtxoBalance())}`,
@@ -6675,6 +6732,16 @@ async function btcDownloadPDF() {
   if (!window.jspdf) {
     alert('PDF library loading. Please try again.');
     return;
+  }
+
+  // Ensure all transactions are loaded before generating PDF
+  if (!state.bitcoin.historyDone && state.bitcoin.history.length < state.bitcoin.historyTotal) {
+    // Auto-load all remaining transactions in background
+    while (!state.bitcoin.historyDone) {
+      await btcLoadMoreTransactions();
+      // Add small delay to avoid overwhelming the API
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
   }
 
   const { jsPDF } = window.jspdf;
