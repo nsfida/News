@@ -225,6 +225,19 @@
           <span class="coin coin-a"></span>
           <span class="coin coin-b"></span>
         </div>
+        <div class="menu-wrap">
+          <button class="btn ghost menu-trigger" id="recycleBinBtn" type="button" data-entry-menu="recyclebin" aria-haspopup="menu" aria-expanded="false" title="Recycle Bin">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+          <span id="recycleBinCount" class="recycle-bin-count">0</span>
+          <div class="menu-dropdown recycle-bin-dropdown" data-entry-menu-panel="recyclebin" id="recycleBinDropdown">
+            <div class="recycle-bin-header">
+              <h4>Recycle Bin</h4>
+              <span class="recycle-bin-subtitle">Deleted items can be restored</span>
+            </div>
+            <div class="recycle-bin-items"></div>
+          </div>
+        </div>
         <button class="btn ghost" id="refreshBtn" type="button" title="Refresh">↻</button>
         <button class="btn ghost" id="logoutBtn" type="button" title="Log out">Log out</button>
       </div>
