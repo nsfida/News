@@ -935,16 +935,50 @@
           <!-- Wallet Login Section -->
           <div id="btcLoginSection" class="card" style="margin-bottom:14px;">
             <div style="padding:14px;">
+              <!-- Wallet Type Selection -->
               <div style="margin-bottom:12px;">
+                <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Wallet Type</label>
+                <div style="display:flex;gap:8px;">
+                  <button id="btcFullWalletBtn" class="btn primary" style="flex:1;">Full Wallet (WIF)</button>
+                  <button id="btcWatchWalletBtn" class="btn ghost" style="flex:1;">Watch Only (Address)</button>
+                </div>
+              </div>
+
+              <!-- Full Wallet Input (WIF) -->
+              <div id="btcFullWalletSection" style="margin-bottom:12px;">
                 <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Bitcoin WIF (Private Key)</label>
                 <textarea id="btcWifInput" class="input" placeholder="Paste WIF here to login" style="min-height:80px;"></textarea>
                 <div style="margin-top:6px;font-size:.76rem;color:var(--muted);">The page never sends your private key to a server. Login and signing stay inside your browser.</div>
+                <div class="tools" style="margin-top:8px;">
+                  <button id="btcImportBtn" class="btn primary">Import WIF</button>
+                  <button id="btcGenerateBtn" class="btn ghost">Create new wallet</button>
+                </div>
+              </div>
+
+              <!-- Watch Wallet Input (Address Only) -->
+              <div id="btcWatchWalletSection" class="hide" style="margin-bottom:12px;">
+                <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Bitcoin Address (Watch Only)</label>
+                <textarea id="btcAddressInput" class="input" placeholder="Paste Bitcoin address here to watch" style="min-height:80px;"></textarea>
+                <div style="margin-top:6px;font-size:.76rem;color:var(--muted);">Watch-only mode allows you to view balance and transactions without private keys. To send, you'll need to provide WIF during transaction.</div>
+                <div class="tools" style="margin-top:8px;">
+                  <button id="btcWatchAddressBtn" class="btn primary">Watch Address</button>
+                </div>
+              </div>
+
+              <div id="btcWalletStatus" class="empty" style="margin-top:12px;">No wallet loaded yet.</div>
+            </div>
+          </div>
+
+          <!-- Saved Bitcoin Wallet Addresses -->
+          <div id="btcSavedWalletsSection" class="card" style="margin-bottom:14px;">
+            <div style="padding:14px;">
+              <div style="margin-bottom:12px;">
+                <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Saved Bitcoin Addresses</label>
+                <div id="btcSavedWalletsList" class="list" style="max-height:200px;overflow-y:auto;"></div>
               </div>
               <div class="tools">
-                <button id="btcImportBtn" class="btn primary">Import WIF</button>
-                <button id="btcGenerateBtn" class="btn ghost">Create new wallet</button>
+                <button id="btcRefreshSavedBtn" class="btn ghost">Refresh Saved</button>
               </div>
-              <div id="btcWalletStatus" class="empty" style="margin-top:12px;">No wallet loaded yet.</div>
             </div>
           </div>
 
@@ -970,18 +1004,22 @@
                   <div class="summary">
                     <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Available balance</div>
                     <div id="btcBalanceValue" style="font-size:1rem;font-weight:700;word-break:break-all;overflow-wrap:break-word;min-width:0;">—</div>
+                    <div id="btcBalanceUsd" style="font-size:.8rem;color:var(--muted);font-weight:500;margin-top:2px;">≈ $—</div>
                   </div>
                   <div class="summary">
                     <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Total received</div>
                     <div id="btcReceivedValue" style="font-size:1rem;font-weight:700;">—</div>
+                    <div id="btcReceivedUsd" style="font-size:.8rem;color:var(--muted);font-weight:500;margin-top:2px;">≈ $—</div>
                   </div>
                   <div class="summary">
                     <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Total sent</div>
                     <div id="btcSentValue" style="font-size:1rem;font-weight:700;">—</div>
+                    <div id="btcSentUsd" style="font-size:.8rem;color:var(--muted);font-weight:500;margin-top:2px;">≈ $—</div>
                   </div>
                   <div class="summary">
                     <div style="font-size:.74rem;color:var(--muted);margin-bottom:4px;">Transaction count</div>
                     <div id="btcTxCountValue" style="font-size:1rem;font-weight:700;">—</div>
+                    <div style="font-size:.8rem;color:var(--muted);font-weight:500;margin-top:2px;" id="btcPriceDisplay">BTC: $—</div>
                   </div>
                 </div>
                 <div class="tools">
@@ -1824,6 +1862,14 @@
               <label>Max</label>
               <button id="btcMaxBtn" class="btn ghost" type="button" style="width:100%">Use balance</button>
             </div>
+            
+            <!-- WIF Input for Watch-Only Wallets -->
+            <div id="btcSendWifSection" class="field w12 hide">
+              <label>Private Key (WIF) - Required for signing</label>
+              <textarea id="btcSendWifInput" class="input" placeholder="Enter WIF to sign this transaction" style="min-height:60px;"></textarea>
+              <div style="margin-top:4px;font-size:.75rem;color:var(--muted);">Private key is used only to sign this transaction and is not stored.</div>
+            </div>
+            
             <div class="field w12">
               <div id="btcSendStatus" class="empty">Enter recipient address and amount.</div>
             </div>
