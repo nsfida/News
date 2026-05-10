@@ -24,7 +24,7 @@ function zipUrlForUsername(raw){
 let runtimeConfig = null;
 let fullConfigData = null;
 
-const SUPPORTED_CURRENCIES = ["AED", "SAR", "PKR"];
+const SUPPORTED_CURRENCIES = ["AED", "SAR", "PKR", "USD", "BTC"];
 
 const state = {
   entries: [],
@@ -215,16 +215,20 @@ function initFloatingCurrencyBackground(){
   const specs = [
     { type: "aed", cls: "float-currency-aed", html: '<span class="symbol symbol-dirham">~</span>' },
     { type: "sar", cls: "float-currency-sar", html: '<span class="symbol symbol-riyal">$</span>' },
-    { type: "pkr", cls: "float-currency-pkr", html: '<span class="symbol">Rs.</span>' }
+    { type: "pkr", cls: "float-currency-pkr", html: '<span class="symbol">Rs.</span>' },
+    { type: "usd", cls: "float-currency-usd", html: '<span class="symbol symbol-dollar">$</span>' },
+    { type: "btc", cls: "float-currency-btc", html: '<span class="symbol symbol-bitcoin">₿</span>' }
   ];
   const colorPools = {
     aed: ["rgba(36,87,214,", "rgba(99,140,235,", "rgba(55,105,200,", "rgba(130,160,240,"],
     sar: ["rgba(6,118,71,", "rgba(46,160,110,", "rgba(20,90,65,", "rgba(80,175,120,"],
-    pkr: ["rgba(181,71,8,", "rgba(210,110,35,", "rgba(160,85,20,", "rgba(200,95,45,"]
+    pkr: ["rgba(181,71,8,", "rgba(210,110,35,", "rgba(160,85,20,", "rgba(200,95,45,"],
+    usd: ["rgba(34,197,94,", "rgba(74,222,128,", "rgba(22,163,74,", "rgba(134,239,172,"],
+    btc: ["rgba(251,146,60,", "rgba(254,215,170,", "rgba(249,115,22,", "rgba(253,186,116,"]
   };
   const count = 16;
   for (let i = 0; i < count; i++){
-    const spec = specs[i % 3];
+    const spec = specs[i % 5];
     const el = document.createElement("span");
     el.className = `float-currency ${spec.cls}`;
     el.innerHTML = spec.html;
@@ -542,26 +546,35 @@ async function supabase(path, options = {}){
 }
 
 function currencySymbol(currency){
-  return currency === "AED" ? "~" : currency === "SAR" ? "$" : currency === "PKR" ? "Rs." : currency || "";
+  return currency === "AED" ? "~" : 
+         currency === "SAR" ? "$" : 
+         currency === "PKR" ? "Rs." : 
+         currency === "USD" ? "$" : 
+         currency === "BTC" ? "₿" : 
+         currency || "";
 }
 
 function currencySymbolHtml(currency){
   const symbol = currencySymbol(currency);
   if (currency === "AED") return `<span class="symbol symbol-dirham">${escapeHtml(symbol)}</span>`;
   if (currency === "SAR") return `<span class="symbol symbol-riyal">${escapeHtml(symbol)}</span>`;
+  if (currency === "USD") return `<span class="symbol symbol-dollar">${escapeHtml(symbol)}</span>`;
+  if (currency === "BTC") return `<span class="symbol symbol-bitcoin">${escapeHtml(symbol)}</span>`;
   return `<span class="symbol">${escapeHtml(symbol)}</span>`;
 }
 
 function moneyText(amount, currency){
   const n = Number(amount || 0);
-  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isBtc = currency === "BTC";
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: isBtc ? 6 : 2, maximumFractionDigits: isBtc ? 6 : 2 });
   const symbol = currencySymbol(currency);
   return `${symbol ? symbol + " " : ""}${formatted}`;
 }
 
 function money(amount, currency){
   const n = Number(amount || 0);
-  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isBtc = currency === "BTC";
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: isBtc ? 6 : 2, maximumFractionDigits: isBtc ? 6 : 2 });
   return `<span class="money">${currencySymbolHtml(currency)}<span class="amount">${formatted}</span></span>`;
 }
 
@@ -731,24 +744,11 @@ function overviewAvailableLine(amountHtml, balance = 0){
   const isNegativeOrZero = Number(balance) <= 0;
   const colorStyle = isNegativeOrZero ? "color: var(--danger) !important;" : "color: var(--success) !important;";
   const moneyClass = isNegativeOrZero ? "danger-amount" : "success-amount";
-  return `
-    <div class="summary-line summary-line-one">
-      <span class="summary-line-one-label available-label" style="${colorStyle}">Available:</span>
-      <span class="summary-line-one-value available-amount ${moneyClass}" style="${colorStyle}">${amountHtml}</span>
-    </div>
-  `;
+  return `<div class="summary-line summary-line-one"><span class="summary-line-one-label available-label" style="${colorStyle}">Available:</span><span class="summary-line-one-value available-amount ${moneyClass}" style="${colorStyle}">${amountHtml}</span></div>`;
 }
 
 function overviewExpenseLine(currency, suffix, amountHtml){
-  return `
-    <div class="summary-line summary-line-one">
-      <span class="summary-line-one-label summary-line-one-label--with-symbol">
-        <span class="summary-currency-mark">${currencySymbolHtml(currency)}</span>
-        <span class="summary-label-suffix">${escapeHtml(suffix)}</span>
-      </span>
-      <span class="summary-line-one-value">${amountHtml}</span>
-    </div>
-  `;
+  return `<div class="summary-line summary-line-one"><span class="summary-line-one-label summary-line-one-label--with-symbol"><span class="summary-currency-mark">${currencySymbolHtml(currency)}</span><span class="summary-label-suffix">${escapeHtml(suffix)}</span></span><span class="summary-line-one-value">${amountHtml}</span></div>`;
 }
 
 function overviewWatermarkCurrency(currency){
@@ -2628,7 +2628,7 @@ function renderMultiEntries(count) {
     html += `
       <div class="multi-row">
         <input class="input" name="action_date_${i}" type="date" required data-default-today="true" aria-label="Date ${i+1}" />
-        <input class="input" name="action_amount_${i}" type="number" min="0" step="0.01" required placeholder="0.00" aria-label="Amount ${i+1}" />
+        <input class="input" name="action_amount_${i}" type="number" min="0" step="0.00000001" required placeholder="0.00" aria-label="Amount ${i+1}" />
         <input class="input" name="notes_${i}" placeholder="Notes" aria-label="Remarks ${i+1}" />
       </div>
     `;
@@ -4752,7 +4752,7 @@ async function saveTransfer(form) {
   
   if (!fromGroupId || !toGroupId) throw new Error("Please select both wallets.");
   if (fromGroupId === toGroupId) throw new Error("Cannot transfer to the same wallet.");
-  if (!amount || amount <= 0) throw new Error("Please enter a valid amount.");
+  if (amount === null || amount === undefined || isNaN(amount) || amount < 0) throw new Error("Please enter a valid amount.");
   if (!date) throw new Error("Please select a date.");
   
   const accounts = getExpenseAccounts({ applyUiFilters: false });
@@ -5818,7 +5818,7 @@ function btcSatToBtc(sats) {
 }
 
 function btcFormatBtcFromSat(sats) {
-  const btcFmt = new Intl.NumberFormat(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 });
+  const btcFmt = new Intl.NumberFormat(undefined, { minimumFractionDigits: 6, maximumFractionDigits: 6 });
   return `${btcFmt.format(btcSatToBtc(sats))} BTC`;
 }
 
