@@ -53,9 +53,14 @@ const state = {
     historyDone: false,
     historyTotal: 0,
     qrInstance: null,
-    feeRate: 8
+    feeRate: 8,
+    isWatchOnly: false,
+    watchAddress: null,
+    btcPrice: null,
+    lastPriceUpdate: null
   },
   notes: [],
+  bitcoinWallets: [],
   recycleBin: []
 };
 
@@ -197,6 +202,24 @@ const els = {
   btcQrBox: document.getElementById("btcQrBox"),
   btcReceiveAddress: document.getElementById("btcReceiveAddress"),
   btcCopyAddressBtn: document.getElementById("btcCopyAddressBtn"),
+  // Watch wallet elements
+  btcFullWalletBtn: document.getElementById("btcFullWalletBtn"),
+  btcWatchWalletBtn: document.getElementById("btcWatchWalletBtn"),
+  btcFullWalletSection: document.getElementById("btcFullWalletSection"),
+  btcWatchWalletSection: document.getElementById("btcWatchWalletSection"),
+  btcAddressInput: document.getElementById("btcAddressInput"),
+  btcWatchAddressBtn: document.getElementById("btcWatchAddressBtn"),
+  btcSendWifSection: document.getElementById("btcSendWifSection"),
+  btcSendWifInput: document.getElementById("btcSendWifInput"),
+  // USD price display elements
+  btcBalanceUsd: document.getElementById("btcBalanceUsd"),
+  btcReceivedUsd: document.getElementById("btcReceivedUsd"),
+  btcSentUsd: document.getElementById("btcSentUsd"),
+  btcPriceDisplay: document.getElementById("btcPriceDisplay"),
+  // Saved Bitcoin wallets elements
+  btcSavedWalletsSection: document.getElementById("btcSavedWalletsSection"),
+  btcSavedWalletsList: document.getElementById("btcSavedWalletsList"),
+  btcRefreshSavedBtn: document.getElementById("btcRefreshSavedBtn"),
   notesPanel: document.getElementById("notesPanel"),
   noteInput: document.getElementById("noteInput"),
   saveNoteBtn: document.getElementById("saveNoteBtn"),
@@ -2953,6 +2976,11 @@ function activate(tab){
   // Load notes from database when Notes tab is activated
   if (tab === "notes") {
     loadNotesFromDatabase();
+  }
+  
+  // Load Bitcoin wallets from database when Bitcoin tab is activated
+  if (tab === "bitcoin") {
+    loadBitcoinWalletsFromDatabase();
   }
 }
 
@@ -5992,6 +6020,210 @@ async function btcFetchText(url, options) {
   }).finally(() => clearTimeout(timeout));
 }
 
+// BTC Price fetching functions
+async function btcFetchPrice() {
+  try {
+    // Using CoinGecko free API - no API key required
+    const response = await btcFetchJson('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+    const price = response.bitcoin?.usd;
+    const change = response.bitcoin?.usd_24h_change;
+    
+    if (price && typeof price === 'number') {
+      state.bitcoin.btcPrice = price;
+      state.bitcoin.lastPriceUpdate = Date.now();
+      return { price, change };
+    }
+    throw new Error('Invalid price data received');
+  } catch (error) {
+    console.warn('Failed to fetch BTC price:', error);
+    return null;
+  }
+}
+
+function btcUpdatePriceDisplay() {
+  const price = state.bitcoin.btcPrice;
+  const change = state.bitcoin.priceChange;
+  
+  if (!price) {
+    els.btcPriceDisplay.textContent = 'BTC: $—';
+    return;
+  }
+  
+  const changeSymbol = change >= 0 ? '+' : '';
+  const changeText = change ? ` (${changeSymbol}${change.toFixed(2)}%)` : '';
+  els.btcPriceDisplay.textContent = `BTC: $${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${changeText}`;
+}
+
+function btcBtcToUsd(btcAmount) {
+  const price = state.bitcoin.btcPrice;
+  if (!price || !btcAmount) return 0;
+  return Number(btcAmount) * price;
+}
+
+function btcUpdateUsdValues() {
+  if (!state.bitcoin.btcPrice) return;
+  
+  const balance = btcSatToBtc(btcSummarizeUtxoBalance());
+  
+  // Calculate received and sent from chain stats if available, otherwise use history
+  let receivedSat = 0;
+  let sentSat = 0;
+  
+  // Try to get values from the last wallet data fetch
+  if (state.bitcoin.lastChainStats) {
+    receivedSat = Number(state.bitcoin.lastChainStats.funded_txo_sum || 0);
+    sentSat = Number(state.bitcoin.lastChainStats.spent_txo_sum || 0);
+  } else {
+    // Fallback to history calculation
+    receivedSat = state.bitcoin.history.reduce((sum, tx) => {
+      const direction = btcTxDirection(tx);
+      return sum + (direction.label === 'Received' ? direction.receivedSat : 0);
+    }, 0);
+    sentSat = state.bitcoin.history.reduce((sum, tx) => {
+      const direction = btcTxDirection(tx);
+      return sum + (direction.label === 'Sent' ? direction.sentSat : 0);
+    }, 0);
+  }
+  
+  const received = btcSatToBtc(receivedSat);
+  const sent = btcSatToBtc(sentSat);
+  
+  els.btcBalanceUsd.textContent = `≈ $${btcBtcToUsd(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  els.btcReceivedUsd.textContent = `≈ $${btcBtcToUsd(received).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  els.btcSentUsd.textContent = `≈ $${btcBtcToUsd(sent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+// Automatic price updates
+let btcPriceUpdateInterval = null;
+
+function btcStartPriceUpdates() {
+  // Clear existing interval
+  if (btcPriceUpdateInterval) {
+    clearInterval(btcPriceUpdateInterval);
+  }
+  
+  // Update immediately if we have a wallet
+  if (state.bitcoin.wallet) {
+    btcFetchPrice().then(priceData => {
+      if (priceData) {
+        state.bitcoin.priceChange = priceData.change;
+        btcUpdatePriceDisplay();
+        btcUpdateUsdValues();
+      }
+    });
+  }
+  
+  // Set up automatic updates every 5 minutes
+  btcPriceUpdateInterval = setInterval(async () => {
+    if (state.bitcoin.wallet) {
+      const priceData = await btcFetchPrice();
+      if (priceData) {
+        state.bitcoin.priceChange = priceData.change;
+        btcUpdatePriceDisplay();
+        btcUpdateUsdValues();
+      }
+    }
+  }, 5 * 60 * 1000); // 5 minutes
+}
+
+function btcStopPriceUpdates() {
+  if (btcPriceUpdateInterval) {
+    clearInterval(btcPriceUpdateInterval);
+    btcPriceUpdateInterval = null;
+  }
+}
+
+// Watch wallet functions
+function btcToggleWalletType(type) {
+  if (type === 'full') {
+    els.btcFullWalletSection.classList.remove('hide');
+    els.btcWatchWalletSection.classList.add('hide');
+    els.btcFullWalletBtn.classList.add('primary');
+    els.btcFullWalletBtn.classList.remove('ghost');
+    els.btcWatchWalletBtn.classList.add('ghost');
+    els.btcWatchWalletBtn.classList.remove('primary');
+  } else {
+    els.btcFullWalletSection.classList.add('hide');
+    els.btcWatchWalletSection.classList.remove('hide');
+    els.btcFullWalletBtn.classList.add('ghost');
+    els.btcFullWalletBtn.classList.remove('primary');
+    els.btcWatchWalletBtn.classList.add('primary');
+    els.btcWatchWalletBtn.classList.remove('ghost');
+  }
+}
+
+async function btcWatchAddress() {
+  try {
+    const address = els.btcAddressInput.value.trim();
+    if (!address) {
+      btcSetWalletStatus('Please enter a Bitcoin address.', '');
+      return;
+    }
+    
+    // Basic address validation
+    if (!/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[ac-hj-np-z02-9]{8,87}$/.test(address)) {
+      btcSetWalletStatus('Invalid Bitcoin address format.', '');
+      return;
+    }
+    
+    state.bitcoin.isWatchOnly = true;
+    state.bitcoin.watchAddress = address;
+    state.bitcoin.wallet = {
+      address: address,
+      key: state.bitcoin.selectedNetworkKey,
+      label: btcGetNetworkInfo(state.bitcoin.selectedNetworkKey).label,
+      isWatchOnly: true
+    };
+    
+    // Save watch-only address to database
+    await saveBitcoinWallet(address, `Watch-Only ${address.slice(0, 10)}...`, state.bitcoin.selectedNetworkKey, true);
+    
+    btcUpdateWalletView();
+    btcSetWalletStatus(`Watch-only wallet loaded for address: ${btcShortHash(address)}`, '');
+    
+    // Fetch wallet data
+    await btcFetchWalletData(true);
+    
+  } catch (error) {
+    btcSetWalletStatus(`Error watching address: ${error.message}`, '');
+  }
+}
+
+function btcUpdateWalletView() {
+  if (!state.bitcoin.wallet) {
+    btcClearView();
+    return;
+  }
+  
+  const wallet = state.bitcoin.wallet;
+  els.btcLoginSection.classList.add('hide');
+  els.btcWalletInfoSection.classList.remove('hide');
+  els.btcHistorySection.classList.remove('hide');
+  
+  if (wallet.isWatchOnly) {
+    els.btcMaskedWif.textContent = 'Watch-only wallet (no private key)';
+    els.btcCopyWifBtn.style.display = 'none';
+    els.btcDownloadWalletPdfBtn.style.display = 'none';
+    btcSetWalletStatus(`Watch-only wallet loaded for ${wallet.label}. Balance and transactions only.`, '');
+  } else {
+    els.btcMaskedWif.textContent = btcMaskWif(wallet.wif);
+    els.btcCopyWifBtn.style.display = 'inline-flex';
+    els.btcDownloadWalletPdfBtn.style.display = 'inline-flex';
+    btcSetWalletStatus(`Wallet loaded for ${wallet.label}. The uncompressed legacy address is ready.`, '');
+  }
+  
+  els.btcWalletAddress.textContent = wallet.address;
+  
+  // Update USD values if price is available
+  if (state.bitcoin.btcPrice) {
+    btcUpdatePriceDisplay();
+    btcUpdateUsdValues();
+  }
+  
+  // Start automatic price updates
+  btcStartPriceUpdates();
+}
+
 function btcCurrentApi() {
   return btcGetNetworkInfo(state.bitcoin.wallet ? state.bitcoin.wallet.key : state.bitcoin.selectedNetworkKey).api;
 }
@@ -6003,6 +6235,7 @@ function btcClearView() {
   state.bitcoin.historyCursor = null;
   state.bitcoin.historyDone = false;
   state.bitcoin.historyTotal = 0;
+  state.bitcoin.lastChainStats = null; // Clear stored chain stats
   els.btcMaskedWif.textContent = 'WIF masked after login';
   els.btcBalanceValue.textContent = '—';
   els.btcReceivedValue.textContent = '—';
@@ -6015,6 +6248,15 @@ function btcClearView() {
   els.btcLoginSection.classList.remove('hide');
   els.btcWalletInfoSection.classList.add('hide');
   els.btcHistorySection.classList.add('hide');
+  
+  // Clear USD displays
+  els.btcBalanceUsd.textContent = '≈ $—';
+  els.btcReceivedUsd.textContent = '≈ $—';
+  els.btcSentUsd.textContent = '≈ $—';
+  els.btcPriceDisplay.textContent = 'BTC: $—';
+  
+  // Stop automatic price updates
+  btcStopPriceUpdates();
 }
 
 function btcUpdateWalletView() {
@@ -6334,11 +6576,22 @@ async function btcFetchWalletData(withFeeRefresh) {
     const chainStats = stats.chain_stats || {};
     const mempoolStats = stats.mempool_stats || {};
 
+    // Store chain stats for USD calculations
+    state.bitcoin.lastChainStats = chainStats;
+
     const txCount = Number(chainStats.tx_count || 0) + Number(mempoolStats.tx_count || 0);
     els.btcBalanceValue.textContent = btcFormatBtcFromSat(btcSummarizeUtxoBalance());
     els.btcReceivedValue.textContent = btcFormatBtcFromSat(Number(chainStats.funded_txo_sum || 0));
     els.btcSentValue.textContent = btcFormatBtcFromSat(Number(chainStats.spent_txo_sum || 0));
     els.btcTxCountValue.textContent = `${txCount} tx`;
+
+    // Fetch BTC price and update USD values
+    const priceData = await btcFetchPrice();
+    if (priceData) {
+      state.bitcoin.priceChange = priceData.change;
+      btcUpdatePriceDisplay();
+      btcUpdateUsdValues();
+    }
 
     // Reset pagination state
     state.bitcoin.history = [];
@@ -6376,14 +6629,17 @@ async function btcImportWif() {
     const wif = els.btcWifInput.value.trim();
     state.bitcoin.selectedNetworkKey = els.btcNetworkSelect.value;
     const wallet = btcDetectAndLoadWallet(wif, state.bitcoin.selectedNetworkKey);
-    state.bitcoin.wallet = wallet;
-    els.btcNetworkSelect.value = wallet.key;
-    state.bitcoin.selectedNetworkKey = wallet.key;
-    els.btcWifInput.value = '';
     btcUpdateWalletView();
+    btcSetWalletStatus(`Wallet loaded for ${wallet.label}. The uncompressed legacy address is ready.`, '');
+    
+    // Save wallet address to database (only address, not WIF)
+    await saveBitcoinWallet(wallet.address, wallet.label, state.bitcoin.selectedNetworkKey, false);
+    
+    // Fetch wallet data
     await btcFetchWalletData(true);
-  } catch (err) {
-    btcSetWalletStatus(`Could not import wallet.\n${err.message || err}`, '');
+    
+  } catch (error) {
+    btcSetWalletStatus(error.message, 'error');
   }
 }
 
@@ -6571,6 +6827,193 @@ function btcClearSession() {
   els.btcNetworkBadge.textContent = btcGetNetworkInfo(els.btcNetworkSelect.value).label;
   btcSetWalletStatus('No wallet loaded yet.', '');
   btcClearView();
+}
+
+// Bitcoin Wallet Functions
+async function saveBitcoinWallet(address, label, network, isWatchOnly) {
+  if (!address || !label || !network) {
+    alert('Address, label, and network are required.');
+    return;
+  }
+
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) {
+    alert("Please connect to the database first using your username and ZIP password.");
+    els.lockScreen.classList.remove("hide");
+    return;
+  }
+
+  const walletId = crypto.randomUUID();
+  const payload = {
+    id: walletId,
+    group_id: walletId,
+    person_name: "SYSTEM",
+    direction: "taken",
+    entry_kind: "principal",
+    currency: "BTC",
+    principal_amount: 0,
+    loan_date: new Date().toISOString().split('T')[0],
+    action_date: new Date().toISOString().split('T')[0],
+    notes: JSON.stringify({
+      address: address,
+      label: label,
+      network: network,
+      is_watch_only: isWatchOnly,
+      rowType: "BITCOIN_WALLET"
+    }),
+    created_at: new Date().toISOString()
+  };
+
+  console.log('Saving Bitcoin wallet to database:', payload);
+  try {
+    const result = await supabase(CONFIG.table, { method: "POST", body: JSON.stringify(payload) });
+    console.log('Bitcoin wallet saved successfully:', result);
+    
+    // Refresh the saved wallets list
+    await loadBitcoinWalletsFromDatabase();
+  } catch (err) {
+    console.error('Failed to save Bitcoin wallet:', err);
+    alert('Failed to save Bitcoin wallet to database: ' + err.message);
+  }
+}
+
+async function deleteBitcoinWallet(walletId) {
+  if (!walletId) {
+    alert('Wallet ID is required for deletion.');
+    return;
+  }
+
+  try {
+    await supabase(`${CONFIG.table}?id=eq.${encodeURIComponent(walletId)}`, { method: 'DELETE' });
+    console.log('Bitcoin wallet deleted successfully:', walletId);
+    await loadBitcoinWalletsFromDatabase();
+  } catch (err) {
+    console.error('Failed to delete Bitcoin wallet:', err);
+    alert('Failed to delete Bitcoin wallet: ' + err.message);
+  }
+}
+
+async function loadBitcoinWalletsFromDatabase() {
+  if (!runtimeConfig?.supabaseUrl || !runtimeConfig?.supabaseKey) {
+    console.log('Database not connected, Bitcoin wallets will not be loaded');
+    state.bitcoinWallets = [];
+    renderBitcoinWallets();
+    return;
+  }
+
+  try {
+    console.log('Loading Bitcoin wallets from database...');
+    const rows = await supabase(`${CONFIG.table}?select=*&direction=eq.taken&person_name=eq.SYSTEM&order=created_at.desc`);
+    console.log('Database rows:', rows);
+    state.bitcoinWallets = (Array.isArray(rows) ? rows : [])
+      .filter(row => {
+        try {
+          const walletData = JSON.parse(row.notes || '{}');
+          return walletData.rowType === "BITCOIN_WALLET";
+        } catch {
+          return false;
+        }
+      })
+      .map(row => {
+        try {
+          const walletData = JSON.parse(row.notes || '{}');
+          return {
+            id: row.id,
+            address: walletData.address || '',
+            label: walletData.label || '',
+            network: walletData.network || '',
+            is_watch_only: walletData.is_watch_only || false,
+            createdAt: row.created_at
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+    console.log('Loaded Bitcoin wallets:', state.bitcoinWallets);
+    renderBitcoinWallets();
+  } catch (err) {
+    console.error('Failed to load Bitcoin wallets from database:', err);
+    state.bitcoinWallets = [];
+    renderBitcoinWallets();
+  }
+}
+
+function renderBitcoinWallets(searchTerm = '') {
+  const filtered = searchTerm 
+    ? state.bitcoinWallets.filter(wallet => 
+        wallet.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        wallet.label.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : state.bitcoinWallets;
+    
+  if (filtered.length === 0) {
+    els.btcSavedWalletsList.innerHTML = '<div class="empty">No saved Bitcoin addresses found.</div>';
+    return;
+  }
+  
+  els.btcSavedWalletsList.innerHTML = filtered.map(wallet => `
+    <div class="list-item" data-wallet-id="${wallet.id}" data-address="${wallet.address}" data-label="${wallet.label}" data-network="${wallet.network}" data-watch-only="${wallet.is_watch_only}">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+        <div style="flex:1;">
+          <div style="font-weight:600;color:var(--text);">${wallet.label}</div>
+          <div style="font-size:.8rem;color:var(--muted);">${wallet.address} (${wallet.network})</div>
+          <div style="font-size:.75rem;color:${wallet.is_watch_only ? 'var(--warning)' : 'var(--success)'};">
+            ${wallet.is_watch_only ? '👁 Watch Only' : '🔐 Full Wallet'}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="btn tiny primary" onclick="loadSavedBitcoinWallet('${wallet.address}', '${wallet.network}', ${wallet.is_watch_only})">Load</button>
+          <button class="btn tiny ghost" onclick="deleteSavedBitcoinWallet('${wallet.id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Load saved wallet function for onclick handlers
+async function loadSavedBitcoinWallet(address, network, isWatchOnly) {
+  try {
+    if (isWatchOnly) {
+      // Load as watch-only wallet
+      state.bitcoin.selectedNetworkKey = network;
+      state.bitcoin.isWatchOnly = true;
+      state.bitcoin.watchAddress = address;
+      state.bitcoin.wallet = {
+        address: address,
+        key: network,
+        label: network.charAt(0).toUpperCase() + network.slice(1),
+        isWatchOnly: true
+      };
+      
+      btcUpdateWalletView();
+      btcSetWalletStatus(`Watch-only wallet loaded: ${address}`, '');
+      
+      // Fetch wallet data
+      await btcFetchWalletData(true);
+    } else {
+      // For full wallets, we need the user to provide WIF
+      // We'll pre-fill the WIF input and switch to full wallet mode
+      els.btcWifInput.value = ''; // Clear for security
+      els.btcNetworkSelect.value = network;
+      state.bitcoin.selectedNetworkKey = network;
+      els.btcNetworkBadge.textContent = network.charAt(0).toUpperCase() + network.slice(1);
+      
+      // Switch to full wallet mode
+      btcToggleWalletType('full');
+      
+      btcSetWalletStatus(`Please enter the WIF for address: ${address}`, '');
+    }
+  } catch (err) {
+    console.error('Failed to load saved Bitcoin wallet:', err);
+    btcSetWalletStatus(`Error loading wallet: ${err.message}`, '');
+  }
+}
+
+// Delete saved wallet function for onclick handlers
+async function deleteSavedBitcoinWallet(walletId) {
+  if (confirm('Are you sure you want to delete this Bitcoin address from saved wallets?')) {
+    await deleteBitcoinWallet(walletId);
+  }
 }
 
 // Notes Functions
@@ -6985,9 +7428,38 @@ async function btcBuildAndBroadcast() {
     return;
   }
 
+  // Handle watch-only wallet - require WIF for signing
+  let signingWallet = wallet;
+  if (wallet.isWatchOnly) {
+    const wif = String(els.btcSendWifInput.value || '').trim();
+    if (!wif) {
+      btcSetSendStatus('Watch-only wallet requires private key (WIF) to sign transactions.', '');
+      return;
+    }
+    
+    try {
+      // Create temporary signing wallet from provided WIF
+      const signingKeyPair = btcDetectAndLoadWallet(wif, wallet.key);
+      if (signingKeyPair.address !== wallet.address) {
+        btcSetSendStatus('Provided WIF does not match the watch-only wallet address.', '');
+        return;
+      }
+      signingWallet = {
+        ...wallet,
+        wif: wif,
+        uncompressedPair: signingKeyPair.uncompressedPair,
+        network: signingKeyPair.network,
+        isWatchOnly: false // Temporary override for signing
+      };
+    } catch (err) {
+      btcSetSendStatus(`Invalid WIF provided: ${err.message}`, '');
+      return;
+    }
+  }
+
   let outputScript;
   try {
-    outputScript = bitcoinjs.address.toOutputScript(toAddress, wallet.network);
+    outputScript = bitcoinjs.address.toOutputScript(toAddress, signingWallet.network);
   } catch (err) {
     btcSetSendStatus('Recipient address is not valid for the selected network.', '');
     return;
@@ -7027,7 +7499,7 @@ async function btcBuildAndBroadcast() {
 
   try {
     const prevHexes = await Promise.all(selected.map((u) => btcFetchText(`${btcCurrentApi()}/tx/${u.txid}/hex`)));
-    const psbt = new bitcoinjs.Psbt({ network: wallet.network });
+    const psbt = new bitcoinjs.Psbt({ network: signingWallet.network });
 
     for (let i = 0; i < selected.length; i++) {
       const utxo = selected[i];
@@ -7041,11 +7513,11 @@ async function btcBuildAndBroadcast() {
     psbt.addOutput({ script: outputScript, value: amountSat });
 
     if (plan.outputs === 2 && plan.changeSat >= DUST_P2PKH) {
-      psbt.addOutput({ address: wallet.address, value: plan.changeSat });
+      psbt.addOutput({ address: signingWallet.address, value: plan.changeSat });
     }
 
     for (let i = 0; i < selected.length; i++) {
-      psbt.signInput(i, wallet.uncompressedPair);
+      psbt.signInput(i, signingWallet.uncompressedPair);
     }
     psbt.finalizeAllInputs();
 
@@ -7086,6 +7558,12 @@ function btcBindUI() {
       btcSetWalletStatus(btcGetNetworkInfo(state.bitcoin.selectedNetworkKey).wifHint, '');
     }
   });
+  
+  // Wallet type toggle buttons
+  els.btcFullWalletBtn.addEventListener('click', () => btcToggleWalletType('full'));
+  els.btcWatchWalletBtn.addEventListener('click', () => btcToggleWalletType('watch'));
+  els.btcWatchAddressBtn.addEventListener('click', btcWatchAddress);
+  
   els.btcImportBtn.addEventListener('click', btcImportWif);
   els.btcGenerateBtn.addEventListener('click', btcGenerateWallet);
   els.btcDownloadWalletPdfBtn.addEventListener('click', btcDownloadWalletPdf);
@@ -7119,8 +7597,16 @@ function btcBindUI() {
     }
   });
   els.btcRefreshBtn.addEventListener('click', () => btcFetchWalletData(true));
+  els.btcRefreshSavedBtn.addEventListener('click', () => loadBitcoinWalletsFromDatabase());
   els.btcSendBtn.addEventListener('click', () => {
     if (state.bitcoin.wallet) {
+      // Show/hide WIF input based on wallet type
+      if (state.bitcoin.wallet.isWatchOnly) {
+        els.btcSendWifSection.classList.remove('hide');
+        els.btcSendWifInput.value = ''; // Clear previous WIF
+      } else {
+        els.btcSendWifSection.classList.add('hide');
+      }
       els.btcSendModal.classList.remove('hide');
     }
   });
@@ -7151,13 +7637,20 @@ function btcClearSession() {
   state.bitcoin.historyCursor = null;
   state.bitcoin.historyDone = false;
   state.bitcoin.historyTotal = 0;
+  state.bitcoin.isWatchOnly = false;
+  state.bitcoin.watchAddress = null;
   els.btcWifInput.value = '';
+  els.btcAddressInput.value = '';
   els.btcToAddress.value = '';
   els.btcSendAmount.value = '';
   els.btcFeeRate.value = '';
+  els.btcSendWifInput.value = '';
   els.btcNetworkBadge.textContent = btcGetNetworkInfo(els.btcNetworkSelect.value).label;
   btcSetWalletStatus('No wallet loaded yet.', '');
   btcClearView();
+  
+  // Reset wallet type to full wallet
+  btcToggleWalletType('full');
 }
 
 async function boot(){
