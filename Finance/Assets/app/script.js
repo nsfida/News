@@ -179,6 +179,7 @@ const els = {
   btcCopyWifBtn: document.getElementById("btcCopyWifBtn"),
   btcWalletAddress: document.getElementById("btcWalletAddress"),
   btcCopyAddressInfoBtn: document.getElementById("btcCopyAddressInfoBtn"),
+  btcSaveAddressBtn: document.getElementById("btcSaveAddressBtn"),
   btcBalanceValue: document.getElementById("btcBalanceValue"),
   btcReceivedValue: document.getElementById("btcReceivedValue"),
   btcSentValue: document.getElementById("btcSentValue"),
@@ -220,6 +221,11 @@ const els = {
   btcSavedWalletsSection: document.getElementById("btcSavedWalletsSection"),
   btcSavedWalletsList: document.getElementById("btcSavedWalletsList"),
   btcRefreshSavedBtn: document.getElementById("btcRefreshSavedBtn"),
+  // Existing addresses dropdown elements
+  btcExistingAddressesBtn: document.getElementById("btcExistingAddressesBtn"),
+  btcExistingAddressesDropdown: document.getElementById("btcExistingAddressesDropdown"),
+  btcExistingAddressesList: document.getElementById("btcExistingAddressesList"),
+  btcExistingAddressesLabel: document.getElementById("btcExistingAddressesLabel"),
   notesPanel: document.getElementById("notesPanel"),
   noteInput: document.getElementById("noteInput"),
   saveNoteBtn: document.getElementById("saveNoteBtn"),
@@ -6152,7 +6158,7 @@ function btcToggleWalletType(type) {
   }
 }
 
-async function btcWatchAddress() {
+async function btcWatchAddress(skipSave = false) {
   try {
     const address = els.btcAddressInput.value.trim();
     if (!address) {
@@ -6175,8 +6181,10 @@ async function btcWatchAddress() {
       isWatchOnly: true
     };
     
-    // Save watch-only address to database
-    await saveBitcoinWallet(address, `Watch-Only ${address.slice(0, 10)}...`, state.bitcoin.selectedNetworkKey, true);
+    // Prompt to save watch-only address to database (only if not loading from existing addresses)
+    if (!skipSave) {
+      await promptToSaveWallet(address, `Watch-Only ${address.slice(0, 10)}...`, state.bitcoin.selectedNetworkKey, true);
+    }
     
     btcUpdateWalletView();
     btcSetWalletStatus(`Watch-only wallet loaded for address: ${btcShortHash(address)}`, '');
@@ -6285,6 +6293,7 @@ function btcDetectAndLoadWallet(wif, preferredKey) {
   for (const key of keys) {
     const net = btcGetNetworkInfo(key).network;
     try {
+      console.log(`Trying WIF on ${key} network...`);
       const importedPair = bitcoinjs.ECPair.fromWIF(normalized, net);
       if (!importedPair.privateKey) throw new Error('Missing private key.');
       const uncompressedPair = bitcoinjs.ECPair.fromPrivateKey(importedPair.privateKey, {
@@ -6296,6 +6305,8 @@ function btcDetectAndLoadWallet(wif, preferredKey) {
         network: net
       }).address;
       if (!address) throw new Error('Could not derive address.');
+      
+      console.log(`Successfully imported WIF on ${key} network, address:`, address);
       return {
         key,
         network: net,
@@ -6306,10 +6317,11 @@ function btcDetectAndLoadWallet(wif, preferredKey) {
         address
       };
     } catch (err) {
+      console.log(`Failed to import WIF on ${key} network:`, err.message);
       // keep trying
     }
   }
-  throw new Error('Invalid WIF for mainnet, testnet, or signet.');
+  throw new Error('Invalid WIF format. Please check your WIF and try again.');
 }
 
 function btcEstimateLegacyP2PKHSize(inputCount, outputCount) {
@@ -6627,18 +6639,35 @@ async function btcFetchWalletData(withFeeRefresh) {
 async function btcImportWif() {
   try {
     const wif = els.btcWifInput.value.trim();
+    if (!wif) {
+      btcSetWalletStatus('Please enter a WIF (private key) to import.', 'error');
+      return;
+    }
+    
+    console.log('Importing WIF:', wif);
     state.bitcoin.selectedNetworkKey = els.btcNetworkSelect.value;
+    console.log('Selected network:', state.bitcoin.selectedNetworkKey);
+    
     const wallet = btcDetectAndLoadWallet(wif, state.bitcoin.selectedNetworkKey);
+    console.log('Wallet detected:', wallet);
+    
+    if (!wallet || !wallet.address) {
+      btcSetWalletStatus('Failed to import wallet. Please check your WIF format.', 'error');
+      return;
+    }
+    
+    state.bitcoin.wallet = wallet;
     btcUpdateWalletView();
     btcSetWalletStatus(`Wallet loaded for ${wallet.label}. The uncompressed legacy address is ready.`, '');
     
-    // Save wallet address to database (only address, not WIF)
-    await saveBitcoinWallet(wallet.address, wallet.label, state.bitcoin.selectedNetworkKey, false);
+    // Update save button visibility
+    updateSaveButtonVisibility();
     
     // Fetch wallet data
     await btcFetchWalletData(true);
     
   } catch (error) {
+    console.error('WIF import error:', error);
     btcSetWalletStatus(error.message, 'error');
   }
 }
@@ -6931,10 +6960,130 @@ async function loadBitcoinWalletsFromDatabase() {
       .filter(Boolean);
     console.log('Loaded Bitcoin wallets:', state.bitcoinWallets);
     renderBitcoinWallets();
+    renderExistingAddressesDropdown();
   } catch (err) {
     console.error('Failed to load Bitcoin wallets from database:', err);
     state.bitcoinWallets = [];
     renderBitcoinWallets();
+    renderExistingAddressesDropdown();
+  }
+}
+
+function renderExistingAddressesDropdown() {
+  if (state.bitcoinWallets.length === 0) {
+    els.btcExistingAddressesList.innerHTML = '<div style="padding:12px;text-align:center;color:var(--muted);font-size:.9rem;">No saved addresses found</div>';
+    els.btcExistingAddressesLabel.textContent = 'Select Saved Address ▾';
+    return;
+  }
+
+  els.btcExistingAddressesList.innerHTML = '';
+  state.bitcoinWallets.forEach(wallet => {
+    const walletItem = document.createElement('div');
+    walletItem.style.cssText = 'padding:8px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;';
+    
+    const walletInfo = document.createElement('div');
+    walletInfo.style.cssText = 'flex:1;cursor:pointer;';
+    walletInfo.innerHTML = `
+      <div style="font-weight:600;color:var(--text);margin-bottom:2px;">${escapeHtml(wallet.label)}</div>
+      <div style="font-size:.8rem;color:var(--muted);">${escapeHtml(wallet.address.slice(0, 20))}...${escapeHtml(wallet.address.slice(-10))}</div>
+      <div style="font-size:.75rem;color:var(--muted);">${wallet.network} ${wallet.is_watch_only ? '(Watch Only)' : '(Full)'}</div>
+    `;
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn ghost';
+    deleteBtn.style.cssText = 'padding:4px 8px;font-size:.8rem;margin-left:8px;';
+    deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+    deleteBtn.onclick = async (e) => {
+      e.stopPropagation();
+      if (confirm(`Delete saved address "${wallet.label}"?`)) {
+        await deleteBitcoinWallet(wallet.id);
+      }
+    };
+    
+    walletInfo.onclick = () => {
+      loadSelectedAddress(wallet);
+    };
+    
+    walletItem.appendChild(walletInfo);
+    walletItem.appendChild(deleteBtn);
+    els.btcExistingAddressesList.appendChild(walletItem);
+  });
+}
+
+function checkIfAddressExists(address) {
+  return state.bitcoinWallets.some(wallet => 
+    wallet.address.toLowerCase() === address.toLowerCase()
+  );
+}
+
+async function promptToSaveWallet(address, label, network, isWatchOnly) {
+  if (checkIfAddressExists(address)) {
+    return; // Don't prompt if already exists
+  }
+  
+  const shouldSave = confirm(
+    `Save this ${isWatchOnly ? 'watch-only address' : 'wallet'} to database?\n\n` +
+    `Address: ${address.slice(0, 20)}...${address.slice(-10)}\n` +
+    `Label: ${label}\n` +
+    `Network: ${network}`
+  );
+  
+  if (shouldSave) {
+    await saveBitcoinWallet(address, label, network, isWatchOnly);
+  }
+}
+
+function updateSaveButtonVisibility() {
+  if (!state.bitcoin.wallet || !state.bitcoin.wallet.address) {
+    els.btcSaveAddressBtn.style.display = 'none';
+    return;
+  }
+  
+  const addressExists = checkIfAddressExists(state.bitcoin.wallet.address);
+  if (addressExists) {
+    els.btcSaveAddressBtn.style.display = 'none';
+  } else {
+    els.btcSaveAddressBtn.style.display = 'block';
+  }
+}
+
+function updateSavedAddressesVisibility() {
+  if (state.bitcoin.wallet) {
+    els.btcSavedWalletsSection.style.display = 'none';
+  } else {
+    els.btcSavedWalletsSection.style.display = 'block';
+  }
+}
+
+async function loadSelectedAddress(wallet) {
+  // Close dropdown
+  els.btcExistingAddressesDropdown.classList.remove('show');
+  els.btcExistingAddressesBtn.setAttribute('aria-expanded', 'false');
+  
+  // Update label
+  els.btcExistingAddressesLabel.textContent = `${wallet.label} ▾`;
+  
+  if (wallet.is_watch_only) {
+    // Load as watch-only address
+    els.btcWatchWalletBtn.click();
+    els.btcAddressInput.value = wallet.address;
+    state.bitcoin.selectedNetworkKey = wallet.network;
+    els.btcNetworkSelect.value = wallet.network;
+    
+    // Auto-load the watch address
+    await btcWatchAddress(true); // Skip saving to prevent duplicates
+  } else {
+    // For full wallets, we can't auto-load without WIF
+    // Just show the address and let user provide WIF
+    alert(`This is a full wallet. Please provide the WIF (private key) to import: ${wallet.address}`);
+    els.btcFullWalletBtn.click();
+    els.btcWifInput.value = ''; // Don't pre-fill for security
+    state.bitcoin.selectedNetworkKey = wallet.network;
+    els.btcNetworkSelect.value = wallet.network;
+    
+    // Update UI visibility
+    updateSaveButtonVisibility();
+    updateSavedAddressesVisibility();
   }
 }
 
@@ -7581,6 +7730,30 @@ function btcBindUI() {
       btcSetWalletStatus('Could not copy WIF.', '');
     }
   });
+  els.btcSaveAddressBtn.addEventListener('click', async () => {
+    if (!state.bitcoin.wallet || !state.bitcoin.wallet.address) {
+      btcSetWalletStatus('No wallet loaded to save.', 'error');
+      return;
+    }
+    
+    const label = prompt(
+      `Save wallet to database?\n\n` +
+      `Address: ${state.bitcoin.wallet.address.slice(0, 20)}...${state.bitcoin.wallet.address.slice(-10)}\n` +
+      `Network: ${state.bitcoin.wallet.label}\n\n` +
+      `Enter a label for this wallet:`
+    );
+    
+    if (label && label.trim()) {
+      await saveBitcoinWallet(
+        state.bitcoin.wallet.address, 
+        label.trim(), 
+        state.bitcoin.wallet.key, 
+        state.bitcoin.isWatchOnly
+      );
+      updateSaveButtonVisibility();
+    }
+  });
+  
   els.btcCopyAddressInfoBtn.addEventListener('click', async () => {
     if (!state.bitcoin.wallet) return;
     try {
@@ -7598,6 +7771,27 @@ function btcBindUI() {
   });
   els.btcRefreshBtn.addEventListener('click', () => btcFetchWalletData(true));
   els.btcRefreshSavedBtn.addEventListener('click', () => loadBitcoinWalletsFromDatabase());
+  
+  // Existing addresses dropdown functionality
+  els.btcExistingAddressesBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isExpanded = els.btcExistingAddressesBtn.getAttribute('aria-expanded') === 'true';
+    if (isExpanded) {
+      els.btcExistingAddressesDropdown.classList.remove('show');
+      els.btcExistingAddressesBtn.setAttribute('aria-expanded', 'false');
+    } else {
+      els.btcExistingAddressesDropdown.classList.add('show');
+      els.btcExistingAddressesBtn.setAttribute('aria-expanded', 'true');
+    }
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!els.btcExistingAddressesBtn.contains(e.target) && !els.btcExistingAddressesDropdown.contains(e.target)) {
+      els.btcExistingAddressesDropdown.classList.remove('show');
+      els.btcExistingAddressesBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
   els.btcSendBtn.addEventListener('click', () => {
     if (state.bitcoin.wallet) {
       // Show/hide WIF input based on wallet type
@@ -7636,9 +7830,15 @@ function btcClearSession() {
   state.bitcoin.history = [];
   state.bitcoin.historyCursor = null;
   state.bitcoin.historyDone = false;
-  state.bitcoin.historyTotal = 0;
   state.bitcoin.isWatchOnly = false;
   state.bitcoin.watchAddress = null;
+  
+  btcClearView();
+  
+  // Update UI visibility
+  updateSaveButtonVisibility();
+  updateSavedAddressesVisibility();
+  
   els.btcWifInput.value = '';
   els.btcAddressInput.value = '';
   els.btcToAddress.value = '';
