@@ -2602,5 +2602,29 @@
   "Issue": "20-Apr-2026",
   "Authority": "001",
   "Validity": "UAE VISA EXPIRY"
+},
+  {
+  "name": "Wahab Shah Muhammad Shah",
+  "Desg": "Committee Member",
+  "CNo": "746-210-218",
+  "BG": "B+",
+  "mobile": "+923161820940",
+  "Status": "Active",
+  "Room": "C/O Salar Khan",
+  "Issue": "10-May-2026",
+  "Authority": "001",
+  "Validity": "UAE VISA EXPIRY"
+},
+  {
+  "name": "Kiramat Shah Muhammad Shah",
+  "Desg": "Committee Member",
+  "CNo": "746-210-219",
+  "BG": "B+",
+  "mobile": "+‪971564382919‬",
+  "Status": "Active",
+  "Room": "C/O Salar Khan",
+  "Issue": "10-May-2026",
+  "Authority": "001",
+  "Validity": "UAE VISA EXPIRY"
 }
 ]
