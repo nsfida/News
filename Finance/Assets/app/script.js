@@ -4050,7 +4050,8 @@ function sectionLabel(searchKey){
 
 function formatReportAmount(amount, currency){
   const n = Number(amount || 0);
-  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isBtc = currency === "BTC";
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: isBtc ? 9 : 2, maximumFractionDigits: isBtc ? 9 : 2 });
   const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency === "USD" ? "USD" : currency === "BTC" ? "BTC" : currency || "";
   return `${symbol} ${formatted}`.trim();
 }
@@ -4058,7 +4059,8 @@ function formatReportAmount(amount, currency){
 // New function for PDF-specific currency formatting
 function formatPdfAmount(amount, currency){
   const n = Number(amount || 0);
-  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isBtc = currency === "BTC";
+  const formatted = n.toLocaleString("en-US", { minimumFractionDigits: isBtc ? 9 : 2, maximumFractionDigits: isBtc ? 9 : 2 });
   const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency === "USD" ? "USD" : currency === "BTC" ? "BTC" : currency || "";
   return `${symbol} ${formatted}`.trim();
 }
@@ -4147,7 +4149,12 @@ async function exportSectionPDF(searchKey){
     theme: "grid",
     headStyles: { fillColor: [36, 87, 214] },
     styles: { font: "helvetica", fontSize: 9, cellPadding: 2.5 },
-    columnStyles: { 0: { cellWidth: 38 }, 5: { cellWidth: 58 } },
+    columnStyles: { 
+      0: { cellWidth: expensePdf ? 35 : 38 }, 
+      3: { cellWidth: expensePdf ? 32 : 28 }, // Amount column - wider for expenses to accommodate BTC
+      4: { cellWidth: expensePdf ? 15 : 28 }, // Remaining/empty column
+      5: { cellWidth: expensePdf ? 55 : 58 }  // Notes column
+    },
     margin: { top: 50, bottom: 40 },
     didDrawPage: (data) => {
       drawPdfHeaderAndFooter(doc, logoData, title, subtitle, false);
