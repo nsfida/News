@@ -72,6 +72,9 @@
         <button id="learnMoreBtn" class="btn ghost" type="button" style="width: 100%; margin-top: 12px;">
           <i class="fa-solid fa-info-circle"></i> Learn More
         </button>
+        <button id="pricingBtn" class="btn ghost" type="button" style="width: 100%; margin-top: 8px;">
+          <i class="fa-solid fa-tags"></i> Pricing
+        </button>
       </div>
       
       <div class="login-help">
@@ -184,6 +187,162 @@
           <!-- Back to Login Button -->
           <div style="text-align: center; margin-top: 20px;">
             <button id="backToLoginBtn" class="btn primary" type="button">
+              <i class="fa-solid fa-arrow-left"></i> Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standalone Pricing Section (accessible without login) -->
+  <div id="standalonePricingSection" class="standalone-about-section hide">
+    <div class="standalone-about-container">
+      <div class="standalone-about-header">
+        <div class="brand">
+          <img class="mark" src="Assets/logo/logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjQ1N2Q2IiByeD0iMTIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+TkY8L3RleHQ+PC9zdmc+'" />
+          <div>
+            <h1>TRIPLE M by NSF</h1>
+            <p>Pricing Plans for Small Business Merchants</p>
+          </div>
+        </div>
+        <button id="closeStandalonePricingBtn" class="btn ghost" type="button" style="font-size: 1.5rem; padding: 8px 12px;">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+
+      <div class="standalone-about-content">
+        <div class="about-content" style="display: grid; gap: 24px;">
+          <!-- Hero Section -->
+          <div style="background: linear-gradient(135deg, rgba(6, 118, 71, 0.1) 0%, rgba(6, 118, 71, 0.05) 100%); border: 1px solid rgba(6, 118, 71, 0.3); border-radius: 16px; padding: 24px; text-align: center;">
+            <h2 style="margin: 0 0 12px; font-size: 1.5rem; font-weight: 700; color: var(--primary);">Professional Financial Management Solution</h2>
+            <p style="margin: 0 0 16px; line-height: 1.6; color: var(--text); font-size: 1rem;">
+              Empower your business with comprehensive expense tracking, loan management, inventory control, and Bitcoin integration.
+            </p>
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--success); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+              <i class="fa-solid fa-gift"></i> One Month Free Trial + Free Installation
+            </div>
+          </div>
+
+          <!-- Key Features -->
+          <div class="about-section">
+            <h4 style="margin: 0 0 16px; font-size: 1.2rem; font-weight: 700; color: var(--text);"><i class="fa-solid fa-star"></i> What You Get</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                  <div style="width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fa-solid fa-server"></i></div>
+                  <h5 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text);">Dedicated Server</h5>
+                </div>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">Separate server for every business ensuring data isolation and security.</p>
+              </div>
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                  <div style="width: 36px; height: 36px; background: #f7931a; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fa-brands fa-bitcoin"></i></div>
+                  <h5 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text);">Bitcoin Support</h5>
+                </div>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">Full Bitcoin wallet integration with multi-currency support (AED, SAR, PKR, USD, BTC).</p>
+              </div>
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                  <div style="width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fa-solid fa-cloud"></i></div>
+                  <h5 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text);">Cloud Storage</h5>
+                </div>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">Secure cloud-based storage with automatic backups and real-time sync across devices.</p>
+              </div>
+              <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                  <div style="width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fa-solid fa-headset"></i></div>
+                  <h5 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text);">Priority Support</h5>
+                </div>
+                <p style="margin: 0; line-height: 1.5; color: var(--text); font-size: 0.9rem;">Dedicated WhatsApp support for quick assistance and issue resolution.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Pricing -->
+          <div class="about-section">
+            <h4 style="margin: 0 0 16px; font-size: 1.2rem; font-weight: 700; color: var(--text);"><i class="fa-solid fa-calendar-alt"></i> Monthly Plans</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <div style="background: var(--panel-2); border: 2px solid var(--line); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇵🇰</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">Pakistani Rupee</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">Rs. 1,349</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per month</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+              <div style="background: var(--panel-2); border: 2px solid var(--line); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇦🇪</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">UAE Dirham</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;"><span class="symbol-dirham">~</span> 24.99</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per month</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+              <div style="background: var(--panel-2); border: 2px solid var(--line); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇸🇦</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">Saudi Riyal</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;"><span class="symbol-riyal">$</span> 24.99</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per month</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+              <div style="background: var(--panel-2); border: 2px solid var(--line); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇺🇸</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">US Dollar</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;"><span class="symbol-dollar">$</span> 7.99</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per month</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Yearly Pricing -->
+          <div class="about-section">
+            <h4 style="margin: 0 0 16px; font-size: 1.2rem; font-weight: 700; color: var(--text);"><i class="fa-solid fa-calendar-check"></i> Yearly Plans <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-left: 12px;">Save up to 25%</span></h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <div style="background: linear-gradient(135deg, rgba(6, 118, 71, 0.1) 0%, rgba(6, 118, 71, 0.05) 100%); border: 2px solid var(--primary); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇵🇰</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">Pakistani Rupee</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">Rs. 12,999</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per year</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+              <div style="background: linear-gradient(135deg, rgba(6, 118, 71, 0.1) 0%, rgba(6, 118, 71, 0.05) 100%); border: 2px solid var(--primary); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇦🇪</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">UAE Dirham</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;"><span class="symbol-dirham">~</span> 249.99</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per year</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+              <div style="background: linear-gradient(135deg, rgba(6, 118, 71, 0.1) 0%, rgba(6, 118, 71, 0.05) 100%); border: 2px solid var(--primary); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇸🇦</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">Saudi Riyal</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;"><span class="symbol-riyal">$</span> 249.99</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per year</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+              <div style="background: linear-gradient(135deg, rgba(6, 118, 71, 0.1) 0%, rgba(6, 118, 71, 0.05) 100%); border: 2px solid var(--primary); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🇺🇸</div>
+                <h5 style="margin: 0 0 8px; font-size: 1.1rem; font-weight: 600; color: var(--text);">US Dollar</h5>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;"><span class="symbol-dollar">$</span> 74.99</div>
+                <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.85rem;">per year</p>
+                <div style="background: rgba(6, 118, 71, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">No Hidden Charges</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA Section -->
+          <div style="background: var(--panel-2); border: 1px solid var(--line); border-radius: 16px; padding: 24px; text-align: center;">
+            <h4 style="margin: 0 0 12px; font-size: 1.2rem; font-weight: 700; color: var(--text);">Ready to Get Started?</h4>
+            <p style="margin: 0 0 20px; line-height: 1.6; color: var(--text); font-size: 1rem;">
+              Contact us on WhatsApp to activate your free trial and get your dedicated server setup.
+            </p>
+            <a href="https://wa.me/923339004564" target="_blank" class="btn primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 1rem;">
+              <i class="fa-brands fa-whatsapp"></i> Start Free Trial on WhatsApp
+            </a>
+          </div>
+
+          <!-- Back to Login Button -->
+          <div style="text-align: center; margin-top: 20px;">
+            <button id="backToLoginFromPricingBtn" class="btn primary" type="button">
               <i class="fa-solid fa-arrow-left"></i> Back to Login
             </button>
           </div>
