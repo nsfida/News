@@ -7044,8 +7044,7 @@ function updateSaveButtonVisibility() {
 }
 
 function updateSavedAddressesVisibility() {
-  // Always hide the Saved Bitcoin Addresses section
-  els.btcSavedWalletsSection.style.display = 'none';
+  // Section has been removed from HTML, so do nothing
 }
 
 async function loadSelectedAddress(wallet) {
@@ -7088,35 +7087,8 @@ async function loadSelectedAddress(wallet) {
 }
 
 function renderBitcoinWallets(searchTerm = '') {
-  const filtered = searchTerm 
-    ? state.bitcoinWallets.filter(wallet => 
-        wallet.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        wallet.label.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : state.bitcoinWallets;
-    
-  if (filtered.length === 0) {
-    els.btcSavedWalletsList.innerHTML = '<div class="empty">No saved Bitcoin addresses found.</div>';
-    return;
-  }
-  
-  els.btcSavedWalletsList.innerHTML = filtered.map(wallet => `
-    <div class="list-item" data-wallet-id="${wallet.id}" data-address="${wallet.address}" data-label="${wallet.label}" data-network="${wallet.network}" data-watch-only="${wallet.is_watch_only}">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
-        <div style="flex:1;">
-          <div style="font-weight:600;color:var(--text);">${wallet.label}</div>
-          <div style="font-size:.8rem;color:var(--muted);">${wallet.address} (${wallet.network})</div>
-          <div style="font-size:.75rem;color:${wallet.is_watch_only ? 'var(--warning)' : 'var(--success)'};">
-            ${wallet.is_watch_only ? '👁 Watch Only' : '🔐 Full Wallet'}
-          </div>
-        </div>
-        <div style="display:flex;gap:4px;">
-          <button class="btn tiny primary" onclick="loadSavedBitcoinWallet('${wallet.address}', '${wallet.network}', ${wallet.is_watch_only})">Load</button>
-          <button class="btn tiny ghost" onclick="deleteSavedBitcoinWallet('${wallet.id}')">Delete</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  // Section has been removed from HTML, so do nothing
+  return;
 }
 
 // Load saved wallet function for onclick handlers
@@ -7736,22 +7708,14 @@ function btcBindUI() {
       return;
     }
     
-    const label = prompt(
-      `Save wallet to database?\n\n` +
-      `Address: ${state.bitcoin.wallet.address.slice(0, 20)}...${state.bitcoin.wallet.address.slice(-10)}\n` +
-      `Network: ${state.bitcoin.wallet.label}\n\n` +
-      `Enter a label for this wallet:`
+    // Save directly using the address as the label
+    await saveBitcoinWallet(
+      state.bitcoin.wallet.address, 
+      state.bitcoin.wallet.address, 
+      state.bitcoin.wallet.key, 
+      state.bitcoin.isWatchOnly
     );
-    
-    if (label && label.trim()) {
-      await saveBitcoinWallet(
-        state.bitcoin.wallet.address, 
-        label.trim(), 
-        state.bitcoin.wallet.key, 
-        state.bitcoin.isWatchOnly
-      );
-      updateSaveButtonVisibility();
-    }
+    updateSaveButtonVisibility();
   });
   
   els.btcCopyAddressInfoBtn.addEventListener('click', async () => {
@@ -7770,7 +7734,6 @@ function btcBindUI() {
     }
   });
   els.btcRefreshBtn.addEventListener('click', () => btcFetchWalletData(true));
-  els.btcRefreshSavedBtn.addEventListener('click', () => loadBitcoinWalletsFromDatabase());
   els.btcSendBtn.addEventListener('click', () => {
     if (state.bitcoin.wallet) {
       // Show/hide WIF input based on wallet type
