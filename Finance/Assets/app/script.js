@@ -6189,6 +6189,10 @@ async function btcWatchAddress(skipSave = false) {
     btcUpdateWalletView();
     btcSetWalletStatus(`Watch-only wallet loaded for address: ${btcShortHash(address)}`, '');
     
+    // Update UI visibility
+    updateSaveButtonVisibility();
+    updateSavedAddressesVisibility();
+    
     // Fetch wallet data
     await btcFetchWalletData(true);
     
@@ -7048,11 +7052,8 @@ function updateSaveButtonVisibility() {
 }
 
 function updateSavedAddressesVisibility() {
-  if (state.bitcoin.wallet) {
-    els.btcSavedWalletsSection.style.display = 'none';
-  } else {
-    els.btcSavedWalletsSection.style.display = 'block';
-  }
+  // Always hide the Saved Bitcoin Addresses section
+  els.btcSavedWalletsSection.style.display = 'none';
 }
 
 async function loadSelectedAddress(wallet) {
@@ -7063,27 +7064,34 @@ async function loadSelectedAddress(wallet) {
   // Update label
   els.btcExistingAddressesLabel.textContent = `${wallet.label} ▾`;
   
-  if (wallet.is_watch_only) {
-    // Load as watch-only address
-    els.btcWatchWalletBtn.click();
-    els.btcAddressInput.value = wallet.address;
-    state.bitcoin.selectedNetworkKey = wallet.network;
-    els.btcNetworkSelect.value = wallet.network;
+  // Always load as watch-only address when selecting from existing list
+  els.btcWatchWalletBtn.click();
+  els.btcAddressInput.value = wallet.address;
+  state.bitcoin.selectedNetworkKey = wallet.network;
+  els.btcNetworkSelect.value = wallet.network;
+  
+  // Directly set up watch wallet without going through btcWatchAddress function
+  try {
+    state.bitcoin.isWatchOnly = true;
+    state.bitcoin.watchAddress = wallet.address;
+    state.bitcoin.wallet = {
+      address: wallet.address,
+      key: state.bitcoin.selectedNetworkKey,
+      label: btcGetNetworkInfo(state.bitcoin.selectedNetworkKey).label,
+      isWatchOnly: true
+    };
     
-    // Auto-load the watch address
-    await btcWatchAddress(true); // Skip saving to prevent duplicates
-  } else {
-    // For full wallets, we can't auto-load without WIF
-    // Just show the address and let user provide WIF
-    alert(`This is a full wallet. Please provide the WIF (private key) to import: ${wallet.address}`);
-    els.btcFullWalletBtn.click();
-    els.btcWifInput.value = ''; // Don't pre-fill for security
-    state.bitcoin.selectedNetworkKey = wallet.network;
-    els.btcNetworkSelect.value = wallet.network;
+    btcUpdateWalletView();
+    btcSetWalletStatus(`Watch-only wallet loaded for address: ${btcShortHash(wallet.address)}`, '');
     
     // Update UI visibility
     updateSaveButtonVisibility();
     updateSavedAddressesVisibility();
+    
+    // Fetch wallet data
+    await btcFetchWalletData(true);
+  } catch (error) {
+    btcSetWalletStatus(`Error watching address: ${error.message}`, '');
   }
 }
 
@@ -7771,27 +7779,6 @@ function btcBindUI() {
   });
   els.btcRefreshBtn.addEventListener('click', () => btcFetchWalletData(true));
   els.btcRefreshSavedBtn.addEventListener('click', () => loadBitcoinWalletsFromDatabase());
-  
-  // Existing addresses dropdown functionality
-  els.btcExistingAddressesBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isExpanded = els.btcExistingAddressesBtn.getAttribute('aria-expanded') === 'true';
-    if (isExpanded) {
-      els.btcExistingAddressesDropdown.classList.remove('show');
-      els.btcExistingAddressesBtn.setAttribute('aria-expanded', 'false');
-    } else {
-      els.btcExistingAddressesDropdown.classList.add('show');
-      els.btcExistingAddressesBtn.setAttribute('aria-expanded', 'true');
-    }
-  });
-  
-  // Close dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!els.btcExistingAddressesBtn.contains(e.target) && !els.btcExistingAddressesDropdown.contains(e.target)) {
-      els.btcExistingAddressesDropdown.classList.remove('show');
-      els.btcExistingAddressesBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
   els.btcSendBtn.addEventListener('click', () => {
     if (state.bitcoin.wallet) {
       // Show/hide WIF input based on wallet type
