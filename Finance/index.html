@@ -350,6 +350,10 @@
                   <label for="f_given_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
                   <input type="radio" id="f_given_cur_pkr" name="f_given_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="given">
                   <label for="f_given_cur_pkr" class="filter-label">Rs.</label>
+                  <input type="radio" id="f_given_cur_usd" name="f_given_cur" value="USD" class="currency-radio filter-radio" data-currency-filter="given">
+                  <label for="f_given_cur_usd" class="filter-label"><span class="symbol-dollar">$</span></label>
+                  <input type="radio" id="f_given_cur_btc" name="f_given_cur" value="BTC" class="currency-radio filter-radio" data-currency-filter="given">
+                  <label for="f_given_cur_btc" class="filter-label"><span class="symbol-bitcoin">₿</span></label>
                 </div>
               </div>
             </div>
@@ -402,6 +406,10 @@
                   <label for="f_rec_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
                   <input type="radio" id="f_rec_cur_pkr" name="f_rec_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="received">
                   <label for="f_rec_cur_pkr" class="filter-label">Rs.</label>
+                  <input type="radio" id="f_rec_cur_usd" name="f_rec_cur" value="USD" class="currency-radio filter-radio" data-currency-filter="received">
+                  <label for="f_rec_cur_usd" class="filter-label"><span class="symbol-dollar">$</span></label>
+                  <input type="radio" id="f_rec_cur_btc" name="f_rec_cur" value="BTC" class="currency-radio filter-radio" data-currency-filter="received">
+                  <label for="f_rec_cur_btc" class="filter-label"><span class="symbol-bitcoin">₿</span></label>
                 </div>
               </div>
             </div>
@@ -460,6 +468,10 @@
                   <label for="f_taken_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
                   <input type="radio" id="f_taken_cur_pkr" name="f_taken_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="taken">
                   <label for="f_taken_cur_pkr" class="filter-label">Rs.</label>
+                  <input type="radio" id="f_taken_cur_usd" name="f_taken_cur" value="USD" class="currency-radio filter-radio" data-currency-filter="taken">
+                  <label for="f_taken_cur_usd" class="filter-label"><span class="symbol-dollar">$</span></label>
+                  <input type="radio" id="f_taken_cur_btc" name="f_taken_cur" value="BTC" class="currency-radio filter-radio" data-currency-filter="taken">
+                  <label for="f_taken_cur_btc" class="filter-label"><span class="symbol-bitcoin">₿</span></label>
                 </div>
               </div>
             </div>
@@ -512,6 +524,10 @@
                   <label for="f_ret_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
                   <input type="radio" id="f_ret_cur_pkr" name="f_ret_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="returned">
                   <label for="f_ret_cur_pkr" class="filter-label">Rs.</label>
+                  <input type="radio" id="f_ret_cur_usd" name="f_ret_cur" value="USD" class="currency-radio filter-radio" data-currency-filter="returned">
+                  <label for="f_ret_cur_usd" class="filter-label"><span class="symbol-dollar">$</span></label>
+                  <input type="radio" id="f_ret_cur_btc" name="f_ret_cur" value="BTC" class="currency-radio filter-radio" data-currency-filter="returned">
+                  <label for="f_ret_cur_btc" class="filter-label"><span class="symbol-bitcoin">₿</span></label>
                 </div>
               </div>
             </div>
@@ -562,6 +578,10 @@
                   <label for="f_inst_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
                   <input type="radio" id="f_inst_cur_pkr" name="f_inst_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="installments">
                   <label for="f_inst_cur_pkr" class="filter-label">Rs.</label>
+                  <input type="radio" id="f_inst_cur_usd" name="f_inst_cur" value="USD" class="currency-radio filter-radio" data-currency-filter="installments">
+                  <label for="f_inst_cur_usd" class="filter-label"><span class="symbol-dollar">$</span></label>
+                  <input type="radio" id="f_inst_cur_btc" name="f_inst_cur" value="BTC" class="currency-radio filter-radio" data-currency-filter="installments">
+                  <label for="f_inst_cur_btc" class="filter-label"><span class="symbol-bitcoin">₿</span></label>
                 </div>
               </div>
             </div>
@@ -664,6 +684,10 @@
                   <label for="f_exp_cur_sar" class="filter-label"><span class="symbol-riyal">$</span></label>
                   <input type="radio" id="f_exp_cur_pkr" name="f_exp_cur" value="PKR" class="currency-radio filter-radio" data-currency-filter="expenses">
                   <label for="f_exp_cur_pkr" class="filter-label">Rs.</label>
+                  <input type="radio" id="f_exp_cur_usd" name="f_exp_cur" value="USD" class="currency-radio filter-radio" data-currency-filter="expenses">
+                  <label for="f_exp_cur_usd" class="filter-label"><span class="symbol-dollar">$</span></label>
+                  <input type="radio" id="f_exp_cur_btc" name="f_exp_cur" value="BTC" class="currency-radio filter-radio" data-currency-filter="expenses">
+                  <label for="f_exp_cur_btc" class="filter-label"><span class="symbol-bitcoin">₿</span></label>
                 </div>
               </div>
               <span class="filter-divider">|</span>
@@ -1065,12 +1089,18 @@
                 <button type="button" class="currency-chip" data-currency="PKR">
                   <span>Rs.</span><span>PKR</span>
                 </button>
+                <button type="button" class="currency-chip" data-currency="USD">
+                  <span class="symbol symbol-dollar">$</span><span>USD</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="BTC">
+                  <span class="symbol symbol-bitcoin">₿</span><span>BTC</span>
+                </button>
               </div>
               <input type="hidden" name="currency" value="AED" />
             </div>
             <div class="field w6">
               <label>Actual price</label>
-              <input class="input" name="actual_price" type="number" min="0" step="0.01" required placeholder="0.00" />
+              <input class="input" name="actual_price" type="number" min="0" step="0.00000001" required placeholder="0.00" />
             </div>
             <div class="field w6">
               <label>Quantity bought</label>
@@ -1119,12 +1149,18 @@
                     <button type="button" class="currency-chip" data-currency="PKR">
                       <span>Rs.</span><span>PKR</span>
                     </button>
+                    <button type="button" class="currency-chip" data-currency="USD">
+                      <span class="symbol symbol-dollar">$</span><span>USD</span>
+                    </button>
+                    <button type="button" class="currency-chip" data-currency="BTC">
+                      <span class="symbol symbol-bitcoin">₿</span><span>BTC</span>
+                    </button>
                   </div>
                   <input type="hidden" name="new_currency" value="AED" />
                 </div>
                 <div class="field w6">
                   <label>Actual price</label>
-                  <input class="input" name="new_actual_price" type="number" min="0" step="0.01" placeholder="0.00" />
+                  <input class="input" name="new_actual_price" type="number" min="0" step="0.00000001" placeholder="0.00" />
                 </div>
                 <div class="field w6">
                   <label>Quantity bought</label>
@@ -1138,7 +1174,7 @@
             </div>
             <div class="field w6">
               <label>Sold price</label>
-              <input class="input" name="sold_price" type="number" min="0" step="0.01" required placeholder="0.00" />
+              <input class="input" name="sold_price" type="number" min="0" step="0.00000001" required placeholder="0.00" />
             </div>
             <div class="field w6">
               <label>Quantity sold</label>
@@ -1198,12 +1234,18 @@
                 <button type="button" class="currency-chip" data-currency="PKR">
                   <span>Rs.</span><span>PKR</span>
                 </button>
+                <button type="button" class="currency-chip" data-currency="USD">
+                  <span class="symbol symbol-dollar">$</span><span>USD</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="BTC">
+                  <span class="symbol symbol-bitcoin">₿</span><span>BTC</span>
+                </button>
               </div>
               <input type="hidden" name="currency" value="AED" />
             </div>
             <div class="field w6">
               <label>Available balance</label>
-              <input class="input" name="opening_balance" type="number" step="0.01" required placeholder="0.00" />
+              <input class="input" name="opening_balance" type="number" step="0.00000001" required placeholder="0.00" />
             </div>
             <div class="field w6">
               <label>Account date</label>
@@ -1228,7 +1270,7 @@
             </div>
             <div class="field w6">
               <label>Amount to add</label>
-              <input class="input" name="amount" type="number" step="0.01" required placeholder="0.00" />
+              <input class="input" name="amount" type="number" step="0.00000001" required placeholder="0.00" />
             </div>
             <div class="field w6">
               <label>Date</label>
@@ -1253,7 +1295,7 @@
             </div>
             <div class="field w6">
               <label>Amount spent</label>
-              <input class="input" name="amount" type="number" step="0.01" required placeholder="0.00" />
+              <input class="input" name="amount" type="number" step="0.00000001" required placeholder="0.00" />
             </div>
             <div class="field w6">
               <label>Currency</label>
@@ -1261,6 +1303,8 @@
                 <option value="AED">AED</option>
                 <option value="SAR">SAR</option>
                 <option value="PKR">PKR</option>
+                <option value="USD">USD</option>
+                <option value="BTC">BTC</option>
               </select>
             </div>
             <div class="field w6">
@@ -1341,7 +1385,7 @@
           <div class="field w6">
             <label>Amount</label>
             <div style="display: flex; align-items: center; gap: 4px;">
-              <input class="input" name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" style="flex: 1;" />
+              <input class="input" name="amount" type="number" min="0.00000001" step="0.00000001" required placeholder="0.00" style="flex: 1;" />
               <span id="fromCurrencyIndicator" style="font-size: 0.8rem; color: var(--muted); min-width: 30px;">AED</span>
             </div>
           </div>
@@ -1460,12 +1504,18 @@
                 <button type="button" class="currency-chip" data-currency="PKR">
                   <span>Rs.</span><span>PKR</span>
                 </button>
+                <button type="button" class="currency-chip" data-currency="USD">
+                  <span class="symbol symbol-dollar">$</span><span>USD</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="BTC">
+                  <span class="symbol symbol-bitcoin">₿</span><span>BTC</span>
+                </button>
               </div>
               <input type="hidden" name="currency" value="AED" />
             </div>
             <div class="field w6">
               <label>Amount</label>
-              <input class="input" name="principal_amount" type="number" min="0" step="0.01" required placeholder="0.00" />
+              <input class="input" name="principal_amount" type="number" min="0" step="0.00000001" required placeholder="0.00" />
             </div>
             <div class="field w6">
               <label>Date</label>
@@ -1554,12 +1604,18 @@
                 <button type="button" class="currency-chip" data-currency="PKR">
                   <span>Rs.</span><span>PKR</span>
                 </button>
+                <button type="button" class="currency-chip" data-currency="USD">
+                  <span class="symbol symbol-dollar">$</span><span>USD</span>
+                </button>
+                <button type="button" class="currency-chip" data-currency="BTC">
+                  <span class="symbol symbol-bitcoin">₿</span><span>BTC</span>
+                </button>
               </div>
               <input type="hidden" id="editCurrency" name="currency" />
             </div>
             <div class="field w6">
               <label id="editAmountLabel">Amount</label>
-              <input class="input" id="editAmount" type="number" min="0" step="0.01" required placeholder="0.00" />
+              <input class="input" id="editAmount" type="number" min="0" step="0.00000001" required placeholder="0.00" />
             </div>
             <div class="field w6">
               <label id="editDateLabel">Date</label>
