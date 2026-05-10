@@ -72,9 +72,13 @@ const els = {
   mainAppSubtitle: document.getElementById("mainAppSubtitle"),
   app: document.getElementById("app"),
   learnMoreBtn: document.getElementById("learnMoreBtn"),
+  pricingBtn: document.getElementById("pricingBtn"),
   standaloneAboutSection: document.getElementById("standaloneAboutSection"),
   closeStandaloneAboutBtn: document.getElementById("closeStandaloneAboutBtn"),
   backToLoginBtn: document.getElementById("backToLoginBtn"),
+  standalonePricingSection: document.getElementById("standalonePricingSection"),
+  closeStandalonePricingBtn: document.getElementById("closeStandalonePricingBtn"),
+  backToLoginFromPricingBtn: document.getElementById("backToLoginFromPricingBtn"),
   logoutBtn: document.getElementById("logoutBtn"),
   refreshBtn: document.getElementById("refreshBtn"),
   mainOverview: document.getElementById("mainOverview"),
@@ -4047,7 +4051,7 @@ function sectionLabel(searchKey){
 function formatReportAmount(amount, currency){
   const n = Number(amount || 0);
   const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency || "";
+  const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency === "USD" ? "USD" : currency === "BTC" ? "BTC" : currency || "";
   return `${symbol} ${formatted}`.trim();
 }
 
@@ -4055,7 +4059,7 @@ function formatReportAmount(amount, currency){
 function formatPdfAmount(amount, currency){
   const n = Number(amount || 0);
   const formatted = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency || "";
+  const symbol = currency === "AED" ? "AED" : currency === "SAR" ? "SAR" : currency === "PKR" ? "PKR" : currency === "USD" ? "USD" : currency === "BTC" ? "BTC" : currency || "";
   return `${symbol} ${formatted}`.trim();
 }
 
@@ -5507,6 +5511,17 @@ function attachEvents(){
     els.backToLoginBtn.addEventListener("click", hideStandaloneAbout);
   }
 
+  // Pricing section event listeners
+  if (els.pricingBtn) {
+    els.pricingBtn.addEventListener("click", showStandalonePricing);
+  }
+  if (els.closeStandalonePricingBtn) {
+    els.closeStandalonePricingBtn.addEventListener("click", hideStandalonePricing);
+  }
+  if (els.backToLoginFromPricingBtn) {
+    els.backToLoginFromPricingBtn.addEventListener("click", hideStandalonePricing);
+  }
+
   [["searchGiven","given"],["searchReceived","received"],["searchTaken","taken"],["searchReturned","returned"],["searchInstallments","installments"],["searchGoods","goods"],["searchExpenses","expenses"]].forEach(([id,key]) => {
     document.getElementById(id).addEventListener("input", e => {
       state.search[key] = e.target.value;
@@ -5548,10 +5563,33 @@ function hideStandaloneAbout() {
   focusUnlockForm();
 }
 
+function showStandalonePricing() {
+  if (els.lockScreen) els.lockScreen.classList.add("hide");
+  if (els.standalonePricingSection) els.standalonePricingSection.classList.remove("hide");
+  // Hide tabs when showing standalone pricing
+  const tabsSection = document.querySelector(".tabs");
+  if (tabsSection) tabsSection.classList.add("hidden-tabs");
+  window.location.hash = "#pricing";
+}
+
+function hideStandalonePricing() {
+  if (els.standalonePricingSection) els.standalonePricingSection.classList.add("hide");
+  if (els.lockScreen) els.lockScreen.classList.remove("hide");
+  // Show tabs when returning to login (but they won't work without login)
+  const tabsSection = document.querySelector(".tabs");
+  if (tabsSection) tabsSection.classList.remove("hidden-tabs");
+  if (window.location.hash === "#pricing") {
+    history.replaceState(null, null, window.location.pathname);
+  }
+  focusUnlockForm();
+}
+
 // Handle URL hash for direct About section access
 function handleUrlHash() {
   if (window.location.hash === "#about") {
     showStandaloneAbout();
+  } else if (window.location.hash === "#pricing") {
+    showStandalonePricing();
   }
 }
 
