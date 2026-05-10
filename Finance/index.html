@@ -944,6 +944,21 @@
                 </div>
               </div>
 
+              <!-- Existing Addresses Dropdown -->
+              <div style="margin-bottom:12px;">
+                <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Existing Addresses</label>
+                <div class="menu-wrap">
+                  <button class="btn ghost menu-trigger" id="btcExistingAddressesBtn" type="button" data-entry-menu="existing-addresses" aria-haspopup="menu" aria-expanded="false" style="width:100%;">
+                    <span id="btcExistingAddressesLabel">Select Saved Address ▾</span>
+                  </button>
+                  <div class="menu-dropdown" data-entry-menu-panel="existing-addresses" id="btcExistingAddressesDropdown" style="max-height:300px;overflow-y:auto;">
+                    <div id="btcExistingAddressesList">
+                      <div style="padding:12px;text-align:center;color:var(--muted);font-size:.9rem;">No saved addresses found</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Full Wallet Input (WIF) -->
               <div id="btcFullWalletSection" style="margin-bottom:12px;">
                 <label style="display:block;margin-bottom:6px;font-size:.84rem;font-weight:600;color:var(--text);">Bitcoin WIF (Private Key)</label>
@@ -998,6 +1013,7 @@
                   <div style="display:flex;gap:10px;align-items:center;">
                     <div id="btcWalletAddress" class="input" style="background:var(--panel-2);flex:1;">Address after login</div>
                     <button id="btcCopyAddressInfoBtn" class="btn ghost">Copy</button>
+                    <button id="btcSaveAddressBtn" class="btn primary" style="display:none;">Save</button>
                   </div>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;" class="btc-summary-grid">
