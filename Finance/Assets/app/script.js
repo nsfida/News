@@ -7022,19 +7022,11 @@ function checkIfAddressExists(address) {
 
 async function promptToSaveWallet(address, label, network, isWatchOnly) {
   if (checkIfAddressExists(address)) {
-    return; // Don't prompt if already exists
+    return; // Don't save if already exists
   }
   
-  const shouldSave = confirm(
-    `Save this ${isWatchOnly ? 'watch-only address' : 'wallet'} to database?\n\n` +
-    `Address: ${address.slice(0, 20)}...${address.slice(-10)}\n` +
-    `Label: ${label}\n` +
-    `Network: ${network}`
-  );
-  
-  if (shouldSave) {
-    await saveBitcoinWallet(address, label, network, isWatchOnly);
-  }
+  // Save directly without prompting
+  await saveBitcoinWallet(address, label, network, isWatchOnly);
 }
 
 function updateSaveButtonVisibility() {
