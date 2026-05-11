@@ -26,6 +26,62 @@ let fullConfigData = null;
 
 const SUPPORTED_CURRENCIES = ["AED", "SAR", "PKR", "USD", "BTC"];
 
+// Currency mapping for symbols and variations
+const CURRENCY_ALIASES = {
+  "RS": "PKR",
+  "RS.": "PKR", 
+  "RUPEES": "PKR",
+  "RUPEE": "PKR",
+  "₨": "PKR",
+  "SAR.": "SAR",
+  "RIYAL": "SAR",
+  "RIYALS": "SAR",
+  "DIRHAM": "AED",
+  "DIRHAMS": "AED",
+  "DHS": "AED",
+  "DH": "AED",
+  "~": "AED",
+  "USD.": "USD",
+  "$": "USD", // Note: This might conflict with SAR, but USD is more common
+  "DOLLAR": "USD",
+  "DOLLARS": "USD",
+  "BITCOIN": "BTC",
+  "₿": "BTC",
+  "BTC.": "BTC"
+};
+
+function normalizeCurrencyCode(currency) {
+  if (!currency) return "";
+  
+  const cleanCurrency = String(currency).trim().toUpperCase();
+  
+  // Direct match first
+  if (SUPPORTED_CURRENCIES.includes(cleanCurrency)) {
+    return cleanCurrency;
+  }
+  
+  // Check aliases
+  return CURRENCY_ALIASES[cleanCurrency] || cleanCurrency;
+}
+
+function getAllowedCurrencies() {
+  if (!fullConfigData?.Currency) {
+    return SUPPORTED_CURRENCIES; // Default to all supported currencies if no config
+  }
+  
+  const configCurrencies = fullConfigData.Currency;
+  
+  // If config contains "All" (case-insensitive), return all supported currencies
+  if (configCurrencies.some(currency => String(currency).toUpperCase() === "ALL")) {
+    return SUPPORTED_CURRENCIES;
+  }
+  
+  // Filter to only include currencies that are both in config and supported
+  return configCurrencies.filter(currency => 
+    SUPPORTED_CURRENCIES.includes(normalizeCurrencyCode(currency))
+  );
+}
+
 const state = {
   entries: [],
   dataSource: "backup",
@@ -37,7 +93,7 @@ const state = {
   search: { given: "", received: "", taken: "", returned: "", installments: "", goods: "", expenses: "" },
   statusFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All", expenses: "All" },
   currencyFilter: { given: "All", received: "All", taken: "All", returned: "All", installments: "All", goods: "All", expenses: "All" },
-  lastCurrency: "AED",
+  lastCurrency: "AED", // Will be updated to first allowed currency after config loads
   modalDirection: "given",
   editId: null,
   editKind: null,
@@ -371,7 +427,20 @@ function isEntryInRecycleBin(entryId) {
 }
 
 function getActiveEntries() {
-  return state.entries.filter(entry => !isEntryInRecycleBin(entry.id) && !hasDeletedTag(entry.notes));
+  const allowedCurrencies = getAllowedCurrencies();
+  return state.entries.filter(entry => {
+    // Filter out recycle bin and deleted entries
+    if (isEntryInRecycleBin(entry.id) || hasDeletedTag(entry.notes)) {
+      return false;
+    }
+    
+    // Filter out entries with currencies not in allowed list
+    if (entry.currency && !allowedCurrencies.includes(normalizeCurrencyCode(entry.currency))) {
+      return false;
+    }
+    
+    return true;
+  });
 }
 
 function addToRecycleBin(entry) {
@@ -887,7 +956,8 @@ function overviewWatermarkFloatingWalletLogos(accounts){
 }
 
 function renderOverviewCards(){
-  const currencies = [...new Set([...SUPPORTED_CURRENCIES, ...state.entries.map(e => e.currency).filter(Boolean)])];
+  const allowedCurrencies = getAllowedCurrencies();
+  const currencies = [...new Set([...allowedCurrencies, ...state.entries.map(e => e.currency).filter(Boolean)])];
   const goodsAll = getGoodsGroups({ applyUiFilters: false });
   const goodsBoughtQty = goodsAll.reduce((sum, g) => sum + Number(g.boughtQty || 0), 0);
   const goodsSoldQty = goodsAll.reduce((sum, g) => sum + Number(g.soldQty || 0), 0);
@@ -1072,8 +1142,9 @@ function wrapTextForPdf(text, maxLength = 50){
 }
 
 function sortCurrenciesList(values){
+  const allowedCurrencies = getAllowedCurrencies();
   const rank = c => {
-    const i = SUPPORTED_CURRENCIES.indexOf(String(c || "").toUpperCase());
+    const i = allowedCurrencies.indexOf(String(c || "").toUpperCase());
     return i === -1 ? 100 : i;
   };
   return [...new Set(values.filter(Boolean))].sort((a, b) =>
@@ -3129,6 +3200,9 @@ async function saveGoodsBought(form){
   if (!payload.person_name || !payload.currency || !unitActualPrice || !boughtQty || !payload.loan_date){
     throw new Error("Complete all required fields.");
   }
+  
+  // Validate currency
+  validateCurrencyForForm(fd);
 
   if (isBackupMode()){
     state.entries.unshift({ ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() });
@@ -3287,6 +3361,9 @@ async function createPrincipal(form){
   };
 
   if (!payload.person_name || !payload.currency || !payload.principal_amount || !payload.loan_date) throw new Error("Complete all required fields.");
+  
+  // Validate currency
+  validateCurrencyForForm(fd);
 
   // Validate wallet balance before saving (loan given = money out)
   if (walletId && direction === "given") {
@@ -3331,6 +3408,11 @@ async function createPayment(form){
 
   const principalEntry = state.entries.find(e => e.group_id === groupId && e.entry_kind === "principal");
   if (!principalEntry) throw new Error("Selected loan could not be found.");
+  
+  // Validate that the principal's currency is allowed
+  const tempFormData = new FormData();
+  tempFormData.append('currency', principalEntry.currency);
+  validateCurrencyForForm(tempFormData);
 
   const group = groupByLoan(getActiveEntries().filter(e => e.group_id === groupId))[0];
   let currentRemaining = calculateLoan(group).remaining;
@@ -3810,6 +3892,128 @@ function updateLogosFromConfig(){
     };
     testImg.src = logoUrl;
   });
+}
+
+function updateCurrencyFiltersFromConfig(){
+  const allowedCurrencies = getAllowedCurrencies();
+  
+  // Get all currency filter radio buttons
+  const currencyRadios = document.querySelectorAll('.currency-radio');
+  
+  currencyRadios.forEach(radio => {
+    const currency = radio.value;
+    const label = document.querySelector(`label[for="${radio.id}"]`);
+    
+    if (currency === "All") {
+      // Always show "All" option
+      radio.style.display = '';
+      if (label) label.style.display = '';
+    } else {
+      // Show/hide based on allowed currencies (normalize comparison)
+      const normalizedCurrency = normalizeCurrencyCode(currency);
+      const isAllowed = allowedCurrencies.includes(normalizedCurrency);
+      radio.style.display = isAllowed ? '' : 'none';
+      if (label) label.style.display = isAllowed ? '' : 'none';
+      
+      // If current selection is not allowed, reset to "All"
+      const filterKey = radio.dataset.currencyFilter;
+      if (!isAllowed && state.currencyFilter[filterKey] === currency) {
+        state.currencyFilter[filterKey] = "All";
+        // Check the "All" radio button for this filter
+        const allRadio = document.querySelector(`.currency-radio[data-currency-filter="${filterKey}"][value="All"]`);
+        if (allRadio) allRadio.checked = true;
+      }
+    }
+  });
+  
+  // Update currency select elements in modals
+  updateCurrencySelectElements();
+}
+
+function updateCurrencySelectElements() {
+  const allowedCurrencies = getAllowedCurrencies();
+  
+  // Find all currency select elements
+  const currencySelects = document.querySelectorAll('select[name="currency"]');
+  
+  currencySelects.forEach(select => {
+    // Store current selection if it's allowed
+    const currentValue = select.value;
+    const isCurrentValueAllowed = currentValue && allowedCurrencies.includes(currentValue);
+    
+    // Clear all options
+    select.innerHTML = '';
+    
+    // Add allowed currency options
+    allowedCurrencies.forEach(currency => {
+      const option = document.createElement('option');
+      option.value = currency;
+      option.textContent = currency;
+      select.appendChild(option);
+    });
+    
+    // Restore previous selection if it's still allowed, otherwise select first allowed currency
+    if (isCurrentValueAllowed) {
+      select.value = currentValue;
+    } else if (allowedCurrencies.length > 0) {
+      select.value = allowedCurrencies[0];
+    }
+  });
+  
+  // Update currency button selections (for modals that use buttons instead of selects)
+  updateCurrencyButtons();
+}
+
+function updateCurrencyButtons() {
+  const allowedCurrencies = getAllowedCurrencies();
+  
+  // Find all currency chip buttons in modals
+  const currencyChips = document.querySelectorAll('.currency-chip[data-currency]');
+  
+  currencyChips.forEach(chip => {
+    const currency = chip.dataset.currency;
+    const normalizedCurrency = normalizeCurrencyCode(currency);
+    const isAllowed = allowedCurrencies.includes(normalizedCurrency);
+    
+    if (isAllowed) {
+      chip.style.display = '';
+    } else {
+      chip.style.display = 'none';
+    }
+  });
+  
+  // Find all currency picker containers and ensure at least one currency is selected
+  const currencyPickers = document.querySelectorAll('.currency-picker');
+  
+  currencyPickers.forEach(picker => {
+    const visibleChips = picker.querySelectorAll('.currency-chip[data-currency]:not([style*="display: none"])');
+    const hiddenInput = picker.querySelector('input[type="hidden"][name="currency"]');
+    
+    if (visibleChips.length > 0 && hiddenInput) {
+      // Check if currently selected currency is still visible
+      const currentlySelected = picker.querySelector('.currency-chip.active[data-currency]');
+      if (!currentlySelected || currentlySelected.style.display === 'none') {
+        // Select the first visible currency
+        visibleChips[0].classList.add('active');
+        visibleChips[0].click();
+      }
+    }
+  });
+}
+
+function validateCurrencyForForm(formData) {
+  const currency = formData.get('currency');
+  if (!currency) return true; // Allow forms without currency
+  
+  const allowedCurrencies = getAllowedCurrencies();
+  const normalizedCurrency = normalizeCurrencyCode(currency);
+  const isAllowed = allowedCurrencies.includes(normalizedCurrency);
+  
+  if (!isAllowed) {
+    throw new Error(`Currency "${currency}" is not supported. Supported currencies: ${allowedCurrencies.join(', ')}`);
+  }
+  
+  return true;
 }
 
 function updateHeaderTextFromConfig(){
@@ -5118,7 +5322,21 @@ async function importJsonBackup(file){
   if (!Array.isArray(entries)){
     throw new Error("JSON file must contain an entries array.");
   }
-  applyEntries(entries, "backup", { hasImportedFile: true });
+  
+  // Filter entries based on allowed currencies
+  const allowedCurrencies = getAllowedCurrencies();
+  const filteredEntries = entries.filter(entry => {
+    if (!entry.currency) return true; // Allow entries without currency
+    return allowedCurrencies.includes(normalizeCurrencyCode(entry.currency));
+  });
+  
+  // Warn if some entries were filtered out
+  if (filteredEntries.length < entries.length) {
+    const filteredCount = entries.length - filteredEntries.length;
+    console.warn(`${filteredCount} entries were filtered out due to unsupported currencies.`);
+  }
+  
+  applyEntries(filteredEntries, "backup", { hasImportedFile: true });
   if (state.unlocked) {
     await refreshDbSnapshot();
     renderAll();
@@ -5129,7 +5347,21 @@ async function importCsvBackup(file){
   if (!file) return;
   const text = await file.text();
   const entries = parseEntriesCsv(text);
-  applyEntries(entries, "backup", { hasImportedFile: true });
+  
+  // Filter entries based on allowed currencies
+  const allowedCurrencies = getAllowedCurrencies();
+  const filteredEntries = entries.filter(entry => {
+    if (!entry.currency) return true; // Allow entries without currency
+    return allowedCurrencies.includes(normalizeCurrencyCode(entry.currency));
+  });
+  
+  // Warn if some entries were filtered out
+  if (filteredEntries.length < entries.length) {
+    const filteredCount = entries.length - filteredEntries.length;
+    console.warn(`${filteredCount} entries were filtered out due to unsupported currencies.`);
+  }
+  
+  applyEntries(filteredEntries, "backup", { hasImportedFile: true });
   if (state.unlocked) {
     await refreshDbSnapshot();
     renderAll();
@@ -5745,6 +5977,15 @@ async function attemptUnlock(){
     
     // Update header text with Company and TRN from JSON if available
     updateHeaderTextFromConfig();
+    
+    // Update currency filters based on configuration
+    updateCurrencyFiltersFromConfig();
+    
+    // Update lastCurrency to first allowed currency
+    const allowedCurrencies = getAllowedCurrencies();
+    if (allowedCurrencies.length > 0 && !allowedCurrencies.includes(state.lastCurrency)) {
+      state.lastCurrency = allowedCurrencies[0];
+    }
     
     sessionStorage.setItem("loanledger-unlocked", "true");
     sessionStorage.setItem(ZIP_USERNAME_SESSION_KEY, safeUser);
