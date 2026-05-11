@@ -1373,6 +1373,8 @@ tbody tr:hover{background:#fbfdff}
 }
 .form-actions{
   margin-top:8px;
+  display:flex;
+  justify-content:center;
 }
 .btn-text{
   display:inline-flex;align-items:center;gap:6px;
@@ -1396,6 +1398,114 @@ tbody tr:hover{background:#fbfdff}
 }
 .whatsapp-link:hover{
   color:#1a4ab8;text-decoration:underline;
+}
+
+/* Login action buttons container */
+.login-action-buttons{
+  display:flex;
+  gap:12px;
+  margin-bottom:8px;
+  justify-content:center;
+  align-items:center;
+}
+
+/* Icon expand buttons - default for desktop */
+.icon-expand-btn{
+  width:48px;
+  height:48px;
+  padding:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.3s ease;
+  min-width:48px;
+  flex-shrink:0;
+}
+
+.icon-expand-btn i{
+  font-size:1.2rem;
+  color:var(--primary);
+  transition:all 0.3s ease;
+  z-index:2;
+  position:relative;
+}
+
+.icon-expand-btn .btn-text{
+  position:absolute;
+  left:100%;
+  top:50%;
+  transform:translateY(-50%);
+  white-space:nowrap;
+  opacity:0;
+  transition:all 0.3s ease;
+  font-size:0.9rem;
+  font-weight:600;
+  color:var(--text);
+  z-index:1;
+  padding-left:8px;
+}
+
+.icon-expand-btn:hover{
+  width:auto;
+  min-width:140px;
+  max-width:200px;
+  padding:14px 20px 14px 48px;
+  border-radius:12px;
+  background:var(--primary-soft);
+  border-color:var(--primary);
+  justify-content:flex-start;
+}
+
+.icon-expand-btn:hover i{
+  color:var(--primary);
+  position:absolute;
+  left:14px;
+  transform:none;
+}
+
+.icon-expand-btn:hover .btn-text{
+  opacity:1;
+  transform:translateY(-50%);
+  left:48px;
+  right:auto;
+}
+
+/* Mobile view - show full text */
+@media (max-width: 768px){
+  .login-action-buttons{
+    flex-direction:row;
+    gap:8px;
+    justify-content:center;
+  }
+  
+  .icon-expand-btn{
+    flex:1;
+    max-width:140px;
+    height:auto;
+    border-radius:12px;
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:auto;
+  }
+  
+  .icon-expand-btn i{
+    font-size:0.9rem;
+    color:var(--text);
+  }
+  
+  .icon-expand-btn .btn-text{
+    position:static;
+    opacity:1;
+    transform:none;
+    padding-left:0;
+    font-size:0.85rem;
+    color:var(--text);
+  }
 }
 
 /* Responsive adjustments for login */
