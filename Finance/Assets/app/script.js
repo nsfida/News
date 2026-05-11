@@ -264,6 +264,9 @@ const els = {
   btcTransactionSuccessFromWallet: document.getElementById("btcTransactionSuccessFromWallet"),
   btcTransactionSuccessToWallet: document.getElementById("btcTransactionSuccessToWallet"),
   btcTransactionSuccessTxid: document.getElementById("btcTransactionSuccessTxid"),
+  moneyAddedSuccessOverlay: document.getElementById("moneyAddedSuccessOverlay"),
+  moneyAddedSuccessAmount: document.getElementById("moneyAddedSuccessAmount"),
+  moneyAddedSuccessWallet: document.getElementById("moneyAddedSuccessWallet"),
   // Watch wallet elements
   btcFullWalletBtn: document.getElementById("btcFullWalletBtn"),
   btcWatchWalletBtn: document.getElementById("btcWatchWalletBtn"),
@@ -847,11 +850,15 @@ function overviewOneLine(label, amountHtml){
   `;
 }
 
-function overviewAvailableLine(amountHtml, balance = 0){
+function overviewAvailableLine(amountHtml, balance = 0, usdEquivalent = ""){
   const isNegativeOrZero = Number(balance) <= 0;
   const colorStyle = isNegativeOrZero ? "color: var(--danger) !important;" : "color: var(--success) !important;";
   const moneyClass = isNegativeOrZero ? "danger-amount" : "success-amount";
-  return `<div class="summary-line summary-line-one"><span class="summary-line-one-label available-label" style="${colorStyle}">Available:</span><span class="summary-line-one-value available-amount ${moneyClass}" style="${colorStyle}">${amountHtml}</span></div>`;
+  let usdLine = "";
+  if (usdEquivalent) {
+    usdLine = `<div class="summary-line summary-line-one" style="margin-top: 2px;"><span class="summary-line-one-label"></span><span class="summary-line-one-value" style="color: var(--muted); font-size: 0.74rem; font-weight: 600;">≈ $${usdEquivalent}</span></div>`;
+  }
+  return `<div class="summary-line summary-line-one"><span class="summary-line-one-label available-label" style="${colorStyle}">Available:</span><span class="summary-line-one-value available-amount ${moneyClass}" style="${colorStyle}">${amountHtml}</span></div>${usdLine}`;
 }
 
 function overviewExpenseLine(currency, suffix, amountHtml){
@@ -2112,6 +2119,45 @@ function renderExpenseWalletBar(accounts){
     const ck = state.expenseWalletFilter === a.group_id ? "checked" : "";
     const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
     const gid = escapeHtml(a.group_id);
+    
+    // Calculate USD equivalent for BTC wallets
+    let btcUsdEquivalent = "";
+    if (a.currency === "BTC") {
+      const btcBalance = Number(a.balance || 0);
+      console.log(`Rendering BTC wallet ${a.group_id} with balance: ${btcBalance}, price available: ${!!state.bitcoin.btcPrice}`);
+      
+      if (btcBalance > 0) {
+        // Always calculate USD equivalent, even if price is not available
+        const usdValue = state.bitcoin.btcPrice ? 
+          (btcBalance * state.bitcoin.btcPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) :
+          '0.00';
+        
+        btcUsdEquivalent = `<span class="btc-usd-equivalent"><em>≈ $</em> <strong>${usdValue}</strong></span>`;
+        
+        // If no price available, fetch it and update
+        if (!state.bitcoin.btcPrice) {
+          console.log('No price available, fetching for BTC wallet');
+          btcFetchPrice().then(priceData => {
+            if (priceData && priceData.price) {
+              const updatedUsd = (btcBalance * priceData.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              console.log(`Updating BTC wallet ${a.group_id} with USD: ${updatedUsd}`);
+              
+              // Find and update the USD equivalent element
+              setTimeout(() => {
+                const walletElement = document.querySelector(`[data-group-id="${gid}"] .btc-usd-equivalent`);
+                if (walletElement) {
+                  console.log('Found USD element, updating with:', updatedUsd);
+                  walletElement.innerHTML = `<span class="btc-usd-equivalent"><em>≈ $</em> <strong>${updatedUsd}</strong></span>`;
+                } else {
+                  console.log('USD element not found for wallet:', a.group_id);
+                }
+              }, 100);
+            }
+          }).catch(err => console.error('Failed to fetch price for BTC wallet:', err));
+        }
+      }
+    }
+    
     blocks.push(`
       <div class="expense-wallet-card-wrap">
         <input type="radio" id="${rid}" name="f_exp_wallet" value="${gid}" class="filter-radio expense-wallet-radio" ${ck}>
@@ -2122,6 +2168,7 @@ function renderExpenseWalletBar(accounts){
             <span><em>Top-up</em> <strong>${escapeHtml(formatReportAmount(totalTopup, a.currency))}</strong></span>
             <span><em>Spent</em> <strong>${escapeHtml(formatReportAmount(a.spentMoney, a.currency))}</strong></span>
             <span class="available-label"><em style="color: var(--success) !important;">Available</em> <strong class="available-amount">${escapeHtml(formatReportAmount(a.balance, a.currency))}</strong></span>
+            ${btcUsdEquivalent}
           </div>
         </label>
         <div class="expense-wallet-actions">
@@ -2139,9 +2186,8 @@ function renderExpenseWalletBar(accounts){
 
   host.querySelectorAll('input[name="f_exp_wallet"]').forEach(inp => {
     inp.addEventListener("change", () => {
-      if (!inp.checked) return;
-      state.expenseWalletFilter = inp.value === "all" ? "all" : inp.value;
-      renderAll();
+      state.expenseWalletFilter = inp.value;
+      renderExpensesList();
     });
   });
 
@@ -2974,6 +3020,17 @@ function renderExpenseOverviewWallets(){
 
   container.innerHTML = expenseSummaryCard + accounts.map(a => {
     const totalTopup = Number(a.openingBalance || 0) + Number(a.addedMoney || 0);
+    
+    // Calculate USD equivalent for BTC wallets
+    let btcUsdEquivalent = "";
+    if (a.currency === "BTC") {
+      const btcBalance = Number(a.balance || 0);
+      if (btcBalance > 0 && state.bitcoin.btcPrice) {
+        const usdValue = (btcBalance * state.bitcoin.btcPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        btcUsdEquivalent = usdValue;
+      }
+    }
+    
     return `
       <div class="summary currency-summary">
         ${overviewWatermarkWallet(a.person_name || "Wallet", a.currency)}
@@ -2984,7 +3041,7 @@ function renderExpenseOverviewWallets(){
         </div>
         ${overviewOneLine("Top-up:", money(totalTopup, a.currency))}
         ${overviewOneLine("Spent:", money(a.spentMoney, a.currency))}
-        ${overviewAvailableLine(money(a.balance, a.currency), a.balance)}
+        ${overviewAvailableLine(money(a.balance, a.currency), a.balance, btcUsdEquivalent)}
         <div class="overview-card-actions" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
           <button class="tiny ghost" onclick="openExpenseModal('topup', '${escapeHtml(a.group_id)}')">Add Money</button>
           <button class="tiny ghost" onclick="openExpenseModal('expense', '${escapeHtml(a.group_id)}')">Add Expense</button>
@@ -3063,6 +3120,49 @@ function activate(tab){
   // Load Bitcoin wallets from database when Bitcoin tab is activated
   if (tab === "bitcoin") {
     loadBitcoinWalletsFromDatabase();
+  }
+  
+  // Fetch Bitcoin price when expense tab is activated to ensure USD values are displayed
+  if (tab === "expenses") {
+    // Always fetch fresh price when expense tab loads
+    btcFetchPrice().then(priceData => {
+      if (priceData) {
+        console.log('Bitcoin price fetched for expense section:', priceData);
+        // Update expense wallets to show BTC USD equivalents
+        renderExpenseWalletBar(getExpenseAccounts());
+        
+        // Force update USD values after a delay
+        setTimeout(() => {
+          const accounts = getExpenseAccounts({ applyUiFilters: false });
+          const btcAccounts = accounts.filter(a => a.currency === 'BTC');
+          btcAccounts.forEach(account => {
+            const balance = Number(account.balance || 0);
+            if (balance > 0 && priceData.price) {
+              const usdValue = (balance * priceData.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              console.log(`Updating BTC wallet ${account.group_id} with USD value: $${usdValue}`);
+              
+              // Find and update the USD equivalent element
+              const walletCard = document.querySelector(`[data-group-id="${account.group_id}"]`);
+              if (walletCard) {
+                const usdElement = walletCard.querySelector('.btc-usd-equivalent');
+                if (usdElement) {
+                  usdElement.innerHTML = `<span class="btc-usd-equivalent"><em>≈ $</em> <strong>${usdValue}</strong></span>`;
+                } else {
+                  // Create USD element if it doesn't exist
+                  const statsDiv = walletCard.querySelector('.expense-wallet-stats');
+                  if (statsDiv) {
+                    const usdSpan = document.createElement('span');
+                    usdSpan.className = 'btc-usd-equivalent';
+                    usdSpan.innerHTML = `<em>≈ $</em> <strong>${usdValue}</strong>`;
+                    statsDiv.appendChild(usdSpan);
+                  }
+                }
+              }
+            }
+          });
+        }, 500);
+      }
+    }).catch(err => console.error('Failed to fetch Bitcoin price:', err));
   }
 }
 
@@ -5133,6 +5233,7 @@ function showMoneyAddedSuccessOverlay(walletName, amount, currency) {
 function closeMoneyAddedSuccessOverlay() {
   els.moneyAddedSuccessOverlay.classList.add('hide');
   els.moneyAddedSuccessOverlay.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
 }
 
 function closeBtcTransactionSuccessOverlay() {
@@ -6340,8 +6441,6 @@ function btcBtcToUsd(btcAmount) {
 }
 
 function btcUpdateUsdValues() {
-  if (!state.bitcoin.btcPrice) return;
-  
   const balance = btcSatToBtc(btcSummarizeUtxoBalance());
   
   // Calculate received and sent from chain stats if available, otherwise use history
@@ -6367,9 +6466,30 @@ function btcUpdateUsdValues() {
   const received = btcSatToBtc(receivedSat);
   const sent = btcSatToBtc(sentSat);
   
-  els.btcBalanceUsd.textContent = `≈ $${btcBtcToUsd(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  els.btcReceivedUsd.textContent = `≈ $${btcBtcToUsd(received).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  els.btcSentUsd.textContent = `≈ $${btcBtcToUsd(sent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  // Update Bitcoin tab displays
+  if (state.bitcoin.btcPrice) {
+    els.btcBalanceUsd.textContent = `≈ $${btcBtcToUsd(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    els.btcReceivedUsd.textContent = `≈ $${btcBtcToUsd(received).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    els.btcSentUsd.textContent = `≈ $${btcBtcToUsd(sent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  } else {
+    els.btcBalanceUsd.textContent = '≈ $—';
+    els.btcReceivedUsd.textContent = '≈ $—';
+    els.btcSentUsd.textContent = '≈ $—';
+  }
+  
+  // Also update expense wallets to show BTC USD equivalents
+  const accounts = getExpenseAccounts({ applyUiFilters: false });
+  renderExpenseWalletBar(accounts);
+  
+  // Additional update for BTC USD values in expense section
+  setTimeout(() => {
+    if (document.getElementById('expensePanel').classList.contains('active')) {
+      const btcAccounts = accounts.filter(a => a.currency === 'BTC');
+      if (btcAccounts.length > 0) {
+        renderExpenseWalletBar(accounts);
+      }
+    }
+  }, 200);
 }
 
 // Automatic price updates
@@ -6713,6 +6833,11 @@ function btcRenderHistory() {
             <i class="fa-solid fa-download"></i>
           </button>
         </div>
+        <div class="cell">
+          <button class="btn ghost btc-view-on-chain-btn" data-tx-id="${escapeHtml(tx.txid)}" title="View on Chain" style="padding: 4px 8px; font-size: 0.8rem;">
+            View on chain
+          </button>
+        </div>
       </div>
       <div class="btc-transaction-details" style="display: none;">
         <div class="loan-details" style="padding: 12px; background: var(--panel-2); border-top: 1px solid var(--line);">
@@ -6778,6 +6903,15 @@ function btcRenderHistory() {
       downloadBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         btcDownloadTransactionPDF(tx);
+      });
+    }
+    
+    // Add event listener for view on chain button
+    const viewOnChainBtn = row.querySelector('.btc-view-on-chain-btn');
+    if (viewOnChainBtn) {
+      viewOnChainBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.open(`https://blockchair.com/bitcoin/transaction/${tx.txid}`, '_blank');
       });
     }
     
@@ -6945,6 +7079,11 @@ async function btcRenderMoreTransactions(startIndex, count) {
             <i class="fa-solid fa-download"></i>
           </button>
         </div>
+        <div class="cell">
+          <button class="btn ghost btc-view-on-chain-btn" data-tx-id="${escapeHtml(tx.txid)}" title="View on Chain" style="padding: 4px 8px; font-size: 0.8rem;">
+            View on chain
+          </button>
+        </div>
       </div>
       <div class="btc-transaction-details" style="display: none;">
         <div class="loan-details" style="padding: 12px; background: var(--panel-2); border-top: 1px solid var(--line);">
@@ -7010,6 +7149,15 @@ async function btcRenderMoreTransactions(startIndex, count) {
       downloadBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         btcDownloadTransactionPDF(tx);
+      });
+    }
+    
+    // Add event listener for view on chain button
+    const viewOnChainBtn = row.querySelector('.btc-view-on-chain-btn');
+    if (viewOnChainBtn) {
+      viewOnChainBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.open(`https://blockchair.com/bitcoin/transaction/${tx.txid}`, '_blank');
       });
     }
     
@@ -7575,15 +7723,39 @@ function updateSaveButtonVisibility() {
   }
   
   const addressExists = checkIfAddressExists(state.bitcoin.wallet.address);
+  
+  // Show save button if:
+  // 1. It's a watch-only wallet that doesn't exist in database, OR
+  // 2. It's a full wallet that doesn't exist in database
   if (addressExists) {
     els.btcSaveAddressBtn.style.display = 'none';
   } else {
     els.btcSaveAddressBtn.style.display = 'block';
+    
+    // Update button text based on wallet type
+    if (state.bitcoin.wallet.isWatchOnly) {
+      els.btcSaveAddressBtn.textContent = 'Save Watch Wallet';
+    } else {
+      els.btcSaveAddressBtn.textContent = 'Save Wallet';
+    }
   }
 }
 
 function updateSavedAddressesVisibility() {
-  // Section has been removed from HTML, so do nothing
+  // Hide the existing addresses section when a wallet is loaded
+  if (state.bitcoin.wallet && state.bitcoin.wallet.address) {
+    // Hide the entire existing addresses section
+    const existingAddressesSection = els.btcExistingAddressesBtn.closest('.field');
+    if (existingAddressesSection) {
+      existingAddressesSection.style.display = 'none';
+    }
+  } else {
+    // Show the existing addresses section when no wallet is loaded
+    const existingAddressesSection = els.btcExistingAddressesBtn.closest('.field');
+    if (existingAddressesSection) {
+      existingAddressesSection.style.display = 'block';
+    }
+  }
 }
 
 async function loadSelectedAddress(wallet) {
