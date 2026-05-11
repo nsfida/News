@@ -223,8 +223,6 @@ const els = {
   toggleMainOverviewBtn: document.getElementById("toggleMainOverviewBtn"),
   mainOverviewBanner: document.getElementById("mainOverviewBanner"),
   mainOverviewContent: document.getElementById("mainOverviewContent"),
-  btcNetworkSelect: document.getElementById("btcNetworkSelect"),
-  btcNetworkBadge: document.getElementById("btcNetworkBadge"),
   btcWifInput: document.getElementById("btcWifInput"),
   btcImportBtn: document.getElementById("btcImportBtn"),
   btcGenerateBtn: document.getElementById("btcGenerateBtn"),
@@ -2404,6 +2402,16 @@ async function downloadExpenseAccountPDF(groupId){
   doc.text(`Type: ${account.accountType}`, 132, 48);
   doc.text(`Currency: ${account.currency}`, 132, 54);
   doc.text(`Balance: ${formatPdfAmount(account.balance, account.currency)}`, 132, 60);
+  
+  // Add USD equivalent for BTC wallets
+  if (account.currency === "BTC" && account.balance > 0 && state.bitcoin.btcPrice) {
+    const usdValue = (account.balance * state.bitcoin.btcPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    doc.setTextColor(102, 112, 133); // Muted color
+    doc.text(`~ $${usdValue}`, 132, 66);
+    doc.setFontSize(8);
+    doc.setTextColor(153, 163, 180); // Lighter muted color
+    doc.text(`* USD value as of statement generation`, 132, 72);
+  }
 
   let runningBalance = Number(account.openingBalance || 0);
   const rows = [
@@ -6671,7 +6679,6 @@ function btcUpdateWalletView() {
   }
 
   const wallet = state.bitcoin.wallet;
-  els.btcNetworkBadge.textContent = wallet.label;
   els.btcMaskedWif.textContent = btcMaskWif(wallet.inputWif);
   els.btcWalletAddress.textContent = wallet.address;
   els.btcCopyWifBtn.disabled = false;
@@ -7334,7 +7341,7 @@ async function btcImportWif() {
     }
     
     console.log('Importing WIF:', wif);
-    state.bitcoin.selectedNetworkKey = els.btcNetworkSelect.value;
+    state.bitcoin.selectedNetworkKey = 'mainnet';
     console.log('Selected network:', state.bitcoin.selectedNetworkKey);
     
     const wallet = btcDetectAndLoadWallet(wif, state.bitcoin.selectedNetworkKey);
@@ -7363,7 +7370,7 @@ async function btcImportWif() {
 
 async function btcGenerateWallet() {
   try {
-    const key = els.btcNetworkSelect.value;
+    const key = 'mainnet';
     const info = btcGetNetworkInfo(key);
     const sourcePair = bitcoinjs.ECPair.makeRandom({ network: info.network });
     if (!sourcePair.privateKey) throw new Error('Could not generate a private key.');
@@ -7542,7 +7549,6 @@ function btcClearSession() {
   els.btcToAddress.value = '';
   els.btcSendAmount.value = '';
   els.btcFeeRate.value = '';
-  els.btcNetworkBadge.textContent = btcGetNetworkInfo(els.btcNetworkSelect.value).label;
   btcSetWalletStatus('No wallet loaded yet.', '');
   btcClearView();
   // Reset dropdown button text to default
@@ -7770,7 +7776,6 @@ async function loadSelectedAddress(wallet) {
   els.btcWatchWalletBtn.click();
   els.btcAddressInput.value = wallet.address;
   state.bitcoin.selectedNetworkKey = wallet.network;
-  els.btcNetworkSelect.value = wallet.network;
   
   // Directly set up watch wallet without going through btcWatchAddress function
   try {
@@ -7826,9 +7831,7 @@ async function loadSavedBitcoinWallet(address, network, isWatchOnly) {
       // For full wallets, we need the user to provide WIF
       // We'll pre-fill the WIF input and switch to full wallet mode
       els.btcWifInput.value = ''; // Clear for security
-      els.btcNetworkSelect.value = network;
       state.bitcoin.selectedNetworkKey = network;
-      els.btcNetworkBadge.textContent = network.charAt(0).toUpperCase() + network.slice(1);
       
       // Switch to full wallet mode
       btcToggleWalletType('full');
@@ -8379,14 +8382,6 @@ async function btcBuildAndBroadcast() {
 }
 
 function btcBindUI() {
-  els.btcNetworkSelect.addEventListener('change', () => {
-    state.bitcoin.selectedNetworkKey = els.btcNetworkSelect.value;
-    els.btcNetworkBadge.textContent = btcGetNetworkInfo(state.bitcoin.selectedNetworkKey).label;
-    if (!state.bitcoin.wallet) {
-      btcSetWalletStatus(btcGetNetworkInfo(state.bitcoin.selectedNetworkKey).wifHint, '');
-    }
-  });
-  
   // Wallet type toggle buttons
   els.btcFullWalletBtn.addEventListener('click', () => btcToggleWalletType('full'));
   els.btcWatchWalletBtn.addEventListener('click', () => btcToggleWalletType('watch'));
@@ -8494,7 +8489,6 @@ function btcClearSession() {
   els.btcSendAmount.value = '';
   els.btcFeeRate.value = '';
   els.btcSendWifInput.value = '';
-  els.btcNetworkBadge.textContent = btcGetNetworkInfo(els.btcNetworkSelect.value).label;
   btcSetWalletStatus('No wallet loaded yet.', '');
   btcClearView();
   
