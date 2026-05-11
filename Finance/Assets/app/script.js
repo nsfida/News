@@ -8348,4 +8348,102 @@ async function boot(){
   handleUrlHash();
 }
 
+// Inquiry Overlay Functionality
+function initInquiryOverlay() {
+  const sendInquiryBtn = document.getElementById('sendInquiryBtn');
+  const inquiryOverlay = document.getElementById('inquiryOverlay');
+  const closeInquiryBtn = document.getElementById('closeInquiryBtn');
+  const inquiryForm = document.getElementById('inquiryForm');
+  const inquirySuccess = document.getElementById('inquirySuccess');
+  const inquiryError = document.getElementById('inquiryError');
+
+  // Open inquiry overlay
+  if (sendInquiryBtn) {
+    sendInquiryBtn.addEventListener('click', () => {
+      inquiryOverlay.classList.remove('hide');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+
+  // Close inquiry overlay
+  function closeInquiryOverlay() {
+    inquiryOverlay.classList.add('hide');
+    document.body.style.overflow = '';
+    inquiryForm.reset();
+    inquirySuccess.classList.add('hide');
+    inquiryError.classList.add('hide');
+    inquiryForm.classList.remove('submitting');
+  }
+
+  if (closeInquiryBtn) {
+    closeInquiryBtn.addEventListener('click', closeInquiryOverlay);
+  }
+
+  // Close on backdrop click
+  inquiryOverlay.addEventListener('click', (e) => {
+    if (e.target === inquiryOverlay) {
+      closeInquiryOverlay();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !inquiryOverlay.classList.contains('hide')) {
+      closeInquiryOverlay();
+    }
+  });
+
+  // Handle form submission
+  if (inquiryForm) {
+    inquiryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Add submitting state
+      inquiryForm.classList.add('submitting');
+      inquirySuccess.classList.add('hide');
+      inquiryError.classList.add('hide');
+
+      // Get form data
+      const formData = new FormData(inquiryForm);
+      
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          // Show success message
+          inquirySuccess.classList.remove('hide');
+          inquiryForm.reset();
+          
+          // Close overlay after 3 seconds
+          setTimeout(() => {
+            closeInquiryOverlay();
+          }, 3000);
+        } else {
+          // Show error message
+          inquiryError.classList.remove('hide');
+        }
+      } catch (error) {
+        console.error('Inquiry form submission error:', error);
+        // Show error message
+        inquiryError.classList.remove('hide');
+      } finally {
+        // Remove submitting state
+        inquiryForm.classList.remove('submitting');
+      }
+    });
+  }
+}
+
+// Initialize inquiry overlay when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initInquiryOverlay);
+} else {
+  initInquiryOverlay();
+}
+
 boot();
