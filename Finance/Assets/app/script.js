@@ -203,6 +203,11 @@ const els = {
   btcQrBox: document.getElementById("btcQrBox"),
   btcReceiveAddress: document.getElementById("btcReceiveAddress"),
   btcCopyAddressBtn: document.getElementById("btcCopyAddressBtn"),
+  btcTransactionSuccessOverlay: document.getElementById("btcTransactionSuccessOverlay"),
+  btcTransactionSuccessAmount: document.getElementById("btcTransactionSuccessAmount"),
+  btcTransactionSuccessFromWallet: document.getElementById("btcTransactionSuccessFromWallet"),
+  btcTransactionSuccessToWallet: document.getElementById("btcTransactionSuccessToWallet"),
+  btcTransactionSuccessTxid: document.getElementById("btcTransactionSuccessTxid"),
   // Watch wallet elements
   btcFullWalletBtn: document.getElementById("btcFullWalletBtn"),
   btcWatchWalletBtn: document.getElementById("btcWatchWalletBtn"),
@@ -4922,10 +4927,35 @@ function showMoneyAddedSuccessOverlay(walletName, amount, currency) {
 }
 
 function closeMoneyAddedSuccessOverlay() {
-  const overlay = document.getElementById("moneyAddedSuccessOverlay");
-  overlay.classList.add("hide");
-  overlay.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  els.moneyAddedSuccessOverlay.classList.add('hide');
+  els.moneyAddedSuccessOverlay.setAttribute('aria-hidden', 'true');
+}
+
+function closeBtcTransactionSuccessOverlay() {
+  els.btcTransactionSuccessOverlay.classList.add('hide');
+  els.btcTransactionSuccessOverlay.setAttribute('aria-hidden', 'true');
+}
+
+function showBtcTransactionSuccessOverlay(amountSat, toAddress, txid) {
+  // Format the amount for display
+  const amountBtc = btcFormatBtcFromSat(amountSat);
+  const walletAddress = state.bitcoin.wallet ? state.bitcoin.wallet.address : 'Your Wallet';
+  
+  // Update overlay content
+  els.btcTransactionSuccessAmount.textContent = `${amountBtc} BTC`;
+  els.btcTransactionSuccessFromWallet.textContent = walletAddress.slice(0, 12) + '...';
+  els.btcTransactionSuccessToWallet.textContent = toAddress.slice(0, 12) + '...';
+  els.btcTransactionSuccessTxid.textContent = `Transaction ID: ${txid}`;
+  
+  // Show overlay
+  els.btcTransactionSuccessOverlay.classList.remove('hide');
+  els.btcTransactionSuccessOverlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    closeBtcTransactionSuccessOverlay();
+  }, 5000);
 }
 
 async function downloadExpensesPDF(){
@@ -5646,6 +5676,8 @@ function doLogout(){
   if (els.zipPasswordInput) els.zipPasswordInput.value = "";
   if (els.app) els.app.classList.add("hide");
   if (els.lockScreen) els.lockScreen.classList.remove("hide");
+  // Clear Bitcoin wallet session on logout
+  btcClearSession();
   focusUnlockForm();
 }
 
@@ -6860,6 +6892,8 @@ function btcClearSession() {
   els.btcNetworkBadge.textContent = btcGetNetworkInfo(els.btcNetworkSelect.value).label;
   btcSetWalletStatus('No wallet loaded yet.', '');
   btcClearView();
+  // Reset dropdown button text to default
+  els.btcExistingAddressesLabel.textContent = 'Select Saved Address ▾';
 }
 
 // Bitcoin Wallet Functions
@@ -7665,6 +7699,9 @@ async function btcBuildAndBroadcast() {
       ''
     );
 
+    // Show Bitcoin transaction success overlay
+    showBtcTransactionSuccessOverlay(amountSat, toAddress, txid || tx.getId());
+
     await btcFetchWalletData(false);
   } catch (err) {
     btcSetSendStatus(`Send failed.\n${err.message || err}`, '');
@@ -7790,6 +7827,9 @@ function btcClearSession() {
   els.btcNetworkBadge.textContent = btcGetNetworkInfo(els.btcNetworkSelect.value).label;
   btcSetWalletStatus('No wallet loaded yet.', '');
   btcClearView();
+  
+  // Reset dropdown button text to default
+  els.btcExistingAddressesLabel.textContent = 'Select Saved Address ▾';
   
   // Reset wallet type to full wallet
   btcToggleWalletType('full');
