@@ -75,6 +75,9 @@
         <button id="pricingBtn" class="btn ghost" type="button" style="width: 100%; margin-top: 8px;">
           <i class="fa-solid fa-tags"></i> Pricing
         </button>
+        <button id="sendInquiryBtn" class="btn primary" type="button" style="width: 100%; margin-top: 8px;">
+          <i class="fa-solid fa-envelope"></i> Send Inquiry
+        </button>
       </div>
       
       <div class="login-help">
@@ -82,6 +85,71 @@
       </div>
       
       <div id="lockError" class="lock-error"></div>
+    </div>
+  </div>
+
+  <!-- Inquiry Overlay Form -->
+  <div id="inquiryOverlay" class="inquiry-overlay hide">
+    <div class="inquiry-modal">
+      <div class="inquiry-header">
+        <h3><i class="fa-solid fa-envelope"></i> Send Inquiry</h3>
+        <button id="closeInquiryBtn" class="btn ghost" type="button" style="font-size: 1.2rem; padding: 4px 8px;">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="inquiryForm" action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="2b84b0cc-53e5-42b8-bf60-fbb8fbaf03ff">
+        <input type="hidden" name="subject" value="New Inquiry from Triple M by NSF">
+        
+        <div class="form-group">
+          <label for="inquiryName" class="form-label">Full Name *</label>
+          <div class="input-wrapper">
+            <input id="inquiryName" name="name" class="input" type="text" placeholder="Enter your full name" required />
+            <span class="input-icon">👤</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="inquiryMobile" class="form-label">Mobile/WhatsApp Number *</label>
+          <div class="input-wrapper">
+            <input id="inquiryMobile" name="mobile" class="input" type="tel" placeholder="Enter your mobile or WhatsApp number" required />
+            <span class="input-icon">📱</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="inquiryEmail" class="form-label">Email Address *</label>
+          <div class="input-wrapper">
+            <input id="inquiryEmail" name="email" class="input" type="email" placeholder="Enter your email address" required />
+            <span class="input-icon">📧</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="inquiryMessage" class="form-label">Message *</label>
+          <div class="input-wrapper" style="align-items: flex-start;">
+            <textarea id="inquiryMessage" name="message" class="input" placeholder="Enter your message or inquiry details" rows="4" required style="resize: vertical; min-height: 100px;"></textarea>
+            <span class="input-icon" style="margin-top: 8px;">💬</span>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn primary" style="width: 100%;">
+            <i class="fa-solid fa-paper-plane"></i> Send Inquiry
+          </button>
+        </div>
+        
+        <div id="inquirySuccess" class="inquiry-success hide">
+          <i class="fa-solid fa-check-circle"></i>
+          <p>Your inquiry has been sent successfully! We'll get back to you soon.</p>
+        </div>
+        
+        <div id="inquiryError" class="inquiry-error hide">
+          <i class="fa-solid fa-exclamation-circle"></i>
+          <p>Failed to send inquiry. Please try again.</p>
+        </div>
+      </form>
     </div>
   </div>
 
