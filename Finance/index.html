@@ -1666,6 +1666,35 @@
   </div>
 </div>
 
+<!-- Bitcoin Transaction Success Overlay -->
+<div id="btcTransactionSuccessOverlay" class="transfer-success-overlay hide" aria-hidden="true">
+  <div class="transfer-success-backdrop"></div>
+  <div class="transfer-success-content">
+    <div class="transfer-success-icon">
+      <img src="Assets/logo/transfer.gif" alt="Bitcoin Transaction" class="transfer-gif" />
+    </div>
+    <div class="transfer-success-message">
+      <h3>Bitcoin Transaction Successful!</h3>
+      <div class="transfer-details">
+        <div class="transfer-amount" id="btcTransactionSuccessAmount">0.001 BTC</div>
+        <div class="transfer-route">
+          <span class="wallet-from" id="btcTransactionSuccessFromWallet">Your Wallet</span>
+          <div class="transfer-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+          <span class="wallet-to" id="btcTransactionSuccessToWallet">Recipient Address</span>
+        </div>
+        <div class="transaction-txid" id="btcTransactionSuccessTxid" style="margin-top: 8px; font-size: 0.8rem; color: var(--muted); word-break: break-all;">
+          Transaction ID: abc123...
+        </div>
+      </div>
+    </div>
+    <div class="transfer-success-actions">
+      <button class="btn primary" onclick="closeBtcTransactionSuccessOverlay()">Done</button>
+    </div>
+  </div>
+</div>
+
   <div class="site-footer" style="max-width:1240px;margin:8px auto 18px;padding:0 16px;text-align:center;color:#667085;font-size:.86rem;">
     Powered by
     <a href="https://facebook.com/nadeemshahzadfida" target="_blank" rel="noopener noreferrer" style="color:#2457d6;text-decoration:none;font-weight:700;">
