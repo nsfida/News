@@ -2145,22 +2145,119 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
 
 @media (max-width: 768px) {
   .standalone-about-container {
-    padding: 15px;
+    padding: 12px;
   }
   
   .standalone-about-header {
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     text-align: center;
   }
   
   .standalone-about-content {
-    padding: 20px;
+    padding: 16px;
   }
   
   .standalone-about-header .brand h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
+  
+  .standalone-about-header .brand p {
+    font-size: 0.75rem;
+  }
+  
+  /* Smaller text for mobile on Learn More page */
+  .standalone-about-content h4 {
+    font-size: 0.95rem !important;
+  }
+  
+  .standalone-about-content h5 {
+    font-size: 0.85rem !important;
+  }
+  
+  .standalone-about-content p {
+    font-size: 0.8rem !important;
+  }
+  
+  /* Pricing grid optimization for mobile - show all 4 in one line */
+  .pricing-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 4px !important;
+    overflow-x: hidden;
+    padding: 0 2px;
+  }
+  
+  .pricing-card {
+    padding: 8px !important;
+    min-width: auto !important;
+    border-radius: 8px !important;
+  }
+  
+  .pricing-card div[style*="font-size: 2rem"] {
+    font-size: 1.2rem !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .pricing-card h5 {
+    font-size: 0.7rem !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .pricing-card p {
+    font-size: 0.65rem !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .pricing-card span[style*="font-size: 1.4rem"] {
+    font-size: 0.8rem !important;
+  }
+  
+  .pricing-card div[style*="font-size: 2rem; font-weight: 700"] {
+    font-size: 1.1rem !important;
+    margin-top: 2px !important;
+  }
+  
+  .pricing-card div[style*="background: rgba(6, 118, 71, 0.1)"] {
+    font-size: 0.6rem !important;
+    padding: 2px 6px !important;
+    margin-top: 4px !important;
+  }
+  
+  .pricing-card div[style*="margin-bottom: 8px"] {
+    margin-bottom: 4px !important;
+  }
+  
+  /* About section cards for mobile */
+  .standalone-about-content .about-section > div > div {
+    padding: 10px !important;
+  }
+  
+  .standalone-about-content .about-section > div > div h5 {
+    font-size: 0.85rem !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .standalone-about-content .about-section > div > div p {
+    font-size: 0.75rem !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* Pricing card hover effects */
+.pricing-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(36, 87, 214, 0.15);
+  border-color: var(--primary);
+}
+
+.pricing-card.featured:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(6, 118, 71, 0.2);
 }
 
 /* Hide tabs when not logged in */
