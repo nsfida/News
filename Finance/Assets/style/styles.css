@@ -2264,3 +2264,225 @@ label{font-size:.78rem;color:var(--muted);font-weight:600}
 .tabs.hidden-tabs {
   display: none !important;
 }
+
+/* Inquiry Overlay Styles */
+.inquiry-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.inquiry-overlay:not(.hide) {
+  opacity: 1;
+  visibility: visible;
+}
+
+.inquiry-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.inquiry-overlay:not(.hide) .inquiry-modal {
+  transform: scale(1) translateY(0);
+}
+
+.inquiry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(36, 87, 214, 0.05) 0%, rgba(36, 87, 214, 0.02) 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.inquiry-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#inquiryForm {
+  padding: 24px;
+}
+
+#inquiryForm .form-group {
+  margin-bottom: 20px;
+}
+
+#inquiryForm .form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+#inquiryForm .input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#inquiryForm .input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  font-size: 0.94rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+#inquiryForm .input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.12);
+  outline: none;
+}
+
+#inquiryForm .input::placeholder {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+#inquiryForm .input-icon {
+  position: absolute;
+  left: 16px;
+  font-size: 1.1rem;
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+#inquiryForm textarea.input {
+  resize: vertical;
+  min-height: 100px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  line-height: 1.5;
+}
+
+#inquiryForm .form-actions {
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.inquiry-success,
+.inquiry-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.inquiry-success {
+  background: linear-gradient(135deg, rgba(6, 118, 71, 0.1) 0%, rgba(6, 118, 71, 0.05) 100%);
+  border: 1px solid rgba(6, 118, 71, 0.2);
+  color: var(--success);
+}
+
+.inquiry-error {
+  background: linear-gradient(135deg, rgba(180, 35, 24, 0.1) 0%, rgba(180, 35, 24, 0.05) 100%);
+  border: 1px solid rgba(180, 35, 24, 0.2);
+  color: var(--danger);
+}
+
+.inquiry-success i,
+.inquiry-error i {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.inquiry-success p,
+.inquiry-error p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Mobile responsive styles for inquiry overlay */
+@media (max-width: 768px) {
+  .inquiry-modal {
+    width: 95%;
+    margin: 20px;
+    max-height: calc(100vh - 40px);
+  }
+  
+  .inquiry-header {
+    padding: 16px 20px 12px;
+  }
+  
+  .inquiry-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  #inquiryForm {
+    padding: 20px;
+  }
+  
+  #inquiryForm .form-group {
+    margin-bottom: 16px;
+  }
+  
+  #inquiryForm .input {
+    padding: 12px 14px 12px 44px;
+    font-size: 0.9rem;
+  }
+  
+  #inquiryForm .input-icon {
+    left: 14px;
+    font-size: 1rem;
+  }
+}
+
+/* Animation for form submission */
+#inquiryForm.submitting .btn.primary {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+#inquiryForm.submitting .btn.primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
