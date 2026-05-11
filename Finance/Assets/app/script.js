@@ -6428,7 +6428,10 @@ function btcRenderHistory() {
     return;
   }
 
-  for (const tx of state.bitcoin.history) {
+  // Show only last 20 transactions initially
+  const transactionsToShow = state.bitcoin.history.slice(0, 20);
+
+  for (const tx of transactionsToShow) {
     const dir = btcTxDirection(tx);
     const ts = tx.status && tx.status.confirmed
       ? btcFormatDate(tx.status.block_time || 0)
@@ -6463,6 +6466,11 @@ function btcRenderHistory() {
         <div class="cell">
           <small>Txid</small>
           <strong class="mono">${escapeHtml(btcShortHash(tx.txid))}</strong>
+        </div>
+        <div class="cell">
+          <button class="btn ghost btc-download-tx-btn" data-tx-id="${escapeHtml(tx.txid)}" title="Download Transaction PDF" style="padding: 4px 8px; font-size: 0.8rem;">
+            <i class="fa-solid fa-download"></i>
+          </button>
         </div>
       </div>
       <div class="btc-transaction-details" style="display: none;">
@@ -6522,6 +6530,15 @@ function btcRenderHistory() {
         topRow.style.background = '';
       }
     });
+    
+    // Add event listener for download button
+    const downloadBtn = row.querySelector('.btc-download-tx-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        btcDownloadTransactionPDF(tx);
+      });
+    }
     
     els.btcHistoryList.appendChild(row);
   }
@@ -6589,11 +6606,36 @@ function btcUpdateLoadMoreButton() {
     existingBtn.remove();
   }
   
-  if (!state.bitcoin.historyDone && state.bitcoin.history.length < state.bitcoin.historyTotal) {
+  // Calculate how many more transactions can be loaded
+  const loadedCount = Math.min(state.bitcoin.history.length, 20); // Currently displayed
+  const remainingInHistory = state.bitcoin.history.length - loadedCount; // Available but not displayed
+  const totalRemaining = state.bitcoin.historyTotal - loadedCount; // Total remaining including API
+  
+  if (!state.bitcoin.historyDone && state.bitcoin.history.length > loadedCount) {
     const loadMoreBtn = document.createElement('button');
     loadMoreBtn.id = 'btcLoadMoreBtn';
     loadMoreBtn.className = 'btn ghost';
-    loadMoreBtn.textContent = `Load More (${state.bitcoin.historyTotal - state.bitcoin.history.length} remaining)`;
+    loadMoreBtn.textContent = `Load More (Show ${Math.min(20, remainingInHistory)} more of ${totalRemaining} remaining)`;
+    loadMoreBtn.style.marginTop = '12px';
+    loadMoreBtn.style.width = '100%';
+    
+    loadMoreBtn.addEventListener('click', () => {
+      loadMoreBtn.textContent = 'Loading...';
+      loadMoreBtn.disabled = true;
+      
+      // Show next 20 transactions from already loaded data
+      btcRenderMoreTransactions(loadedCount, 20).finally(() => {
+        loadMoreBtn.disabled = false;
+      });
+    });
+    
+    els.btcHistoryList.appendChild(loadMoreBtn);
+  } else if (!state.bitcoin.historyDone && state.bitcoin.history.length <= loadedCount) {
+    // Need to load more from API
+    const loadMoreBtn = document.createElement('button');
+    loadMoreBtn.id = 'btcLoadMoreBtn';
+    loadMoreBtn.className = 'btn ghost';
+    loadMoreBtn.textContent = `Load More (${totalRemaining} remaining)`;
     loadMoreBtn.style.marginTop = '12px';
     loadMoreBtn.style.width = '100%';
     
@@ -6607,6 +6649,228 @@ function btcUpdateLoadMoreButton() {
     
     els.btcHistoryList.appendChild(loadMoreBtn);
   }
+}
+
+async function btcRenderMoreTransactions(startIndex, count) {
+  const wallet = state.bitcoin.wallet;
+  if (!wallet) return;
+
+  const transactionsToRender = state.bitcoin.history.slice(startIndex, startIndex + count);
+  const loadMoreBtn = document.getElementById('btcLoadMoreBtn');
+  
+  // Remove the load more button temporarily
+  if (loadMoreBtn) {
+    loadMoreBtn.remove();
+  }
+
+  for (const tx of transactionsToRender) {
+    const dir = btcTxDirection(tx);
+    const ts = tx.status && tx.status.confirmed
+      ? btcFormatDate(tx.status.block_time || 0)
+      : 'mempool';
+    const conf = tx.status && tx.status.confirmed
+      ? (tx.status.block_height ? `confirmed @ ${tx.status.block_height}` : 'confirmed')
+      : 'unconfirmed';
+    const amount = dir.netSat === 0
+      ? '0 BTC'
+      : `${dir.netSat > 0 ? '+' : '-'}${btcFormatBtcFromSat(Math.abs(dir.netSat))}`;
+    const badgeText = dir.label === 'received' ? 'Received' : dir.label === 'sent' ? 'Sent' : 'Self / change';
+
+    // Get addresses for display
+    const addresses = btcGetTransactionAddresses(tx, wallet.address);
+    
+    const row = document.createElement('div');
+    row.className = 'loan';
+    row.innerHTML = `
+      <div class="loan-top btc-transaction-row" data-tx-id="${escapeHtml(tx.txid)}">
+        <div class="lt-main">
+          <div class="loan-name">${escapeHtml(badgeText)}</div>
+          <div class="loan-sub">${ts}</div>
+        </div>
+        <div class="cell">
+          <small>Net change</small>
+          <strong>${escapeHtml(amount)}</strong>
+        </div>
+        <div class="cell">
+          <small>Status</small>
+          <strong>${escapeHtml(conf)}</strong>
+        </div>
+        <div class="cell">
+          <small>Txid</small>
+          <strong class="mono">${escapeHtml(btcShortHash(tx.txid))}</strong>
+        </div>
+        <div class="cell">
+          <button class="btn ghost btc-download-tx-btn" data-tx-id="${escapeHtml(tx.txid)}" title="Download Transaction PDF" style="padding: 4px 8px; font-size: 0.8rem;">
+            <i class="fa-solid fa-download"></i>
+          </button>
+        </div>
+      </div>
+      <div class="btc-transaction-details" style="display: none;">
+        <div class="loan-details" style="padding: 12px; background: var(--panel-2); border-top: 1px solid var(--line);">
+          <div style="margin-bottom: 8px;"><strong>Transaction Hash:</strong></div>
+          <div class="mono" style="word-break: break-all; margin-bottom: 12px; font-size: 0.85rem; color: var(--muted);">${escapeHtml(tx.txid)}</div>
+          
+          ${addresses.from.length > 0 ? `
+          <div style="margin-bottom: 8px;"><strong>From Addresses:</strong></div>
+          <div style="margin-bottom: 12px;">
+            ${addresses.from.map(addr => `<div class="mono" style="word-break: break-all; font-size: 0.85rem; margin-bottom: 4px; color: var(--muted);">${escapeHtml(addr)}</div>`).join('')}
+          </div>
+          ` : ''}
+          
+          ${addresses.to.length > 0 ? `
+          <div style="margin-bottom: 8px;"><strong>To Addresses:</strong></div>
+          <div style="margin-bottom: 12px;">
+            ${addresses.to.map(addr => `<div class="mono" style="word-break: break-all; font-size: 0.85rem; margin-bottom: 4px; color: var(--muted);">${escapeHtml(addr)}</div>`).join('')}
+          </div>
+          ` : ''}
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 12px;">
+            <div>
+              <small style="color: var(--muted);">Size:</small>
+              <div><strong>${tx.size || 0} bytes</strong></div>
+            </div>
+            <div>
+              <small style="color: var(--muted);">Weight:</small>
+              <div><strong>${tx.weight || 0} WU</strong></div>
+            </div>
+            <div>
+              <small style="color: var(--muted);">Fee:</small>
+              <div><strong>${tx.fee ? btcFormatBtcFromSat(tx.fee) : 'N/A'}</strong></div>
+            </div>
+            ${tx.status && tx.status.block_height ? `
+            <div>
+              <small style="color: var(--muted);">Block Height:</small>
+              <div><strong>${tx.status.block_height}</strong></div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add click event to toggle details
+    const topRow = row.querySelector('.btc-transaction-row');
+    const details = row.querySelector('.btc-transaction-details');
+    
+    topRow.style.cursor = 'pointer';
+    topRow.addEventListener('click', () => {
+      if (details.style.display === 'none') {
+        details.style.display = 'block';
+        topRow.style.background = 'var(--panel-2)';
+      } else {
+        details.style.display = 'none';
+        topRow.style.background = '';
+      }
+    });
+    
+    // Add event listener for download button
+    const downloadBtn = row.querySelector('.btc-download-tx-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        btcDownloadTransactionPDF(tx);
+      });
+    }
+    
+    els.btcHistoryList.appendChild(row);
+  }
+  
+  // Update load more button after rendering
+  btcUpdateLoadMoreButton();
+}
+
+async function btcDownloadTransactionPDF(tx) {
+  if (!window.jspdf) {
+    alert('PDF library loading. Please try again.');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const wallet = state.bitcoin.wallet;
+
+  const logoData = await getPdfLogo();
+  const title = 'Bitcoin Transaction Details';
+  const subtitle = `Transaction ID: ${btcShortHash(tx.txid)}`;
+  drawPdfHeader(doc, logoData, title, subtitle);
+  drawPdfOwnerBlock(doc, 48);
+
+  // Get transaction direction and details
+  const dir = btcTxDirection(tx);
+  const ts = tx.status && tx.status.confirmed
+    ? btcFormatDate(tx.status.block_time || 0)
+    : 'mempool';
+  const conf = tx.status && tx.status.confirmed
+    ? (tx.status.block_height ? `confirmed @ ${tx.status.block_height}` : 'confirmed')
+    : 'unconfirmed';
+  const amount = dir.netSat === 0
+    ? '0 BTC'
+    : `${dir.netSat > 0 ? '+' : '-'}${btcFormatBtcFromSat(Math.abs(dir.netSat))}`;
+  const badgeText = dir.label === 'received' ? 'Received' : dir.label === 'sent' ? 'Sent' : 'Self / change';
+  
+  // Get addresses for this transaction
+  const addresses = btcGetTransactionAddresses(tx, wallet.address);
+
+  // Add transaction summary to top right
+  doc.setFontSize(10);
+  doc.setTextColor(23, 33, 43);
+  const summaryY = 55;
+  const summaryX = 120;
+  
+  doc.text(`Type: ${badgeText}`, summaryX, summaryY);
+  doc.text(`Date: ${ts}`, summaryX, summaryY + 7);
+  doc.text(`Amount: ${amount}`, summaryX, summaryY + 14);
+  doc.text(`Status: ${conf}`, summaryX, summaryY + 21);
+  doc.text(`Size: ${tx.size || 0} bytes`, summaryX, summaryY + 28);
+  doc.text(`Weight: ${tx.weight || 0} WU`, summaryX, summaryY + 35);
+  if (tx.fee) {
+    doc.text(`Fee: ${btcFormatBtcFromSat(tx.fee)}`, summaryX, summaryY + 42);
+  }
+
+  // Create detailed transaction data
+  const tableData = [];
+  
+  // Main transaction info
+  tableData.push(['Field', 'Value']);
+  tableData.push(['Transaction Type', badgeText]);
+  tableData.push(['Date/Time', ts]);
+  tableData.push(['Amount', amount]);
+  tableData.push(['Status', conf]);
+  tableData.push(['Transaction ID', tx.txid]);
+  tableData.push(['Size', `${tx.size || 0} bytes`]);
+  tableData.push(['Weight', `${tx.weight || 0} WU`]);
+  if (tx.fee) {
+    tableData.push(['Fee', btcFormatBtcFromSat(tx.fee)]);
+  }
+  if (tx.status && tx.status.block_height) {
+    tableData.push(['Block Height', tx.status.block_height.toString()]);
+  }
+
+  // Add addresses
+  if (addresses.from.length > 0) {
+    tableData.push(['From Addresses', addresses.from.join(', ')]);
+  }
+  if (addresses.to.length > 0) {
+    tableData.push(['To Addresses', addresses.to.join(', ')]);
+  }
+
+  // Add the table to PDF
+  doc.autoTable({
+    head: [tableData[0]],
+    body: tableData.slice(1),
+    startY: 75,
+    theme: 'grid',
+    styles: { fontSize: 9, cellPadding: 3 },
+    headStyles: { fillColor: [36, 87, 214], textColor: 255, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+    columnStyles: {
+      0: { cellWidth: 40, fontStyle: 'bold' },
+      1: { cellWidth: 'auto' }
+    }
+  });
+
+  // Save the PDF
+  doc.save(`bitcoin-transaction-${btcShortHash(tx.txid)}-${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
 async function btcFetchWalletData(withFeeRefresh) {
@@ -7377,31 +7641,24 @@ async function btcDownloadPDF() {
     return;
   }
 
-  // Ensure all transactions are loaded before generating PDF
-  if (!state.bitcoin.historyDone && state.bitcoin.history.length < state.bitcoin.historyTotal) {
-    // Auto-load all remaining transactions in background
-    while (!state.bitcoin.historyDone) {
-      await btcLoadMoreTransactions();
-      // Add small delay to avoid overwhelming the API
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  }
-
+  // Only use currently displayed transactions (max 20 or currently loaded)
+  const displayedTransactions = state.bitcoin.history.slice(0, Math.min(state.bitcoin.history.length, 20));
+  
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const wallet = state.bitcoin.wallet;
 
   const logoData = await getPdfLogo();
   const title = 'Bitcoin Transaction History';
-  const subtitle = `Address: ${wallet.address}`;
+  const subtitle = `Address: ${wallet.address} (${displayedTransactions.length} transactions)`;
   drawPdfHeader(doc, logoData, title, subtitle);
   drawPdfOwnerBlock(doc, 48);
 
-  // Calculate summary data
+  // Calculate summary data from displayed transactions only
   const balance = btcSummarizeUtxoBalance();
-  const received = Number(state.bitcoin.history.reduce((sum, tx) => sum + (btcTxDirection(tx).receivedSat || 0), 0));
-  const sent = Number(state.bitcoin.history.reduce((sum, tx) => sum + (btcTxDirection(tx).sentSat || 0), 0));
-  const transactionCount = state.bitcoin.history.length;
+  const received = Number(displayedTransactions.reduce((sum, tx) => sum + (btcTxDirection(tx).receivedSat || 0), 0));
+  const sent = Number(displayedTransactions.reduce((sum, tx) => sum + (btcTxDirection(tx).sentSat || 0), 0));
+  const transactionCount = displayedTransactions.length;
 
   // Add summary info to top right
   doc.setFontSize(10);
@@ -7417,7 +7674,7 @@ async function btcDownloadPDF() {
 
   // Create detailed transaction data
   const tableData = [];
-  for (const tx of state.bitcoin.history) {
+  for (const tx of displayedTransactions) {
     const dir = btcTxDirection(tx);
     const ts = tx.status && tx.status.confirmed
       ? btcFormatDate(tx.status.block_time || 0)
