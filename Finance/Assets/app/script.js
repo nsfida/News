@@ -8605,11 +8605,143 @@ function initInquiryOverlay() {
   }
 }
 
+// App Download Overlay Functionality
+let iosQrCodeInstance = null;
+let androidQrCodeInstance = null;
+
+function initAppDownloadOverlay() {
+  // Get elements
+  const iosDownloadBtn = document.getElementById('iosDownloadBtn');
+  const androidDownloadBtn = document.getElementById('androidDownloadBtn');
+  const iosDownloadOverlay = document.getElementById('iosDownloadOverlay');
+  const androidDownloadOverlay = document.getElementById('androidDownloadOverlay');
+  const closeIosDownloadBtn = document.getElementById('closeIosDownloadBtn');
+  const closeAndroidDownloadBtn = document.getElementById('closeAndroidDownloadBtn');
+
+  if (!iosDownloadBtn || !androidDownloadBtn || !iosDownloadOverlay || !androidDownloadOverlay) {
+    console.warn('App download elements not found');
+    return;
+  }
+
+  // iOS download button click handler
+  iosDownloadBtn.addEventListener('click', () => {
+    showIosDownloadOverlay();
+  });
+
+  // Android download button click handler
+  androidDownloadBtn.addEventListener('click', () => {
+    showAndroidDownloadOverlay();
+  });
+
+  // Close button handlers
+  closeIosDownloadBtn.addEventListener('click', hideIosDownloadOverlay);
+  closeAndroidDownloadBtn.addEventListener('click', hideAndroidDownloadOverlay);
+
+  // Close on overlay background click
+  iosDownloadOverlay.addEventListener('click', (e) => {
+    if (e.target === iosDownloadOverlay) {
+      hideIosDownloadOverlay();
+    }
+  });
+
+  androidDownloadOverlay.addEventListener('click', (e) => {
+    if (e.target === androidDownloadOverlay) {
+      hideAndroidDownloadOverlay();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      hideIosDownloadOverlay();
+      hideAndroidDownloadOverlay();
+    }
+  });
+}
+
+function showIosDownloadOverlay() {
+  const overlay = document.getElementById('iosDownloadOverlay');
+  const qrContainer = document.getElementById('iosQrCode');
+  
+  if (!overlay || !qrContainer) return;
+
+  // Show overlay
+  overlay.classList.remove('hide');
+  
+  // Generate QR code if not already generated
+  if (!iosQrCodeInstance) {
+    const iosUrl = 'https://livenews.live/Finance/Assets/mobile_app/iOS/Triple_M_by_NSF.mobileconfig';
+    qrContainer.innerHTML = ''; // Clear existing content
+    
+    try {
+      iosQrCodeInstance = new QRCode(qrContainer, {
+        text: iosUrl,
+        width: 90,
+        height: 90,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } catch (error) {
+      console.error('Failed to generate iOS QR code:', error);
+      qrContainer.innerHTML = '<p style="color: var(--danger); font-size: 0.65rem;">Failed to generate QR code</p>';
+    }
+  }
+}
+
+function showAndroidDownloadOverlay() {
+  const overlay = document.getElementById('androidDownloadOverlay');
+  const qrContainer = document.getElementById('androidQrCode');
+  
+  if (!overlay || !qrContainer) return;
+
+  // Show overlay
+  overlay.classList.remove('hide');
+  
+  // Generate QR code if not already generated
+  if (!androidQrCodeInstance) {
+    const androidUrl = 'https://livenews.live/Finance/Assets/mobile_app/Android/Triple_M_by_NSF.apk';
+    qrContainer.innerHTML = ''; // Clear existing content
+    
+    try {
+      androidQrCodeInstance = new QRCode(qrContainer, {
+        text: androidUrl,
+        width: 90,
+        height: 90,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } catch (error) {
+      console.error('Failed to generate Android QR code:', error);
+      qrContainer.innerHTML = '<p style="color: var(--danger); font-size: 0.65rem;">Failed to generate QR code</p>';
+    }
+  }
+}
+
+function hideIosDownloadOverlay() {
+  const overlay = document.getElementById('iosDownloadOverlay');
+  if (overlay) {
+    overlay.classList.add('hide');
+  }
+}
+
+function hideAndroidDownloadOverlay() {
+  const overlay = document.getElementById('androidDownloadOverlay');
+  if (overlay) {
+    overlay.classList.add('hide');
+  }
+}
+
 // Initialize inquiry overlay when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initInquiryOverlay);
+  document.addEventListener('DOMContentLoaded', () => {
+    initInquiryOverlay();
+    initAppDownloadOverlay();
+  });
 } else {
   initInquiryOverlay();
+  initAppDownloadOverlay();
 }
 
 boot();
