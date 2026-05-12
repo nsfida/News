@@ -39,6 +39,14 @@
       </div>
       
       <div class="login-header">
+        <div class="app-download-icons">
+          <button id="iosDownloadBtn" class="app-download-btn" type="button" title="Download for iOS">
+            <i class="fa-brands fa-apple"></i>
+          </button>
+          <button id="androidDownloadBtn" class="app-download-btn" type="button" title="Download for Android">
+            <i class="fa-brands fa-google-play"></i>
+          </button>
+        </div>
         <h2>Welcome Back</h2>
         <p class="login-subtitle">Sign in to access your financial dashboard</p>
       </div>
@@ -154,6 +162,90 @@
           <p>Failed to send inquiry. Please try again.</p>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- iOS App Download Overlay -->
+  <div id="iosDownloadOverlay" class="app-download-overlay hide">
+    <div class="app-download-modal">
+      <div class="app-download-header">
+        <h3><i class="fa-brands fa-apple"></i> Download for iOS</h3>
+        <button id="closeIosDownloadBtn" class="btn ghost" type="button" style="font-size: 1.2rem; padding: 4px 8px;">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="app-download-content">
+        <div class="app-download-qr">
+          <div id="iosQrCode" class="qr-code-container"></div>
+          <p class="qr-instruction">Scan this QR code with your iOS device camera to download the configuration file</p>
+          <a href="https://livenews.live/Finance/Assets/mobile_app/iOS/Triple_M_by_NSF.mobileconfig" download="Triple_M_by_NSF.mobileconfig" class="download-btn">
+            <i class="fa-solid fa-download"></i>
+            Download
+          </a>
+        </div>
+        
+        <div class="app-download-instructions">
+          <h4><i class="fa-solid fa-info-circle"></i> Installation Instructions</h4>
+          <ol>
+            <li>Scan the QR code with your iOS device camera</li>
+            <li>Tap the notification that appears to open the configuration profile</li>
+            <li>Tap "Allow" to download the configuration profile</li>
+            <li>Go to Settings > General > VPN & Device Management</li>
+            <li>Find and tap on "Triple M by NSF" profile</li>
+            <li>Tap "Install" and enter your device passcode if prompted</li>
+            <li>Trust the app: Settings > General > VPN & Device Management > Trust "Triple M by NSF"</li>
+            <li>The app is now ready to use on your device!</li>
+          </ol>
+          
+          <div class="app-download-note">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            <p><strong>Note:</strong> This app requires iOS 13.0 or later. Make sure to trust the developer profile after installation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Android App Download Overlay -->
+  <div id="androidDownloadOverlay" class="app-download-overlay hide">
+    <div class="app-download-modal">
+      <div class="app-download-header">
+        <h3><i class="fa-brands fa-google-play"></i> Download for Android</h3>
+        <button id="closeAndroidDownloadBtn" class="btn ghost" type="button" style="font-size: 1.2rem; padding: 4px 8px;">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="app-download-content">
+        <div class="app-download-qr">
+          <div id="androidQrCode" class="qr-code-container"></div>
+          <p class="qr-instruction">Scan this QR code with your Android device camera to download the APK file</p>
+          <a href="https://livenews.live/Finance/Assets/mobile_app/Android/Triple_M_by_NSF.apk" download="Triple_M_by_NSF.apk" class="download-btn">
+            <i class="fa-solid fa-download"></i>
+            Download
+          </a>
+        </div>
+        
+        <div class="app-download-instructions">
+          <h4><i class="fa-solid fa-info-circle"></i> Installation Instructions</h4>
+          <ol>
+            <li>Scan the QR code with your Android device camera</li>
+            <li>Tap the download link that appears to start downloading the APK file</li>
+            <li>Once downloaded, open the APK file from your notifications or downloads folder</li>
+            <li>If prompted, enable "Install from unknown sources" in your device settings</li>
+            <li>Tap "Install" to begin the installation process</li>
+            <li>Wait for the installation to complete</li>
+            <li>Open the app and grant necessary permissions when prompted</li>
+            <li>The app is now ready to use on your device!</li>
+          </ol>
+          
+          <div class="app-download-note">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            <p><strong>Note:</strong> This app requires Android 6.0 (Marshmallow) or later. You may need to enable installation from unknown sources in your device settings.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
